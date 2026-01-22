@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { User } from "@/entities/User";
 import { UploadFile } from "@/integrations/Core";
@@ -6,15 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   User as UserIcon,
   Shield,
@@ -23,17 +14,24 @@ import {
   Mail,
   MapPin,
   Edit2,
-  Settings,
   Camera,
   FileText,
   Image as ImageIcon,
   Award,
-  Languages,
   MoreVertical,
   LogOut,
   RefreshCw,
-  Loader2
+  Loader2,
+  MessageCircle,
+  Bookmark,
+  ChevronRight
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import ProfileForm from "../components/profile/ProfileForm";
 import PortfolioGallery from "../components/profile/PortfolioGallery";
@@ -70,10 +68,8 @@ export default function Profile() {
       await User.updateMyUserData(profileData);
       await loadUser();
       setIsEditing(false);
-      alert("Perfil atualizado com sucesso!");
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Erro ao atualizar perfil");
     }
   };
 
@@ -88,7 +84,6 @@ export default function Profile() {
       await loadUser();
     } catch (error) {
       console.error("Error uploading avatar:", error);
-      alert("Erro ao enviar a imagem.");
     } finally {
       setIsUploading(false);
     }
@@ -115,32 +110,30 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <Settings className="w-12 h-12 mx-auto mb-3 text-gray-400 animate-spin" />
-          <p className="text-gray-500">A carregar perfil...</p>
-        </div>
+      <div className="h-screen flex flex-col items-center justify-center bg-[var(--background)]">
+        <Loader2 className="w-12 h-12 text-[var(--primary)] animate-spin mb-4" />
+        <p className="text-[var(--text-secondary)]">A carregar perfil...</p>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <UserIcon className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-          <p className="text-gray-500">Não autenticado</p>
-          <Button className="mt-3" onClick={() => User.loginWithRedirect(window.location.href)}>
-            Fazer Login
-          </Button>
+      <div className="h-screen flex flex-col items-center justify-center bg-[var(--background)]">
+        <div className="w-16 h-16 hexagon bg-[var(--surface)] flex items-center justify-center mb-4">
+          <UserIcon className="w-8 h-8 text-[var(--text-muted)]" />
         </div>
+        <p className="text-[var(--text-secondary)] mb-4">Não autenticado</p>
+        <Button onClick={() => User.loginWithRedirect(window.location.href)} className="btn-primary">
+          Fazer Login
+        </Button>
       </div>
     );
   }
 
   if (isEditing) {
     return (
-      <div className="p-4 max-w-2xl mx-auto">
+      <div className="min-h-screen bg-[var(--background)] p-4">
         <ProfileForm
           user={user}
           onSave={handleSave}
@@ -152,7 +145,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)]">
       <input
         type="file"
         ref={avatarInputRef}
@@ -160,186 +153,195 @@ export default function Profile() {
         className="hidden"
         accept="image/*"
       />
-      {/* Mobile Header */}
-      <div className="bg-white border-b">
-        {/* Profile Header */}
-        <div className="relative">
-          {/* Cover Photo Placeholder */}
-          <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600"></div>
 
-          {/* Profile Info */}
-          <div className="px-4 pb-4">
-            {/* Avatar */}
-            <div className="relative -mt-12 mb-4 w-fit">
-              <Avatar className="w-24 h-24 border-4 border-white">
-                <AvatarImage src={user.avatar_url} alt={user.full_name} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl font-bold">
-                  {isUploading ? <Loader2 className="w-8 h-8 animate-spin" /> : (user.full_name?.charAt(0) || <UserIcon className="w-12 h-12" />)}
-                </AvatarFallback>
-              </Avatar>
-              <Button
-                size="icon"
-                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white border-2"
-                onClick={() => avatarInputRef.current?.click()}
-                disabled={isUploading}
-              >
-                <Camera className="w-4 h-4 text-gray-600" />
+      {/* Header */}
+      <div className="bg-[var(--surface)] border-b border-[var(--border)]">
+        <div className="flex items-center justify-between px-4 py-4">
+          <h1 className="text-lg font-bold text-[var(--text-primary)]">Perfil Profissional</h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" variant="ghost">
+                <MoreVertical className="w-5 h-5 text-[var(--text-secondary)]" />
               </Button>
-            </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-[var(--surface)] border-[var(--border)]">
+              <DropdownMenuItem onClick={() => setIsEditing(true)} className="text-[var(--text-primary)]">
+                <Edit2 className="w-4 h-4 mr-2" />
+                Editar Perfil
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleChangeProfile} className="text-[var(--text-primary)]">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Trocar Perfil
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
 
-            {/* Name and Type */}
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  {user.full_name || "Nome não definido"}
-                </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge className={
-                    user.user_type === 'worker'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-purple-100 text-purple-800'
-                  }>
-                    {user.user_type === 'worker' ? 'Profissional' : 'Empregador'}
-                  </Badge>
-                  {user.verified && (
-                    <Shield className="w-4 h-4 text-green-500" />
+      {/* Profile Card */}
+      <div className="px-4 -mt-2">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-6 relative">
+          {/* Hexagon Avatar */}
+          <div className="flex flex-col items-center">
+            <div className="relative mb-4">
+              <div className="w-28 h-32 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)] to-orange-600 hexagon" />
+                <div className="absolute inset-[3px] bg-[var(--surface)] hexagon overflow-hidden">
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
+                      {isUploading ? (
+                        <Loader2 className="w-8 h-8 animate-spin" />
+                      ) : (
+                        <UserIcon className="w-12 h-12" />
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={isUploading}
+                className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-[var(--primary)] flex items-center justify-center text-white shadow-lg"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
+            </div>
 
-              <div className="flex items-center gap-1">
-                <Button size="sm" variant="outline" className="hidden md:flex" onClick={() => setIsEditing(true)}>
-                  <Edit2 className="w-4 h-4 mr-1" />
-                  Editar
-                </Button>
+            {/* Name & Badge */}
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">
+              {user.full_name || "Nome não definido"}
+            </h2>
+            <div className="flex items-center gap-2 mt-2">
+              {user.verified && <Shield className="w-4 h-4 text-[var(--primary)]" />}
+              <span className="text-[var(--primary)] text-sm font-semibold uppercase tracking-wider">
+                {user.user_type === 'worker' ? 'Profissional Certificado' : 'Empregador'}
+              </span>
+            </div>
 
-                {/* --- Mobile Menu --- */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="icon" variant="ghost">
-                      <MoreVertical className="w-5 h-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="md:hidden" onClick={() => setIsEditing(true)}>
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      Editar Perfil
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleChangeProfile}>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Trocar Perfil
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sair
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+            {/* Stats */}
+            <div className="flex items-center justify-center gap-8 mt-6 w-full">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-[var(--text-primary)]">
+                  <span className="font-bold text-lg">{user.rating || '0.0'}</span>
+                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                </div>
+                <span className="text-xs text-[var(--text-muted)]">Avaliação</span>
+              </div>
+              <div className="w-px h-8 bg-[var(--border)]" />
+              <div className="text-center">
+                <div className="font-bold text-lg text-[var(--text-primary)]">98%</div>
+                <span className="text-xs text-[var(--text-muted)]">Taxa Sucesso</span>
+              </div>
+              <div className="w-px h-8 bg-[var(--border)]" />
+              <div className="text-center">
+                <div className="font-bold text-lg text-[var(--text-primary)]">{user.xp || 0}</div>
+                <span className="text-xs text-[var(--text-muted)]">XP</span>
               </div>
             </div>
 
-            {/* Bio */}
-            {user.bio && (
-              <p className="text-gray-600 text-sm mb-3">{user.bio}</p>
-            )}
-
-            {/* Contact Info Grid */}
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              {user.city && (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-4 h-4" />
-                  <span>{user.city}</span>
-                </div>
-              )}
-              {user.phone && (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Phone className="w-4 h-4" />
-                  <span>{user.phone}</span>
-                </div>
-              )}
-              {user.email && (
-                <div className="flex items-center gap-2 text-gray-600 col-span-2">
-                  <Mail className="w-4 h-4" />
-                  <span>{user.email}</span>
-                </div>
-              )}
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-6 w-full">
+              <Button className="flex-1 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white rounded-xl h-12">
+                <MessageCircle className="w-5 h-5 mr-2" />
+                Mensagem
+              </Button>
+              <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-[var(--border)]">
+                <Bookmark className="w-5 h-5 text-[var(--text-secondary)]" />
+              </Button>
             </div>
-
-            {/* Rating (for workers AND employers) */}
-            {(user.user_type === 'worker' || user.user_type === 'employer') && (
-              <div className="flex items-center justify-center gap-4 mt-4 p-3 bg-gray-50 rounded-lg">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    <span className="font-bold">{user.rating || '0.0'}</span>
-                  </div>
-                  <span className="text-xs text-gray-500">Avaliação</span>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-blue-600">{user.xp || 0}</div>
-                  <span className="text-xs text-gray-500">XP</span>
-                </div>
-                {user.company && user.user_type === 'employer' && (
-                  <div className="text-center">
-                    <div className="font-bold text-purple-600 truncate max-w-24">{user.company}</div>
-                    <span className="text-xs text-gray-500">Empresa</span>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Skills (for workers) */}
+      {/* Skills */}
       {user.user_type === 'worker' && user.skills && user.skills.length > 0 && (
-        <div className="bg-white border-b p-4">
-          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <Award className="w-4 h-4" />
-            Competências
-          </h3>
+        <div className="px-4 mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold text-[var(--text-primary)]">Especialidades</h3>
+            <button className="text-[var(--primary)] text-sm font-medium">Ver todas</button>
+          </div>
           <div className="flex flex-wrap gap-2">
             {user.skills.map((skill, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
+              <span 
+                key={index} 
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-sm text-[var(--text-primary)]"
+              >
+                <span className="w-2 h-2 rounded-full bg-[var(--primary)]" />
                 {skill}
-              </Badge>
+              </span>
             ))}
           </div>
         </div>
       )}
 
-      {/* Service Areas */}
-      {user.service_areas && user.service_areas.length > 0 && (
-        <div className="bg-white border-b p-4">
-          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <MapPin className="w-4 h-4" />
-            Áreas de Atuação
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {user.service_areas.map((area, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {area}
-              </Badge>
-            ))}
-          </div>
+      {/* Bio */}
+      {user.bio && (
+        <div className="px-4 mt-6">
+          <h3 className="font-bold text-[var(--text-primary)] mb-3">Sobre</h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4">
+            {user.bio}
+          </p>
         </div>
       )}
 
-      {/* Tabs Content */}
-      <div className="flex-1">
+      {/* Contact Info */}
+      <div className="px-4 mt-6">
+        <h3 className="font-bold text-[var(--text-primary)] mb-3">Contacto</h3>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] divide-y divide-[var(--border)]">
+          {user.city && (
+            <div className="flex items-center gap-3 p-4">
+              <div className="w-10 h-10 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-[var(--primary)]" />
+              </div>
+              <span className="text-[var(--text-primary)]">{user.city}</span>
+            </div>
+          )}
+          {user.phone && (
+            <div className="flex items-center gap-3 p-4">
+              <div className="w-10 h-10 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
+                <Phone className="w-5 h-5 text-[var(--primary)]" />
+              </div>
+              <span className="text-[var(--text-primary)]">{user.phone}</span>
+            </div>
+          )}
+          {user.email && (
+            <div className="flex items-center gap-3 p-4">
+              <div className="w-10 h-10 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
+                <Mail className="w-5 h-5 text-[var(--primary)]" />
+              </div>
+              <span className="text-[var(--text-primary)]">{user.email}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Portfolio & Documents Tabs */}
+      <div className="px-4 mt-6 pb-24">
         <Tabs defaultValue="portfolio" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-white border-b">
-            <TabsTrigger value="portfolio" className="flex items-center gap-2">
-              <ImageIcon className="w-4 h-4" />
+          <TabsList className="grid w-full grid-cols-2 bg-[var(--surface)] border border-[var(--border)] rounded-xl p-1">
+            <TabsTrigger 
+              value="portfolio" 
+              className="rounded-lg data-[state=active]:bg-[var(--primary)] data-[state=active]:text-white"
+            >
+              <ImageIcon className="w-4 h-4 mr-2" />
               Portfólio
             </TabsTrigger>
-            <TabsTrigger value="documents" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
+            <TabsTrigger 
+              value="documents"
+              className="rounded-lg data-[state=active]:bg-[var(--primary)] data-[state=active]:text-white"
+            >
+              <FileText className="w-4 h-4 mr-2" />
               Documentos
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="portfolio" className="p-4">
+          <TabsContent value="portfolio" className="mt-4">
             <PortfolioGallery
               images={user.portfolio_images || []}
               onUpdate={loadUser}
@@ -347,7 +349,7 @@ export default function Profile() {
             />
           </TabsContent>
 
-          <TabsContent value="documents" className="p-4">
+          <TabsContent value="documents" className="mt-4">
             <DocumentsList
               documents={user.documents || []}
               onUpdate={loadUser}
