@@ -17,6 +17,7 @@ import {
   Camera,
   FileText,
   Image as ImageIcon,
+  Award,
   MoreVertical,
   LogOut,
   RefreshCw,
@@ -31,8 +32,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { HexAvatar, HexPortfolioGrid } from "@/components/ui/hexagon";
+
 import ProfileForm from "../components/profile/ProfileForm";
+import PortfolioGallery from "../components/profile/PortfolioGallery";
 import DocumentsList from "../components/profile/DocumentsList";
 
 export default function Profile() {
@@ -51,7 +53,10 @@ export default function Profile() {
     try {
       const userData = await User.me();
       setUser(userData);
-      if (!userData.user_type) setIsEditing(true);
+
+      if (!userData.user_type) {
+        setIsEditing(true);
+      }
     } catch (error) {
       console.log("User not authenticated");
     }
@@ -89,6 +94,7 @@ export default function Profile() {
       await User.logout();
       window.location.href = createPageUrl("SetupProfile");
     } catch (error) {
+      console.error("Error logging out:", error);
       window.location.href = createPageUrl("SetupProfile");
     }
   };
@@ -114,8 +120,10 @@ export default function Profile() {
   if (!user) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-[var(--background)]">
-        <HexAvatar size="lg" fallback="?" />
-        <p className="text-[var(--text-secondary)] mt-4 mb-4">Não autenticado</p>
+        <div className="w-16 h-16 hexagon bg-[var(--surface)] flex items-center justify-center mb-4">
+          <UserIcon className="w-8 h-8 text-[var(--text-muted)]" />
+        </div>
+        <p className="text-[var(--text-secondary)] mb-4">Não autenticado</p>
         <Button onClick={() => User.loginWithRedirect(window.location.href)} className="btn-primary">
           Fazer Login
         </Button>
@@ -126,14 +134,25 @@ export default function Profile() {
   if (isEditing) {
     return (
       <div className="min-h-screen bg-[var(--background)] p-4">
-        <ProfileForm user={user} onSave={handleSave} onCancel={() => setIsEditing(false)} isFirstTime={!user.user_type} />
+        <ProfileForm
+          user={user}
+          onSave={handleSave}
+          onCancel={() => setIsEditing(false)}
+          isFirstTime={!user.user_type}
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pb-24">
-      <input type="file" ref={avatarInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
+    <div className="min-h-screen bg-[var(--background)]">
+      <input
+        type="file"
+        ref={avatarInputRef}
+        onChange={handleAvatarUpload}
+        className="hidden"
+        accept="image/*"
+      />
 
       {/* Header */}
       <div className="bg-[var(--surface)] border-b border-[var(--border)]">
@@ -147,13 +166,16 @@ export default function Profile() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-[var(--surface)] border-[var(--border)]">
               <DropdownMenuItem onClick={() => setIsEditing(true)} className="text-[var(--text-primary)]">
-                <Edit2 className="w-4 h-4 mr-2" />Editar Perfil
+                <Edit2 className="w-4 h-4 mr-2" />
+                Editar Perfil
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleChangeProfile} className="text-[var(--text-primary)]">
-                <RefreshCw className="w-4 h-4 mr-2" />Trocar Perfil
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Trocar Perfil
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout} className="text-red-500">
-                <LogOut className="w-4 h-4 mr-2" />Sair
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -161,40 +183,52 @@ export default function Profile() {
       </div>
 
       {/* Profile Card */}
-      <div className="px-4 py-6">
-        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-6 shadow-lg">
+      <div className="px-4 -mt-2">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-6 relative">
+          {/* Hexagon Avatar */}
           <div className="flex flex-col items-center">
-            {/* Hexagonal Avatar with Border */}
             <div className="relative mb-4">
-              <HexAvatar
-                src={user.avatar_url}
-                fallback={isUploading ? <Loader2 className="w-8 h-8 animate-spin" /> : user.full_name?.charAt(0) || <UserIcon className="w-12 h-12" />}
-                size="xl"
-                borderColor="primary"
-              />
+              <div className="w-28 h-32 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)] to-orange-600 hexagon" />
+                <div className="absolute inset-[3px] bg-[var(--surface)] hexagon overflow-hidden">
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
+                      {isUploading ? (
+                        <Loader2 className="w-8 h-8 animate-spin" />
+                      ) : (
+                        <UserIcon className="w-12 h-12" />
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
               <button
                 onClick={() => avatarInputRef.current?.click()}
                 disabled={isUploading}
-                className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white shadow-lg z-10"
+                className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-[var(--primary)] flex items-center justify-center text-white shadow-lg"
               >
-                <Camera className="w-5 h-5" />
+                <Camera className="w-4 h-4" />
               </button>
             </div>
 
             {/* Name & Badge */}
-            <h2 className="text-xl font-bold text-[var(--text-primary)]">{user.full_name || "Nome não definido"}</h2>
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">
+              {user.full_name || "Nome não definido"}
+            </h2>
             <div className="flex items-center gap-2 mt-2">
               {user.verified && <Shield className="w-4 h-4 text-[var(--primary)]" />}
               <span className="text-[var(--primary)] text-sm font-semibold uppercase tracking-wider">
-                {user.user_type === 'worker' ? 'Empreiteiro Certificado' : 'Empregador'}
+                {user.user_type === 'worker' ? 'Profissional Certificado' : 'Empregador'}
               </span>
             </div>
 
-            {/* Stats Row */}
+            {/* Stats */}
             <div className="flex items-center justify-center gap-8 mt-6 w-full">
               <div className="text-center">
-                <div className="flex items-center justify-center gap-1">
-                  <span className="font-bold text-lg text-[var(--text-primary)]">{user.rating || '0.0'}</span>
+                <div className="flex items-center justify-center gap-1 text-[var(--text-primary)]">
+                  <span className="font-bold text-lg">{user.rating || '0.0'}</span>
                   <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                 </div>
                 <span className="text-xs text-[var(--text-muted)]">Avaliação</span>
@@ -206,15 +240,16 @@ export default function Profile() {
               </div>
               <div className="w-px h-8 bg-[var(--border)]" />
               <div className="text-center">
-                <div className="font-bold text-lg text-[var(--text-primary)]">7+</div>
-                <span className="text-xs text-[var(--text-muted)]">Anos Exp.</span>
+                <div className="font-bold text-lg text-[var(--text-primary)]">{user.xp || 0}</div>
+                <span className="text-xs text-[var(--text-muted)]">XP</span>
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex gap-3 mt-6 w-full">
               <Button className="flex-1 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white rounded-xl h-12">
-                <MessageCircle className="w-5 h-5 mr-2" />Mensagem
+                <MessageCircle className="w-5 h-5 mr-2" />
+                Mensagem
               </Button>
               <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-[var(--border)]">
                 <Bookmark className="w-5 h-5 text-[var(--text-secondary)]" />
@@ -224,16 +259,19 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Skills / Specialties */}
-      {user.skills && user.skills.length > 0 && (
-        <div className="px-4 mb-6">
+      {/* Skills */}
+      {user.user_type === 'worker' && user.skills && user.skills.length > 0 && (
+        <div className="px-4 mt-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-bold text-[var(--text-primary)]">Especialidades</h3>
             <button className="text-[var(--primary)] text-sm font-medium">Ver todas</button>
           </div>
           <div className="flex flex-wrap gap-2">
             {user.skills.map((skill, index) => (
-              <span key={index} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface)] border border-[var(--border)] text-sm text-[var(--text-primary)]">
+              <span 
+                key={index} 
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-sm text-[var(--text-primary)]"
+              >
                 <span className="w-2 h-2 rounded-full bg-[var(--primary)]" />
                 {skill}
               </span>
@@ -242,47 +280,83 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Portfolio - Honeycomb Mosaic */}
-      <div className="px-4 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-[var(--text-primary)]">Portfólio Recente</h3>
-          <span className="text-[var(--primary)] text-sm font-medium">{user.portfolio_images?.length || 0} Projetos</span>
+      {/* Bio */}
+      {user.bio && (
+        <div className="px-4 mt-6">
+          <h3 className="font-bold text-[var(--text-primary)] mb-3">Sobre</h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4">
+            {user.bio}
+          </p>
         </div>
-        <HexPortfolioGrid images={user.portfolio_images || []} />
-      </div>
+      )}
 
       {/* Contact Info */}
-      <div className="px-4">
+      <div className="px-4 mt-6">
         <h3 className="font-bold text-[var(--text-primary)] mb-3">Contacto</h3>
         <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] divide-y divide-[var(--border)]">
           {user.city && (
             <div className="flex items-center gap-3 p-4">
-              <div className="w-10 h-10 hexagon bg-[var(--primary)]/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-[var(--primary)]" />
               </div>
               <span className="text-[var(--text-primary)]">{user.city}</span>
-              <ChevronRight className="w-4 h-4 text-[var(--text-muted)] ml-auto" />
             </div>
           )}
           {user.phone && (
             <div className="flex items-center gap-3 p-4">
-              <div className="w-10 h-10 hexagon bg-[var(--primary)]/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
                 <Phone className="w-5 h-5 text-[var(--primary)]" />
               </div>
               <span className="text-[var(--text-primary)]">{user.phone}</span>
-              <ChevronRight className="w-4 h-4 text-[var(--text-muted)] ml-auto" />
             </div>
           )}
           {user.email && (
             <div className="flex items-center gap-3 p-4">
-              <div className="w-10 h-10 hexagon bg-[var(--primary)]/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
                 <Mail className="w-5 h-5 text-[var(--primary)]" />
               </div>
-              <span className="text-[var(--text-primary)] truncate">{user.email}</span>
-              <ChevronRight className="w-4 h-4 text-[var(--text-muted)] ml-auto" />
+              <span className="text-[var(--text-primary)]">{user.email}</span>
             </div>
           )}
         </div>
+      </div>
+
+      {/* Portfolio & Documents Tabs */}
+      <div className="px-4 mt-6 pb-24">
+        <Tabs defaultValue="portfolio" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-[var(--surface)] border border-[var(--border)] rounded-xl p-1">
+            <TabsTrigger 
+              value="portfolio" 
+              className="rounded-lg data-[state=active]:bg-[var(--primary)] data-[state=active]:text-white"
+            >
+              <ImageIcon className="w-4 h-4 mr-2" />
+              Portfólio
+            </TabsTrigger>
+            <TabsTrigger 
+              value="documents"
+              className="rounded-lg data-[state=active]:bg-[var(--primary)] data-[state=active]:text-white"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Documentos
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="portfolio" className="mt-4">
+            <PortfolioGallery
+              images={user.portfolio_images || []}
+              onUpdate={loadUser}
+              canEdit={true}
+            />
+          </TabsContent>
+
+          <TabsContent value="documents" className="mt-4">
+            <DocumentsList
+              documents={user.documents || []}
+              onUpdate={loadUser}
+              canEdit={true}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

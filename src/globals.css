@@ -8,59 +8,50 @@
 
 @layer base {
   :root {
-    /* Primary Brand */
-    --primary: #FF7A00;
-    --primary-dark: #E66D00;
-    --primary-light: #FF9A33;
+    /* Primary Colors */
+    --primary: #ec7f13;
+    --primary-dark: #d66e0a;
+    --primary-light: #ff9a3c;
     
     /* Light Theme */
-    --background: #F8F9FA;
-    --background-secondary: #F0F1F3;
-    --surface: #FFFFFF;
-    --surface-secondary: #F5F5F5;
-    --border: #E5E7EB;
-    --border-light: #F0F0F0;
+    --background: #f8f7f6;
+    --background-secondary: #f3f4f6;
+    --surface: #ffffff;
+    --surface-secondary: #f9fafb;
+    --border: #e5e7eb;
+    --border-light: #f3f4f6;
     
     /* Text Colors - Light */
-    --text-primary: #1A1510;
-    --text-secondary: #6B7280;
-    --text-muted: #9CA3AF;
-    
-    /* Category Colors */
-    --category-featured: #F59E0B;
-    --category-pros: #3B82F6;
-    --category-schedules: #10B981;
-    --category-messages: #8B5CF6;
-    --category-market: #EF4444;
-    --category-analytics: #14B8A6;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
     
     /* Semantic Colors */
-    --success: #10B981;
-    --warning: #F59E0B;
-    --error: #EF4444;
-    --info: #3B82F6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
     
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 25px -5px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 40px -10px rgb(0 0 0 / 0.15);
-    --shadow-glow: 0 0 20px rgba(255, 122, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-glow: 0 0 15px rgba(236, 127, 19, 0.3);
   }
 
   .dark {
-    /* Dark Theme - Deep Brown/Black */
-    --background: #1A1510;
-    --background-secondary: #141210;
-    --surface: #252019;
-    --surface-secondary: #2D261E;
-    --border: #3D3428;
-    --border-light: #2D261E;
+    /* Dark Theme */
+    --background: #221910;
+    --background-secondary: #1a1310;
+    --surface: #2d241c;
+    --surface-secondary: #3a2e24;
+    --border: #54473b;
+    --border-light: #3a2e24;
     
     /* Text Colors - Dark */
-    --text-primary: #FFFFFF;
-    --text-secondary: #B9AB9D;
-    --text-muted: #8E857E;
+    --text-primary: #ffffff;
+    --text-secondary: #b9ab9d;
+    --text-muted: #8e857e;
   }
 }
 
@@ -75,26 +66,17 @@ body {
 }
 
 /* ============================================
-   Hexagon Utilities - CORE SHAPE SYSTEM
+   Hexagon Utilities
    ============================================ */
 
-/* Standard Hexagon (Flat Top) */
 .hexagon {
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-}
-
-/* Pointy Top Hexagon */
-.hexagon-pointy {
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 
-/* Rounded Hexagon (for buttons) */
-.hexagon-rounded {
+.hexagon-flat {
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-  border-radius: 8px;
 }
 
-/* Hexagon with border effect */
 .hexagon-border {
   position: relative;
 }
@@ -102,56 +84,22 @@ body {
 .hexagon-border::before {
   content: '';
   position: absolute;
-  inset: -3px;
-  background: linear-gradient(135deg, var(--primary), #FF9A33);
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  inset: -2px;
+  background: var(--primary);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   z-index: -1;
 }
 
-/* Category Border Colors */
-.hexagon-border-featured::before { background: var(--category-featured); }
-.hexagon-border-pros::before { background: var(--category-pros); }
-.hexagon-border-schedules::before { background: var(--category-schedules); }
-.hexagon-border-messages::before { background: var(--category-messages); }
-.hexagon-border-market::before { background: var(--category-market); }
-.hexagon-border-analytics::before { background: var(--category-analytics); }
-
 /* ============================================
-   Honeycomb Grid Layout
-   ============================================ */
-
-.honeycomb-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-.honeycomb-row {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.honeycomb-row:nth-child(even) {
-  margin-top: -2rem;
-  margin-left: 5rem;
-}
-
-/* ============================================
-   Card & Surface Styles
+   Card Styles
    ============================================ */
 
 .card-surface {
   @apply bg-[var(--surface)] border border-[var(--border)];
-  box-shadow: var(--shadow-lg);
 }
 
-.card-hex {
-  @apply bg-[var(--surface)];
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-  box-shadow: var(--shadow-lg);
+.card-surface-dark {
+  @apply bg-[var(--surface-secondary)] border border-[var(--border-light)];
 }
 
 /* ============================================
@@ -159,95 +107,66 @@ body {
    ============================================ */
 
 .btn-primary {
-  @apply bg-[var(--primary)] text-white font-semibold;
+  @apply bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)] transition-colors;
   box-shadow: var(--shadow-glow);
-  transition: all 0.2s;
 }
 
-.btn-primary:hover {
-  @apply bg-[var(--primary-dark)];
-  box-shadow: 0 0 30px rgba(255, 122, 0, 0.5);
-}
-
-.btn-hex {
-  clip-path: polygon(15px 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 15px 100%, 0 50%);
+.btn-secondary {
+  @apply bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-secondary)] transition-colors;
 }
 
 /* ============================================
-   Floating Action Button (FAB)
+   Input Styles
    ============================================ */
 
-.fab-primary {
-  @apply fixed z-50 w-14 h-14 rounded-full bg-[var(--primary)] text-white flex items-center justify-center;
-  box-shadow: 0 4px 20px rgba(255, 122, 0, 0.5);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.fab-primary:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 30px rgba(255, 122, 0, 0.6);
+.input-field {
+  @apply bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)];
+  @apply focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20;
 }
 
 /* ============================================
-   Navigation Bar
+   Navigation Styles
    ============================================ */
-
-.nav-floating {
-  @apply fixed bottom-4 left-4 right-4 bg-[var(--surface)] rounded-2xl;
-  box-shadow: var(--shadow-xl);
-}
 
 .nav-item {
-  @apply flex flex-col items-center justify-center py-2 px-3 text-[var(--text-muted)] transition-colors;
+  @apply text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors;
 }
 
 .nav-item-active {
-  @apply text-[var(--primary)];
+  @apply text-[var(--primary)] bg-[var(--primary)]/10;
 }
 
 /* ============================================
-   Avatar Hexagon
+   Badge Styles
    ============================================ */
 
-.avatar-hex {
-  position: relative;
-  display: inline-flex;
+.badge-primary {
+  @apply bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20;
 }
 
-.avatar-hex-border {
-  position: absolute;
-  inset: -4px;
-  background: linear-gradient(135deg, var(--primary), #FF9A33);
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+.badge-success {
+  @apply bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/20;
 }
 
-.avatar-hex-inner {
-  position: relative;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  overflow: hidden;
+.badge-warning {
+  @apply bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/20;
+}
+
+.badge-error {
+  @apply bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]/20;
 }
 
 /* ============================================
-   Stats Hexagon (Admin Dashboard)
+   Progress Bar
    ============================================ */
 
-.stat-hex {
-  position: relative;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  @apply bg-[var(--surface)] flex flex-col items-center justify-center text-center p-6;
-  box-shadow: var(--shadow-lg);
+.progress-bar {
+  @apply bg-[var(--surface-secondary)] rounded-full overflow-hidden;
 }
 
-.stat-hex-dark {
-  @apply bg-[var(--surface-secondary)];
-}
-
-/* ============================================
-   Sparkline Chart Container
-   ============================================ */
-
-.sparkline-container {
-  @apply w-16 h-8 opacity-50;
+.progress-fill {
+  @apply bg-[var(--primary)] h-full rounded-full;
+  box-shadow: var(--shadow-glow);
 }
 
 /* ============================================
@@ -272,6 +191,7 @@ body {
   background: var(--text-muted);
 }
 
+/* Hide scrollbar utility */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -295,33 +215,12 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 15px rgba(255, 122, 0, 0.3); }
-  50% { box-shadow: 0 0 30px rgba(255, 122, 0, 0.6); }
+  0%, 100% { box-shadow: 0 0 10px rgba(236, 127, 19, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(236, 127, 19, 0.5); }
 }
 
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
-}
-
-@keyframes hex-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ============================================
-   Portfolio Honeycomb Mosaic
-   ============================================ */
-
-.portfolio-mosaic {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  padding: 1rem;
-}
-
-.portfolio-mosaic-row-offset {
-  margin-left: 3rem;
-  grid-template-columns: repeat(2, 1fr);
 }
 
 /* ============================================
@@ -334,20 +233,4 @@ body {
 
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* ============================================
-   Trend Indicators
-   ============================================ */
-
-.trend-up {
-  @apply text-[var(--success)];
-}
-
-.trend-down {
-  @apply text-[var(--error)];
-}
-
-.trend-neutral {
-  @apply text-[var(--text-muted)];
 }
