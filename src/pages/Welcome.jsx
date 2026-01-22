@@ -182,7 +182,7 @@ export default function Welcome() {
       {/* Footer */}
       <div className="py-6 text-center">
         <p className="text-[#64748B] text-sm">
-          © 2026 Eos. Todos os direitos reservados.
+          © 2026 KANDU. Todos os direitos reservados.
         </p>
       </div>
     </div>
