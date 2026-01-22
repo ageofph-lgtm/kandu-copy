@@ -1,0 +1,236 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   KANDU Theme - Honeycomb Design System
+   ============================================ */
+
+@layer base {
+  :root {
+    /* Primary Colors */
+    --primary: #ec7f13;
+    --primary-dark: #d66e0a;
+    --primary-light: #ff9a3c;
+    
+    /* Light Theme */
+    --background: #f8f7f6;
+    --background-secondary: #f3f4f6;
+    --surface: #ffffff;
+    --surface-secondary: #f9fafb;
+    --border: #e5e7eb;
+    --border-light: #f3f4f6;
+    
+    /* Text Colors - Light */
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    
+    /* Semantic Colors */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-glow: 0 0 15px rgba(236, 127, 19, 0.3);
+  }
+
+  .dark {
+    /* Dark Theme */
+    --background: #221910;
+    --background-secondary: #1a1310;
+    --surface: #2d241c;
+    --surface-secondary: #3a2e24;
+    --border: #54473b;
+    --border-light: #3a2e24;
+    
+    /* Text Colors - Dark */
+    --text-primary: #ffffff;
+    --text-secondary: #b9ab9d;
+    --text-muted: #8e857e;
+  }
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+body {
+  @apply bg-[var(--background)] text-[var(--text-primary)] antialiased;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ============================================
+   Hexagon Utilities
+   ============================================ */
+
+.hexagon {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.hexagon-flat {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+.hexagon-border {
+  position: relative;
+}
+
+.hexagon-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: var(--primary);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  z-index: -1;
+}
+
+/* ============================================
+   Card Styles
+   ============================================ */
+
+.card-surface {
+  @apply bg-[var(--surface)] border border-[var(--border)];
+}
+
+.card-surface-dark {
+  @apply bg-[var(--surface-secondary)] border border-[var(--border-light)];
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+
+.btn-primary {
+  @apply bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)] transition-colors;
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-secondary {
+  @apply bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-secondary)] transition-colors;
+}
+
+/* ============================================
+   Input Styles
+   ============================================ */
+
+.input-field {
+  @apply bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)];
+  @apply focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20;
+}
+
+/* ============================================
+   Navigation Styles
+   ============================================ */
+
+.nav-item {
+  @apply text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors;
+}
+
+.nav-item-active {
+  @apply text-[var(--primary)] bg-[var(--primary)]/10;
+}
+
+/* ============================================
+   Badge Styles
+   ============================================ */
+
+.badge-primary {
+  @apply bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20;
+}
+
+.badge-success {
+  @apply bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/20;
+}
+
+.badge-warning {
+  @apply bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/20;
+}
+
+.badge-error {
+  @apply bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]/20;
+}
+
+/* ============================================
+   Progress Bar
+   ============================================ */
+
+.progress-bar {
+  @apply bg-[var(--surface-secondary)] rounded-full overflow-hidden;
+}
+
+.progress-fill {
+  @apply bg-[var(--primary)] h-full rounded-full;
+  box-shadow: var(--shadow-glow);
+}
+
+/* ============================================
+   Scrollbar Customization
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ============================================
+   Animation Utilities
+   ============================================ */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(236, 127, 19, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(236, 127, 19, 0.5); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   Safe Area for Mobile
+   ============================================ */
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

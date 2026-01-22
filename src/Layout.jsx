@@ -1,23 +1,18 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { User as UserEntity } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   MapPin,
   MessageCircle,
   User,
   Calendar,
-  LogOut,
-  Settings,
-  MoreVertical,
   FileText,
   Shield,
-  RefreshCw,
-  Languages
+  Bell,
+  Sun,
+  Moon
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { translations } from "@/components/utils/translations";
@@ -45,6 +40,24 @@ export default function Layout({ children }) {
   const location = useLocation();
   const [user, setUser] = useState(null);
   const [unreadNotifications, setUnreadNotifications] = useState({ chat: 0, applications: 0 });
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("kandu-theme") || "dark";
+    }
+    return "dark";
+  });
+
+  // Apply theme to document
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(theme);
+    localStorage.setItem("kandu-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === "light" ? "dark" : "light");
+  };
 
   const t = (key) => {
     return translations[user?.language || 'PT']?.[key] || translations.PT[key] || key;
@@ -64,8 +77,8 @@ export default function Layout({ children }) {
       const chatNotifications = allNotifications.filter(n => n.type === 'new_message');
       
       const applicationNotificationTypes = [
-        'new_application', 'new_proposal', // For employers
-        'job_accepted', 'job_rejected', 'job_ready_for_review' // For workers
+        'new_application', 'new_proposal',
+        'job_accepted', 'job_rejected', 'job_ready_for_review'
       ];
       const applicationNotifications = allNotifications.filter(n =>
         applicationNotificationTypes.includes(n.type)
@@ -107,11 +120,8 @@ export default function Layout({ children }) {
 
   useEffect(() => {
     loadUserAndNotifications();
-    
-    // Configura um intervalo para recarregar notificações periodicamente
-    const intervalId = setInterval(loadUserAndNotifications, 30000); // A cada 30 segundos
-    return () => clearInterval(intervalId); // Limpa o intervalo ao desmontar
-
+    const intervalId = setInterval(loadUserAndNotifications, 30000);
+    return () => clearInterval(intervalId);
   }, [location.pathname, loadUserAndNotifications]);
   
   useEffect(() => {
@@ -120,63 +130,83 @@ export default function Layout({ children }) {
     }
   }, [location.pathname, markApplicationNotificationsAsRead]);
 
-
-  // Se é página de setup, não mostrar layout
-  if (location.pathname === createPageUrl("SetupProfile")) {
+  // Páginas sem layout
+  if (location.pathname === createPageUrl("SetupProfile") || location.pathname === createPageUrl("Welcome")) {
     return children;
   }
 
-  // Determinar itens de navegação baseado no tipo de usuário
   const navItems = user?.user_type === 'admin' ? adminNavigationItems : navigationItems;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)] transition-colors duration-200">
       {/* Sidebar - Desktop */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <div className="flex-1 flex flex-col min-h-0 bg-white border-r border-gray-200">
-          <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-            <div className="flex items-center flex-shrink-0 px-4 mb-8">
-              <h1 className="text-xl font-bold text-blue-600">Eos</h1>
+        <div className="flex-1 flex flex-col min-h-0 bg-[var(--surface)] border-r border-[var(--border)]">
+          {/* Logo */}
+          <div className="flex items-center justify-between px-4 py-6 border-b border-[var(--border)]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[var(--primary)] rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg">K</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-[var(--primary)]">KANDU</h1>
+                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Marketplace</p>
+              </div>
             </div>
-            <nav className="flex-1 px-2 space-y-1">
-              {navItems.map((item) => {
-                const isActive = location.pathname === item.url;
-                return (
-                  <Link
-                    key={`desktop-${item.title}`}
-                    to={item.url}
-                    className={`group flex items-center justify-between px-2 py-2 text-sm font-medium rounded-md transition-colors ${
-                      isActive
-                        ? "bg-blue-100 text-blue-900"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <item.icon className="mr-3 h-6 w-6 text-gray-400" />
-                      {item.title === 'admin' ? 'Administração' : t(item.title)}
-                    </div>
-                    {item.title === 'applications' && unreadNotifications.applications > 0 && (
-                      <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs bg-blue-500">
-                        {unreadNotifications.applications}
-                      </Badge>
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
+            
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="w-9 h-9 rounded-full bg-[var(--surface-secondary)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors"
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
           </div>
-          <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-            <div className="flex items-center">
-              <Avatar>
-                <AvatarFallback className="bg-blue-500 text-white">
-                  {user?.full_name?.charAt(0) || <User className="w-5 h-5" />}
-                </AvatarFallback>
-              </Avatar>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+
+          {/* Navigation */}
+          <nav className="flex-1 px-3 py-4 space-y-1">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.url;
+              return (
+                <Link
+                  key={`desktop-${item.title}`}
+                  to={item.url}
+                  className={`group flex items-center justify-between px-3 py-3 text-sm font-medium rounded-xl transition-all ${
+                    isActive
+                      ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--surface-secondary)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className={`w-5 h-5 ${isActive ? "text-[var(--primary)]" : ""}`} />
+                    {item.title === 'admin' ? 'Administração' : t(item.title)}
+                  </div>
+                  {item.title === 'applications' && unreadNotifications.applications > 0 && (
+                    <span className="h-5 min-w-5 px-1.5 flex items-center justify-center text-xs font-bold bg-[var(--primary)] text-white rounded-full">
+                      {unreadNotifications.applications}
+                    </span>
+                  )}
+                  {item.title === 'chat' && unreadNotifications.chat > 0 && (
+                    <span className="h-5 min-w-5 px-1.5 flex items-center justify-center text-xs font-bold bg-red-500 text-white rounded-full">
+                      {unreadNotifications.chat}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* User Info */}
+          <div className="flex-shrink-0 border-t border-[var(--border)] p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[var(--primary)] flex items-center justify-center text-white font-bold">
+                {user?.full_name?.charAt(0) || <User className="w-5 h-5" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                   {user?.full_name || user?.email}
                 </p>
-                <p className="text-xs font-medium text-gray-500">{user?.user_type}</p>
+                <p className="text-xs text-[var(--text-muted)] capitalize">{user?.user_type}</p>
               </div>
             </div>
           </div>
@@ -185,40 +215,74 @@ export default function Layout({ children }) {
 
       {/* Main content */}
       <div className="md:pl-64 flex flex-col flex-1">
+        {/* Mobile Header */}
+        <header className="md:hidden sticky top-0 z-50 bg-[var(--surface)]/95 backdrop-blur-md border-b border-[var(--border)] px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-[var(--primary)] rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">K</span>
+              </div>
+              <span className="text-lg font-bold text-[var(--primary)]">KANDU</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                className="w-9 h-9 rounded-full bg-[var(--surface-secondary)] flex items-center justify-center text-[var(--text-secondary)]"
+              >
+                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+              
+              <button className="relative w-9 h-9 rounded-full bg-[var(--surface-secondary)] flex items-center justify-center text-[var(--text-secondary)]">
+                <Bell className="w-4 h-4" />
+                {(unreadNotifications.chat + unreadNotifications.applications) > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-[var(--primary)] rounded-full" />
+                )}
+              </button>
+            </div>
+          </div>
+        </header>
+
         <main className="flex-1 pb-20 md:pb-0">
           {children}
         </main>
       </div>
 
-      {/* --- Barra de Navegação Inferior (Mobile) --- */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t p-2 md:hidden grid grid-cols-6 gap-1 z-50 shadow-t">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.url;
-          return (
-            <Link
-              key={`mobile-${item.title}`}
-              to={item.url}
-              className={`flex flex-col items-center justify-center w-full h-14 rounded-lg transition-colors ${
-                isActive ? 'text-blue-600 bg-blue-50' : 'text-gray-500'
-              }`}
-            >
-              <div className="relative">
-                <item.icon className="w-6 h-6" />
-                {item.title === 'chat' && unreadNotifications.chat > 0 && (
-                  <Badge className="absolute -top-1 -right-2 h-4 w-4 p-0 flex items-center justify-center text-xs bg-red-500">
-                    {unreadNotifications.chat > 9 ? '9+' : unreadNotifications.chat}
-                  </Badge>
-                )}
-                {item.title === 'applications' && unreadNotifications.applications > 0 && (
-                  <Badge className="absolute -top-1 -right-2 h-4 w-4 p-0 flex items-center justify-center text-xs bg-blue-500">
-                    {unreadNotifications.applications > 9 ? '9+' : unreadNotifications.applications}
-                  </Badge>
-                )}
-              </div>
-              <span className="text-xs mt-1">{item.title === 'admin' ? 'Admin' : t(item.title)}</span>
-            </Link>
-          );
-        })}
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-[var(--surface)]/95 backdrop-blur-md border-t border-[var(--border)] md:hidden z-50 safe-area-bottom">
+        <div className="grid grid-cols-5 gap-1 px-2 py-2">
+          {navItems.slice(0, 5).map((item) => {
+            const isActive = location.pathname === item.url;
+            return (
+              <Link
+                key={`mobile-${item.title}`}
+                to={item.url}
+                className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all ${
+                  isActive 
+                    ? 'text-[var(--primary)] bg-[var(--primary)]/10' 
+                    : 'text-[var(--text-muted)]'
+                }`}
+              >
+                <div className="relative">
+                  <item.icon className="w-5 h-5" />
+                  {item.title === 'chat' && unreadNotifications.chat > 0 && (
+                    <span className="absolute -top-1 -right-2 h-4 min-w-4 px-1 flex items-center justify-center text-[10px] font-bold bg-red-500 text-white rounded-full">
+                      {unreadNotifications.chat > 9 ? '9+' : unreadNotifications.chat}
+                    </span>
+                  )}
+                  {item.title === 'applications' && unreadNotifications.applications > 0 && (
+                    <span className="absolute -top-1 -right-2 h-4 min-w-4 px-1 flex items-center justify-center text-[10px] font-bold bg-[var(--primary)] text-white rounded-full">
+                      {unreadNotifications.applications > 9 ? '9+' : unreadNotifications.applications}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[10px] mt-1 font-medium">
+                  {item.title === 'admin' ? 'Admin' : t(item.title)}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
     </div>
   );
