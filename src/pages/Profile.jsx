@@ -1,43 +1,34 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { User } from "@/entities/User";
 import { UploadFile } from "@/integrations/Core";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  ArrowLeft,
+  MoreVertical,
+  MessageSquare,
+  Bookmark,
+  Star,
+  Check,
+  Loader2,
+  Home,
+  Search,
+  Plus,
+  User as UserIcon,
+  Camera,
+  LogOut,
+  RefreshCw,
+  Edit2
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  User as UserIcon,
-  Shield,
-  Star,
-  Phone,
-  Mail,
-  MapPin,
-  Edit2,
-  Settings,
-  Camera,
-  FileText,
-  Image as ImageIcon,
-  Award,
-  Languages,
-  MoreVertical,
-  LogOut,
-  RefreshCw,
-  Loader2
-} from "lucide-react";
 
 import ProfileForm from "../components/profile/ProfileForm";
-import PortfolioGallery from "../components/profile/PortfolioGallery";
-import DocumentsList from "../components/profile/DocumentsList";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -55,7 +46,6 @@ export default function Profile() {
     try {
       const userData = await User.me();
       setUser(userData);
-
       if (!userData.user_type) {
         setIsEditing(true);
       }
@@ -70,17 +60,14 @@ export default function Profile() {
       await User.updateMyUserData(profileData);
       await loadUser();
       setIsEditing(false);
-      alert("Perfil atualizado com sucesso!");
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Erro ao atualizar perfil");
     }
   };
 
   const handleAvatarUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
     setIsUploading(true);
     try {
       const { file_url } = await UploadFile({ file });
@@ -88,7 +75,6 @@ export default function Profile() {
       await loadUser();
     } catch (error) {
       console.error("Error uploading avatar:", error);
-      alert("Erro ao enviar a imagem.");
     } finally {
       setIsUploading(false);
     }
@@ -99,7 +85,6 @@ export default function Profile() {
       await User.logout();
       window.location.href = createPageUrl("SetupProfile");
     } catch (error) {
-      console.error("Error logging out:", error);
       window.location.href = createPageUrl("SetupProfile");
     }
   };
@@ -115,22 +100,22 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <Settings className="w-12 h-12 mx-auto mb-3 text-gray-400 animate-spin" />
-          <p className="text-gray-500">A carregar perfil...</p>
-        </div>
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-[#F26522] animate-spin" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
         <div className="text-center">
           <UserIcon className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-          <p className="text-gray-500">Não autenticado</p>
-          <Button className="mt-3" onClick={() => User.loginWithRedirect(window.location.href)}>
+          <p className="text-gray-500 mb-4">Não autenticado</p>
+          <Button 
+            className="bg-[#F26522] hover:bg-orange-600"
+            onClick={() => User.loginWithRedirect(window.location.href)}
+          >
             Fazer Login
           </Button>
         </div>
@@ -140,7 +125,7 @@ export default function Profile() {
 
   if (isEditing) {
     return (
-      <div className="p-4 max-w-2xl mx-auto">
+      <div className="p-4 max-w-md mx-auto bg-[#F8FAFC] min-h-screen">
         <ProfileForm
           user={user}
           onSave={handleSave}
@@ -151,8 +136,34 @@ export default function Profile() {
     );
   }
 
+  const specialties = user.skills || ["Pintura", "Elétrica", "Encanamento", "Alvenaria", "Pisos", "Telhados"];
+  
+  const portfolioImages = user.portfolio_images || [
+    "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=200&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1541123603104-512919d6a96c?w=200&h=200&fit=crop",
+  ];
+
+  const specIcons = {
+    "Pintura": "🎨",
+    "Elétrica": "⚡",
+    "Eletricidade": "⚡",
+    "Encanamento": "🔧",
+    "Canalização": "🔧",
+    "Alvenaria": "🧱",
+    "Pisos": "🏠",
+    "Pavimentos": "🏠",
+    "Telhados": "🏗️",
+    "Carpintaria": "🪚",
+    "Climatização": "❄️",
+    "Isolamentos": "🧱",
+    "Ladrilhador": "🔲",
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] pb-24">
       <input
         type="file"
         ref={avatarInputRef}
@@ -160,202 +171,254 @@ export default function Profile() {
         className="hidden"
         accept="image/*"
       />
-      {/* Mobile Header */}
-      <div className="bg-white border-b">
-        {/* Profile Header */}
-        <div className="relative">
-          {/* Cover Photo Placeholder */}
-          <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600"></div>
 
-          {/* Profile Info */}
-          <div className="px-4 pb-4">
-            {/* Avatar */}
-            <div className="relative -mt-12 mb-4 w-fit">
-              <Avatar className="w-24 h-24 border-4 border-white">
-                <AvatarImage src={user.avatar_url} alt={user.full_name} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl font-bold">
-                  {isUploading ? <Loader2 className="w-8 h-8 animate-spin" /> : (user.full_name?.charAt(0) || <UserIcon className="w-12 h-12" />)}
-                </AvatarFallback>
-              </Avatar>
-              <Button
-                size="icon"
-                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white border-2"
-                onClick={() => avatarInputRef.current?.click()}
-                disabled={isUploading}
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200 px-4 py-3 flex justify-between items-center">
+        <button 
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-[#1E293B]" />
+        </button>
+        <h1 className="text-lg font-bold tracking-tight">Perfil Profissional</h1>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+              <MoreVertical className="w-5 h-5 text-[#1E293B]" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setIsEditing(true)}>
+              <Edit2 className="w-4 h-4 mr-2" />
+              Editar Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleChangeProfile}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Trocar Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </header>
+
+      <main className="max-w-md mx-auto px-4 pt-6">
+        {/* Profile Card */}
+        <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center mb-8">
+          {/* Hexagon Avatar */}
+          <div className="relative w-32 h-36 mb-4 group">
+            {/* Glow effect */}
+            <div 
+              className="absolute inset-0 bg-gradient-to-br from-[#F26522] to-orange-600 opacity-20"
+              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)', transform: 'scale(1.05)' }}
+            />
+            {/* Border */}
+            <div 
+              className="absolute inset-0 bg-gradient-to-br from-[#F26522] to-orange-600"
+              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+            />
+            {/* Image container */}
+            <div 
+              className="absolute inset-[3px] bg-gray-200 overflow-hidden flex items-center justify-center"
+              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+            >
+              {isUploading ? (
+                <Loader2 className="w-8 h-8 text-[#F26522] animate-spin" />
+              ) : user.avatar_url ? (
+                <img 
+                  src={user.avatar_url}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#F26522] to-orange-600 flex items-center justify-center text-white text-4xl font-bold">
+                  {user.full_name?.charAt(0) || "U"}
+                </div>
+              )}
+            </div>
+            {/* Camera button */}
+            <button 
+              onClick={() => avatarInputRef.current?.click()}
+              className="absolute bottom-1 right-1 bg-white text-[#1E293B] rounded-full p-1.5 border-2 border-white shadow-md hover:bg-gray-100 transition-colors z-20"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+            {/* Verified badge */}
+            {user.verified && (
+              <div className="absolute bottom-2 left-2 bg-green-500 text-white rounded-full p-1 border-2 border-white shadow-sm z-20">
+                <Check className="w-3 h-3" />
+              </div>
+            )}
+          </div>
+
+          <h2 className="text-2xl font-bold text-[#1E293B] mb-1">
+            {user.full_name || "Nome não definido"}
+          </h2>
+          <p className="text-[#F26522] font-semibold text-sm uppercase tracking-wider mb-3 flex items-center gap-1">
+            <Check className="w-4 h-4" /> 
+            {user.user_type === 'worker' ? 'Profissional Certificado' : 'Empregador Verificado'}
+          </p>
+
+          {/* Stats */}
+          <div className="flex items-center gap-6 mb-6 w-full justify-center">
+            <div className="text-center">
+              <div className="flex items-center justify-center text-yellow-400 font-bold text-lg">
+                <span>{user.rating || '4.9'}</span>
+                <Star className="w-4 h-4 ml-1 fill-yellow-400" />
+              </div>
+              <span className="text-xs text-[#64748B]">{user.reviews_count || '128'} Avaliações</span>
+            </div>
+            <div className="h-8 w-px bg-gray-200"></div>
+            <div className="text-center">
+              <div className="font-bold text-lg text-[#1E293B]">{user.success_rate || '98'}%</div>
+              <span className="text-xs text-[#64748B]">Taxa de Sucesso</span>
+            </div>
+            <div className="h-8 w-px bg-gray-200"></div>
+            <div className="text-center">
+              <div className="font-bold text-lg text-[#1E293B]">{user.years_experience || '7'}+</div>
+              <span className="text-xs text-[#64748B]">Anos Exp.</span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 w-full">
+            <Button 
+              onClick={() => setIsEditing(true)}
+              className="flex-1 bg-[#F26522] hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-orange-500/20"
+            >
+              <MessageSquare className="w-5 h-5 mr-2" />
+              Mensagem
+            </Button>
+            <button className="bg-gray-100 text-[#1E293B] p-3 rounded-xl hover:bg-gray-200 transition-colors">
+              <Bookmark className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Specialties Section */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-[#1E293B]">Especialidades</h2>
+            <button className="text-sm text-[#F26522] font-medium hover:underline">Ver todas</button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {specialties.map((spec, idx) => (
+              <div
+                key={idx}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                style={{ 
+                  clipPath: 'polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%)',
+                  padding: '8px 20px'
+                }}
               >
-                <Camera className="w-4 h-4 text-gray-600" />
-              </Button>
-            </div>
-
-            {/* Name and Type */}
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  {user.full_name || "Nome não definido"}
-                </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge className={
-                    user.user_type === 'worker'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-purple-100 text-purple-800'
-                  }>
-                    {user.user_type === 'worker' ? 'Profissional' : 'Empregador'}
-                  </Badge>
-                  {user.verified && (
-                    <Shield className="w-4 h-4 text-green-500" />
-                  )}
-                </div>
+                <span>{specIcons[spec] || "🔧"}</span> {spec}
               </div>
-
-              <div className="flex items-center gap-1">
-                <Button size="sm" variant="outline" className="hidden md:flex" onClick={() => setIsEditing(true)}>
-                  <Edit2 className="w-4 h-4 mr-1" />
-                  Editar
-                </Button>
-
-                {/* --- Mobile Menu --- */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="icon" variant="ghost">
-                      <MoreVertical className="w-5 h-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="md:hidden" onClick={() => setIsEditing(true)}>
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      Editar Perfil
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleChangeProfile}>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Trocar Perfil
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sair
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
-            {/* Bio */}
-            {user.bio && (
-              <p className="text-gray-600 text-sm mb-3">{user.bio}</p>
-            )}
-
-            {/* Contact Info Grid */}
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              {user.city && (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-4 h-4" />
-                  <span>{user.city}</span>
-                </div>
-              )}
-              {user.phone && (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Phone className="w-4 h-4" />
-                  <span>{user.phone}</span>
-                </div>
-              )}
-              {user.email && (
-                <div className="flex items-center gap-2 text-gray-600 col-span-2">
-                  <Mail className="w-4 h-4" />
-                  <span>{user.email}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Rating (for workers AND employers) */}
-            {(user.user_type === 'worker' || user.user_type === 'employer') && (
-              <div className="flex items-center justify-center gap-4 mt-4 p-3 bg-gray-50 rounded-lg">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    <span className="font-bold">{user.rating || '0.0'}</span>
-                  </div>
-                  <span className="text-xs text-gray-500">Avaliação</span>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-blue-600">{user.xp || 0}</div>
-                  <span className="text-xs text-gray-500">XP</span>
-                </div>
-                {user.company && user.user_type === 'employer' && (
-                  <div className="text-center">
-                    <div className="font-bold text-purple-600 truncate max-w-24">{user.company}</div>
-                    <span className="text-xs text-gray-500">Empresa</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Skills (for workers) */}
-      {user.user_type === 'worker' && user.skills && user.skills.length > 0 && (
-        <div className="bg-white border-b p-4">
-          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <Award className="w-4 h-4" />
-            Competências
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {user.skills.map((skill, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
-                {skill}
-              </Badge>
             ))}
           </div>
-        </div>
-      )}
+        </section>
 
-      {/* Service Areas */}
-      {user.service_areas && user.service_areas.length > 0 && (
-        <div className="bg-white border-b p-4">
-          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <MapPin className="w-4 h-4" />
-            Áreas de Atuação
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {user.service_areas.map((area, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {area}
-              </Badge>
+        {/* About Section */}
+        <section className="mb-8">
+          <h2 className="text-lg font-bold text-[#1E293B] mb-3">Sobre</h2>
+          <p className="text-[#64748B] leading-relaxed text-sm">
+            {user.bio || "Profissional dedicado com vasta experiência em reformas residenciais e comerciais. Foco na qualidade do acabamento e cumprimento rigoroso de prazos. Especialista em resolver problemas complexos de elétrica e hidráulica."}
+          </p>
+        </section>
+
+        {/* Portfolio Section */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-[#1E293B]">Portfólio Recente</h2>
+            <span className="text-sm text-[#64748B]">{portfolioImages.length} Projetos</span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {portfolioImages.slice(0, 5).map((img, idx) => (
+              <div 
+                key={idx}
+                className="relative w-[100px] h-[110px] shadow-sm overflow-hidden group"
+                style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+              >
+                <img 
+                  src={img}
+                  alt={`Portfolio ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+              </div>
             ))}
           </div>
+        </section>
+
+        {/* Reviews Section */}
+        <section className="mb-8">
+          <h2 className="text-lg font-bold text-[#1E293B] mb-4">Avaliações</h2>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                  <img 
+                    alt="Reviewer" 
+                    className="w-full h-full object-cover"
+                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face"
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-[#1E293B]">Ana Souza</p>
+                  <p className="text-xs text-[#64748B]">Há 2 dias</p>
+                </div>
+              </div>
+              <div className="flex text-yellow-400 text-sm">
+                {[1,2,3,4,5].map(i => (
+                  <Star key={i} className="w-4 h-4 fill-yellow-400" />
+                ))}
+              </div>
+            </div>
+            <p className="text-sm text-[#1E293B] mt-2">
+              "O Carlos fez um trabalho excelente na pintura do meu apartamento. Muito cuidadoso com a mobília e o acabamento ficou perfeito. Recomendo!"
+            </p>
+          </div>
+        </section>
+      </main>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 w-full bg-white border-t border-gray-200 pt-2 px-6 pb-6 z-50">
+        <div className="flex justify-between items-center max-w-md mx-auto h-16">
+          <button 
+            onClick={() => navigate(createPageUrl("Dashboard"))}
+            className="flex flex-col items-center justify-center text-[#64748B] hover:text-[#F26522] transition-colors"
+          >
+            <Home className="w-6 h-6" />
+            <span className="text-[10px] mt-1 font-medium">Início</span>
+          </button>
+          <button className="flex flex-col items-center justify-center text-[#64748B] hover:text-[#F26522] transition-colors">
+            <Search className="w-6 h-6" />
+            <span className="text-[10px] mt-1 font-medium">Buscar</span>
+          </button>
+          <div className="relative -top-6">
+            <button 
+              onClick={() => navigate(createPageUrl("NewJob"))}
+              className="w-14 h-14 bg-[#F26522] text-white rounded-xl rotate-45 flex items-center justify-center shadow-lg shadow-[#F26522]/40 transition-transform active:scale-95"
+            >
+              <Plus className="-rotate-45 w-8 h-8" />
+            </button>
+          </div>
+          <button 
+            onClick={() => navigate(createPageUrl("Chat"))}
+            className="flex flex-col items-center justify-center text-[#64748B] hover:text-[#F26522] transition-colors"
+          >
+            <MessageSquare className="w-6 h-6" />
+            <span className="text-[10px] mt-1 font-medium">Chat</span>
+          </button>
+          <button className="flex flex-col items-center justify-center text-[#F26522] transition-colors">
+            <UserIcon className="w-6 h-6" />
+            <span className="text-[10px] mt-1 font-medium">Perfil</span>
+          </button>
         </div>
-      )}
+      </nav>
 
-      {/* Tabs Content */}
-      <div className="flex-1">
-        <Tabs defaultValue="portfolio" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-white border-b">
-            <TabsTrigger value="portfolio" className="flex items-center gap-2">
-              <ImageIcon className="w-4 h-4" />
-              Portfólio
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Documentos
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="portfolio" className="p-4">
-            <PortfolioGallery
-              images={user.portfolio_images || []}
-              onUpdate={loadUser}
-              canEdit={true}
-            />
-          </TabsContent>
-
-          <TabsContent value="documents" className="p-4">
-            <DocumentsList
-              documents={user.documents || []}
-              onUpdate={loadUser}
-              canEdit={true}
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
+      <div className="h-24"></div>
     </div>
   );
 }
