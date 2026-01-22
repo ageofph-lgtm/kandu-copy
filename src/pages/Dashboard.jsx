@@ -1,34 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Plus, Loader2, RefreshCcw, MapPin, Briefcase, Calendar, MessageCircle, SlidersHorizontal } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import MapView from "../components/dashboard/MapView";
-import JobModal from "../components/dashboard/JobModal";
 import { translations } from "../components/utils/translations";
-
-const LISBON_COORDS = [38.7223, -9.1393];
+import { Search, Bell, Loader2, MapPin, Calendar, MessageCircle, Briefcase, Plus, FileText, ChevronRight } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedJob, setSelectedJob] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [radius, setRadius] = useState(10000);
-  const [isCreatingSamples, setIsCreatingSamples] = useState(false);
 
   const t = (key) => {
     return translations[user?.language || 'PT']?.[key] || translations.PT[key] || key;
   };
-
-  const categories = ["all", "Pintura", "Eletricidade", "Canalização", "Alvenaria", "Ladrilhador", "Carpintaria", "Climatização", "Isolamentos", "Pavimentos", "Telhados"];
 
   const loadUserAndJobs = React.useCallback(async () => {
     setLoading(true);
@@ -43,7 +29,6 @@ export default function Dashboard() {
 
       const jobList = await Job.list("-created_date");
       setJobs(jobList);
-      setFilteredJobs(jobList);
     } catch (error) {
       console.error("Error loading data:", error);
       if (error.response?.status === 401 || error.message?.includes('401')) {
@@ -57,125 +42,11 @@ export default function Dashboard() {
     loadUserAndJobs();
   }, [loadUserAndJobs]);
 
-  const filterJobs = React.useCallback(() => {
-    let filtered = jobs.filter((job) => {
-      if (selectedCategory !== "all" && job.category !== selectedCategory) return false;
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        return job.title.toLowerCase().includes(term) ||
-        job.location.toLowerCase().includes(term) ||
-        job.description.toLowerCase().includes(term);
-      }
-      return true;
-    });
-    setFilteredJobs(filtered);
-  }, [jobs, searchTerm, selectedCategory]);
-
-  useEffect(() => {
-    filterJobs();
-  }, [filterJobs]);
-
-  const handleJobClick = async (job) => {
-    if (!user) return;
-    try {
-      await Job.update(job.id, { views: (job.views || 0) + 1 });
-      const updatedJob = { ...job, views: (job.views || 0) + 1 };
-      setSelectedJob(updatedJob);
-    } catch (error) {
-      console.error("Error updating job views:", error);
-      setSelectedJob(job);
-    }
-  };
-
-  const getCenter = () => {
-    if (user && user.latitude && user.longitude) {
-      return [user.latitude, user.longitude];
-    }
-    return LISBON_COORDS;
-  };
-
-  const handleDeleteJob = async (jobId) => {
-    if (!window.confirm("Tem a certeza que quer apagar esta obra? Esta ação é irreversível.")) {
-      return;
-    }
-    try {
-      await Job.delete(jobId);
-      alert("Obra apagada com sucesso.");
-      setSelectedJob(null);
-      loadUserAndJobs();
-    } catch (error) {
-      console.error("Error deleting job:", error);
-      alert("Ocorreu um erro ao apagar a obra.");
-    }
-  };
-
-  const createSampleJobs = async () => {
-    if (!user || user.user_type !== 'employer' && user.user_type !== 'admin') {
-      alert("Apenas empregadores ou administradores podem criar obras de exemplo.");
-      return;
-    }
-    setIsCreatingSamples(true);
-    try {
-      const sampleJobs = [
-        {
-          title: "Pintar fachada de prédio - Avenidas Novas",
-          category: "Pintura",
-          description: "Pintura completa da fachada de um prédio de 4 andares. Necessário andaimes. Cor a manter.",
-          location: "Lisboa - Avenidas Novas", latitude: 38.736, longitude: -9.153,
-          price_type: "fixed", price: 5500, status: "open", employer_id: user.id, views: 0, urgency: "low"
-        },
-        {
-          title: "Instalar quadro elétrico novo - Baixa",
-          category: "Eletricidade",
-          description: "Substituição de quadro elétrico antigo por um novo, com disjuntores modernos, em apartamento T2.",
-          location: "Lisboa - Baixa", latitude: 38.71, longitude: -9.138,
-          price_type: "fixed", price: 750, status: "open", employer_id: user.id, views: 0, urgency: "high"
-        },
-        {
-          title: "Remodelação completa de WC - Estrela",
-          category: "Canalização",
-          description: "Remodelação total de casa de banho com 5m². Inclui nova canalização, colocação de sanita, base de duche, e lavatório.",
-          location: "Lisboa - Estrela", latitude: 38.712, longitude: -9.16,
-          price_type: "fixed", price: 2800, status: "open", employer_id: user.id, views: 0, urgency: "medium"
-        },
-        {
-          title: "Montar cozinha de IKEA",
-          category: "Carpintaria",
-          description: "Montagem completa de móveis de cozinha da IKEA. Todos os módulos já estão no local.",
-          location: "Lisboa - Campo de Ourique", latitude: 38.7191, longitude: -9.1674,
-          price_type: "fixed", price: 400, status: "open", employer_id: user.id, views: 0, urgency: "medium"
-        }
-      ];
-
-      await Job.bulkCreate(sampleJobs);
-      alert("Obras de exemplo criadas com sucesso!");
-      await loadUserAndJobs();
-    } catch (error) {
-      console.error("Erro a criar obras de exemplo:", error);
-      alert("Ocorreu um erro ao criar as obras de exemplo.");
-    } finally {
-      setIsCreatingSamples(false);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-[var(--background)]">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)]">
         <Loader2 className="w-12 h-12 text-[var(--primary)] animate-spin mb-4" />
         <p className="text-[var(--text-secondary)]">A carregar...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-[var(--background)]">
-        <div className="text-center">
-          <p className="text-[var(--text-secondary)] mb-4">Não autenticado</p>
-          <Button onClick={() => navigate(createPageUrl("SetupProfile"))} className="btn-primary">
-            Ir para Login
-          </Button>
-        </div>
       </div>
     );
   }
@@ -183,86 +54,207 @@ export default function Dashboard() {
   const stats = {
     activeJobs: jobs.filter(j => j.status === 'open').length,
     inProgress: jobs.filter(j => j.status === 'in_progress').length,
-    totalValue: jobs.reduce((sum, j) => sum + (j.price || 0), 0)
+    earnings: jobs.filter(j => j.status === 'completed').reduce((sum, j) => sum + (j.price || 0), 0)
   };
 
+  // Honeycomb navigation items
+  const honeycombItems = [
+    { 
+      icon: "map", 
+      label: "Map View", 
+      color: "text-blue-500",
+      bgColor: "bg-white dark:bg-[var(--surface)]",
+      url: createPageUrl("Dashboard")
+    },
+    { 
+      icon: "calendar_today", 
+      label: "Calendar", 
+      color: "text-purple-500",
+      bgColor: "bg-white dark:bg-[var(--surface)]",
+      url: createPageUrl("Calendar")
+    },
+    { 
+      icon: "work", 
+      label: "Browse Jobs", 
+      color: "text-gray-900",
+      bgColor: "bg-[var(--primary)]",
+      isPrimary: true,
+      url: createPageUrl("MyJobs")
+    },
+    { 
+      icon: "add_circle", 
+      label: "Post a Project", 
+      color: "text-[var(--primary)]",
+      bgColor: "bg-gray-900 dark:bg-white",
+      isDark: true,
+      url: createPageUrl("NewJob")
+    },
+    { 
+      icon: "description", 
+      label: "My Apps", 
+      color: "text-green-500",
+      bgColor: "bg-white dark:bg-[var(--surface)]",
+      url: createPageUrl("Applications")
+    },
+    { 
+      icon: "chat_bubble", 
+      label: "Chat", 
+      color: "text-orange-500",
+      bgColor: "bg-white dark:bg-[var(--surface)]",
+      url: createPageUrl("Chat")
+    }
+  ];
+
+  const recentUpdates = jobs.slice(0, 3);
+
   return (
-    <div className="h-screen flex flex-col bg-[var(--background)]">
-      {/* Search Header */}
-      <div className="bg-[var(--surface)] border-b border-[var(--border)] px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)] w-5 h-5" />
-            <Input 
-              placeholder={t('searchPlaceholder')} 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)} 
-              className="pl-10 h-11 bg-[var(--surface-secondary)] border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)] rounded-xl"
-            />
-          </div>
-          <Button 
-            size="icon" 
-            variant="outline" 
-            className="h-11 w-11 border-[var(--border)] bg-[var(--surface)] rounded-xl"
+    <div className="min-h-screen bg-[var(--background)] relative overflow-hidden">
+      {/* Background blur decorations */}
+      <div className="blur-decoration blur-primary w-64 h-64 top-0 left-0 -translate-x-1/2 -translate-y-1/2" />
+      <div className="blur-decoration blur-blue w-64 h-64 bottom-20 right-0 translate-x-1/2 translate-y-1/2" />
+
+      {/* Header */}
+      <header className="px-6 pt-12 pb-4 flex justify-between items-center relative z-20">
+        <div>
+          <p className="text-sm text-[var(--text-muted)] font-medium">Welcome back,</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+            {user?.full_name || 'Utilizador'}
+          </h1>
+        </div>
+        <div className="relative">
+          <button 
+            onClick={() => navigate(createPageUrl("Notifications"))}
+            className="w-10 h-10 rounded-full bg-[var(--surface)] shadow-sm flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors"
           >
-            <SlidersHorizontal className="w-5 h-5 text-[var(--text-secondary)]" />
-          </Button>
+            <Bell className="w-5 h-5" />
+          </button>
+          <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[var(--background)]" />
+        </div>
+      </header>
+
+      {/* Search */}
+      <div className="px-6 mb-8 relative z-20">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
+          <input 
+            type="text"
+            placeholder="Find professionals or services..."
+            className="w-full py-3 pl-10 pr-4 bg-[var(--surface)] border-none rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-[var(--primary)] text-[var(--text-primary)] placeholder-[var(--text-muted)]"
+          />
+        </div>
+      </div>
+
+      {/* Honeycomb Navigation Grid */}
+      <main className="flex-grow flex flex-col justify-center items-center relative z-10 px-6">
+        <div className="flex flex-col items-center justify-center gap-1 w-full max-w-xs mx-auto">
+          {/* Row 1 */}
+          <div className="flex justify-center gap-4 mb-[-25px]">
+            {honeycombItems.slice(0, 2).map((item, index) => (
+              <Link
+                key={index}
+                to={item.url}
+                className={`hex-wrapper ${item.bgColor} shadow-lg flex flex-col items-center justify-center group ${item.isPrimary ? 'shadow-[var(--primary)]/30' : ''}`}
+              >
+                <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center">
+                  <span className={`material-icons-round text-3xl ${item.color} mb-2 group-hover:scale-110 transition-transform`}>
+                    {item.icon}
+                  </span>
+                  <span className={`text-xs font-semibold leading-tight ${item.isDark ? 'text-white dark:text-gray-900' : 'text-[var(--text-primary)]'}`}>
+                    {item.label}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Row 2 - Main actions */}
+          <div className="flex justify-center gap-4 mb-[-25px]">
+            {honeycombItems.slice(2, 4).map((item, index) => (
+              <Link
+                key={index}
+                to={item.url}
+                className={`hex-wrapper ${item.bgColor} shadow-xl flex flex-col items-center justify-center z-10 group cursor-pointer ${item.isPrimary ? 'shadow-[var(--primary)]/30' : ''}`}
+              >
+                <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center">
+                  <span className={`material-icons-round text-4xl ${item.color} mb-2 group-hover:scale-110 transition-transform`}>
+                    {item.icon}
+                  </span>
+                  <span className={`text-sm font-bold leading-tight ${item.isDark ? 'text-white dark:text-gray-900' : 'text-gray-900'}`}>
+                    {item.label.split(' ').map((word, i) => <span key={i}>{word}<br/></span>)}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Row 3 */}
+          <div className="flex justify-center gap-4">
+            {honeycombItems.slice(4, 6).map((item, index) => (
+              <Link
+                key={index}
+                to={item.url}
+                className={`hex-wrapper ${item.bgColor} shadow-lg flex flex-col items-center justify-center group`}
+              >
+                <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center">
+                  <span className={`material-icons-round text-3xl ${item.color} mb-2 group-hover:scale-110 transition-transform`}>
+                    {item.icon}
+                  </span>
+                  <span className="text-xs font-semibold leading-tight text-[var(--text-primary)]">
+                    {item.label}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
 
-        {/* Category Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto mt-3 pb-1 no-scrollbar">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                selectedCategory === category
-                  ? "bg-[var(--primary)] text-white shadow-lg"
-                  : "bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:bg-[var(--border)]"
-              }`}
+        {/* Helper text */}
+        <p className="text-sm text-[var(--text-muted)] mt-8">
+          Tap a hexagon to navigate
+        </p>
+      </main>
+
+      {/* Stats Cards */}
+      <div className="px-6 mt-8 mb-6 relative z-20">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="stat-card-primary rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="material-icons-round text-gray-900 text-lg">payments</span>
+              <span className="text-xs font-medium text-gray-900/70">Earnings</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">€{stats.earnings.toLocaleString()}</p>
+          </div>
+          <div className="stat-card rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="material-icons-round text-blue-500 text-lg">work</span>
+              <span className="text-xs font-medium text-[var(--text-muted)]">Active Jobs</span>
+            </div>
+            <p className="text-2xl font-bold text-[var(--text-primary)]">{stats.inProgress} Projects</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Updates */}
+      <div className="px-6 pb-24 relative z-20">
+        <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4">Recent Updates</h3>
+        <div className="space-y-3">
+          {recentUpdates.map((job, index) => (
+            <div 
+              key={job.id}
+              className="glass-panel rounded-xl p-4 border border-[var(--border)] flex items-center gap-4"
             >
-              {category === "all" ? t('allCategories') : t(category.toLowerCase()) || category}
-            </button>
+              <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                <Briefcase className="w-6 h-6 text-blue-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-[var(--text-primary)] truncate">{job.title}</h4>
+                <p className="text-sm text-[var(--text-muted)]">{job.location}</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-[var(--text-muted)]" />
+            </div>
           ))}
         </div>
       </div>
-
-      {/* Map View */}
-      <div className="flex-1 relative overflow-hidden">
-        <MapView jobs={filteredJobs} onJobClick={handleJobClick} center={getCenter()} radius={radius} />
-        
-        {/* Floating Action Button */}
-        {(user?.user_type === 'employer' || user?.user_type === 'admin') && (
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
-            <Button 
-              onClick={createSampleJobs} 
-              disabled={isCreatingSamples}
-              className="h-12 px-4 bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] rounded-full shadow-lg hover:bg-[var(--surface-secondary)]"
-            >
-              {isCreatingSamples ? <RefreshCcw className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5 mr-2" />}
-              Exemplos
-            </Button>
-            <Button 
-              onClick={() => navigate(createPageUrl("NewJob"))} 
-              className="h-14 w-14 rounded-full bg-[var(--primary)] text-white shadow-lg hover:bg-[var(--primary-dark)] flex items-center justify-center"
-              style={{ boxShadow: '0 0 20px rgba(236, 127, 19, 0.4)' }}
-            >
-              <Plus className="w-6 h-6" />
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Job Modal */}
-      {selectedJob && (
-        <JobModal
-          job={selectedJob}
-          user={user}
-          onClose={() => setSelectedJob(null)}
-          onApply={() => { setSelectedJob(null); loadUserAndJobs(); }}
-          onDelete={handleDeleteJob}
-        />
-      )}
     </div>
   );
 }

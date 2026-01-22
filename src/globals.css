@@ -3,55 +3,55 @@
 @tailwind utilities;
 
 /* ============================================
-   KANDU Theme - Honeycomb Design System
+   KANDU Theme - Honeycomb Construction Design
    ============================================ */
 
 @layer base {
   :root {
-    /* Primary Colors */
-    --primary: #ec7f13;
-    --primary-dark: #d66e0a;
-    --primary-light: #ff9a3c;
+    /* Primary Colors - Construction Yellow */
+    --primary: #FBBF24;
+    --primary-dark: #D97706;
+    --primary-light: #FCD34D;
     
     /* Light Theme */
-    --background: #f8f7f6;
-    --background-secondary: #f3f4f6;
-    --surface: #ffffff;
-    --surface-secondary: #f9fafb;
-    --border: #e5e7eb;
-    --border-light: #f3f4f6;
+    --background: #F3F4F6;
+    --background-secondary: #E5E7EB;
+    --surface: #FFFFFF;
+    --surface-secondary: #F9FAFB;
+    --border: #E5E7EB;
+    --border-light: #F3F4F6;
     
     /* Text Colors - Light */
-    --text-primary: #1f2937;
-    --text-secondary: #6b7280;
-    --text-muted: #9ca3af;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
     
     /* Semantic Colors */
-    --success: #10b981;
-    --warning: #f59e0b;
-    --error: #ef4444;
-    --info: #3b82f6;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --error: #EF4444;
+    --info: #3B82F6;
     
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    --shadow-glow: 0 0 15px rgba(236, 127, 19, 0.3);
+    --shadow-glow: 0 0 20px rgba(251, 191, 36, 0.3);
   }
 
   .dark {
     /* Dark Theme */
-    --background: #221910;
-    --background-secondary: #1a1310;
-    --surface: #2d241c;
-    --surface-secondary: #3a2e24;
-    --border: #54473b;
-    --border-light: #3a2e24;
+    --background: #111827;
+    --background-secondary: #0F172A;
+    --surface: #1F2937;
+    --surface-secondary: #374151;
+    --border: #374151;
+    --border-light: #1F2937;
     
     /* Text Colors - Dark */
-    --text-primary: #ffffff;
-    --text-secondary: #b9ab9d;
-    --text-muted: #8e857e;
+    --text-primary: #F9FAFB;
+    --text-secondary: #D1D5DB;
+    --text-muted: #9CA3AF;
   }
 }
 
@@ -77,17 +77,35 @@ body {
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
 }
 
-.hexagon-border {
+.hex-wrapper {
   position: relative;
+  width: 130px;
+  height: 140px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  transition: transform 0.2s ease-in-out;
+  cursor: pointer;
 }
 
-.hexagon-border::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  background: var(--primary);
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  z-index: -1;
+.hex-wrapper:active {
+  transform: scale(0.95);
+}
+
+.hex-wrapper:hover {
+  transform: scale(1.02);
+}
+
+/* ============================================
+   Glass Panel Effect
+   ============================================ */
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.dark .glass-panel {
+  background: rgba(31, 41, 55, 0.7);
 }
 
 /* ============================================
@@ -95,11 +113,11 @@ body {
    ============================================ */
 
 .card-surface {
-  @apply bg-[var(--surface)] border border-[var(--border)];
+  @apply bg-[var(--surface)] border border-[var(--border)] shadow-sm;
 }
 
-.card-surface-dark {
-  @apply bg-[var(--surface-secondary)] border border-[var(--border-light)];
+.card-elevated {
+  @apply bg-[var(--surface)] shadow-lg;
 }
 
 /* ============================================
@@ -107,12 +125,20 @@ body {
    ============================================ */
 
 .btn-primary {
-  @apply bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)] transition-colors;
-  box-shadow: var(--shadow-glow);
+  @apply bg-[var(--primary)] text-gray-900 hover:bg-[var(--primary-dark)] transition-colors font-semibold;
+  box-shadow: 0 4px 14px 0 rgba(251, 191, 36, 0.39);
 }
 
 .btn-secondary {
   @apply bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-secondary)] transition-colors;
+}
+
+.btn-dark {
+  @apply bg-gray-900 text-white hover:bg-gray-800 transition-colors;
+}
+
+.dark .btn-dark {
+  @apply bg-white text-gray-900 hover:bg-gray-100;
 }
 
 /* ============================================
@@ -120,8 +146,8 @@ body {
    ============================================ */
 
 .input-field {
-  @apply bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)];
-  @apply focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20;
+  @apply bg-[var(--surface)] border-none text-[var(--text-primary)] placeholder-[var(--text-muted)] shadow-sm;
+  @apply focus:ring-2 focus:ring-[var(--primary)];
 }
 
 /* ============================================
@@ -133,7 +159,7 @@ body {
 }
 
 .nav-item-active {
-  @apply text-[var(--primary)] bg-[var(--primary)]/10;
+  @apply text-[var(--primary)];
 }
 
 /* ============================================
@@ -141,32 +167,36 @@ body {
    ============================================ */
 
 .badge-primary {
-  @apply bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20;
+  @apply bg-[var(--primary)]/20 text-[var(--primary-dark)] font-medium;
 }
 
 .badge-success {
-  @apply bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/20;
+  @apply bg-green-100 text-green-700;
+}
+
+.dark .badge-success {
+  @apply bg-green-900/30 text-green-400;
 }
 
 .badge-warning {
-  @apply bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/20;
+  @apply bg-yellow-100 text-yellow-700;
 }
 
 .badge-error {
-  @apply bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]/20;
+  @apply bg-red-100 text-red-700;
 }
 
 /* ============================================
-   Progress Bar
+   Stat Cards (Honeycomb Style)
    ============================================ */
 
-.progress-bar {
-  @apply bg-[var(--surface-secondary)] rounded-full overflow-hidden;
+.stat-card {
+  @apply bg-[var(--surface)] rounded-2xl p-4 shadow-sm;
 }
 
-.progress-fill {
-  @apply bg-[var(--primary)] h-full rounded-full;
-  box-shadow: var(--shadow-glow);
+.stat-card-primary {
+  @apply bg-[var(--primary)] text-gray-900;
+  box-shadow: 0 4px 14px 0 rgba(251, 191, 36, 0.39);
 }
 
 /* ============================================
@@ -215,8 +245,8 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(236, 127, 19, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(236, 127, 19, 0.5); }
+  0%, 100% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.6); }
 }
 
 .animate-pulse-glow {
@@ -233,4 +263,20 @@ body {
 
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ============================================
+   Blur Background Decorations
+   ============================================ */
+
+.blur-decoration {
+  @apply absolute rounded-full blur-3xl pointer-events-none;
+}
+
+.blur-primary {
+  @apply bg-[var(--primary)]/10;
+}
+
+.blur-blue {
+  @apply bg-blue-500/10;
 }

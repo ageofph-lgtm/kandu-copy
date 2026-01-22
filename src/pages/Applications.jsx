@@ -3,51 +3,48 @@ import { Application } from "@/entities/Application";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, X, Clock, ChevronRight, Loader2, Trophy, Edit, MapPin, Calendar as CalendarIcon } from "lucide-react";
+import { Check, X, Loader2, Trophy, Edit, MapPin, ChevronRight, Bell } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import CompletionModal from "../components/applications/CompletionModal";
 
-function ApplicationCard({ application, job, applicant, employer, onAccept, onDecline, onComplete, userType, currentUser }) {
+function ApplicationCard({ application, job, applicant, employer, onAccept, onDecline, onComplete, userType }) {
   const finalPrice = application.proposed_price || job.price;
+  const displayUser = userType === 'worker' ? employer : applicant;
 
   const getStatusConfig = (status, jobStatus) => {
-    if (jobStatus === 'completed') return { label: 'Finalizado', color: 'bg-blue-500' };
-    if (jobStatus === 'completed_by_employer') return { label: 'Aguarda Avaliação', color: 'bg-[var(--primary)]' };
+    if (jobStatus === 'completed') return { label: 'Completed', color: 'bg-blue-500' };
+    if (jobStatus === 'completed_by_employer') return { label: 'Awaiting Review', color: 'bg-[var(--primary)]' };
     switch(status) {
-      case 'pending': return { label: 'Pendente', color: 'bg-yellow-500' };
-      case 'accepted': return { label: 'Aceite', color: 'bg-green-500' };
-      case 'rejected': return { label: 'Recusada', color: 'bg-red-500' };
-      default: return { label: 'Desconhecido', color: 'bg-gray-500' };
+      case 'pending': return { label: 'Pending Review', color: 'bg-yellow-500' };
+      case 'accepted': return { label: 'Accepted', color: 'bg-green-500' };
+      case 'rejected': return { label: 'Rejected', color: 'bg-red-500' };
+      default: return { label: 'Unknown', color: 'bg-gray-500' };
     }
   };
 
   const statusConfig = getStatusConfig(application.status, job.status);
-  const displayUser = userType === 'worker' ? employer : applicant;
 
   return (
-    <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] overflow-hidden mb-4">
-      {/* Header with image */}
+    <div className="bg-[var(--surface)] rounded-2xl shadow-sm overflow-hidden mb-4">
       <div className="flex gap-4 p-4">
         {/* Hexagonal Image */}
-        <div className="w-20 h-20 flex-shrink-0 relative">
+        <div className="w-20 h-22 flex-shrink-0 relative">
           <div className="w-full h-full hexagon bg-[var(--surface-secondary)] overflow-hidden">
             {job.image_urls?.[0] ? (
               <img src={job.image_urls[0]} alt={job.title} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <MapPin className="w-6 h-6 text-[var(--text-muted)]" />
+                <span className="material-icons-round text-2xl text-[var(--text-muted)]">work</span>
               </div>
             )}
           </div>
-          {/* Chat indicator */}
           {application.status === 'accepted' && (
             <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[var(--primary)] flex items-center justify-center">
-              <span className="text-white text-xs">💬</span>
+              <span className="material-icons-round text-sm text-gray-900">chat_bubble</span>
             </div>
           )}
         </div>
@@ -62,7 +59,7 @@ function ApplicationCard({ application, job, applicant, employer, onAccept, onDe
           </div>
           
           <p className="text-sm text-[var(--text-secondary)] mt-1">
-            {displayUser?.full_name || 'Utilizador'} • {job.location}
+            {displayUser?.full_name || 'User'} • {job.location}
           </p>
 
           {/* Status Badge */}
@@ -72,18 +69,18 @@ function ApplicationCard({ application, job, applicant, employer, onAccept, onDe
               {statusConfig.label}
             </span>
             <span className="text-xs text-[var(--text-muted)]">
-              Aplicado {format(new Date(application.created_date), "d MMM", { locale: pt })}
+              Applied {format(new Date(application.created_date), "d MMM", { locale: pt })}
             </span>
           </div>
         </div>
       </div>
 
       {/* Footer Actions */}
-      <div className="px-4 py-3 border-t border-[var(--border)] bg-[var(--surface-secondary)]">
+      <div className="px-4 py-3 border-t border-[var(--border)] bg-[var(--surface-secondary)]/50">
         {job.start_date && (
           <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-3">
-            <CalendarIcon className="w-4 h-4" />
-            <span>Início: {format(new Date(job.start_date), "d MMM yyyy", { locale: pt })}</span>
+            <span className="material-icons-round text-sm text-[var(--primary)]">event</span>
+            <span>Start: {format(new Date(job.start_date), "MMM d, yyyy", { locale: pt })}</span>
           </div>
         )}
 
@@ -96,41 +93,35 @@ function ApplicationCard({ application, job, applicant, employer, onAccept, onDe
                 className="flex-1 border-[var(--border)] text-[var(--text-secondary)]"
               >
                 <X className="w-4 h-4 mr-2" />
-                Recusar
+                Decline
               </Button>
               <Button 
                 onClick={() => onAccept(application)} 
-                className="flex-1 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white"
+                className="flex-1 btn-primary"
               >
                 <Check className="w-4 h-4 mr-2" />
-                Aceitar
+                Accept
               </Button>
             </div>
           )}
 
           {userType === 'employer' && application.status === 'accepted' && job.status === 'in_progress' && (
-            <Button 
-              onClick={() => onComplete(application, job, applicant)} 
-              className="w-full bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white"
-            >
+            <Button onClick={() => onComplete(application, job, applicant)} className="w-full btn-primary">
               <Trophy className="w-4 h-4 mr-2" />
-              Finalizar e Avaliar
+              Complete & Review
             </Button>
           )}
 
           {userType === 'worker' && job.status === 'completed_by_employer' && application.status === 'accepted' && (
-            <Button 
-              onClick={() => onComplete(application, job, employer)} 
-              className="w-full bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white"
-            >
+            <Button onClick={() => onComplete(application, job, employer)} className="w-full btn-primary">
               <Edit className="w-4 h-4 mr-2" />
-              Avaliar Empregador
+              Review Employer
             </Button>
           )}
 
           {(application.status !== 'pending' && !(userType === 'employer' && job.status === 'in_progress') && !(userType === 'worker' && job.status === 'completed_by_employer')) && (
             <button className="flex items-center gap-2 text-[var(--text-secondary)] text-sm font-medium hover:text-[var(--primary)]">
-              Ver Detalhes
+              View Details
               <ChevronRight className="w-4 h-4" />
             </button>
           )}
@@ -152,25 +143,11 @@ export default function Applications() {
   const [selectedCompletion, setSelectedCompletion] = useState(null);
   const [activeTab, setActiveTab] = useState('pending');
 
-  const markNotificationsAsRead = useCallback(async (currentUser) => {
-    if (!currentUser) return;
-    try {
-      const unreadNotifications = await Notification.filter({ user_id: currentUser.id, is_read: false });
-      const appNotifs = unreadNotifications.filter(n => ['new_application', 'new_proposal', 'job_accepted', 'job_rejected', 'job_completed', 'job_ready_for_review'].includes(n.type));
-      for (const notif of appNotifs) {
-        await Notification.update(notif.id, { is_read: true });
-      }
-    } catch (error) {
-      console.error("Error marking notifications as read:", error);
-    }
-  }, []);
-
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const currentUser = await User.me();
       setUser(currentUser);
-      await markNotificationsAsRead(currentUser);
 
       let applicationsData = [];
       const allJobs = await Job.list("-created_date");
@@ -203,7 +180,7 @@ export default function Applications() {
       setApplicants(finalApplicants); setEmployers(finalEmployers);
     } catch (error) { console.error("Error loading applications:", error); } 
     finally { setLoading(false); }
-  }, [markNotificationsAsRead]);
+  }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -219,13 +196,13 @@ export default function Applications() {
       await Notification.create({
         user_id: app.worker_id,
         type: "job_accepted",
-        title: "🎉 Proposta Aceite!",
-        message: `A sua candidatura para "${job.title}" foi aceite.`,
+        title: "🎉 Proposal Accepted!",
+        message: `Your application for "${job.title}" was accepted.`,
         related_id: app.job_id,
         action_url: createPageUrl("Applications"),
       });
       loadData();
-    } catch(error) { console.error("Erro ao aceitar proposta: ", error); }
+    } catch(error) { console.error("Error:", error); }
   };
   
   const handleDeclineApplication = async (app) => {
@@ -235,13 +212,13 @@ export default function Applications() {
       await Notification.create({
         user_id: app.worker_id,
         type: "job_rejected",
-        title: "❌ Proposta Recusada",
-        message: `A sua candidatura para "${job.title}" foi recusada.`,
+        title: "❌ Proposal Declined",
+        message: `Your application for "${job.title}" was declined.`,
         related_id: app.job_id,
         action_url: createPageUrl("Applications"),
       });
       loadData();
-    } catch(error) { console.error("Erro ao recusar proposta: ", error); }
+    } catch(error) { console.error("Error:", error); }
   };
 
   const handleCompleteJob = (application, job, otherUser) => {
@@ -254,9 +231,9 @@ export default function Applications() {
   const rejectedApplications = applications.filter(app => app.status === 'rejected');
 
   const tabs = [
-    { id: 'pending', label: 'Pendentes', count: pendingApplications.length },
-    { id: 'accepted', label: 'Aceites', count: acceptedApplications.length },
-    { id: 'rejected', label: 'Recusadas', count: rejectedApplications.length }
+    { id: 'pending', label: 'Pending', count: pendingApplications.length },
+    { id: 'accepted', label: 'Accepted', count: acceptedApplications.length },
+    { id: 'rejected', label: 'Rejected', count: rejectedApplications.length }
   ];
 
   const currentApplications = activeTab === 'pending' ? pendingApplications 
@@ -265,9 +242,9 @@ export default function Applications() {
 
   if (loading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-[var(--background)]">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)]">
         <Loader2 className="w-12 h-12 text-[var(--primary)] animate-spin mb-4" />
-        <p className="text-[var(--text-secondary)]">A carregar...</p>
+        <p className="text-[var(--text-secondary)]">Loading...</p>
       </div>
     );
   }
@@ -275,13 +252,38 @@ export default function Applications() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <div className="bg-[var(--surface)] border-b border-[var(--border)] px-4 py-6">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Minhas Candidaturas</h1>
-        <p className="text-[var(--text-secondary)] text-sm mt-1">Gerir propostas e estado</p>
+      <header className="px-6 pt-8 pb-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-12 hexagon bg-[var(--primary)] flex items-center justify-center">
+            <span className="material-icons-round text-gray-900">work</span>
+          </div>
+          <span className="text-xl font-bold text-[var(--text-primary)]">KANDU</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="w-10 h-10 rounded-full bg-[var(--surface)] shadow-sm flex items-center justify-center relative">
+            <Bell className="w-5 h-5 text-[var(--text-secondary)]" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-[var(--primary)] rounded-full" />
+          </button>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-amber-600 overflow-hidden">
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-900 font-bold">
+                {user?.full_name?.charAt(0)}
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Title */}
+      <div className="px-6 mb-6">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">My Applications</h1>
+        <p className="text-[var(--text-secondary)] text-sm mt-1">Manage your job bids and status</p>
       </div>
 
-      {/* Hexagonal Tabs */}
-      <div className="px-4 py-4 overflow-x-auto no-scrollbar">
+      {/* Tabs */}
+      <div className="px-6 mb-6 overflow-x-auto no-scrollbar">
         <div className="flex gap-3">
           {tabs.map(tab => (
             <button
@@ -289,10 +291,10 @@ export default function Applications() {
               onClick={() => setActiveTab(tab.id)}
               className={`relative min-w-[100px] px-4 py-3 rounded-xl font-medium text-sm transition-all ${
                 activeTab === tab.id
-                  ? 'bg-[var(--primary)] text-white shadow-lg'
+                  ? 'bg-[var(--primary)] text-gray-900 shadow-lg'
                   : 'bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)]'
               }`}
-              style={activeTab === tab.id ? { boxShadow: '0 0 15px rgba(236, 127, 19, 0.3)' } : {}}
+              style={activeTab === tab.id ? { boxShadow: '0 4px 14px rgba(251, 191, 36, 0.39)' } : {}}
             >
               <div className="text-xs uppercase tracking-wider opacity-80">{tab.label}</div>
               <div className="text-lg font-bold">{tab.count}</div>
@@ -302,34 +304,31 @@ export default function Applications() {
       </div>
 
       {/* Applications List */}
-      <div className="px-4 pb-20">
+      <div className="px-6 pb-24">
         {currentApplications.length > 0 ? (
           currentApplications.map(app => {
             const job = jobs.find(j => j.id === app.job_id);
             if (!job) return null;
-            const applicant = applicants[app.worker_id];
-            const employer = employers[job.employer_id];
             return (
               <ApplicationCard 
                 key={app.id} 
                 application={app} 
                 job={job} 
-                applicant={applicant} 
-                employer={employer} 
+                applicant={applicants[app.worker_id]} 
+                employer={employers[job.employer_id]} 
                 onAccept={handleAcceptApplication} 
                 onDecline={handleDeclineApplication} 
                 onComplete={handleCompleteJob} 
                 userType={user.user_type} 
-                currentUser={user} 
               />
             );
           })
         ) : (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 hexagon bg-[var(--surface)] flex items-center justify-center mb-4">
-              <Clock className="w-8 h-8 text-[var(--text-muted)]" />
+            <div className="w-16 h-18 hexagon bg-[var(--surface)] flex items-center justify-center mb-4">
+              <span className="material-icons-round text-3xl text-[var(--text-muted)]">folder_open</span>
             </div>
-            <p className="text-[var(--text-secondary)]">Nenhuma candidatura nesta categoria.</p>
+            <p className="text-[var(--text-secondary)]">No applications in this category</p>
           </div>
         )}
       </div>
