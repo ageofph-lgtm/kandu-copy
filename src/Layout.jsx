@@ -190,23 +190,23 @@ export default function Layout({ children }) {
       </div>
 
       {/* --- Barra de Navegação Inferior (Mobile) --- */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-50 px-4 pb-4 pt-2">
-        <div className="flex justify-around items-end max-w-md mx-auto">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-50 px-2 pb-4 pt-2">
+        <div className="flex justify-between items-end max-w-sm mx-auto">
           {/* Início */}
           <Link
             to={createPageUrl("Dashboard")}
-            className={`flex flex-col items-center justify-center transition-colors ${
+            className={`flex flex-col items-center justify-center w-16 transition-colors ${
               location.pathname === createPageUrl("Dashboard") ? 'text-[#F26522]' : 'text-gray-400'
             }`}
           >
             <MapPin className="w-6 h-6" />
-            <span className="text-xs mt-1 font-medium">Início</span>
+            <span className="text-[10px] mt-1 font-medium">Início</span>
           </Link>
 
-          {/* Buscar */}
+          {/* Candidaturas */}
           <Link
             to={createPageUrl("Applications")}
-            className={`flex flex-col items-center justify-center transition-colors relative ${
+            className={`flex flex-col items-center justify-center w-16 transition-colors relative ${
               location.pathname === createPageUrl("Applications") ? 'text-[#F26522]' : 'text-gray-400'
             }`}
           >
@@ -218,23 +218,24 @@ export default function Layout({ children }) {
                 </Badge>
               )}
             </div>
-            <span className="text-xs mt-1 font-medium">Candidaturas</span>
+            <span className="text-[10px] mt-1 font-medium">Candidaturas</span>
           </Link>
 
-          {/* Botão Central + (Losango) */}
-          <div className="relative -top-4">
+          {/* Botão Central + (Hexágono) */}
+          <div className="relative -top-4 flex flex-col items-center w-16">
             <Link
               to={createPageUrl("NewJob")}
-              className="w-14 h-14 bg-[#F26522] text-white flex items-center justify-center shadow-lg shadow-[#F26522]/30 rotate-45 rounded-xl"
+              className="w-14 h-14 bg-[#F26522] text-white flex items-center justify-center shadow-lg shadow-[#F26522]/30"
+              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
             >
-              <span className="-rotate-45 text-3xl font-light">+</span>
+              <span className="text-3xl font-light">+</span>
             </Link>
           </div>
 
           {/* Chat */}
           <Link
             to={createPageUrl("Chat")}
-            className={`flex flex-col items-center justify-center transition-colors relative ${
+            className={`flex flex-col items-center justify-center w-16 transition-colors relative ${
               location.pathname === createPageUrl("Chat") ? 'text-[#F26522]' : 'text-gray-400'
             }`}
           >
@@ -246,18 +247,18 @@ export default function Layout({ children }) {
                 </Badge>
               )}
             </div>
-            <span className="text-xs mt-1 font-medium">Chat</span>
+            <span className="text-[10px] mt-1 font-medium">Chat</span>
           </Link>
 
           {/* Perfil */}
           <Link
             to={createPageUrl("Profile")}
-            className={`flex flex-col items-center justify-center transition-colors ${
+            className={`flex flex-col items-center justify-center w-16 transition-colors ${
               location.pathname === createPageUrl("Profile") ? 'text-[#F26522]' : 'text-gray-400'
             }`}
           >
             <User className="w-6 h-6" />
-            <span className="text-xs mt-1 font-medium">Perfil</span>
+            <span className="text-[10px] mt-1 font-medium">Perfil</span>
           </Link>
         </div>
       </nav>
