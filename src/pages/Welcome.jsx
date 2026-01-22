@@ -88,39 +88,20 @@ export default function Welcome() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-        {/* Logo Hexagonal */}
+        {/* Logo KANDU */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <div className="relative w-32 h-36 mx-auto mb-6">
-            {/* Glow effect */}
-            <div 
-              className="absolute inset-0 bg-gradient-to-br from-[#F26522] to-orange-600 opacity-20"
-              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)', transform: 'scale(1.1)' }}
-            />
-            {/* Border */}
-            <div 
-              className="absolute inset-0 bg-gradient-to-br from-[#F26522] to-orange-600"
-              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-            />
-            {/* Inner */}
-            <div 
-              className="absolute inset-[3px] bg-white flex items-center justify-center"
-              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-            >
-              <span className="text-5xl font-bold text-[#F26522]">Eos</span>
-            </div>
-            {/* Verified badge */}
-            <div className="absolute bottom-2 right-2 bg-green-500 text-white rounded-full p-1 border-2 border-white shadow-sm z-20">
-              <Check className="w-3 h-3" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-[#1E293B] mb-2">Eos</h1>
-          <p className="text-[#F26522] font-semibold text-sm uppercase tracking-wider flex items-center justify-center gap-1">
-            <Check className="w-4 h-4" /> Conectando obras a profissionais
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68c6abd952b45c1542486306/b7d29bb54_1768817269680.png"
+            alt="KANDU Logo"
+            className="h-24 mx-auto mb-4 object-contain"
+          />
+          <p className="text-[#64748B] text-sm">
+            Conectando obras a profissionais
           </p>
         </motion.div>
 
