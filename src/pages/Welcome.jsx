@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Download, ArrowRight, Smartphone, Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Download, ArrowRight, Smartphone, Loader2, CheckCircle } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 
@@ -10,6 +11,8 @@ export default function Welcome() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
+  const [installProgress, setInstallProgress] = useState(0);
+  const [installStatus, setInstallStatus] = useState("");
 
   useEffect(() => {
     // Verifica se já está instalado como PWA
@@ -28,9 +31,12 @@ export default function Welcome() {
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
       setIsInstallable(false);
-      setIsInstalling(false);
-      // Redireciona imediatamente após instalação
-      setTimeout(() => navigate(createPageUrl("Dashboard")), 500);
+      setInstallProgress(100);
+      setInstallStatus("Instalação concluída!");
+      setTimeout(() => {
+        setIsInstalling(false);
+        navigate(createPageUrl("Dashboard"));
+      }, 1000);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -42,9 +48,25 @@ export default function Welcome() {
     };
   }, [navigate]);
 
+  const clearCachesForInstall = async () => {
+    try {
+      // Limpa apenas caches de service worker que podem interferir
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        const swCaches = cacheNames.filter(name => 
+          name.includes('workbox') || name.includes('sw-') || name.includes('precache')
+        );
+        await Promise.all(swCaches.map(name => caches.delete(name)));
+      }
+      return true;
+    } catch (error) {
+      console.warn("Aviso ao limpar cache:", error);
+      return true; // Continua mesmo com erro
+    }
+  };
+
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      // Instruções específicas por navegador
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isAndroid = /Android/.test(navigator.userAgent);
       
@@ -59,19 +81,42 @@ export default function Welcome() {
     }
 
     setIsInstalling(true);
+    setInstallProgress(0);
     
     try {
+      // Etapa 1: Preparando
+      setInstallStatus("A preparar instalação...");
+      setInstallProgress(20);
+      
+      // Etapa 2: Limpeza de cache
+      setInstallStatus("A limpar cache...");
+      await clearCachesForInstall();
+      setInstallProgress(40);
+      
+      // Etapa 3: Solicitar instalação
+      setInstallStatus("A iniciar instalação...");
+      setInstallProgress(60);
+      
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       
       if (outcome === 'accepted') {
+        setInstallStatus("A instalar...");
+        setInstallProgress(80);
         setDeferredPrompt(null);
         setIsInstallable(false);
+        // O evento 'appinstalled' vai completar o progresso
+      } else {
+        // Utilizador cancelou
+        setIsInstalling(false);
+        setInstallProgress(0);
+        setInstallStatus("");
       }
     } catch (error) {
       console.error("Erro na instalação:", error);
-    } finally {
       setIsInstalling(false);
+      setInstallProgress(0);
+      setInstallStatus("");
     }
   };
 
