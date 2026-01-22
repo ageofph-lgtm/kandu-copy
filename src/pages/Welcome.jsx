@@ -178,24 +178,29 @@ export default function Welcome() {
           transition={{ delay: 0.5, duration: 0.6 }}
           className="w-full max-w-sm space-y-4"
         >
-          {/* Botão de Instalação */}
-          <Button
-            onClick={handleInstallClick}
-            disabled={isInstalling}
-            className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white text-lg font-semibold rounded-xl shadow-lg shadow-[#F26522]/30 flex items-center justify-center gap-3 disabled:opacity-70"
-          >
-            {isInstalling ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                A instalar...
-              </>
-            ) : (
-              <>
-                <Download className="w-5 h-5" />
-                {isInstallable ? "Instalar Aplicativo" : "Instalar App"}
-              </>
-            )}
-          </Button>
+          {/* Botão de Instalação ou Barra de Progresso */}
+          {isInstalling ? (
+            <div className="w-full space-y-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="flex items-center gap-3">
+                {installProgress < 100 ? (
+                  <Loader2 className="w-5 h-5 text-[#F26522] animate-spin" />
+                ) : (
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                )}
+                <span className="text-[#1E293B] font-medium">{installStatus}</span>
+              </div>
+              <Progress value={installProgress} className="h-2" />
+              <p className="text-xs text-[#64748B] text-center">{installProgress}%</p>
+            </div>
+          ) : (
+            <Button
+              onClick={handleInstallClick}
+              className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white text-lg font-semibold rounded-xl shadow-lg shadow-[#F26522]/30 flex items-center justify-center gap-3"
+            >
+              <Download className="w-5 h-5" />
+              {isInstallable ? "Instalar Aplicativo" : "Instalar App"}
+            </Button>
+          )}
 
           {/* Botão de continuar sem instalar */}
           <Button
