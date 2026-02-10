@@ -21,6 +21,7 @@ import {
 import { createPageUrl } from "@/utils";
 import { translations } from "@/components/utils/translations";
 import "leaflet/dist/leaflet.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const workerNavigationItems = [
   { title: "home", icon: MapPin, url: createPageUrl("Home") },
@@ -143,7 +144,8 @@ export default function Layout({ children }) {
       : employerNavigationItems;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50">
+              <Toaster position="top-center" richColors />
       {/* Sidebar - Desktop */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
         <div className="flex-1 flex flex-col min-h-0 bg-white border-r border-gray-200">

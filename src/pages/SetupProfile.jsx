@@ -35,9 +35,9 @@ export default function SetupProfile() {
       setUser(userData);
       
       if (userData.user_type) {
-        navigate(createPageUrl("Dashboard"));
-        return;
-      }
+                    navigate(createPageUrl("Home"));
+                    return;
+                  }
       
       if (userData.language) {
         setSelectedLanguage(userData.language);
@@ -73,10 +73,10 @@ export default function SetupProfile() {
     setIsCreating(true);
     try {
       await User.updateMyUserData({ 
-        user_type: selectedType,
-        language: selectedLanguage 
-      });
-      navigate(createPageUrl("Dashboard"));
+                    user_type: selectedType,
+                    language: selectedLanguage 
+                  });
+                  navigate(createPageUrl("Home"));
     } catch (error) {
       alert(t('errorCreatingProfile') || "Erro ao criar perfil. Tente novamente.");
     }
