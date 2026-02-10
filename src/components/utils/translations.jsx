@@ -1,4 +1,3 @@
-
 // Sistema de traduções completo
 export const translations = {
   PT: {
@@ -17,7 +16,9 @@ export const translations = {
     close: "Fechar",
     
     // Navegação
+    home: "Início",
     dashboard: "Obras",
+    myJobs: "Meus Trabalhos",
     applications: "Candidaturas",
     chat: "Chat",
     calendar: "Calendário", 
@@ -170,7 +171,9 @@ export const translations = {
     close: "Close",
     
     // Navegação
+    home: "Home",
     dashboard: "Jobs",
+    myJobs: "My Jobs",
     applications: "Applications",
     chat: "Chat", 
     calendar: "Calendar",
