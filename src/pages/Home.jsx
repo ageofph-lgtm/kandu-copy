@@ -135,6 +135,17 @@ export default function Home() {
 
   // Para profissionais, mostrar trabalhos disponíveis
   if (user.user_type === 'worker') {
+    const filteredJobs = jobs.filter(job => {
+      if (selectedCategory !== "all" && job.category !== selectedCategory) return false;
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        return job.title.toLowerCase().includes(term) ||
+               job.location.toLowerCase().includes(term) ||
+               job.description.toLowerCase().includes(term);
+      }
+      return true;
+    });
+
     return (
       <div className="h-screen flex flex-col bg-gray-50">
         <header className="bg-white border-b border-gray-200 px-6 py-4">
@@ -169,21 +180,22 @@ export default function Home() {
         </div>
 
         <div className="flex-1 overflow-hidden">
-          <MapView 
-            jobs={jobs.filter(job => {
-              if (selectedCategory !== "all" && job.category !== selectedCategory) return false;
-              if (searchTerm) {
-                const term = searchTerm.toLowerCase();
-                return job.title.toLowerCase().includes(term) ||
-                       job.location.toLowerCase().includes(term) ||
-                       job.description.toLowerCase().includes(term);
-              }
-              return true;
-            })} 
-            onJobClick={(job) => setSelectedWorker(job)} 
-            center={getCenter()} 
-            radius={10000} 
-          />
+          {filteredJobs.length > 0 ? (
+            <MapView 
+              jobs={filteredJobs} 
+              onJobClick={(job) => setSelectedWorker(job)} 
+              center={getCenter()} 
+              radius={10000} 
+            />
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center p-6">
+              <Filter className="w-16 h-16 text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum trabalho encontrado</h3>
+              <p className="text-sm text-gray-500 text-center max-w-md">
+                Não há trabalhos disponíveis com os filtros selecionados. Tente ajustar a sua pesquisa ou categoria.
+              </p>
+            </div>
+          )}
         </div>
 
         {selectedWorker && (

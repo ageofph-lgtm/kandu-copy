@@ -27,6 +27,7 @@ const workerNavigationItems = [
   { title: "home", icon: MapPin, url: createPageUrl("Home") },
   { title: "myJobs", icon: FileText, url: createPageUrl("MyJobs") },
   { title: "applications", icon: FileText, url: createPageUrl("Applications") },
+  { title: "calendar", icon: Calendar, url: createPageUrl("Calendar") },
   { title: "chat", icon: MessageCircle, url: createPageUrl("Chat") },
   { title: "profile", icon: User, url: createPageUrl("Profile") }
 ];
@@ -35,6 +36,7 @@ const employerNavigationItems = [
   { title: "home", icon: MapPin, url: createPageUrl("Home") },
   { title: "myJobs", icon: FileText, url: createPageUrl("MyJobs") },
   { title: "applications", icon: FileText, url: createPageUrl("Applications") },
+  { title: "calendar", icon: Calendar, url: createPageUrl("Calendar") },
   { title: "chat", icon: MessageCircle, url: createPageUrl("Chat") },
   { title: "profile", icon: User, url: createPageUrl("Profile") }
 ];

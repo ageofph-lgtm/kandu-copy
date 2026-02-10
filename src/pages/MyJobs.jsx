@@ -96,17 +96,34 @@ export default function MyJobs() {
       let appsQuery = {};
       
       if (currentUser.user_type === 'worker') {
+        // Worker vê apenas trabalhos onde foi assignado
         jobsQuery = { worker_id: currentUser.id };
-        appsQuery = { worker_id: currentUser.id };
-      } else {
+        appsQuery = { worker_id: currentUser.id, status: 'accepted' };
+      } else if (currentUser.user_type === 'employer') {
+        // Empregador vê trabalhos que criou
         jobsQuery = { employer_id: currentUser.id };
-        appsQuery = { employer_id: currentUser.id };
+        const myJobs = await Job.filter(jobsQuery);
+        const myJobIds = myJobs.map(j => j.id);
+        if (myJobIds.length > 0) {
+          appsQuery = { job_id: { $in: myJobIds } };
+        }
+      } else {
+        // Admin vê tudo
+        jobsQuery = {};
+        appsQuery = {};
       }
 
-      const [jobList, appList] = await Promise.all([
-        Job.filter(jobsQuery),
-        Application.filter(appsQuery)
-      ]);
+      let jobList = await Job.filter(jobsQuery);
+      let appList = [];
+      
+      if (currentUser.user_type === 'employer') {
+        const myJobIds = jobList.map(j => j.id);
+        if (myJobIds.length > 0) {
+          appList = await Application.filter({ job_id: { $in: myJobIds } });
+        }
+      } else {
+        appList = await Application.filter(appsQuery);
+      }
       
       setJobs(jobList);
       setApplications(appList);

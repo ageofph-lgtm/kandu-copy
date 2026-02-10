@@ -86,7 +86,13 @@ export default function JobModal({ job, user, onClose, onApply, onDelete }) {
     setIsSubmitting(false);
   };
 
-  const handleOpenChat = () => { if (!employer) return; onClose(); navigate(createPageUrl("Chat")); };
+  const handleOpenChat = () => { 
+    if (!employer) return; 
+    onClose(); 
+    // Criar conversa se não existir e navegar
+    const conversationId = createConversationId(user.id, employer.id);
+    navigate(createPageUrl("Chat") + `?conversationId=${conversationId}&userId=${employer.id}`);
+  };
   const formatPrice = (price, type) => type === "hourly" ? `€${price}/hora` : `€${price}`;
 
   return (
