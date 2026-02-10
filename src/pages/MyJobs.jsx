@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
@@ -29,10 +28,14 @@ function JobItem({ job, application, userType }) {
 
   const getStatusBadge = (status) => {
     switch(status) {
+      case 'open':
+        return <Badge className="bg-yellow-500">Agendado</Badge>;
       case 'in_progress':
         return <Badge className="bg-blue-500">Em Andamento</Badge>;
       case 'completed':
         return <Badge className="bg-green-500">Concluído</Badge>;
+      case 'completed_by_employer':
+        return <Badge className="bg-purple-500">Aguardando Avaliação</Badge>;
       default:
         return <Badge variant="secondary">Desconhecido</Badge>;
     }
@@ -118,6 +121,7 @@ export default function MyJobs() {
     loadData();
   }, [loadData]);
 
+  const scheduledJobs = jobs.filter(j => j.status === 'open' && j.worker_id === user?.id);
   const inProgressJobs = jobs.filter(j => j.status === 'in_progress');
   const completedJobs = jobs.filter(j => j.status === 'completed');
   const acceptedApplications = applications.filter(app => app.status === 'accepted');
@@ -137,19 +141,42 @@ export default function MyJobs() {
       
       <Tabs defaultValue="in_progress" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="in_progress">
+          <TabsTrigger value="scheduled">
             <Clock className="w-4 h-4 mr-2" />
-            Em Andamento ({inProgressJobs.length})
+            Agendados ({scheduledJobs.length})
           </TabsTrigger>
-          <TabsTrigger value="accepted">
+          <TabsTrigger value="in_progress">
             <CheckCircle className="w-4 h-4 mr-2" />
-            Trabalhos Aceitos ({acceptedApplications.length})
+            Em Andamento ({inProgressJobs.length})
           </TabsTrigger>
           <TabsTrigger value="completed">
             <Check className="w-4 h-4 mr-2" />
             Concluídos ({completedJobs.length})
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="scheduled" className="mt-4">
+          <div className="space-y-4">
+            {scheduledJobs.length > 0 ? (
+              scheduledJobs.map(job => (
+                <JobItem 
+                  key={job.id} 
+                  job={job} 
+                  application={applications.find(a => a.job_id === job.id)}
+                  userType={user.user_type}
+                />
+              ))
+            ) : (
+              <Card className="text-center p-8">
+                <Clock className="mx-auto w-12 h-12 text-gray-400 mb-4" />
+                <h3 className="font-medium text-gray-800">Nenhum trabalho agendado</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  {user?.user_type === 'worker' ? "Candidate-se a trabalhos para começar." : "Aceite candidaturas para agendar trabalhos."}
+                </p>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
 
         <TabsContent value="in_progress" className="mt-4">
           <div className="space-y-4">
@@ -168,36 +195,6 @@ export default function MyJobs() {
                 <h3 className="font-medium text-gray-800">Nenhum trabalho em andamento</h3>
                 <p className="text-sm text-gray-500 mt-1">
                   {user?.user_type === 'worker' ? "Candidate-se a trabalhos para começar." : "Publique e aceite propostas de profissionais."}
-                </p>
-              </Card>
-            )}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="accepted" className="mt-4">
-          <div className="space-y-4">
-            {acceptedApplications.length > 0 ? (
-              acceptedApplications.map(application => {
-                const job = jobs.find(j => j.id === application.job_id);
-                if (!job) return null;
-                return (
-                  <JobItem 
-                    key={application.id} 
-                    job={job}
-                    application={application}
-                    userType={user.user_type}
-                  />
-                );
-              })
-            ) : (
-              <Card className="text-center p-8">
-                <CheckCircle className="mx-auto w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="font-medium text-gray-800">Nenhum trabalho aceito ainda</h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  {user?.user_type === 'worker' 
-                    ? "Quando suas candidaturas forem aceites, aparecerão aqui." 
-                    : "Quando aceitar candidaturas, elas aparecerão aqui."
-                  }
                 </p>
               </Card>
             )}
