@@ -121,9 +121,17 @@ export default function MyJobs() {
     loadData();
   }, [loadData]);
 
-  const scheduledJobs = jobs.filter(j => j.status === 'open' && j.worker_id === user?.id);
+  // Para empregador: obras publicadas por ele que têm um worker assignado
+  // Para worker: obras onde ele é o worker assignado
+  const scheduledJobs = jobs.filter(j => {
+    if (user?.user_type === 'employer') {
+      return j.status === 'open' && j.worker_id; // Tem worker mas ainda não começou
+    }
+    return j.status === 'open' && j.worker_id === user?.id;
+  });
+  
   const inProgressJobs = jobs.filter(j => j.status === 'in_progress');
-  const completedJobs = jobs.filter(j => j.status === 'completed');
+  const completedJobs = jobs.filter(j => j.status === 'completed' || j.status === 'completed_by_employer');
   const acceptedApplications = applications.filter(app => app.status === 'accepted');
 
   if (loading) {

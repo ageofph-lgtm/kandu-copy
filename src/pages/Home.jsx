@@ -217,12 +217,11 @@ export default function Home() {
             />
           </div>
           <Button 
-            variant="outline"
-            onClick={() => navigate(createPageUrl("NewJob"))}
-            className="whitespace-nowrap"
+            onClick={() => navigate(createPageUrl("Dashboard"))}
+            className="bg-[#F26522] hover:bg-orange-600 whitespace-nowrap"
           >
             <MapPin className="w-4 h-4 mr-2" />
-            Publicar Obra
+            Ver Todas as Obras
           </Button>
         </div>
       </header>

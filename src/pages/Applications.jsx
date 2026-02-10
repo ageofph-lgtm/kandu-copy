@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import CompletionModal from "../components/applications/CompletionModal";
 
-function ApplicationCard({ application, job, applicant, employer, onAccept, onDecline, onComplete, onDelete, userType, currentUser }) {
+function ApplicationCard({ application, job, applicant, employer, onAccept, onDecline, onComplete, onStartJob, onDelete, userType, currentUser }) {
   const finalPrice = application.proposed_price || job.price;
 
   const getStatusBadge = (status, jobStatus) => {
@@ -56,6 +56,11 @@ function ApplicationCard({ application, job, applicant, employer, onAccept, onDe
           <div className="flex gap-2 pt-2 border-t">
             <Button variant="destructive" onClick={() => onDecline(application)} className="flex-1"><X className="w-4 h-4 mr-2" />Recusar</Button>
             <Button onClick={() => onAccept(application)} className="flex-1 bg-green-600 hover:bg-green-700"><Check className="w-4 h-4 mr-2" />Aceitar</Button>
+          </div>
+        )}
+        {userType === 'employer' && application.status === 'accepted' && job.status === 'open' && (
+          <div className="pt-2 border-t">
+            <Button onClick={() => onStartJob(application, job)} className="w-full bg-blue-600 hover:bg-blue-700"><CheckCircle className="w-4 h-4 mr-2" />Iniciar Trabalho</Button>
           </div>
         )}
         {userType === 'employer' && application.status === 'accepted' && job.status === 'in_progress' && (
@@ -178,6 +183,32 @@ export default function Applications() {
     } catch(error) { console.error("Erro ao recusar proposta: ", error); }
   };
 
+  const handleStartJob = async (application, job) => {
+    try {
+      if (!window.confirm('Tem certeza que quer iniciar este trabalho?')) return;
+      
+      await Job.update(job.id, { 
+        status: 'in_progress',
+        actual_start_date: new Date().toISOString()
+      });
+
+      await Notification.create({
+        user_id: application.worker_id,
+        type: "job_started",
+        title: "🚀 Trabalho Iniciado!",
+        message: `O trabalho "${job.title}" foi iniciado pelo empregador.`,
+        related_id: job.id,
+        action_url: createPageUrl("MyJobs"),
+      });
+
+      alert("Trabalho iniciado com sucesso!");
+      loadData();
+    } catch(error) {
+      console.error("Erro ao iniciar trabalho:", error);
+      alert("Erro ao iniciar trabalho.");
+    }
+  };
+
   const handleCompleteJob = (application, job, otherUser) => {
     setSelectedCompletion({ application, job, otherUser });
     setShowCompletionModal(true);
@@ -214,7 +245,7 @@ export default function Applications() {
                 if (!job) return null;
                 const applicant = applicants[app.worker_id];
                 const employer = employers[job.employer_id];
-                return <ApplicationCard key={app.id} application={app} job={job} applicant={applicant} employer={employer} onAccept={handleAcceptApplication} onDecline={handleDeclineApplication} onComplete={handleCompleteJob} onDelete={handleDeleteApplication} userType={user.user_type} currentUser={user} />;
+                return <ApplicationCard key={app.id} application={app} job={job} applicant={applicant} employer={employer} onAccept={handleAcceptApplication} onDecline={handleDeclineApplication} onComplete={handleCompleteJob} onStartJob={handleStartJob} onDelete={handleDeleteApplication} userType={user.user_type} currentUser={user} />;
               }) : <Card className="text-center p-8"><p>Nenhuma candidatura nesta categoria.</p></Card>}
             </div>
           </TabsContent>
