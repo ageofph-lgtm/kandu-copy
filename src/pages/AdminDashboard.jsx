@@ -541,8 +541,11 @@ export default function AdminDashboard() {
             <TabsTrigger value="jobs" className="text-xs md:text-sm p-2 md:p-3">Obras</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="users" className="mt-4 space-y-4">
-            <InviteUserForm />
+          <TabsContent value="users" className="mt-4 space-y-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <InviteUserForm />
+              <TestingPanel />
+            </div>
             <div className="mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
