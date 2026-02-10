@@ -22,20 +22,30 @@ import { createPageUrl } from "@/utils";
 import { translations } from "@/components/utils/translations";
 import "leaflet/dist/leaflet.css";
 
-const navigationItems = [
-  { title: "dashboard", icon: MapPin, url: createPageUrl("Dashboard") },
+const workerNavigationItems = [
+  { title: "home", icon: MapPin, url: createPageUrl("Home") },
+  { title: "myJobs", icon: FileText, url: createPageUrl("MyJobs") },
   { title: "applications", icon: FileText, url: createPageUrl("Applications") },
   { title: "chat", icon: MessageCircle, url: createPageUrl("Chat") },
-  { title: "calendar", icon: Calendar, url: createPageUrl("Calendar") },
+  { title: "profile", icon: User, url: createPageUrl("Profile") }
+];
+
+const employerNavigationItems = [
+  { title: "home", icon: MapPin, url: createPageUrl("Home") },
+  { title: "dashboard", icon: MapPin, url: createPageUrl("Dashboard") },
+  { title: "myJobs", icon: FileText, url: createPageUrl("MyJobs") },
+  { title: "applications", icon: FileText, url: createPageUrl("Applications") },
+  { title: "chat", icon: MessageCircle, url: createPageUrl("Chat") },
   { title: "profile", icon: User, url: createPageUrl("Profile") }
 ];
 
 const adminNavigationItems = [
   { title: "admin", icon: Shield, url: createPageUrl("AdminDashboard") },
+  { title: "home", icon: MapPin, url: createPageUrl("Home") },
   { title: "dashboard", icon: MapPin, url: createPageUrl("Dashboard") },
+  { title: "myJobs", icon: FileText, url: createPageUrl("MyJobs") },
   { title: "applications", icon: FileText, url: createPageUrl("Applications") },
   { title: "chat", icon: MessageCircle, url: createPageUrl("Chat") },
-  { title: "calendar", icon: Calendar, url: createPageUrl("Calendar") },
   { title: "profile", icon: User, url: createPageUrl("Profile") }
 ];
 
@@ -126,7 +136,11 @@ export default function Layout({ children }) {
   }
 
   // Determinar itens de navegação baseado no tipo de usuário
-  const navItems = user?.user_type === 'admin' ? adminNavigationItems : navigationItems;
+  const navItems = user?.user_type === 'admin' 
+    ? adminNavigationItems 
+    : user?.user_type === 'worker' 
+      ? workerNavigationItems 
+      : employerNavigationItems;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -194,20 +208,20 @@ export default function Layout({ children }) {
         <div className="flex justify-between items-end max-w-sm mx-auto">
           {/* Início */}
           <Link
-            to={createPageUrl("Dashboard")}
+            to={createPageUrl("Home")}
             className={`flex flex-col items-center justify-center w-16 transition-colors ${
-              location.pathname === createPageUrl("Dashboard") ? 'text-[#F26522]' : 'text-gray-400'
+              location.pathname === createPageUrl("Home") ? 'text-[#F26522]' : 'text-gray-400'
             }`}
           >
             <MapPin className="w-6 h-6" />
             <span className="text-[10px] mt-1 font-medium">Início</span>
           </Link>
 
-          {/* Candidaturas */}
+          {/* Meus Trabalhos */}
           <Link
-            to={createPageUrl("Applications")}
+            to={createPageUrl("MyJobs")}
             className={`flex flex-col items-center justify-center w-16 transition-colors relative ${
-              location.pathname === createPageUrl("Applications") ? 'text-[#F26522]' : 'text-gray-400'
+              location.pathname === createPageUrl("MyJobs") ? 'text-[#F26522]' : 'text-gray-400'
             }`}
           >
             <div className="relative">
@@ -218,7 +232,7 @@ export default function Layout({ children }) {
                 </Badge>
               )}
             </div>
-            <span className="text-[10px] mt-1 font-medium">Candidaturas</span>
+            <span className="text-[10px] mt-1 font-medium">Trabalhos</span>
           </Link>
 
           {/* Botão Central + (Hexágono) */}
