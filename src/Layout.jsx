@@ -123,6 +123,13 @@ export default function Layout({ children }) {
     return () => clearInterval(intervalId); // Limpa o intervalo ao desmontar
 
   }, [location.pathname, loadUserAndNotifications]);
+
+  // Redirecionar admin para AdminDashboard se tentar acessar Home
+  useEffect(() => {
+    if (user?.user_type === 'admin' && location.pathname === createPageUrl("Home")) {
+      navigate(createPageUrl("AdminDashboard"));
+    }
+  }, [user, location.pathname, navigate]);
   
   useEffect(() => {
     if (location.pathname === createPageUrl("Applications")) {

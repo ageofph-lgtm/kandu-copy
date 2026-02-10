@@ -69,6 +69,13 @@ export default function Home() {
     loadData();
   }, [loadData]);
 
+  // Redirecionar admin para o dashboard administrativo
+  useEffect(() => {
+    if (user && user.user_type === 'admin') {
+      navigate(createPageUrl("AdminDashboard"));
+    }
+  }, [user, navigate]);
+
   const filterWorkers = useCallback(() => {
     let filtered = workers;
 
@@ -119,6 +126,11 @@ export default function Home() {
         </div>
       </div>
     );
+  }
+
+  // Admin não deve ver esta página
+  if (user.user_type === 'admin') {
+    return null;
   }
 
   // Para profissionais, mostrar trabalhos disponíveis
