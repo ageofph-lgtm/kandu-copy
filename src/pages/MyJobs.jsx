@@ -2,85 +2,151 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Application } from "@/entities/Application";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Briefcase, Check, Clock, QrCode, User as UserIcon, AlertCircle, CheckCircle, Settings } from "lucide-react";
+import { User as UserIcon, QrCode, Navigation, MessageCircle, Trophy, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
-function JobItem({ job, application, userType }) {
+function JobItem({ job, application, userType, navigate }) {
   const [otherUser, setOtherUser] = useState(null);
 
   useEffect(() => {
     const fetchOtherUser = async () => {
-      const otherUserId = userType === 'worker' ? job.employer_id : job.worker_id;
-      if (otherUserId) {
-        const users = await User.filter({ id: otherUserId });
-        if (users.length > 0) {
-          setOtherUser(users[0]);
-        }
+      const id = userType === 'worker' ? job.employer_id : job.worker_id;
+      if (id) {
+        const users = await User.filter({ id });
+        if (users.length > 0) setOtherUser(users[0]);
       }
     };
     fetchOtherUser();
   }, [job, userType]);
 
-  const getStatusBadge = (status) => {
-    switch(status) {
-      case 'open':
-        return <Badge className="bg-yellow-500">Agendado</Badge>;
-      case 'in_progress':
-        return <Badge className="bg-blue-500">Em Andamento</Badge>;
-      case 'completed':
-        return <Badge className="bg-green-500">Concluído</Badge>;
-      case 'completed_by_employer':
-        return <Badge className="bg-purple-500">Aguardando Avaliação</Badge>;
-      default:
-        return <Badge variant="secondary">Desconhecido</Badge>;
+  const statusBadge = () => {
+    const map = {
+      open:                  <Badge className="bg-amber-500 text-white">Agendado</Badge>,
+      in_progress:           <Badge className="bg-blue-500 text-white">Em Curso</Badge>,
+      completed_by_employer: <Badge className="bg-purple-500 text-white">Aguarda Avaliação</Badge>,
+      completed:             <Badge className="bg-green-500 text-white">Concluído</Badge>,
+      cancelled:             <Badge className="bg-gray-400 text-white">Cancelado</Badge>,
+    };
+    return map[job.status] || <Badge variant="secondary">{job.status}</Badge>;
+  };
+
+  const actionButton = () => {
+    if (userType === 'worker') {
+      if (job.status === 'open') {
+        return (
+          <Button
+            className="w-full mt-3 bg-blue-600 hover:bg-blue-700 rounded-xl h-10"
+            onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(job.location)}`, '_blank')}
+          >
+            <Navigation className="w-4 h-4 mr-2" /> Navegar ao Local
+          </Button>
+        );
+      }
+      if (job.status === 'in_progress') {
+        return (
+          <Button
+            className="w-full mt-3 bg-[#F26522] hover:bg-orange-600 rounded-xl h-10"
+            onClick={() => navigate(createPageUrl("Applications"))}
+          >
+            <QrCode className="w-4 h-4 mr-2" /> Finalizar Trabalho
+          </Button>
+        );
+      }
     }
+
+    if (userType === 'employer') {
+      if (job.status === 'open' && job.worker_id) {
+        return (
+          <Button
+            variant="outline"
+            className="w-full mt-3 rounded-xl h-10 border-[#F26522] text-[#F26522] hover:bg-orange-50"
+            onClick={() => navigate(createPageUrl("Chat"))}
+          >
+            <MessageCircle className="w-4 h-4 mr-2" /> Falar com Profissional
+          </Button>
+        );
+      }
+      if (job.status === 'in_progress') {
+        return (
+          <Button
+            className="w-full mt-3 bg-yellow-600 hover:bg-yellow-700 rounded-xl h-10"
+            onClick={() => navigate(createPageUrl("Applications"))}
+          >
+            <Trophy className="w-4 h-4 mr-2" /> Finalizar e Avaliar
+          </Button>
+        );
+      }
+      if (job.status === 'completed_by_employer') {
+        return (
+          <Button
+            className="w-full mt-3 bg-purple-600 hover:bg-purple-700 rounded-xl h-10"
+            onClick={() => navigate(createPageUrl("Applications"))}
+          >
+            <Trophy className="w-4 h-4 mr-2" /> Avaliar Profissional
+          </Button>
+        );
+      }
+    }
+    return null;
   };
 
   return (
-    <Card>
-      <CardContent className="p-4 space-y-3">
-        <div className="flex justify-between items-start">
-          <h3 className="font-semibold text-gray-900">{job.title}</h3>
-          {getStatusBadge(job.status)}
+    <Card className="rounded-2xl border-gray-100 shadow-sm">
+      <CardContent className="p-4 space-y-2">
+        <div className="flex justify-between items-start gap-2">
+          <h3 className="font-bold text-gray-900 flex-1 text-sm leading-tight">{job.title}</h3>
+          {statusBadge()}
         </div>
-        <p className="text-sm text-gray-600">{job.location}</p>
-        <p className="text-sm text-gray-500">{job.description}</p>
-        
-        {otherUser && (
-          <div className="flex items-center gap-2 text-sm text-gray-500 pt-2 border-t">
-            <UserIcon className="w-4 h-4" />
-            <span>{userType === 'worker' ? 'Empregador' : 'Profissional'}: {otherUser.full_name}</span>
-          </div>
-        )}
-        
         <div className="flex items-center justify-between">
-          <span className="font-bold text-blue-600 text-lg">€{job.price}</span>
-          {application?.qr_code_url && (
-            <a href={application.qr_code_url} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm">
-                    <QrCode className="w-4 h-4 mr-2" />
-                    Ver QR Code
-                </Button>
-            </a>
+          <p className="text-2xl font-bold text-[#F26522]">
+            €{job.price}
+            {job.price_type === 'hourly' && <span className="text-sm font-normal text-gray-400">/h</span>}
+          </p>
+          {job.start_date && (
+            <span className="text-xs text-gray-400">
+              {format(new Date(job.start_date), "dd MMM yyyy", { locale: pt })}
+            </span>
           )}
         </div>
-        
-        {job.start_date && (
-          <div className="text-xs text-gray-500">
-            Início: {format(new Date(job.start_date), "dd/MM/yyyy", { locale: pt })}
+        <p className="text-xs text-gray-400 flex items-center gap-1">
+          <MapPin className="w-3 h-3" />{job.location}
+        </p>
+        {otherUser && (
+          <div className="flex items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-100">
+            <UserIcon className="w-3 h-3" />
+            <span>{userType === 'worker' ? 'Empregador' : 'Profissional'}: <strong>{otherUser.full_name}</strong></span>
           </div>
         )}
+        {actionButton()}
       </CardContent>
     </Card>
   );
 }
 
+function EmptyState({ emoji, title, description, onCta, ctaLabel }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+      <div className="text-6xl mb-4">{emoji}</div>
+      <h3 className="font-bold text-gray-900 text-lg">{title}</h3>
+      <p className="text-sm text-gray-500 mt-1 max-w-xs">{description}</p>
+      {onCta && ctaLabel && (
+        <Button className="mt-5 bg-[#F26522] hover:bg-orange-600 rounded-xl px-6" onClick={onCta}>
+          {ctaLabel}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export default function MyJobs() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -92,161 +158,113 @@ export default function MyJobs() {
       const currentUser = await User.me();
       setUser(currentUser);
 
-      let jobsQuery = {};
-      let appsQuery = {};
-      
+      let jobList = [];
+      let appList = [];
+
       if (currentUser.user_type === 'worker') {
-        // Worker vê apenas trabalhos onde foi assignado
-        jobsQuery = { worker_id: currentUser.id };
-        appsQuery = { worker_id: currentUser.id, status: 'accepted' };
+        jobList = await Job.filter({ worker_id: currentUser.id });
+        appList = await Application.filter({ worker_id: currentUser.id, status: 'accepted' });
       } else if (currentUser.user_type === 'employer') {
-        // Empregador vê trabalhos que criou
-        jobsQuery = { employer_id: currentUser.id };
-        const myJobs = await Job.filter(jobsQuery);
-        const myJobIds = myJobs.map(j => j.id);
-        if (myJobIds.length > 0) {
-          appsQuery = { job_id: { $in: myJobIds } };
-        }
+        jobList = await Job.filter({ employer_id: currentUser.id });
+        const ids = jobList.map(j => j.id);
+        if (ids.length > 0) appList = await Application.filter({ job_id: { $in: ids } });
       } else {
-        // Admin vê tudo
-        jobsQuery = {};
-        appsQuery = {};
+        jobList = await Job.list();
+        appList = await Application.list();
       }
 
-      let jobList = await Job.filter(jobsQuery);
-      let appList = [];
-      
-      if (currentUser.user_type === 'employer') {
-        const myJobIds = jobList.map(j => j.id);
-        if (myJobIds.length > 0) {
-          appList = await Application.filter({ job_id: { $in: myJobIds } });
-        }
-      } else {
-        appList = await Application.filter(appsQuery);
-      }
-      
       setJobs(jobList);
       setApplications(appList);
-
     } catch (error) {
       console.error("Error loading jobs:", error);
     }
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useEffect(() => { loadData(); }, [loadData]);
 
-  // Para empregador: obras publicadas por ele que têm um worker assignado
-  // Para worker: obras onde ele é o worker assignado
-  const scheduledJobs = jobs.filter(j => {
-    if (user?.user_type === 'employer') {
-      return j.status === 'open' && j.worker_id; // Tem worker mas ainda não começou
-    }
+  const scheduledJobs  = jobs.filter(j => {
+    if (user?.user_type === 'employer') return j.status === 'open' && j.worker_id;
     return j.status === 'open' && j.worker_id === user?.id;
   });
-  
   const inProgressJobs = jobs.filter(j => j.status === 'in_progress');
-  const completedJobs = jobs.filter(j => j.status === 'completed' || j.status === 'completed_by_employer');
-  const acceptedApplications = applications.filter(app => app.status === 'accepted');
+  const historyJobs    = jobs.filter(j => ['completed', 'completed_by_employer', 'cancelled'].includes(j.status));
 
   if (loading) {
     return (
-      <div className="p-4 h-screen flex flex-col items-center justify-center">
-        <Settings className="w-12 h-12 text-gray-400 animate-spin mb-4" />
-        <p className="text-gray-500">A carregar os seus trabalhos...</p>
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-5xl font-bold text-[#F26522] animate-pulse">φ</div>
+          <p className="text-gray-400 mt-2 text-sm">A carregar...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Meus Trabalhos</h1>
-      
-      <Tabs defaultValue="in_progress" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="scheduled">
-            <Clock className="w-4 h-4 mr-2" />
-            Agendados ({scheduledJobs.length})
-          </TabsTrigger>
-          <TabsTrigger value="in_progress">
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Em Andamento ({inProgressJobs.length})
-          </TabsTrigger>
-          <TabsTrigger value="completed">
-            <Check className="w-4 h-4 mr-2" />
-            Concluídos ({completedJobs.length})
-          </TabsTrigger>
-        </TabsList>
+    <div className="bg-gray-50 min-h-screen pb-24">
+      <div className="bg-white border-b px-4 pt-5 pb-3 sticky top-0 z-10">
+        <h1 className="text-2xl font-bold text-gray-900">Meus Trabalhos</h1>
+      </div>
 
-        <TabsContent value="scheduled" className="mt-4">
-          <div className="space-y-4">
-            {scheduledJobs.length > 0 ? (
-              scheduledJobs.map(job => (
-                <JobItem 
-                  key={job.id} 
-                  job={job} 
-                  application={applications.find(a => a.job_id === job.id)}
-                  userType={user.user_type}
-                />
-              ))
-            ) : (
-              <Card className="text-center p-8">
-                <Clock className="mx-auto w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="font-medium text-gray-800">Nenhum trabalho agendado</h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  {user?.user_type === 'worker' ? "Candidate-se a trabalhos para começar." : "Aceite candidaturas para agendar trabalhos."}
-                </p>
-              </Card>
-            )}
-          </div>
-        </TabsContent>
+      <div className="px-4 pt-4">
+        <Tabs defaultValue="in_progress">
+          <TabsList className="grid w-full grid-cols-3 rounded-2xl bg-gray-100 p-1 h-auto">
+            <TabsTrigger value="scheduled" className="rounded-xl flex flex-col py-2 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <span>Agendados</span>
+              <span className="font-bold text-[#F26522] text-base">{scheduledJobs.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="in_progress" className="rounded-xl flex flex-col py-2 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <span>Em Curso</span>
+              <span className="font-bold text-[#F26522] text-base">{inProgressJobs.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="rounded-xl flex flex-col py-2 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <span>Histórico</span>
+              <span className="font-bold text-[#F26522] text-base">{historyJobs.length}</span>
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="in_progress" className="mt-4">
-          <div className="space-y-4">
-            {inProgressJobs.length > 0 ? (
-              inProgressJobs.map(job => (
-                <JobItem 
-                  key={job.id} 
-                  job={job} 
-                  application={applications.find(a => a.job_id === job.id)}
-                  userType={user.user_type}
-                />
-              ))
-            ) : (
-              <Card className="text-center p-8">
-                <Briefcase className="mx-auto w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="font-medium text-gray-800">Nenhum trabalho em andamento</h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  {user?.user_type === 'worker' ? "Candidate-se a trabalhos para começar." : "Publique e aceite propostas de profissionais."}
-                </p>
-              </Card>
+          <TabsContent value="scheduled" className="mt-4 space-y-3">
+            {scheduledJobs.length > 0 ? scheduledJobs.map(job => (
+              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} />
+            )) : (
+              <EmptyState
+                emoji="📅"
+                title="Nenhum trabalho agendado"
+                description={user?.user_type === 'worker' ? "Candidate-se a obras para começar." : "Publique uma obra e aceite candidaturas."}
+                onCta={user?.user_type === 'employer' ? () => navigate(createPageUrl("NewJob")) : () => navigate(createPageUrl("Home"))}
+                ctaLabel={user?.user_type === 'employer' ? '+ Publicar Nova Obra' : '🗺️ Explorar Obras'}
+              />
             )}
-          </div>
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent value="completed" className="mt-4">
-          <div className="space-y-4">
-            {completedJobs.length > 0 ? (
-              completedJobs.map(job => (
-                <JobItem 
-                  key={job.id} 
-                  job={job}
-                  application={applications.find(a => a.job_id === job.id)}
-                  userType={user.user_type}
-                />
-              ))
-            ) : (
-              <Card className="text-center p-8">
-                <AlertCircle className="mx-auto w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="font-medium text-gray-800">Nenhum trabalho concluído</h3>
-                <p className="text-sm text-gray-500 mt-1">Os trabalhos que finalizar aparecerão aqui.</p>
-              </Card>
+          <TabsContent value="in_progress" className="mt-4 space-y-3">
+            {inProgressJobs.length > 0 ? inProgressJobs.map(job => (
+              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} />
+            )) : (
+              <EmptyState
+                emoji="🔨"
+                title="Nenhum trabalho em curso"
+                description="Os trabalhos aceites e em andamento aparecem aqui."
+                onCta={user?.user_type === 'employer' ? () => navigate(createPageUrl("NewJob")) : () => navigate(createPageUrl("Home"))}
+                ctaLabel={user?.user_type === 'employer' ? '+ Publicar Obra' : '🗺️ Explorar Obras'}
+              />
             )}
-          </div>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+
+          <TabsContent value="history" className="mt-4 space-y-3">
+            {historyJobs.length > 0 ? historyJobs.map(job => (
+              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} />
+            )) : (
+              <EmptyState
+                emoji="🏆"
+                title="Histórico vazio"
+                description="Os trabalhos concluídos e o seu histórico aparecerão aqui."
+              />
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

@@ -70,7 +70,7 @@ export default function ConversationList({ conversations, onSelect, selectedId }
                     {formatLastMessageTime(conversation.last_message.created_date)}
                   </span>
                   {conversation.unread_count > 0 && (
-                    <Badge className="bg-blue-500 text-white min-w-[20px] h-5 p-0 text-xs rounded-full flex items-center justify-center">
+                    <Badge className="bg-[#F26522] text-white min-w-[20px] h-5 p-0 text-xs rounded-full flex items-center justify-center">
                       {conversation.unread_count > 9 ? '9+' : conversation.unread_count}
                     </Badge>
                   )}

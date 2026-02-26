@@ -10,13 +10,9 @@ import {
   MessageCircle,
   User,
   Calendar,
-  LogOut,
-  Settings,
-  MoreVertical,
   FileText,
   Shield,
-  RefreshCw,
-  Languages
+  QrCode
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { translations } from "@/components/utils/translations";

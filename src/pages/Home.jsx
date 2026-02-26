@@ -3,348 +3,419 @@ import { User } from "@/entities/User";
 import { Job } from "@/entities/Job";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Filter, Settings } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Search, MapPin, List, Map, Star, X, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import MapView from "../components/dashboard/MapView";
 import JobModal from "../components/dashboard/JobModal";
-import { translations } from "../components/utils/translations";
 
 const LISBON_COORDS = [38.7223, -9.1393];
+const CATEGORIES = ["Pintura", "Eletricidade", "Canalização", "Alvenaria", "Ladrilhador", "Carpintaria", "Climatização", "Isolamentos", "Pavimentos", "Telhados"];
 
-export default function Home() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [workers, setWorkers] = useState([]);
-  const [jobs, setJobs] = useState([]);
-  const [filteredWorkers, setFilteredWorkers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedWorker, setSelectedWorker] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState("workers"); // workers or jobs
-
-  const t = (key) => {
-    return translations[user?.language || 'PT']?.[key] || translations.PT[key] || key;
-  };
-
-  const categories = ["all", "Pintura", "Eletricidade", "Canalização", "Alvenaria", "Ladrilhador", "Carpintaria", "Climatização", "Isolamentos", "Pavimentos", "Telhados"];
-
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const userData = await User.me();
-      setUser(userData);
-
-      if (!userData.user_type) {
-        navigate(createPageUrl("SetupProfile"));
-        return;
-      }
-
-      // Clientes veem profissionais disponíveis
-      if (userData.user_type === 'employer' || userData.user_type === 'admin') {
-        const allUsers = await User.list();
-        const workerList = allUsers.filter(u => 
-          u.user_type === 'worker' && 
-          u.status === 'active'
-        );
-        setWorkers(workerList);
-        setFilteredWorkers(workerList);
-      }
-      
-      // Carregar trabalhos abertos (para todos)
-      const openJobs = await Job.filter({ status: 'open' });
-      setJobs(openJobs);
-
-    } catch (error) {
-      console.error("Error loading data:", error);
-      if (error.response?.status === 401 || error.message?.includes('401')) {
-        navigate(createPageUrl("SetupProfile"));
-      }
-    }
-    setLoading(false);
-  }, [navigate]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // Redirecionar admin para o dashboard administrativo
-  useEffect(() => {
-    if (user && user.user_type === 'admin') {
-      navigate(createPageUrl("AdminDashboard"));
-    }
-  }, [user, navigate]);
-
-  const filterWorkers = useCallback(() => {
-    let filtered = workers;
-
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter(worker => 
-        worker.skills?.includes(selectedCategory)
-      );
-    }
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(worker =>
-        worker.full_name?.toLowerCase().includes(term) ||
-        worker.city?.toLowerCase().includes(term) ||
-        worker.skills?.some(skill => skill.toLowerCase().includes(term))
-      );
-    }
-
-    setFilteredWorkers(filtered);
-  }, [workers, searchTerm, selectedCategory]);
-
-  useEffect(() => {
-    filterWorkers();
-  }, [filterWorkers]);
-
-  const getCenter = () => {
-    if (user && user.latitude && user.longitude) {
-      return [user.latitude, user.longitude];
-    }
-    return LISBON_COORDS;
-  };
-
-  if (loading) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-gray-50">
-        <Settings className="w-12 h-12 text-gray-400 animate-spin mb-4" />
-        <p className="text-gray-500">A carregar...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">Não autenticado</p>
-          <Button onClick={() => navigate(createPageUrl("SetupProfile"))}>Ir para Login</Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Admin não deve ver esta página
-  if (user.user_type === 'admin') {
-    return null;
-  }
-
-  // Para profissionais, mostrar trabalhos disponíveis
-  if (user.user_type === 'worker') {
-    const filteredJobs = jobs.filter(job => {
-      if (selectedCategory !== "all" && job.category !== selectedCategory) return false;
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        return job.title.toLowerCase().includes(term) ||
-               job.location.toLowerCase().includes(term) ||
-               job.description.toLowerCase().includes(term);
-      }
-      return true;
-    });
-
-    return (
-      <div className="h-screen flex flex-col bg-gray-50">
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Trabalhos Disponíveis</h1>
-          <div className="flex items-center gap-4">
-            <div className="flex-1 max-w-md relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input 
-                placeholder={t('searchPlaceholder')} 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                className="pl-10 h-11" 
-              />
-            </div>
-          </div>
-        </header>
-
-        <div className="bg-white border-b border-gray-200 px-6 py-3">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
-            {categories.map((category) => (
-              <Button 
-                key={category} 
-                variant={selectedCategory === category ? "default" : "outline"} 
-                size="sm" 
-                onClick={() => setSelectedCategory(category)}
-                className="whitespace-nowrap"
-              >
-                {category === "all" ? t('allCategories') : t(category.toLowerCase()) || category}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-hidden">
-          {filteredJobs.length > 0 ? (
-            <MapView 
-              jobs={filteredJobs} 
-              onJobClick={(job) => setSelectedWorker(job)} 
-              center={getCenter()} 
-              radius={10000} 
+// ============================================================
+// EMPLOYER VIEW
+// ============================================================
+function WorkerCard({ worker, onContact, onProfile }) {
+  const stars = Math.min(5, Math.max(1, Math.round(worker.rating || 4)));
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform">
+      <div className="flex items-start gap-3 mb-3">
+        {/* Hexagonal avatar */}
+        <div
+          className="w-14 h-14 flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-[#F26522] to-orange-600 cursor-pointer"
+          style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+          onClick={onProfile}
+        >
+          {worker.avatar_url ? (
+            <img
+              src={worker.avatar_url}
+              alt={worker.full_name}
+              className="w-full h-full object-cover"
+              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
             />
           ) : (
-            <div className="h-full flex flex-col items-center justify-center p-6">
-              <Filter className="w-16 h-16 text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum trabalho encontrado</h3>
-              <p className="text-sm text-gray-500 text-center max-w-md">
-                Não há trabalhos disponíveis com os filtros selecionados. Tente ajustar a sua pesquisa ou categoria.
-              </p>
-            </div>
+            <span className="text-white text-lg font-bold select-none">{worker.full_name?.charAt(0) || "?"}</span>
           )}
         </div>
-
-        {selectedWorker && (
-          <JobModal
-            job={selectedWorker}
-            user={user}
-            onClose={() => setSelectedWorker(null)}
-            onApply={() => {
-              setSelectedWorker(null);
-              loadData();
-            }}
-          />
-        )}
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={onProfile}>
+          <div className="flex items-center gap-1 mb-0.5">
+            <h3 className="font-bold text-gray-900 truncate">{worker.full_name || "Profissional"}</h3>
+            {worker.verified && (
+              <span className="text-[#F26522] font-bold text-sm shrink-0" title="Verificado">φ</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map(i => (
+              <Star key={i} className={`w-3 h-3 ${i <= stars ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />
+            ))}
+            <span className="text-xs text-gray-400 ml-1">{worker.rating ? worker.rating.toFixed(1) : "Novo"}</span>
+          </div>
+          {worker.city && (
+            <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+              <MapPin className="w-3 h-3" />{worker.city}
+            </p>
+          )}
+        </div>
       </div>
-    );
-  }
+      {worker.skills?.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {worker.skills.slice(0, 4).map((skill, i) => (
+            <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{skill}</span>
+          ))}
+          {worker.skills.length > 4 && (
+            <span className="text-xs text-gray-400">+{worker.skills.length - 4}</span>
+          )}
+        </div>
+      )}
+      {worker.bio && (
+        <p className="text-xs text-gray-500 line-clamp-2 mb-3">{worker.bio}</p>
+      )}
+      <Button
+        className="w-full h-10 bg-[#F26522] hover:bg-orange-600 rounded-xl text-sm font-semibold"
+        onClick={onContact}
+      >
+        <Send className="w-4 h-4 mr-2" /> Contactar
+      </Button>
+    </div>
+  );
+}
 
-  // Para clientes/empregadores, mostrar profissionais disponíveis
+function EmployerHome({ user }) {
+  const navigate = useNavigate();
+  const [workers, setWorkers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      const allUsers = await User.list();
+      setWorkers(allUsers.filter(u => u.user_type === 'worker'));
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const filtered = workers.filter(w => {
+    if (selectedCategory !== "all" && !w.skills?.includes(selectedCategory)) return false;
+    if (searchTerm) {
+      const t = searchTerm.toLowerCase();
+      return w.full_name?.toLowerCase().includes(t) ||
+             w.city?.toLowerCase().includes(t) ||
+             w.skills?.some(s => s.toLowerCase().includes(t));
+    }
+    return true;
+  });
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Buscar Profissionais</h1>
-        <div className="flex items-center gap-4">
-          <div className="flex-1 max-w-md relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input 
-              placeholder="Procurar por nome, cidade ou especialidade..." 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)} 
-              className="pl-10 h-11" 
-            />
-          </div>
-          <Button 
-            onClick={() => navigate(createPageUrl("Dashboard"))}
-            className="bg-[#F26522] hover:bg-orange-600 whitespace-nowrap"
-          >
-            <MapPin className="w-4 h-4 mr-2" />
-            Ver Todas as Obras
-          </Button>
+      {/* Search + Filters */}
+      <div className="bg-white px-4 pt-4 pb-3 shadow-sm">
+        <div className="relative mb-3">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Input
+            placeholder="Procurar profissional, cidade ou especialidade..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="pl-12 h-12 rounded-full bg-gray-100 border-0 shadow-sm text-sm"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm("")} className="absolute right-4 top-1/2 -translate-y-1/2">
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+          )}
         </div>
-      </header>
-
-      <div className="bg-white border-b border-gray-200 px-6 py-3">
-        <div className="flex items-center gap-2 overflow-x-auto pb-2">
-          {categories.map((category) => (
-            <Button 
-              key={category} 
-              variant={selectedCategory === category ? "default" : "outline"} 
-              size="sm" 
-              onClick={() => setSelectedCategory(category)}
-              className="whitespace-nowrap"
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          <button
+            onClick={() => setSelectedCategory("all")}
+            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              selectedCategory === "all" ? 'bg-[#F26522] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Todos
+          </button>
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === cat ? 'bg-[#F26522] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
             >
-              {category === "all" ? "Todas Especialidades" : category}
-            </Button>
+              {cat}
+            </button>
           ))}
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredWorkers.length > 0 ? (
-              filteredWorkers.map(worker => (
-                <div 
-                  key={worker.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => navigate(createPageUrl("Profile") + `?userId=${worker.id}`)}
-                >
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="relative w-16 h-16">
-                      <div 
-                        className="w-full h-full bg-gradient-to-br from-[#F26522] to-orange-600"
-                        style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-                      >
-                        {worker.avatar_url ? (
-                          <img 
-                            src={worker.avatar_url} 
-                            alt={worker.full_name}
-                            className="w-full h-full object-cover"
-                            style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-white text-xl font-bold">
-                            {worker.full_name?.charAt(0) || "U"}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-900">{worker.full_name}</h3>
-                      <p className="text-sm text-gray-500 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {worker.city || "Localização não definida"}
-                      </p>
-                      {worker.rating > 0 && (
-                        <p className="text-sm text-yellow-500 font-semibold">
-                          ⭐ {worker.rating.toFixed(1)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {worker.skills && worker.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {worker.skills.slice(0, 3).map((skill, idx) => (
-                        <span 
-                          key={idx}
-                          className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                      {worker.skills.length > 3 && (
-                        <span className="text-xs text-gray-500">
-                          +{worker.skills.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {worker.bio && (
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-4">
-                      {worker.bio}
-                    </p>
-                  )}
-
-                  <Button 
-                    className="w-full bg-[#F26522] hover:bg-orange-600"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(createPageUrl("Chat") + `?userId=${worker.id}`);
-                    }}
-                  >
-                    Contactar
-                  </Button>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <Filter className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="font-medium text-gray-800">Nenhum profissional encontrado</h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Tente ajustar os filtros ou a pesquisa
-                </p>
-              </div>
-            )}
+      {/* Worker List */}
+      <div className="flex-1 overflow-auto px-4 pt-4 pb-24">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-40">
+            <div className="text-5xl font-bold text-[#F26522] animate-pulse select-none">φ</div>
+            <p className="text-gray-400 text-sm mt-2">A carregar profissionais...</p>
           </div>
-        </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="font-bold text-gray-900">Nenhum profissional encontrado</h3>
+            <p className="text-sm text-gray-500 mt-1">Tente outra especialidade ou localidade</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-xs text-gray-400 font-medium">{filtered.length} profissiona{filtered.length === 1 ? 'l' : 'is'} disponíve{filtered.length === 1 ? 'l' : 'is'}</p>
+            {filtered.map(worker => (
+              <WorkerCard
+                key={worker.id}
+                worker={worker}
+                onContact={() => navigate(createPageUrl("Chat") + `?userId=${worker.id}`)}
+                onProfile={() => navigate(createPageUrl("Profile") + `?userId=${worker.id}`)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
+}
+
+// ============================================================
+// WORKER VIEW
+// ============================================================
+function WorkerHome({ user }) {
+  const [jobs, setJobs] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [viewMode, setViewMode] = useState("map");
+  const [sheetJob, setSheetJob] = useState(null);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
+  const [showJobModal, setShowJobModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      const openJobs = await Job.filter({ status: 'open' });
+      setJobs(openJobs);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const filteredJobs = jobs.filter(j =>
+    selectedCategory === "all" || j.category === selectedCategory
+  );
+
+  const getCenter = () =>
+    user?.latitude && user?.longitude ? [user.latitude, user.longitude] : LISBON_COORDS;
+
+  const openSheet = (job) => {
+    setSheetJob(job);
+    setSheetExpanded(false);
+  };
+
+  return (
+    <div className="h-screen flex flex-col relative bg-gray-900">
+      {/* Floating category pills */}
+      <div className="absolute top-4 left-0 right-0 z-10 px-4">
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          <button
+            onClick={() => setSelectedCategory("all")}
+            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold shadow-lg transition-colors ${
+              selectedCategory === "all" ? 'bg-[#F26522] text-white' : 'bg-white/95 text-gray-700'
+            }`}
+          >
+            Todos
+          </button>
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold shadow-lg transition-colors ${
+                selectedCategory === cat ? 'bg-[#F26522] text-white' : 'bg-white/95 text-gray-700'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* List/Map toggle */}
+      <div className="absolute top-16 right-4 z-10">
+        <button
+          onClick={() => setViewMode(v => v === 'map' ? 'list' : 'map')}
+          className="bg-white rounded-full shadow-lg px-4 py-2 flex items-center gap-2 text-sm font-semibold text-gray-700"
+        >
+          {viewMode === 'map' ? <List className="w-4 h-4" /> : <Map className="w-4 h-4" />}
+          {viewMode === 'map' ? 'Lista' : 'Mapa'}
+        </button>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 overflow-hidden">
+        {loading ? (
+          <div className="h-full flex items-center justify-center bg-gray-50">
+            <div className="text-center">
+              <div className="text-6xl font-bold text-[#F26522] animate-pulse">φ</div>
+              <p className="text-gray-500 mt-2">A carregar obras...</p>
+            </div>
+          </div>
+        ) : viewMode === 'map' ? (
+          <MapView
+            jobs={filteredJobs}
+            onJobClick={openSheet}
+            center={getCenter()}
+            radius={10000}
+          />
+        ) : (
+          <div className="h-full overflow-auto pt-28 px-4 pb-28 bg-gray-50 space-y-3">
+            {filteredJobs.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="font-bold text-gray-900">Nenhum trabalho disponível</h3>
+                <p className="text-sm text-gray-500 mt-1">Tente outro filtro de categoria</p>
+              </div>
+            ) : filteredJobs.map(job => (
+              <div
+                key={job.id}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 cursor-pointer active:scale-[0.99] transition-transform"
+                onClick={() => openSheet(job)}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-bold text-gray-900 flex-1 mr-2 text-sm">{job.title}</h3>
+                  <p className="text-xl font-bold text-[#F26522] shrink-0">
+                    €{job.price}{job.price_type === 'hourly' ? '/h' : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <Badge variant="secondary" className="text-xs">{job.category}</Badge>
+                  {job.urgency === 'high' && <Badge className="bg-red-100 text-red-700 text-xs border-0">🔴 Urgente</Badge>}
+                </div>
+                <p className="text-xs text-gray-400 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />{job.location}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Sheet */}
+      {sheetJob && (
+        <>
+          <div className="fixed inset-0 z-[55]" onClick={() => setSheetJob(null)} />
+          <div
+            className="fixed inset-x-0 z-[60] bg-white rounded-t-3xl shadow-2xl transition-all duration-300 overflow-hidden"
+            style={{ bottom: '80px', height: sheetExpanded ? '72vh' : '32vh' }}
+          >
+            {/* Drag handle */}
+            <div
+              className="flex justify-center pt-3 pb-2 cursor-pointer"
+              onClick={() => setSheetExpanded(e => !e)}
+            >
+              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            </div>
+            <button
+              onClick={() => setSheetJob(null)}
+              className="absolute top-3 right-4 p-1.5 rounded-full hover:bg-gray-100"
+            >
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+
+            <div className="px-5 overflow-auto h-full pb-8">
+              <Badge variant="secondary" className="mb-2">{sheetJob.category}</Badge>
+              <p className="font-bold text-gray-900 text-lg leading-tight">{sheetJob.title}</p>
+              <p className="text-4xl font-bold text-[#F26522] mt-1">
+                €{sheetJob.price}
+                {sheetJob.price_type === 'hourly' && <span className="text-base font-normal text-gray-400">/h</span>}
+              </p>
+              <div className="flex items-center gap-3 mt-2">
+                {sheetJob.urgency === 'high' && <Badge className="bg-red-100 text-red-700 border-0 text-xs">🔴 Urgente</Badge>}
+                <span className="text-xs text-gray-400 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />{sheetJob.location}
+                </span>
+              </div>
+
+              {sheetExpanded && (
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Descrição</p>
+                    <p className="text-sm text-gray-600">{sheetJob.description}</p>
+                  </div>
+                  {sheetJob.start_date && (
+                    <p className="text-sm text-gray-500">📅 Início previsto: {sheetJob.start_date}</p>
+                  )}
+                  <Button
+                    className="w-full h-12 bg-[#F26522] hover:bg-orange-600 rounded-2xl text-base font-bold shadow-lg shadow-[#F26522]/20"
+                    onClick={() => setShowJobModal(true)}
+                  >
+                    Candidatar-me
+                  </Button>
+                </div>
+              )}
+
+              {!sheetExpanded && (
+                <p className="text-xs text-gray-400 mt-4 text-center">↑ Deslize para ver detalhes e candidatar-se</p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Full job modal for apply form */}
+      {showJobModal && sheetJob && (
+        <JobModal
+          job={sheetJob}
+          user={user}
+          onClose={() => setShowJobModal(false)}
+          onApply={() => { setShowJobModal(false); setSheetJob(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// MAIN
+// ============================================================
+export default function Home() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const userData = await User.me();
+        setUser(userData);
+        if (!userData.user_type) {
+          navigate(createPageUrl("SetupProfile"));
+          return;
+        }
+        if (userData.user_type === 'admin') {
+          navigate(createPageUrl("AdminDashboard"));
+          return;
+        }
+      } catch {
+        navigate(createPageUrl("SetupProfile"));
+      }
+      setLoading(false);
+    };
+    load();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="text-7xl font-bold text-[#F26522] animate-pulse select-none">φ</div>
+          <p className="text-gray-400 mt-3 text-sm">A carregar...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || user.user_type === 'admin') return null;
+  if (user.user_type === 'worker') return <WorkerHome user={user} />;
+  return <EmployerHome user={user} />;
 }
