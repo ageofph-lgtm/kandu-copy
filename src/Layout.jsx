@@ -85,9 +85,7 @@ export default function Layout({ children }) {
 
     } catch (error) {
       if (location.pathname !== createPageUrl("SetupProfile")) {
-        if (error.response?.status === 401 || error.message?.includes('401') || error.message === "User not found") {
-          navigate(createPageUrl("SetupProfile"));
-        }
+        navigate(createPageUrl("SetupProfile"));
       }
     }
   }, [navigate, location.pathname]);
