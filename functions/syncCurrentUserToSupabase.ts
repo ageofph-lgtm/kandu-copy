@@ -5,9 +5,49 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Detectar colunas da tabela tentando um select
+async function getTableColumns() {
+  try {
+    const { data, error } = await supabase.from('users').select('*').limit(1);
+    if (error || !data) return null;
+    if (data.length > 0) return new Set(Object.keys(data[0]));
+    // Tabela vazia - tentar com insert de teste
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Tentar upsert e remover campos que causam erro
+async function upsertWithFallback(data) {
+  const { error } = await supabase.from('users').upsert(data, { onConflict: 'id' });
+  if (!error) return { success: true };
+
+  // Remover campo que causou erro e tentar de novo
+  const msg = error.message || '';
+  const match = msg.match(/column of '(\w+)' in the schema cache/);
+  const colMatch = msg.match(/Could not find the '(\w+)'/);
+  
+  if (colMatch) {
+    const badCol = colMatch[1];
+    console.log('Removing bad column:', badCol);
+    const newData = { ...data };
+    delete newData[badCol];
+    return upsertWithFallback(newData);
+  }
+
+  return { success: false, error: error.message };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': '*' } });
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': '*'
+      }
+    });
   }
 
   try {
@@ -18,20 +58,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1. Descobrir quais colunas existem na tabela users do Supabase
-    const { data: cols, error: colsError } = await supabase
-      .from('information_schema.columns')
-      .select('column_name')
-      .eq('table_name', 'users')
-      .eq('table_schema', 'public');
-
-    let availableColumns = new Set();
-    if (!colsError && cols) {
-      cols.forEach(c => availableColumns.add(c.column_name));
-    }
-
-    // 2. Mapa completo de dados do utilizador
-    const allData = {
+    // Dados completos do utilizador
+    const userData = {
       id: user.id,
       email: user.email,
       full_name: user.full_name,
@@ -56,65 +84,14 @@ Deno.serve(async (req) => {
       updated_at: new Date().toISOString(),
     };
 
-    // 3. Construir objeto apenas com colunas que existem
-    let userData;
-    if (availableColumns.size > 0) {
-      userData = {};
-      for (const [key, val] of Object.entries(allData)) {
-        if (availableColumns.has(key)) {
-          userData[key] = val;
-        }
-      }
-      // Garantir que id e email estão sempre presentes
-      userData.id = user.id;
-      userData.email = user.email;
-    } else {
-      // Fallback: tentar com campos mínimos
-      userData = {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        user_type: user.user_type || null,
-        phone: user.phone || null,
-        bio: user.bio || null,
-        location: user.location || null,
-        avatar_url: user.avatar_url || null,
-        documents: user.documents || [],
-        updated_at: new Date().toISOString(),
-      };
+    // Tentar upsert removendo automaticamente colunas que não existem
+    const result = await upsertWithFallback(userData);
+
+    if (!result.success) {
+      return Response.json({ error: result.error }, { status: 500 });
     }
 
-    console.log('Upserting columns:', Object.keys(userData));
-
-    // 4. Fazer upsert
-    const { error } = await supabase
-      .from('users')
-      .upsert(userData, { onConflict: 'id' });
-
-    if (error) {
-      console.error('Supabase upsert error:', error);
-
-      // Tentar fallback com campos mínimos
-      const minimalData = {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        user_type: user.user_type || null,
-        avatar_url: user.avatar_url || null,
-      };
-
-      const { error: error2 } = await supabase
-        .from('users')
-        .upsert(minimalData, { onConflict: 'id' });
-
-      if (error2) {
-        return Response.json({ error: error2.message, original_error: error.message }, { status: 500 });
-      }
-
-      return Response.json({ success: true, warning: 'Used minimal fallback', skipped_error: error.message });
-    }
-
-    return Response.json({ success: true, synced_columns: Object.keys(userData) });
+    return Response.json({ success: true });
   } catch (error) {
     console.error('Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
