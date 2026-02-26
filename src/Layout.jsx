@@ -135,8 +135,11 @@ export default function Layout({ children }) {
   }, [location.pathname, markApplicationNotificationsAsRead]);
 
 
-  // Se é página de setup, não mostrar layout
-  if (location.pathname === createPageUrl("SetupProfile")) {
+  // Páginas sem layout
+  if (
+    location.pathname === createPageUrl("SetupProfile") ||
+    location.pathname === createPageUrl("Welcome")
+  ) {
     return children;
   }
 
