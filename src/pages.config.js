@@ -80,7 +80,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "SetupProfile",
+    mainPage: "Welcome",
     Pages: PAGES,
     Layout: __Layout,
 };
