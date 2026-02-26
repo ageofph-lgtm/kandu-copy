@@ -84,8 +84,10 @@ export default function Layout({ children }) {
       });
 
     } catch (error) {
-      if (location.pathname !== createPageUrl("SetupProfile")) {
-        navigate(createPageUrl("SetupProfile"));
+      const setupUrl = createPageUrl("SetupProfile");
+      const welcomeUrl = createPageUrl("Welcome");
+      if (location.pathname !== setupUrl && location.pathname !== welcomeUrl) {
+        navigate(welcomeUrl);
       }
     }
   }, [navigate, location.pathname]);
