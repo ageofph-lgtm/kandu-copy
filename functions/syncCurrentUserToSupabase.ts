@@ -1,65 +1,57 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { createClient } from 'npm:@supabase/supabase-js@2.39.3';
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL'),
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+);
 
-// Detectar colunas da tabela tentando um select
-async function getTableColumns() {
+// Cache das colunas para evitar queries repetidas
+let cachedColumns = null;
+
+async function getExistingColumns() {
+  if (cachedColumns) return cachedColumns;
   try {
-    const { data, error } = await supabase.from('users').select('*').limit(1);
-    if (error || !data) return null;
-    if (data.length > 0) return new Set(Object.keys(data[0]));
-    // Tabela vazia - tentar com insert de teste
+    const { data } = await supabase.from('users').select('*').limit(0);
+    // Se chegou aqui sem erro, tenta uma query para ver as colunas
+    const res = await supabase.rpc('get_table_columns', { tbl: 'users' }).maybeSingle();
     return null;
   } catch {
     return null;
   }
 }
 
-// Tentar upsert e remover campos que causam erro
-async function upsertWithFallback(data) {
-  const { error } = await supabase.from('users').upsert(data, { onConflict: 'id' });
-  if (!error) return { success: true };
+// Upsert que remove automaticamente colunas inválidas
+async function smartUpsert(data, maxRetries = 15) {
+  let current = { ...data };
+  for (let i = 0; i < maxRetries; i++) {
+    const { error } = await supabase.from('users').upsert(current, { onConflict: 'id' });
+    if (!error) return { success: true, columns: Object.keys(current) };
 
-  // Remover campo que causou erro e tentar de novo
-  const msg = error.message || '';
-  const match = msg.match(/column of '(\w+)' in the schema cache/);
-  const colMatch = msg.match(/Could not find the '(\w+)'/);
-  
-  if (colMatch) {
-    const badCol = colMatch[1];
-    console.log('Removing bad column:', badCol);
-    const newData = { ...data };
-    delete newData[badCol];
-    return upsertWithFallback(newData);
+    const match = error.message?.match(/Could not find the '(\w+)'/);
+    if (match) {
+      console.log(`Column '${match[1]}' not found in Supabase, skipping.`);
+      delete current[match[1]];
+    } else {
+      return { success: false, error: error.message };
+    }
   }
-
-  return { success: false, error: error.message };
+  return { success: false, error: 'Max retries exceeded' };
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': '*'
-      }
+      headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': '*' }
     });
   }
 
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Dados completos do utilizador
-    const userData = {
+    const result = await smartUpsert({
       id: user.id,
       email: user.email,
       full_name: user.full_name,
@@ -82,18 +74,14 @@ Deno.serve(async (req) => {
       portfolio: user.portfolio || [],
       status: user.status || 'active',
       updated_at: new Date().toISOString(),
-    };
-
-    // Tentar upsert removendo automaticamente colunas que não existem
-    const result = await upsertWithFallback(userData);
+    });
 
     if (!result.success) {
       return Response.json({ error: result.error }, { status: 500 });
     }
 
-    return Response.json({ success: true });
+    return Response.json({ success: true, synced: result.columns });
   } catch (error) {
-    console.error('Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
