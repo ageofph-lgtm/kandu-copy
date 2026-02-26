@@ -97,14 +97,13 @@ export default function Profile() {
   };
 
   const handleChangeProfile = async () => {
-            try {
-              await User.updateMyUserData({ user_type: null });
-              // Hard navigate to ensure all state is reset
-              window.location.href = createPageUrl("SetupProfile");
-            } catch (error) {
-              console.error("Error changing profile:", error);
-            }
-          };
+    try {
+      await base44.auth.updateMe({ user_type: null });
+      window.location.href = createPageUrl("SetupProfile");
+    } catch (error) {
+      console.error("Error changing profile:", error);
+    }
+  };
 
   if (loading) {
     return (
