@@ -122,7 +122,7 @@ export default function Profile() {
           <p className="text-gray-500 mb-4">Não autenticado</p>
           <Button 
             className="bg-[#F26522] hover:bg-orange-600"
-            onClick={() => User.loginWithRedirect(window.location.href)}
+            onClick={() => base44.auth.redirectToLogin(window.location.href)}
           >
             Fazer Login
           </Button>
