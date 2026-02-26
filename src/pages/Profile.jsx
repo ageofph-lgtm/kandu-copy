@@ -93,7 +93,7 @@ export default function Profile() {
   };
 
   const handleLogout = async () => {
-    await base44.auth.logout(createPageUrl("SetupProfile"));
+    await base44.auth.logout();
   };
 
   const handleChangeProfile = async () => {
