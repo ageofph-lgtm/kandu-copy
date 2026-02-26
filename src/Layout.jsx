@@ -155,7 +155,8 @@ export default function Layout({ children }) {
         <div className="flex-1 flex flex-col min-h-0 bg-white border-r border-gray-200">
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-4 mb-8">
-              <h1 className="text-xl font-bold text-blue-600">Eos</h1>
+              <span className="text-3xl font-bold text-[#F26522] select-none">φ</span>
+              <span className="ml-2 text-lg font-bold text-gray-900">KANDU</span>
             </div>
             <nav className="flex-1 px-2 space-y-1">
               {navItems.map((item) => {
@@ -210,8 +211,8 @@ export default function Layout({ children }) {
       </div>
 
       {/* --- Barra de Navegação Inferior (Mobile) --- */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-50 px-2 pb-4 pt-2">
-        <div className="flex justify-between items-end max-w-sm mx-auto">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 md:hidden z-50 px-2 pb-safe pt-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        <div className="flex justify-between items-end max-w-sm mx-auto pb-2">
           {/* Início */}
           <Link
             to={createPageUrl("Home")}
@@ -220,7 +221,8 @@ export default function Layout({ children }) {
             }`}
           >
             <MapPin className="w-6 h-6" />
-            <span className="text-[10px] mt-1 font-medium">Início</span>
+            {location.pathname === createPageUrl("Home") && <span className="w-1 h-1 bg-[#F26522] rounded-full mt-1" />}
+            <span className="text-[10px] mt-0.5 font-medium">Início</span>
           </Link>
 
           {/* Meus Trabalhos */}
@@ -233,23 +235,34 @@ export default function Layout({ children }) {
             <div className="relative">
               <FileText className="w-6 h-6" />
               {unreadNotifications.applications > 0 && (
-                <Badge className="absolute -top-1 -right-2 h-4 w-4 p-0 flex items-center justify-center text-xs bg-red-500">
+                <Badge className="absolute -top-1 -right-2 h-4 w-4 p-0 flex items-center justify-center text-xs bg-[#F26522]">
                   {unreadNotifications.applications > 9 ? '9+' : unreadNotifications.applications}
                 </Badge>
               )}
             </div>
-            <span className="text-[10px] mt-1 font-medium">Trabalhos</span>
+            {location.pathname === createPageUrl("MyJobs") && <span className="w-1 h-1 bg-[#F26522] rounded-full mt-1" />}
+            <span className="text-[10px] mt-0.5 font-medium">Trabalhos</span>
           </Link>
 
-          {/* Botão Central + (Hexágono) */}
-          <div className="relative -top-4 flex flex-col items-center w-16">
-            <Link
-              to={createPageUrl("NewJob")}
-              className="w-14 h-14 bg-[#F26522] text-white flex items-center justify-center shadow-lg shadow-[#F26522]/30"
-              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-            >
-              <span className="text-3xl font-light">+</span>
-            </Link>
+          {/* FAB Central — role-aware */}
+          <div className="relative -top-5 flex flex-col items-center w-16">
+            {user?.user_type === 'worker' ? (
+              <Link
+                to={createPageUrl("Scan")}
+                className="w-14 h-14 bg-[#F26522] text-white flex items-center justify-center shadow-xl shadow-[#F26522]/40 hover:bg-orange-600 transition-colors"
+                style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+              >
+                <QrCode className="w-6 h-6" />
+              </Link>
+            ) : (
+              <Link
+                to={createPageUrl("NewJob")}
+                className="w-14 h-14 bg-[#F26522] text-white flex items-center justify-center shadow-xl shadow-[#F26522]/40 hover:bg-orange-600 transition-colors"
+                style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+              >
+                <span className="text-3xl font-light leading-none">+</span>
+              </Link>
+            )}
           </div>
 
           {/* Chat */}
@@ -262,12 +275,13 @@ export default function Layout({ children }) {
             <div className="relative">
               <MessageCircle className="w-6 h-6" />
               {unreadNotifications.chat > 0 && (
-                <Badge className="absolute -top-1 -right-2 h-4 w-4 p-0 flex items-center justify-center text-xs bg-red-500">
+                <Badge className="absolute -top-1 -right-2 h-4 w-4 p-0 flex items-center justify-center text-xs bg-[#F26522]">
                   {unreadNotifications.chat > 9 ? '9+' : unreadNotifications.chat}
                 </Badge>
               )}
             </div>
-            <span className="text-[10px] mt-1 font-medium">Chat</span>
+            {location.pathname === createPageUrl("Chat") && <span className="w-1 h-1 bg-[#F26522] rounded-full mt-1" />}
+            <span className="text-[10px] mt-0.5 font-medium">Chat</span>
           </Link>
 
           {/* Perfil */}
@@ -278,7 +292,8 @@ export default function Layout({ children }) {
             }`}
           >
             <User className="w-6 h-6" />
-            <span className="text-[10px] mt-1 font-medium">Perfil</span>
+            {location.pathname === createPageUrl("Profile") && <span className="w-1 h-1 bg-[#F26522] rounded-full mt-1" />}
+            <span className="text-[10px] mt-0.5 font-medium">Perfil</span>
           </Link>
         </div>
       </nav>
