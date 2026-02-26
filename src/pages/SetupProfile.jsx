@@ -43,9 +43,15 @@ export default function SetupProfile() {
     const checkUser = async () => {
       setLoading(true);
       try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (!isAuth) {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
         const userData = await base44.auth.me();
         setUser(userData);
-        if (userData.user_type) {
+        if (userData?.user_type) {
           navigate(createPageUrl("Home"));
           return;
         }
