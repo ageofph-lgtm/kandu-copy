@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import ProfileForm from "../components/profile/ProfileForm";
+import DocumentsList from "../components/profile/DocumentsList";
 
 export default function Profile() {
   const navigate = useNavigate();
