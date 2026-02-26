@@ -92,6 +92,7 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
     if (!confirm("Remover este documento?")) return;
     const updated = documents.filter((_, i) => i !== idx);
     await User.updateMyUserData({ documents: updated });
+    try { await base44.functions.invoke('syncCurrentUserToSupabase', {}); } catch(e) {}
     onUpdate();
   };
 
