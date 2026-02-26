@@ -353,6 +353,15 @@ export default function Profile() {
           </div>
         </section>
 
+        {/* Documents Section */}
+        <section className="mb-8">
+          <DocumentsList
+            documents={user.documents || []}
+            onUpdate={loadUser}
+            canEdit={true}
+          />
+        </section>
+
         {/* Reviews Section */}
         <section className="mb-8">
           <h2 className="text-lg font-bold text-[#1E293B] mb-4">Avaliações</h2>
