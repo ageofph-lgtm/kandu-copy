@@ -74,6 +74,9 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
       const updated = [...documents, newDoc];
       await User.updateMyUserData({ documents: updated });
 
+      // Sync to Supabase
+      try { await base44.functions.invoke('syncCurrentUserToSupabase', {}); } catch(e) {}
+
       setShowDialog(false);
       setDocName("");
       setDocType("");
