@@ -73,14 +73,6 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
       const updated = [...documents, newDoc];
       await User.updateMyUserData({ documents: updated });
 
-      // Sync to Supabase
-      await base44.functions.invoke('supabase', {
-        action: 'upload_file',
-        file_url,
-        file_name: file.name,
-        bucket: 'kandu-files',
-      });
-
       setShowDialog(false);
       setDocName("");
       setDocType("");
