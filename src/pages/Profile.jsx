@@ -84,6 +84,7 @@ export default function Profile() {
       const { file_url } = await UploadFile({ file });
       await User.updateMyUserData({ avatar_url: file_url });
       await loadUser();
+      await syncToSupabase();
     } catch (error) {
       console.error("Error uploading avatar:", error);
     } finally {
