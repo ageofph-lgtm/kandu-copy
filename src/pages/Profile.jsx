@@ -57,11 +57,20 @@ export default function Profile() {
     setLoading(false);
   };
 
+  const syncToSupabase = async () => {
+    try {
+      await base44.functions.invoke('syncCurrentUserToSupabase', {});
+    } catch (e) {
+      console.error("Supabase sync error:", e);
+    }
+  };
+
   const handleSave = async (profileData) => {
     try {
       await User.updateMyUserData(profileData);
       await loadUser();
       setIsEditing(false);
+      await syncToSupabase();
     } catch (error) {
       console.error("Error updating profile:", error);
     }
