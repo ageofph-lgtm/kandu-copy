@@ -72,36 +72,17 @@ export default function ChatWindow({
 
   const getMessageStyle = (message, isOwn) => {
     if (isOwn) {
-      // Mensagem do usuário atual
-      if (currentUser.user_type === 'employer') {
-        return {
-          container: 'justify-end',
-          bubble: 'bg-gray-800 text-white rounded-l-lg rounded-tr-lg',
-          time: 'text-gray-300'
-        };
-      } else {
-        return {
-          container: 'justify-end',
-          bubble: 'bg-blue-500 text-white rounded-l-lg rounded-tr-lg',
-          time: 'text-blue-100'
-        };
-      }
-    } else {
-      // Mensagem do outro usuário
-      if (conversation.other_user.user_type === 'employer') {
-        return {
-          container: 'justify-start',
-          bubble: 'bg-gray-800 text-white rounded-r-lg rounded-tl-lg border',
-          time: 'text-gray-300'
-        };
-      } else {
-        return {
-          container: 'justify-start',
-          bubble: 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg border',
-          time: 'text-blue-100'
-        };
-      }
+      return {
+        container: 'justify-end',
+        bubble: 'bg-[#F26522] text-white rounded-l-2xl rounded-tr-2xl',
+        time: 'text-orange-200'
+      };
     }
+    return {
+      container: 'justify-start',
+      bubble: 'bg-white text-gray-900 rounded-r-2xl rounded-tl-2xl shadow-sm border border-gray-100',
+      time: 'text-gray-400'
+    };
   };
 
   return (
@@ -226,49 +207,42 @@ export default function ChatWindow({
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white border-t border-gray-200">
-        <div className="flex items-center gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,.pdf,.doc,.docx"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-          
+      <div className="p-3 bg-white border-t border-gray-100 pb-safe">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf,.doc,.docx"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+        <div className="flex items-center gap-2 bg-gray-50 rounded-2xl px-3 py-1 border border-gray-200">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
+            className="shrink-0 h-8 w-8 text-gray-400 hover:text-[#F26522]"
           >
             <Paperclip className="w-4 h-4" />
           </Button>
-          
           <Input
             placeholder="Escreva uma mensagem..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="flex-1"
+            className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 px-0 text-sm"
           />
-          
-          <Button 
+          <Button
             onClick={handleSend}
             disabled={!newMessage.trim() || isUploading}
             size="icon"
-            className={`${
-              currentUser.user_type === 'employer' 
-                ? 'bg-gray-800 hover:bg-gray-700' 
-                : 'bg-blue-500 hover:bg-blue-600'
-            } text-white`}
+            className="shrink-0 h-9 w-9 bg-[#F26522] hover:bg-orange-600 rounded-xl"
           >
             <Send className="w-4 h-4" />
           </Button>
         </div>
-        
         {isUploading && (
-          <p className="text-sm text-gray-500 mt-2">Enviando arquivo...</p>
+          <p className="text-xs text-gray-400 mt-1 text-center">A enviar...</p>
         )}
       </div>
     </>
