@@ -83,6 +83,29 @@ export default function SetupProfile() {
     );
   }
 
+  // Não autenticado — mostrar ecrã de login
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col items-center justify-center px-6">
+        <div className="text-center mb-10">
+          <div className="text-7xl font-bold text-[#F26522] select-none mb-4">φ</div>
+          <h1 className="text-3xl font-bold text-gray-900">KANDU</h1>
+          <p className="text-gray-500 mt-2">A plataforma de profissionais de construção</p>
+        </div>
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl p-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">Entrar na plataforma</h2>
+          <p className="text-sm text-gray-500 text-center mb-6">Faça login ou crie uma conta para continuar</p>
+          <Button
+            onClick={() => base44.auth.redirectToLogin(window.location.href)}
+            className="w-full h-12 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-lg shadow-[#F26522]/30"
+          >
+            Entrar / Criar Conta
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const profile = profileTypes[activeIndex];
 
   return (
