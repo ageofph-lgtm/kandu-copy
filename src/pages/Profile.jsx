@@ -30,6 +30,7 @@ import {
 
 import ProfileForm from "../components/profile/ProfileForm";
 import DocumentsList from "../components/profile/DocumentsList";
+import { base44 } from "@/api/base44Client";
 
 export default function Profile() {
   const navigate = useNavigate();
