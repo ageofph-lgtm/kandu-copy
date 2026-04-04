@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, 
   Send, 
-  Paperclip, 
-  Image as ImageIcon, 
+  Paperclip,
   FileText,
   Shield,
-  User
+  User,
+  Briefcase
 } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
@@ -136,6 +136,19 @@ export default function ChatWindow({
           </div>
         </div>
       </div>
+
+      {/* Job context banner */}
+      {conversation.job_context && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-orange-50 border-b border-orange-100">
+          <Briefcase className="w-4 h-4 text-[#F26522] shrink-0" />
+          <p className="text-xs text-orange-700 font-medium truncate">
+            Obra: {conversation.job_context.job.title}
+          </p>
+          <span className="text-xs text-orange-400 ml-auto shrink-0">
+            {conversation.job_context.job.location}
+          </span>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">

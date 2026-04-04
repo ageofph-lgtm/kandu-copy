@@ -1,8 +1,9 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { ChatMessage } from "@/entities/ChatMessage";
 import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
+import { Application } from "@/entities/Application";
+import { Job } from "@/entities/Job";
 import { Button } from "@/components/ui/button";
 import { 
   MessageCircle,
@@ -16,6 +17,7 @@ import ChatWindow from "../components/chat/ChatWindow";
 
 export default function Chat() {
   const [conversations, setConversations] = useState([]);
+  const [archivedConversations, setArchivedConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [user, setUser] = useState(null);
@@ -32,60 +34,94 @@ export default function Chat() {
     }
   }, []);
 
+  const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+
   const loadConversations = useCallback(async (currentUser) => {
     if (!currentUser) return;
     try {
       const allMessages = await ChatMessage.list("-created_date");
       const userCache = new Map();
       const conversationMap = new Map();
-      
+
       const getUser = async (userId) => {
-          if (userCache.has(userId)) return userCache.get(userId);
-          const [userData] = await User.filter({ id: userId });
-          if(userData) userCache.set(userId, userData);
-          return userData;
+        if (userCache.has(userId)) return userCache.get(userId);
+        const [userData] = await User.filter({ id: userId });
+        if (userData) userCache.set(userId, userData);
+        return userData;
+      };
+
+      // Load accepted applications to determine job context
+      const acceptedApps = await Application.filter({ status: 'accepted' });
+      const jobCache = new Map();
+      const getJob = async (jobId) => {
+        if (jobCache.has(jobId)) return jobCache.get(jobId);
+        const [job] = await Job.filter({ id: jobId });
+        if (job) jobCache.set(jobId, job);
+        return job;
       };
 
       for (const message of allMessages) {
-        let isParticipant = message.sender_id === currentUser.id || message.receiver_id === currentUser.id;
-
+        const isParticipant = message.sender_id === currentUser.id || message.receiver_id === currentUser.id;
         if (currentUser.user_type === 'admin' || isParticipant) {
           const conversationId = message.conversation_id;
-          
           if (!conversationMap.has(conversationId)) {
             const user1 = await getUser(message.sender_id);
             const user2 = await getUser(message.receiver_id);
-            
             if (user1 && user2) {
               const otherUser = user1.id === currentUser.id ? user2 : user1;
+              // Find job context: accepted application between these two users
+              const relatedApp = acceptedApps.find(app =>
+                (app.worker_id === user1.id || app.worker_id === user2.id) &&
+                (app.worker_id !== app.worker_id || true) // check both participants
+              );
+              const jobLinkedApp = acceptedApps.find(app => {
+                const ids = [user1.id, user2.id];
+                return ids.includes(app.worker_id);
+              });
+              let jobContext = null;
+              if (jobLinkedApp) {
+                const job = await getJob(jobLinkedApp.job_id);
+                if (job && (job.employer_id === user1.id || job.employer_id === user2.id)) {
+                  jobContext = { job, application: jobLinkedApp };
+                }
+              }
               conversationMap.set(conversationId, {
                 conversation_id: conversationId,
                 participants: [user1, user2],
-                other_user: otherUser, // Mantém para compatibilidade
+                other_user: otherUser,
                 last_message: message,
-                unread_count: 0
+                unread_count: 0,
+                job_context: jobContext
               });
             }
           }
-          
           const conversation = conversationMap.get(conversationId);
           if (conversation) {
-              if (new Date(message.created_date) > new Date(conversation.last_message.created_date)) {
-                conversation.last_message = message;
-              }
-              if (!message.is_read && message.receiver_id === currentUser.id) {
-                conversation.unread_count = (conversation.unread_count || 0) + 1;
-              }
+            if (new Date(message.created_date) > new Date(conversation.last_message.created_date)) {
+              conversation.last_message = message;
+            }
+            if (!message.is_read && message.receiver_id === currentUser.id) {
+              conversation.unread_count = (conversation.unread_count || 0) + 1;
+            }
           }
         }
       }
 
-      const conversationList = Array.from(conversationMap.values());
-      conversationList.sort((a, b) =>
+      const now = Date.now();
+      const allConvs = Array.from(conversationMap.values());
+      allConvs.sort((a, b) =>
         new Date(b.last_message.created_date) - new Date(a.last_message.created_date)
       );
 
-      setConversations(conversationList);
+      const active = allConvs.filter(c =>
+        now - new Date(c.last_message.created_date).getTime() < TWO_WEEKS_MS
+      );
+      const archived = allConvs.filter(c =>
+        now - new Date(c.last_message.created_date).getTime() >= TWO_WEEKS_MS
+      );
+
+      setConversations(active);
+      setArchivedConversations(archived);
     } catch (error) {
       console.error("Error loading conversations:", error);
     }
@@ -208,6 +244,7 @@ export default function Chat() {
         </div>
         <ConversationList
           conversations={conversations}
+          archivedConversations={archivedConversations}
           onSelect={setSelectedConversation}
           selectedId={selectedConversation?.conversation_id}
         />
