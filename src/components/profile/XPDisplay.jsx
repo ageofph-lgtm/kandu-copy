@@ -1,17 +1,6 @@
 import React from "react";
 import { Zap } from "lucide-react";
-
-const XP_LEVELS = [
-  { name: "Novato", min: 0, max: 999, color: "from-gray-400 to-gray-500" },
-  { name: "Aprendiz", min: 1000, max: 4999, color: "from-blue-400 to-blue-500" },
-  { name: "Profissional", min: 5000, max: 14999, color: "from-[#F26522] to-orange-600" },
-  { name: "Especialista", min: 15000, max: 39999, color: "from-purple-500 to-purple-700" },
-  { name: "Mestre", min: 40000, max: Infinity, color: "from-yellow-400 to-yellow-600" }
-];
-
-export function getXPLevel(xp = 0) {
-  return XP_LEVELS.find(l => xp >= l.min && xp <= l.max) || XP_LEVELS[0];
-}
+import { XP_LEVELS, getXPLevel } from "@/lib/xp";
 
 export default function XPDisplay({ xp = 0 }) {
   const current = getXPLevel(xp);

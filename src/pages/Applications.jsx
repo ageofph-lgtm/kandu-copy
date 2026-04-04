@@ -14,6 +14,7 @@ import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import CompletionModal from "../components/applications/CompletionModal";
+import { applyXP, XP_EVENTS } from "@/lib/xp";
 
 function ApplicationCard({ application, job, applicant, employer, onAccept, onDecline, onComplete, onStartJob, onDelete, userType, currentUser }) {
   const finalPrice = application.proposed_price || job.price;
@@ -153,11 +154,15 @@ export default function Applications() {
       await Application.update(app.id, { status: "accepted" });
       await Job.update(app.job_id, { status: 'in_progress', worker_id: app.worker_id, price: finalPrice });
 
+      // XP ao worker por candidatura aceite
+      const worker = await User.filter({ id: app.worker_id }).then(r => r[0]);
+      if (worker) await User.update(worker.id, applyXP(worker.xp || 0, XP_EVENTS.application_accepted));
+
       await Notification.create({
         user_id: app.worker_id,
         type: "job_accepted",
-        title: "🎉 Proposta Aceite!",
-        message: `A sua candidatura para "${job.title}" foi aceite.`,
+        title: "🎉 Proposta Aceite! +25 XP",
+        message: `A sua candidatura para "${job.title}" foi aceite. Ganhou 25 XP!`,
         related_id: app.job_id,
         action_url: createPageUrl("Applications"),
       });

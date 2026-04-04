@@ -1,6 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { Rating } from "@/entities/Rating";
+import { calcJobXP, applyXP, XP_EVENTS } from "@/lib/xp";
+import XPGainToast from "@/components/XPGainToast";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
@@ -43,6 +44,7 @@ export default function CompletionModal({
   const [selectedQualities, setSelectedQualities] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [qualities, setQualities] = useState([]);
+  const [xpToast, setXpToast] = useState({ show: false, gained: 0, total: 0 });
 
   useEffect(() => {
     if (otherUser?.user_type === 'worker') {
@@ -51,14 +53,6 @@ export default function CompletionModal({
       setQualities(EMPLOYER_QUALITIES);
     }
   }, [otherUser]);
-
-  const calculateXP = (rating, jobPrice, isEarly = false) => {
-    let baseXP = Math.min(Math.max(jobPrice * 0.1, 10), 100);
-    const ratingMultiplier = rating / 5;
-    const speedBonus = isEarly ? 1.2 : 1;
-    const finalXP = Math.round(baseXP * ratingMultiplier * speedBonus);
-    return finalXP;
-  };
 
   const checkIfEarly = () => {
     if (!job.end_date) return false;
@@ -94,19 +88,21 @@ export default function CompletionModal({
         qualities: selectedQualities
       });
 
-      // Calcula XP e novo rating para o utilizador avaliado
-      const xpGained = calculateXP(rating, job.price, checkIfEarly());
-      const currentXP = otherUser.xp || 0;
-      const newXP = currentXP + xpGained;
+      // XP para o utilizador avaliado
+      const xpGained = calcJobXP(rating, job.price, checkIfEarly());
+      const updatedOther = applyXP(otherUser.xp || 0, xpGained);
       const existingRatings = await Rating.filter({ rated_id: otherUser.id });
       const totalRatings = existingRatings.length + 1;
       const ratingSum = existingRatings.reduce((sum, r) => sum + r.rating, 0) + rating;
       const newAvgRating = (ratingSum / totalRatings).toFixed(1);
-      
-      await User.update(otherUser.id, {
-        xp: newXP,
-        rating: parseFloat(newAvgRating)
-      });
+
+      await User.update(otherUser.id, { ...updatedOther, rating: parseFloat(newAvgRating) });
+
+      // XP para o utilizador atual (por concluir/avaliar)
+      const selfXPGained = XP_EVENTS.job_completed_self;
+      const updatedSelf = applyXP(currentUser.xp || 0, selfXPGained);
+      await User.update(currentUser.id, updatedSelf);
+      setXpToast({ show: true, gained: selfXPGained, total: updatedSelf.xp });
       
       // Lógica específica para cada tipo de utilizador
       if (currentUser.user_type === 'employer') {
@@ -137,9 +133,7 @@ export default function CompletionModal({
         });
       }
 
-      alert(`Avaliação enviada! ${otherUser.full_name} recebeu ${xpGained} XP.`);
       onComplete();
-      onClose();
 
     } catch (error) {
       console.error("Error completing job:", error);
@@ -152,6 +146,8 @@ export default function CompletionModal({
   const isEmployerFlow = currentUser.user_type === 'employer';
 
   return (
+    <>
+    <XPGainToast xpGained={xpToast.gained} newXP={xpToast.total} show={xpToast.show} onDone={() => { setXpToast(t => ({...t, show: false})); onClose(); }} />
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -232,8 +228,15 @@ export default function CompletionModal({
               <Award className="w-5 h-5 text-green-600" />
               <span className="font-medium text-green-900">XP a ser atribuído</span>
             </div>
-            <div className="text-center font-bold text-lg text-green-900">
-              +{calculateXP(rating, job.price, checkIfEarly())} XP
+            <div className="flex justify-around text-center">
+              <div>
+                <p className="text-xs text-gray-500">Para {otherUser.full_name?.split(' ')[0]}</p>
+                <p className="font-bold text-lg text-green-900">+{calcJobXP(rating, job.price, checkIfEarly())} XP</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Para si</p>
+                <p className="font-bold text-lg text-green-700">+{XP_EVENTS.job_completed_self} XP</p>
+              </div>
             </div>
           </div>
 
@@ -257,5 +260,6 @@ export default function CompletionModal({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
