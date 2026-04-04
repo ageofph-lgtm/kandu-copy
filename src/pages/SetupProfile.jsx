@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import GdprConsent from "@/components/GdprConsent";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Wrench, CheckCircle, ChevronLeft, ChevronRight, Upload, BadgeCheck, ShieldCheck, X } from "lucide-react";
+import { Briefcase, Wrench, Shield, CheckCircle, ChevronLeft, ChevronRight, Upload, BadgeCheck, ShieldCheck, X } from "lucide-react";
 import { UploadFile } from "@/integrations/Core";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -23,6 +23,15 @@ const profileTypes = [
     description: 'Encontre trabalhos e mostre as suas habilidades',
     gradient: 'from-[#F26522] to-orange-600',
     features: ['Candidatar-se a obras', 'Criar portfólio', 'Ganhar reputação']
+  },
+  {
+    type: 'admin',
+    icon: Shield,
+    title: 'Administrador',
+    description: 'Gerir plataforma, utilizadores e conteúdos',
+    gradient: 'from-purple-500 to-purple-700',
+    features: ['Gestão de utilizadores', 'Moderação de conteúdo', 'Estatísticas da plataforma'],
+    adminOnly: true
   }
 ];
 
@@ -71,10 +80,11 @@ export default function SetupProfile() {
   };
 
   const doCreateProfile = async (idDocUrl = null) => {
+    const selectedType = visibleProfiles[activeIndex].type;
     const profileData = {
-      user_type: profileTypes[activeIndex].type,
+      user_type: selectedType,
       status: 'active',
-      verified_level: idDocUrl ? 'ultra_verified' : 'verified',
+      verified_level: selectedType === 'admin' ? 'ultra_verified' : (idDocUrl ? 'ultra_verified' : 'verified'),
     };
     if (idDocUrl) {
       profileData.id_document_url = idDocUrl;
@@ -84,9 +94,17 @@ export default function SetupProfile() {
     window.location.href = createPageUrl("Home");
   };
 
+  const isAdmin = user?.role === 'admin';
+  const visibleProfiles = profileTypes.filter(p => !p.adminOnly || isAdmin);
+
   const handleContinueToVerify = () => {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
     if (!user.gdpr_accepted) { setShowGdpr(true); return; }
+    // Admin goes straight through, no verification step
+    if (visibleProfiles[activeIndex]?.type === 'admin') {
+      handleFinish(true);
+      return;
+    }
     setStep(2);
   };
 
@@ -149,7 +167,7 @@ export default function SetupProfile() {
     setStep(2);
   };
 
-  const profile = profileTypes[activeIndex];
+  const profile = visibleProfiles[activeIndex] || visibleProfiles[0];
 
   // ── Step 2: Identity Verification ──
   if (step === 2) {
@@ -243,7 +261,7 @@ export default function SetupProfile() {
         {/* Cards */}
         <div className="relative">
           <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4" style={{ scrollbarWidth: 'none' }}>
-            {profileTypes.map((p, idx) => (
+            {visibleProfiles.map((p, idx) => (
               <div
                 key={p.type}
                 className={`flex-shrink-0 w-72 snap-center cursor-pointer transition-all duration-300 ${
@@ -289,7 +307,7 @@ export default function SetupProfile() {
             <ChevronLeft className="w-5 h-5 text-gray-600" />
           </button>
           <div className="flex gap-2">
-            {profileTypes.map((_, idx) => (
+            {visibleProfiles.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setActiveIndex(idx)}
@@ -298,7 +316,7 @@ export default function SetupProfile() {
             ))}
           </div>
           <button
-            onClick={() => setActiveIndex(Math.min(profileTypes.length - 1, activeIndex + 1))}
+            onClick={() => setActiveIndex(Math.min(visibleProfiles.length - 1, activeIndex + 1))}
             disabled={activeIndex === profileTypes.length - 1}
             className="p-2 rounded-full bg-white shadow disabled:opacity-30"
           >
