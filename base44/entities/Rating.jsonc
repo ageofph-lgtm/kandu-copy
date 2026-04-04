@@ -1,0 +1,51 @@
+{
+  "name": "Rating",
+  "type": "object",
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "description": "ID da obra avaliada"
+    },
+    "rater_id": {
+      "type": "string",
+      "description": "ID de quem fez a avalia\u00e7\u00e3o"
+    },
+    "rated_id": {
+      "type": "string",
+      "description": "ID de quem foi avaliado"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Avalia\u00e7\u00e3o de 1 a 5 estrelas"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Coment\u00e1rio sobre o trabalho"
+    },
+    "qualities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Qualidades destacadas"
+    },
+    "is_visible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Avalia\u00e7\u00e3o vis\u00edvel publicamente (s\u00f3 ap\u00f3s ambas as partes avaliarem ou prazo expirar)"
+    },
+    "visible_after": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data a partir da qual a avalia\u00e7\u00e3o \u00e9 vis\u00edvel automaticamente (deadline de 7 dias)"
+    }
+  },
+  "required": [
+    "job_id",
+    "rater_id",
+    "rated_id",
+    "rating"
+  ]
+}

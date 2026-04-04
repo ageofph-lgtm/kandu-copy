@@ -78,23 +78,38 @@ export default function CompletionModal({
     setIsSubmitting(true);
 
     try {
-      // Cria a avaliação para o outro utilizador
-      await Rating.create({
+      // Prazo de 7 dias para auto-revelar a avaliação
+      const visibleAfter = new Date();
+      visibleAfter.setDate(visibleAfter.getDate() + 7);
+
+      // Cria a avaliação (oculta por defeito)
+      const newRating = await Rating.create({
         job_id: job.id,
         rater_id: currentUser.id,
         rated_id: otherUser.id,
         rating: rating,
         comment: comment.trim(),
-        qualities: selectedQualities
+        qualities: selectedQualities,
+        is_visible: false,
+        visible_after: visibleAfter.toISOString()
       });
+
+      // Verifica se a outra parte já avaliou o mesmo job
+      const reciprocalRatings = await Rating.filter({ job_id: job.id, rater_id: otherUser.id });
+      
+      if (reciprocalRatings.length > 0) {
+        // Ambas as partes avaliaram — torna ambas visíveis
+        await Rating.update(newRating.id, { is_visible: true });
+        await Rating.update(reciprocalRatings[0].id, { is_visible: true });
+      }
 
       // XP para o utilizador avaliado
       const xpGained = calcJobXP(rating, job.price, checkIfEarly());
       const updatedOther = applyXP(otherUser.xp || 0, xpGained);
-      const existingRatings = await Rating.filter({ rated_id: otherUser.id });
-      const totalRatings = existingRatings.length + 1;
-      const ratingSum = existingRatings.reduce((sum, r) => sum + r.rating, 0) + rating;
-      const newAvgRating = (ratingSum / totalRatings).toFixed(1);
+      const existingRatings = await Rating.filter({ rated_id: otherUser.id, is_visible: true });
+      const totalRatings = existingRatings.length;
+      const ratingSum = existingRatings.reduce((sum, r) => sum + r.rating, 0);
+      const newAvgRating = totalRatings > 0 ? (ratingSum / totalRatings).toFixed(1) : rating;
 
       await User.update(otherUser.id, { ...updatedOther, rating: parseFloat(newAvgRating) });
 
@@ -106,10 +121,9 @@ export default function CompletionModal({
       
       // Lógica específica para cada tipo de utilizador
       if (currentUser.user_type === 'employer') {
-        // Empregador finaliza a obra, muda status e notifica o profissional para avaliar
         await Job.update(job.id, { status: 'completed_by_employer' });
         await Notification.create({
-          user_id: otherUser.id, // Notifica o profissional
+          user_id: otherUser.id,
           type: "job_ready_for_review",
           title: "Obra finalizada! Avalie o empregador.",
           message: `O trabalho "${job.title}" foi marcado como concluído. Por favor, deixe sua avaliação.`,
@@ -118,13 +132,12 @@ export default function CompletionModal({
         });
 
       } else if (currentUser.user_type === 'worker') {
-        // Profissional avalia, muda o status final e notifica o empregador
         await Job.update(job.id, {
           status: 'completed',
           actual_end_date: new Date().toISOString()
         });
         await Notification.create({
-          user_id: otherUser.id, // Notifica o empregador
+          user_id: otherUser.id,
           type: "job_completed",
           title: "Trabalho concluído e avaliado!",
           message: `O profissional avaliou o seu trabalho em "${job.title}". A obra está oficialmente concluída.`,

@@ -33,6 +33,7 @@ import DocumentsList from "../components/profile/DocumentsList";
 import VerificationBadge from "../components/profile/VerificationBadge";
 import VerificationUpgrade from "../components/profile/VerificationUpgrade";
 import XPDisplay from "../components/profile/XPDisplay";
+import ReviewsSection from "../components/profile/ReviewsSection";
 import { base44 } from "@/api/base44Client";
 
 export default function Profile() {
@@ -373,31 +374,7 @@ export default function Profile() {
         {/* Reviews Section */}
         <section className="mb-8">
           <h2 className="text-lg font-bold text-[#1E293B] mb-4">Avaliações</h2>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                  <img 
-                    alt="Reviewer" 
-                    className="w-full h-full object-cover"
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face"
-                  />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm text-[#1E293B]">Ana Souza</p>
-                  <p className="text-xs text-[#64748B]">Há 2 dias</p>
-                </div>
-              </div>
-              <div className="flex text-yellow-400 text-sm">
-                {[1,2,3,4,5].map(i => (
-                  <Star key={i} className="w-4 h-4 fill-yellow-400" />
-                ))}
-              </div>
-            </div>
-            <p className="text-sm text-[#1E293B] mt-2">
-              "O Carlos fez um trabalho excelente na pintura do meu apartamento. Muito cuidadoso com a mobília e o acabamento ficou perfeito. Recomendo!"
-            </p>
-          </div>
+          <ReviewsSection userId={user.id} />
         </section>
       </main>
 
