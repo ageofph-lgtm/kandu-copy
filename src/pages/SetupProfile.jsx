@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import GdprConsent from "@/components/GdprConsent";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Wrench, Shield, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +39,7 @@ export default function SetupProfile() {
   const [isCreating, setIsCreating] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showGdpr, setShowGdpr] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -66,6 +68,11 @@ export default function SetupProfile() {
   const handleCreateProfile = async () => {
     if (!user) {
       await base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+    // If GDPR not yet accepted, show modal first
+    if (!user.gdpr_accepted) {
+      setShowGdpr(true);
       return;
     }
     setIsCreating(true);
@@ -112,10 +119,24 @@ export default function SetupProfile() {
     );
   }
 
+  const handleGdprAccept = async () => {
+    await base44.auth.updateMe({ gdpr_accepted: true, gdpr_accepted_at: new Date().toISOString() });
+    setShowGdpr(false);
+    setIsCreating(true);
+    try {
+      await base44.auth.updateMe({ user_type: profileTypes[activeIndex].type, status: 'active' });
+      window.location.href = createPageUrl("Home");
+    } catch {
+      alert("Erro ao criar perfil. Tente novamente.");
+      setIsCreating(false);
+    }
+  };
+
   const profile = profileTypes[activeIndex];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
+      <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
       {/* Header */}
       <div className="text-center pt-12 pb-6 px-4">
         <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>

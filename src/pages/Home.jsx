@@ -183,6 +183,15 @@ function EmployerHome({ user }) {
 // ============================================================
 // WORKER VIEW
 // ============================================================
+// Haversine distance in km
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
 function WorkerHome({ user }) {
   const [jobs, setJobs] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -191,6 +200,8 @@ function WorkerHome({ user }) {
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationError, setLocationError] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -201,12 +212,25 @@ function WorkerHome({ user }) {
     load();
   }, []);
 
-  const filteredJobs = jobs.filter(j =>
-    selectedCategory === "all" || j.category === selectedCategory
-  );
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+      () => setLocationError(true)
+    );
+  }, []);
 
-  const getCenter = () =>
-    user?.latitude && user?.longitude ? [user.latitude, user.longitude] : LISBON_COORDS;
+  const filteredJobs = jobs
+    .filter(j => selectedCategory === "all" || j.category === selectedCategory)
+    .map(j => {
+      if (userLocation && j.latitude && j.longitude) {
+        return { ...j, _dist: getDistance(userLocation[0], userLocation[1], j.latitude, j.longitude) };
+      }
+      return j;
+    })
+    .sort((a, b) => (a._dist ?? 9999) - (b._dist ?? 9999));
+
+  const mapCenter = userLocation || (user?.latitude && user?.longitude ? [user.latitude, user.longitude] : LISBON_COORDS);
 
   const openSheet = (job) => {
     setSheetJob(job);
@@ -264,8 +288,9 @@ function WorkerHome({ user }) {
           <MapView
             jobs={filteredJobs}
             onJobClick={openSheet}
-            center={getCenter()}
-            radius={10000}
+            center={mapCenter}
+            radius={userLocation ? 10000 : null}
+            userLocation={userLocation}
           />
         ) : (
           <div className="h-full overflow-auto pt-28 px-4 pb-28 bg-gray-50 space-y-3">

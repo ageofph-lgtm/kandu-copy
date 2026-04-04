@@ -1,5 +1,5 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Circle, Popup } from 'react-leaflet';
+import React, { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
 // --- Custom Icon Creation ---
@@ -38,9 +38,24 @@ const createJobIcon = (job) => {
   });
 };
 
+// Recenter map when center changes
+function RecenterMap({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) map.setView(center, map.getZoom());
+  }, [center[0], center[1]]);
+  return null;
+}
+
+const createUserIcon = () => L.divIcon({
+  html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 0 4px rgba(59,130,246,0.3)"></div>`,
+  className: '',
+  iconSize: [18, 18],
+  iconAnchor: [9, 9]
+});
+
 // --- Map Component ---
-export default function MapView({ jobs, onJobClick, center, radius }) {
-  // Prevent SSR issues with Leaflet
+export default function MapView({ jobs, onJobClick, center, radius, userLocation }) {
   if (typeof window === 'undefined') {
     return <div className="h-full w-full bg-gray-200 animate-pulse"></div>;
   }
@@ -58,11 +73,19 @@ export default function MapView({ jobs, onJobClick, center, radius }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <Circle 
-          center={center} 
-          radius={radius} 
-          pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.1 }}
-        />
+        <RecenterMap center={center} />
+
+        {userLocation && (
+          <Marker position={userLocation} icon={createUserIcon()} />
+        )}
+
+        {radius && (
+          <Circle
+            center={center}
+            radius={radius}
+            pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.1 }}
+          />
+        )}
 
         {jobs.map((job) => {
             if (!job.latitude || !job.longitude) return null;
