@@ -1,0 +1,154 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user"
+    },
+    "user_type": {
+      "type": "string",
+      "enum": [
+        "worker",
+        "employer",
+        "admin"
+      ],
+      "description": "Tipo de perfil do utilizador"
+    },
+    "phone": {
+      "type": "string",
+      "description": "N\u00famero de telem\u00f3vel"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o profissional"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "URL da foto de perfil"
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Especialidades/compet\u00eancias"
+    },
+    "location": {
+      "type": "string",
+      "description": "Localiza\u00e7\u00e3o principal"
+    },
+    "service_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u00c1reas de servi\u00e7o"
+    },
+    "portfolio_images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de imagens do portf\u00f3lio"
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Documentos do utilizador"
+    },
+    "verified_level": {
+      "type": "string",
+      "enum": [
+        "basic",
+        "verified",
+        "ultra_verified"
+      ],
+      "default": "basic",
+      "description": "N\u00edvel de verifica\u00e7\u00e3o: basic (registo), verified (email/telefone confirmados), ultra_verified (documento governamental submetido)"
+    },
+    "id_document_url": {
+      "type": "string",
+      "description": "URL do documento de identidade para Ultra Verified (KYC)"
+    },
+    "id_document_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "description": "Estado da an\u00e1lise do documento de identidade"
+    },
+    "xp": {
+      "type": "number",
+      "default": 0,
+      "description": "Pontos de experi\u00eancia acumulados (gamifica\u00e7\u00e3o)"
+    },
+    "xp_level": {
+      "type": "string",
+      "enum": [
+        "Novato",
+        "Aprendiz",
+        "Profissional",
+        "Especialista",
+        "Mestre"
+      ],
+      "default": "Novato",
+      "description": "N\u00edvel XP calculado"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o m\u00e9dia"
+    },
+    "reviews_count": {
+      "type": "number",
+      "default": 0
+    },
+    "success_rate": {
+      "type": "number",
+      "description": "Taxa de sucesso em percentagem"
+    },
+    "years_experience": {
+      "type": "number",
+      "description": "Anos de experi\u00eancia"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "PT",
+        "EN"
+      ],
+      "default": "PT"
+    },
+    "gdpr_accepted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Aceita\u00e7\u00e3o do RGPD/GDPR"
+    },
+    "gdpr_accepted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora de aceita\u00e7\u00e3o do RGPD"
+    }
+  }
+}

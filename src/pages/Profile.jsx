@@ -30,6 +30,9 @@ import {
 
 import ProfileForm from "../components/profile/ProfileForm";
 import DocumentsList from "../components/profile/DocumentsList";
+import VerificationBadge from "../components/profile/VerificationBadge";
+import VerificationUpgrade from "../components/profile/VerificationUpgrade";
+import XPDisplay from "../components/profile/XPDisplay";
 import { base44 } from "@/api/base44Client";
 
 export default function Profile() {
@@ -213,20 +216,17 @@ export default function Profile() {
 
       <main className="w-full max-w-md mx-auto px-4 pt-6">
         {/* Profile Card */}
-        <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center mb-8">
+        <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center mb-6">
           {/* Hexagon Avatar */}
           <div className="relative w-32 h-36 mb-4 group">
-            {/* Glow effect */}
             <div 
               className="absolute inset-0 bg-gradient-to-br from-[#F26522] to-orange-600 opacity-20"
               style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)', transform: 'scale(1.05)' }}
             />
-            {/* Border */}
             <div 
               className="absolute inset-0 bg-gradient-to-br from-[#F26522] to-orange-600"
               style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
             />
-            {/* Image container */}
             <div 
               className="absolute inset-[3px] bg-gray-200 overflow-hidden flex items-center justify-center"
               style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
@@ -234,30 +234,19 @@ export default function Profile() {
               {isUploading ? (
                 <Loader2 className="w-8 h-8 text-[#F26522] animate-spin" />
               ) : user.avatar_url ? (
-                <img 
-                  src={user.avatar_url}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
+                <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-[#F26522] to-orange-600 flex items-center justify-center text-white text-4xl font-bold">
                   {user.full_name?.charAt(0) || "U"}
                 </div>
               )}
             </div>
-            {/* Camera button */}
             <button 
               onClick={() => avatarInputRef.current?.click()}
               className="absolute bottom-1 right-1 bg-white text-[#1E293B] rounded-full p-1.5 border-2 border-white shadow-md hover:bg-gray-100 transition-colors z-20"
             >
               <Camera className="w-4 h-4" />
             </button>
-            {/* Verified badge */}
-            {user.verified && (
-              <div className="absolute bottom-2 left-2 bg-green-500 text-white rounded-full p-1 border-2 border-white shadow-sm z-20">
-                <Check className="w-3 h-3" />
-              </div>
-            )}
           </div>
 
           <h2 className="text-2xl font-bold text-[#1E293B] mb-1">
@@ -267,6 +256,11 @@ export default function Profile() {
             <Check className="w-4 h-4" /> 
             {user.user_type === 'worker' ? 'Profissional Certificado' : 'Empregador Verificado'}
           </p>
+
+          {/* Verification Badge */}
+          <div className="mb-4">
+            <VerificationBadge level={user.verified_level || 'basic'} showDescription />
+          </div>
 
           {/* Stats */}
           <div className="flex items-center gap-6 mb-6 w-full justify-center">
@@ -304,11 +298,20 @@ export default function Profile() {
           </div>
         </div>
 
+        {/* XP Display */}
+        <div className="mb-6">
+          <XPDisplay xp={user.xp || 0} />
+        </div>
+
+        {/* Upgrade Verification */}
+        <div className="mb-6">
+          <VerificationUpgrade user={user} onUpdate={loadUser} />
+        </div>
+
         {/* Specialties Section */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-[#1E293B]">Especialidades</h2>
-            <button className="text-sm text-[#F26522] font-medium hover:underline">Ver todas</button>
           </div>
           <div className="flex flex-wrap gap-2">
             {specialties.map((spec, idx) => (
