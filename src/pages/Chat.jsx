@@ -107,18 +107,14 @@ export default function Chat() {
         }
       }
 
-      const now = Date.now();
       const allConvs = Array.from(conversationMap.values());
       allConvs.sort((a, b) =>
         new Date(b.last_message.created_date) - new Date(a.last_message.created_date)
       );
 
-      const active = allConvs.filter(c =>
-        now - new Date(c.last_message.created_date).getTime() < TWO_WEEKS_MS
-      );
-      const archived = allConvs.filter(c =>
-        now - new Date(c.last_message.created_date).getTime() >= TWO_WEEKS_MS
-      );
+      // Split by archived flag (persisted in DB by backend automation)
+      const active = allConvs.filter(c => !c.last_message.is_archived);
+      const archived = allConvs.filter(c => c.last_message.is_archived);
 
       setConversations(active);
       setArchivedConversations(archived);

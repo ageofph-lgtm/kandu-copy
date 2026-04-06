@@ -1,0 +1,50 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "ID da conversa (combina\u00e7\u00e3o de user IDs)"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "ID do remetente"
+    },
+    "receiver_id": {
+      "type": "string",
+      "description": "ID do destinat\u00e1rio"
+    },
+    "message": {
+      "type": "string",
+      "description": "Conte\u00fado da mensagem"
+    },
+    "attachment_url": {
+      "type": "string",
+      "description": "URL do anexo (opcional)"
+    },
+    "attachment_type": {
+      "type": "string",
+      "enum": [
+        "image",
+        "document"
+      ],
+      "description": "Tipo de anexo"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Mensagem lida"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Conversa arquivada por inatividade (2 semanas)"
+    }
+  },
+  "required": [
+    "conversation_id",
+    "sender_id",
+    "receiver_id",
+    "message"
+  ]
+}
