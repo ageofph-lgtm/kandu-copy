@@ -357,77 +357,91 @@ export default function SetupProfile() {
     );
   }
 
-  // ── Step 2: Identity Verification ──
+  // ── Step 2: Identity Verification (KYC) ──
   if (step === 2) {
+    const darkBg = { minHeight: '100vh', background: '#1A1A1A', position: 'relative', display: 'flex', flexDirection: 'column', paddingBottom: '120px' };
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
+      <div style={darkBg}>
         <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
-        <div className="text-center pt-12 pb-6 px-4">
-          <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>
-          <h1 className="text-2xl font-bold text-gray-900">Verificar Identidade</h1>
-          <p className="text-gray-500 mt-1 text-sm">Opcional — pode fazê-lo mais tarde no perfil</p>
+        {/* Top bar */}
+        <div style={{ padding: '50px 20px 12px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid #333' }}>
+          <button onClick={() => setStep(1.5)} style={{ fontSize: 22, color: '#FF6600', cursor: 'pointer', background: 'none', border: 'none' }}>←</button>
+          <h1 style={{ fontWeight: 700, color: '#FFF', margin: 0, flex: 1, textAlign: 'center' }}>Verificação de Identidade</h1>
         </div>
-
-        <div className="flex-1 flex flex-col justify-center px-6 pb-32 max-w-sm mx-auto w-full">
-          {/* Verified - already done */}
-          <div className="bg-white rounded-2xl border-2 border-blue-300 p-5 mb-4 flex items-start gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="font-bold text-gray-900 flex items-center gap-2">Verificado <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">✓ Ativo</span></p>
-              <p className="text-xs text-gray-500 mt-0.5">Email/telefone confirmados pelo sistema de autenticação.</p>
-            </div>
+        
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
+          {/* Verified badge */}
+          <div style={{ display: 'inline-block', margin: '16px auto', background: '#22C55E', color: '#FFF', padding: '8px 20px', borderRadius: 20, fontWeight: 700, fontSize: 14 }}>✓ Verified</div>
+          
+          {/* Ultra Verified Hexagon */}
+          <div style={{
+            width: 160, height: 160, margin: '24px auto', background: '#1A1A1A', border: '4px solid #FF6600',
+            boxShadow: '0 0 40px rgba(255, 102, 0, 0.5)', display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+            position: 'relative'
+          }}>
+            <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" alt="K" style={{ width: 50, marginBottom: 4 }} />
+            <p style={{ fontWeight: 900, color: '#FFF', fontSize: 16, margin: 0, lineHeight: 1.1 }}>Ultra</p>
+            <p style={{ fontWeight: 900, color: '#FFF', fontSize: 16, margin: 0, lineHeight: 1.1 }}>Verified</p>
           </div>
-
-          {/* Ultra Verified */}
-          <div className="bg-white rounded-2xl border-2 border-green-300 p-5 mb-6">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-                <BadgeCheck className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="font-bold text-gray-900">Ultra Verificado</p>
-                <p className="text-xs text-gray-500 mt-0.5">Submeta o seu documento de identidade (BI, Passaporte ou Carta). A análise é feita manualmente e por KYC.</p>
-              </div>
-            </div>
-
-            <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFileSelect} />
-
-            {idDocPreview ? (
-              <div className="relative rounded-xl overflow-hidden border border-gray-200 mb-3">
-                <img src={idDocPreview} alt="Documento" className="w-full h-36 object-cover" />
-                <button onClick={() => { setIdDocFile(null); setIdDocPreview(null); }} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1">
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full border-2 border-dashed border-green-300 rounded-xl p-6 flex flex-col items-center gap-2 text-green-600 hover:bg-green-50 transition-colors mb-3"
-              >
-                <Upload className="w-6 h-6" />
-                <span className="text-sm font-medium">Carregar documento</span>
-                <span className="text-xs text-gray-400">BI, Passaporte ou Carta de Condução</span>
-              </button>
-            )}
+          
+          {/* Description */}
+          <p style={{ color: '#AAA', fontSize: 14, textAlign: 'center', padding: '0 24px', margin: '0 0 24px 0', lineHeight: 1.6 }}>Submete o teu documento de identidade para ganhar o badge máximo de confiança</p>
+          
+          {/* Upload slots */}
+          <div style={{ display: 'flex', gap: 12, margin: '20px 0', width: '100%', maxWidth: 380 }}>
+            {/* Slot 1: Frente */}
+            <button
+              onClick={() => { fileInputRef.current?.click(); setNewClient(p => ({ ...p, nif: 'front' })); }}
+              style={{
+                flex: 1, height: 100, background: '#2A2A2A', border: '2px dashed #FF6600', borderRadius: 12,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <span style={{ fontSize: 28, color: '#888', marginBottom: 4 }}>📷</span>
+              <span style={{ color: '#AAA', fontSize: 12 }}>Frente do BI/CC</span>
+            </button>
+            {/* Slot 2: Verso */}
+            <button
+              onClick={() => { fileInputRef.current?.click(); setNewClient(p => ({ ...p, nif: 'back' })); }}
+              style={{
+                flex: 1, height: 100, background: '#2A2A2A', border: '2px dashed #FF6600', borderRadius: 12,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <span style={{ fontSize: 28, color: '#888', marginBottom: 4 }}>📷</span>
+              <span style={{ color: '#AAA', fontSize: 12 }}>Verso do BI/CC</span>
+            </button>
           </div>
-
-          <Button
+          
+          <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFileSelect} />
+          
+          {/* RGPD notice */}
+          <p style={{ color: '#666', fontSize: 11, textAlign: 'center', marginTop: 12 }}>De acordo com RGPD, os teus dados estão protegidos.</p>
+        </div>
+        
+        {/* Fixed buttons */}
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#1A1A1A', borderTop: '1px solid #333', padding: '16px 20px' }}>
+          <button
             onClick={() => handleFinish(false)}
             disabled={isCreating || !idDocFile}
-            className="w-full h-13 bg-green-600 hover:bg-green-700 text-white font-bold rounded-2xl mb-3 shadow-lg"
+            style={{
+              width: 'calc(100% - 40px)', padding: 16, background: idDocFile ? '#FF6600' : '#666', borderRadius: 14,
+              color: '#FFF', fontWeight: 700, border: 'none', cursor: idDocFile ? 'pointer' : 'not-allowed', fontSize: 16, marginBottom: 8
+            }}
           >
-            {isUploading ? 'A enviar documento...' : isCreating ? 'A criar perfil...' : 'Submeter e continuar'}
-          </Button>
-          <Button
-            variant="ghost"
+            {isUploading ? 'A enviar documento...' : isCreating ? 'A criar perfil...' : 'Submeter Documentos'}
+          </button>
+          <button
             onClick={() => handleFinish(true)}
             disabled={isCreating}
-            className="w-full text-gray-500 hover:text-gray-700"
+            style={{ width: '100%', background: 'none', border: 'none', color: '#666', textAlign: 'center', cursor: 'pointer', fontSize: 14 }}
           >
-            Saltar por agora
-          </Button>
+            Fazer mais tarde
+          </button>
         </div>
       </div>
     );
