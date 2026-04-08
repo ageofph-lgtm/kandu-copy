@@ -55,6 +55,7 @@ import CiaEmployer from './pages/CiaEmployer';
 import KYCVerification from './pages/KYCVerification';
 import HomeProfessional from './pages/HomeProfessional';
 import JobDetail from './pages/JobDetail';
+import ChatKandu from './pages/ChatKandu';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -91,6 +92,7 @@ export const PAGES = {
     "KYCVerification": KYCVerification,
     "HomeProfessional": HomeProfessional,
     "JobDetail": JobDetail,
+    "ChatKandu": ChatKandu,
 }
 
 export const pagesConfig = {
