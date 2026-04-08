@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import GdprConsent from "@/components/GdprConsent";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Wrench, Shield, CheckCircle, ChevronLeft, ChevronRight, Upload, BadgeCheck, ShieldCheck, X } from "lucide-react";
+import { Briefcase, Wrench, Shield, CheckCircle, ChevronLeft, ChevronRight, Upload, BadgeCheck, ShieldCheck, X, Building2 } from "lucide-react";
 import { UploadFile } from "@/integrations/Core";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -42,7 +42,11 @@ export default function SetupProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showGdpr, setShowGdpr] = useState(false);
-  const [step, setStep] = useState(1); // 1 = choose type, 2 = verify identity
+  // step: 1 = choose type, 1.5 = employer subtype, 2 = verify identity
+  const [step, setStep] = useState(1);
+  const [employerType, setEmployerType] = useState(null); // 'simple' | 'cia'
+  const [companyClients, setCompanyClients] = useState([]);
+  const [newClient, setNewClient] = useState({ name: '', contact: '', nif: '' });
   const [idDocFile, setIdDocFile] = useState(null);
   const [idDocPreview, setIdDocPreview] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -86,6 +90,12 @@ export default function SetupProfile() {
       status: 'active',
       verified_level: selectedType === 'admin' ? 'ultra_verified' : (idDocUrl ? 'ultra_verified' : 'verified'),
     };
+    if (selectedType === 'employer') {
+      profileData.employer_type = employerType || 'simple';
+      if (employerType === 'cia' && companyClients.length > 0) {
+        profileData.company_clients = companyClients;
+      }
+    }
     if (idDocUrl) {
       profileData.id_document_url = idDocUrl;
       profileData.id_document_status = 'pending';
@@ -100,12 +110,25 @@ export default function SetupProfile() {
   const handleContinueToVerify = () => {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
     if (!user.gdpr_accepted) { setShowGdpr(true); return; }
-    // Admin goes straight through, no verification step
-    if (visibleProfiles[activeIndex]?.type === 'admin') {
-      handleFinish(true);
-      return;
-    }
+    const selectedType = visibleProfiles[activeIndex]?.type;
+    if (selectedType === 'admin') { handleFinish(true); return; }
+    if (selectedType === 'employer') { setStep(1.5); return; }
     setStep(2);
+  };
+
+  const handleEmployerContinue = () => {
+    if (!employerType) return;
+    setStep(2);
+  };
+
+  const addClient = () => {
+    if (!newClient.name) return;
+    setCompanyClients(prev => [...prev, { ...newClient }]);
+    setNewClient({ name: '', contact: '', nif: '' });
+  };
+
+  const removeClient = (idx) => {
+    setCompanyClients(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleFinish = async (skipDoc = false) => {
@@ -168,6 +191,123 @@ export default function SetupProfile() {
   };
 
   const profile = visibleProfiles[activeIndex] || visibleProfiles[0];
+
+  // ── Step 1.5: Employer Subtype ──
+  if (step === 1.5) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
+        <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
+        <div className="text-center pt-12 pb-6 px-4">
+          <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>
+          <h1 className="text-2xl font-bold text-gray-900">Tipo de Empregador</h1>
+          <p className="text-gray-500 mt-1 text-sm">Selecione o seu perfil de empregador</p>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-center px-6 pb-32 max-w-sm mx-auto w-full gap-4">
+          {/* Simple Employer */}
+          <button
+            onClick={() => setEmployerType('simple')}
+            className={`w-full rounded-2xl border-2 p-5 text-left transition-all ${
+              employerType === 'simple' ? 'border-[#F26522] bg-orange-50' : 'border-gray-200 bg-white'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                <Briefcase className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900">Simple Employer</p>
+                <p className="text-xs text-gray-500">Cliente particular — contrata profissionais para obras pessoais</p>
+              </div>
+              {employerType === 'simple' && <CheckCircle className="w-5 h-5 text-[#F26522] ml-auto" />}
+            </div>
+          </button>
+
+          {/* Cia Employer */}
+          <button
+            onClick={() => setEmployerType('cia')}
+            className={`w-full rounded-2xl border-2 p-5 text-left transition-all ${
+              employerType === 'cia' ? 'border-[#F26522] bg-orange-50' : 'border-gray-200 bg-white'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center shrink-0">
+                <Shield className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900">Cia Employer</p>
+                <p className="text-xs text-gray-500">Empresa — gere múltiplos clientes e projetos</p>
+              </div>
+              {employerType === 'cia' && <CheckCircle className="w-5 h-5 text-[#F26522] ml-auto" />}
+            </div>
+          </button>
+
+          {/* Clients Section for Cia */}
+          {employerType === 'cia' && (
+            <div className="bg-white rounded-2xl border border-gray-200 p-5">
+              <p className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <span className="text-purple-600">🏢</span> Clients Section
+              </p>
+              <p className="text-xs text-gray-500 mb-4">Adicione os clientes da sua empresa (opcional — pode fazê-lo mais tarde)</p>
+
+              {/* Client list */}
+              {companyClients.map((c, i) => (
+                <div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 mb-2">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{c.name}</p>
+                    <p className="text-xs text-gray-500">{c.contact}{c.nif ? ` · NIF ${c.nif}` : ''}</p>
+                  </div>
+                  <button onClick={() => removeClient(i)} className="text-red-400 hover:text-red-600 p-1">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Add client form */}
+              <div className="space-y-2 mt-3">
+                <input
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
+                  placeholder="Nome do cliente *"
+                  value={newClient.name}
+                  onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))}
+                />
+                <input
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
+                  placeholder="Contacto (email ou telefone)"
+                  value={newClient.contact}
+                  onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))}
+                />
+                <input
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
+                  placeholder="NIF do cliente"
+                  value={newClient.nif}
+                  onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))}
+                />
+                <button
+                  onClick={addClient}
+                  disabled={!newClient.name}
+                  className="w-full border-2 border-dashed border-purple-300 rounded-xl py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 transition-colors disabled:opacity-40"
+                >
+                  + Adicionar cliente
+                </button>
+              </div>
+            </div>
+          )}
+
+          <Button
+            onClick={handleEmployerContinue}
+            disabled={!employerType}
+            className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-xl shadow-[#F26522]/30"
+          >
+            Continuar
+          </Button>
+          <Button variant="ghost" onClick={() => setStep(1)} className="w-full text-gray-500">
+            Voltar
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // ── Step 2: Identity Verification ──
   if (step === 2) {

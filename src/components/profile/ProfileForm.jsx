@@ -15,9 +15,10 @@ import {
 } from "lucide-react";
 
 const CATEGORIES = [
+  "Mão de Obra",
   "Pintura",
   "Eletricidade",
-  "Canalização", 
+  "Canalização",
   "Alvenaria",
   "Ladrilhador",
   "Carpintaria",
@@ -43,6 +44,7 @@ const CITIES = [
 export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
   const [formData, setFormData] = useState({
     user_type: user?.user_type || "",
+    employer_type: user?.employer_type || "",
     full_name: user?.full_name || "",
     phone: user?.phone || "",
     bio: user?.bio || "",
@@ -50,8 +52,10 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
     company: user?.company || "",
     nif: user?.nif || "",
     skills: user?.skills || [],
-    service_areas: user?.service_areas || []
+    service_areas: user?.service_areas || [],
+    company_clients: user?.company_clients || []
   });
+  const [newClient, setNewClient] = useState({ name: '', contact: '', nif: '' });
 
   const [newSkill, setNewSkill] = useState("");
   const [newArea, setNewArea] = useState("");
@@ -199,10 +203,28 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           {/* Campos específicos para empregadores */}
           {formData.user_type === 'employer' && (
             <>
+              {/* Tipo de empregador */}
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Empresa
-                </label>
+                <label className="block text-sm font-medium mb-2">Tipo de Empregador *</label>
+                <div className="flex gap-3">
+                  {[{ value: 'simple', label: 'Simple Employer', desc: 'Cliente Particular' }, { value: 'cia', label: 'Cia Employer', desc: 'Empresa' }].map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleChange('employer_type', opt.value)}
+                      className={`flex-1 rounded-xl border-2 p-3 text-left transition-all ${
+                        formData.employer_type === opt.value ? 'border-[#F26522] bg-orange-50' : 'border-gray-200'
+                      }`}
+                    >
+                      <p className="text-sm font-semibold text-gray-900">{opt.label}</p>
+                      <p className="text-xs text-gray-500">{opt.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Empresa</label>
                 <Input
                   placeholder="Nome da empresa"
                   value={formData.company}
@@ -211,15 +233,47 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  NIF
-                </label>
+                <label className="block text-sm font-medium mb-2">NIF</label>
                 <Input
                   placeholder="123 456 789"
                   value={formData.nif}
                   onChange={(e) => handleChange("nif", e.target.value)}
                 />
               </div>
+
+              {/* Clients Section — apenas para Cia */}
+              {formData.employer_type === 'cia' && (
+                <div className="border border-purple-200 rounded-xl p-4 bg-purple-50">
+                  <p className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-purple-600" /> Clients Section
+                  </p>
+                  {formData.company_clients.map((c, i) => (
+                    <div key={i} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 mb-2 border border-purple-100">
+                      <div>
+                        <p className="text-sm font-medium">{c.name}</p>
+                        <p className="text-xs text-gray-500">{c.contact}{c.nif ? ` · NIF ${c.nif}` : ''}</p>
+                      </div>
+                      <button type="button" onClick={() => handleChange('company_clients', formData.company_clients.filter((_, idx) => idx !== i))} className="text-red-400 hover:text-red-600">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="space-y-2 mt-2">
+                    <Input placeholder="Nome do cliente *" value={newClient.name} onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))} />
+                    <Input placeholder="Contacto" value={newClient.contact} onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))} />
+                    <Input placeholder="NIF do cliente" value={newClient.nif} onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))} />
+                    <Button type="button" variant="outline" className="w-full border-dashed border-purple-300 text-purple-600" disabled={!newClient.name}
+                      onClick={() => {
+                        if (!newClient.name) return;
+                        handleChange('company_clients', [...formData.company_clients, { ...newClient }]);
+                        setNewClient({ name: '', contact: '', nif: '' });
+                      }}
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Adicionar cliente
+                    </Button>
+                  </div>
+                </div>
+              )}
             </>
           )}
 

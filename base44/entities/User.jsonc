@@ -19,6 +19,14 @@
       ],
       "description": "Tipo de perfil do utilizador"
     },
+    "employer_type": {
+      "type": "string",
+      "enum": [
+        "simple",
+        "cia"
+      ],
+      "description": "Subtipo de empregador: simples (cliente particular) ou empresa (Cia)"
+    },
     "phone": {
       "type": "string",
       "description": "N\u00famero de telem\u00f3vel"
@@ -63,6 +71,32 @@
       },
       "description": "Documentos do utilizador"
     },
+    "company": {
+      "type": "string",
+      "description": "Nome da empresa (para Cia Employer)"
+    },
+    "nif": {
+      "type": "string",
+      "description": "NIF da empresa"
+    },
+    "company_clients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "contact": {
+            "type": "string"
+          },
+          "nif": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Lista de clientes da empresa (apenas para Cia Employer)"
+    },
     "verified_level": {
       "type": "string",
       "enum": [
@@ -71,7 +105,7 @@
         "ultra_verified"
       ],
       "default": "basic",
-      "description": "N\u00edvel de verifica\u00e7\u00e3o: basic (registo), verified (email/telefone confirmados), ultra_verified (documento governamental submetido)"
+      "description": "N\u00edvel de verifica\u00e7\u00e3o"
     },
     "id_document_url": {
       "type": "string",
@@ -89,7 +123,7 @@
     "xp": {
       "type": "number",
       "default": 0,
-      "description": "Pontos de experi\u00eancia acumulados (gamifica\u00e7\u00e3o)"
+      "description": "Pontos de experi\u00eancia acumulados"
     },
     "xp_level": {
       "type": "string",
@@ -100,8 +134,7 @@
         "Especialista",
         "Mestre"
       ],
-      "default": "Novato",
-      "description": "N\u00edvel XP calculado"
+      "default": "Novato"
     },
     "rating": {
       "type": "number",
@@ -150,5 +183,6 @@
       "format": "date-time",
       "description": "Data/hora de aceita\u00e7\u00e3o do RGPD"
     }
-  }
+  },
+  "required": []
 }
