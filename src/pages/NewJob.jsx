@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Check, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, MapPin, Info } from "lucide-react";
+import PhoneVerificationModal from "@/components/PhoneVerificationModal";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -58,6 +59,7 @@ export default function NewJob() {
   const [user, setUser] = useState(null);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
   const [formData, setFormData] = useState({
     title: "", category: "", description: "",
     location: "", start_date: "", end_date: "",
@@ -89,7 +91,13 @@ export default function NewJob() {
     return true;
   };
 
+  const handlePublish = () => {
+    // Trigger phone verification before each submission
+    setShowPhoneVerification(true);
+  };
+
   const handleSubmit = async () => {
+    setShowPhoneVerification(false);
     setIsSubmitting(true);
     try {
       const coords = LOCATION_COORDS[formData.location];
@@ -269,12 +277,20 @@ export default function NewJob() {
                   </button>
                 </div>
               )}
+              {/* Price disclaimer */}
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex gap-3">
+                <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-blue-700 leading-relaxed">
+                  <strong>Nota:</strong> The price basis will consider only the main job, hence, it does not take in consideration the quotes (goods, tools etc).
+                </p>
+              </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3">Tipo de preço</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   {[
-                    { value: 'fixed',  label: 'Preço fixo', emoji: '💰' },
-                    { value: 'hourly', label: 'Por hora',   emoji: '⏱️' },
+                    { value: 'fixed',      label: 'Projeto',    emoji: '💰' },
+                    { value: 'negotiable', label: 'Negociável', emoji: '🤝' },
+                    { value: 'hourly',     label: 'À hora',     emoji: '⏱️' },
                   ].map(pt => (
                     <button
                       key={pt.value}
@@ -357,7 +373,7 @@ export default function NewJob() {
       {/* Bottom CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
         <Button
-          onClick={() => step < 4 ? setStep(step + 1) : handleSubmit()}
+          onClick={() => step < 4 ? setStep(step + 1) : handlePublish()}
           disabled={!canGoNext() || isSubmitting}
           className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-lg shadow-[#F26522]/20"
         >
@@ -370,6 +386,13 @@ export default function NewJob() {
           )}
         </Button>
       </div>
+      {showPhoneVerification && (
+        <PhoneVerificationModal
+          phone={user?.phone}
+          onVerified={handleSubmit}
+          onCancel={() => setShowPhoneVerification(false)}
+        />
+      )}
     </div>
   );
 }
