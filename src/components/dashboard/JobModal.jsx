@@ -89,76 +89,203 @@ export default function JobModal({ job, user, onClose, onApply, onDelete }) {
   const handleOpenChat = () => { 
     if (!employer) return; 
     onClose(); 
-    // Criar conversa se não existir e navegar
     const conversationId = createConversationId(user.id, employer.id);
     navigate(createPageUrl("Chat") + `?conversationId=${conversationId}&userId=${employer.id}`);
   };
   const formatPrice = (price, type) => type === "hourly" ? `€${price}/hora` : `€${price}`;
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>{job.title}</span>
-            <Button variant="ghost" size="icon" onClick={onClose}><X className="w-4 h-4" /></Button>
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2"><Badge variant="secondary">{job.category}</Badge><Badge className="bg-green-100 text-green-800">{job.status}</Badge></div>
-            <div className="text-2xl font-bold text-blue-600">{formatPrice(job.price, job.price_type)}</div>
-          </div>
-          <div className="flex items-center gap-2 text-gray-600"><MapPin className="w-4 h-4" />{job.location}</div>
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-1"><Eye className="w-4 h-4" />{job.views || 0} visualizações</div>
-            <div className="flex items-center gap-1"><Clock className="w-4 h-4" />{format(new Date(job.created_date), "dd MMM, HH:mm", { locale: pt })}</div>
-          </div>
-          <div><h4 className="font-semibold mb-2">Descrição</h4><p className="text-gray-700">{job.description}</p></div>
-          {employer && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <Avatar><AvatarFallback className="bg-purple-100 text-purple-700">{employer.full_name?.charAt(0) || <UserIcon className="w-5 h-5" />}</AvatarFallback></Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2"><span className="font-medium">{employer.full_name || "Empregador"}</span>{employer.verified && <Shield className="w-4 h-4 text-green-500" />}</div>
-                  <div className="flex items-center gap-1 text-sm text-gray-600"><Star className="w-3 h-3 text-yellow-500 fill-current" />{employer.rating || "N/A"} • {employer.city || "N/A"}</div>
-                </div>
-                <Button variant="outline" size="sm" onClick={handleOpenChat}><MessageCircle className="w-4 h-4 mr-1" />Chat</Button>
-              </div>
-            </div>
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 50, display: 'flex', alignItems: 'flex-end'
+    }} onClick={onClose}>
+      <div
+        style={{
+          width: '100%', maxHeight: '95vh', background: '#1A1A1A', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+          display: 'flex', flexDirection: 'column', overflow: 'hidden'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Top bar */}
+        <div style={{
+          padding: '50px 20px 12px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid #333',
+          position: 'relative'
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              fontSize: 22, color: '#FF6600', cursor: 'pointer', background: 'none', border: 'none'
+            }}
+          >
+            ←
+          </button>
+          <h1 style={{ fontWeight: 700, fontSize: 16, color: '#FFF', flex: 1, margin: 0 }}>{job.title}</h1>
+          {job.urgency === 'high' && (
+            <span style={{
+              background: '#EF4444', color: '#FFF', fontSize: 12, padding: '4px 10px',
+              borderRadius: 20, fontWeight: 600, whiteSpace: 'nowrap'
+            }}>Urgente</span>
           )}
-          {user?.user_type === "worker" && (
-            <div className="space-y-4 pt-4 border-t">
-              <h4 className="font-semibold">Como pretende responder?</h4>
-              <div className="space-y-2">
-                <Button variant={applicationType === "application" ? "default" : "outline"} className="w-full justify-start" onClick={() => setApplicationType("application")}><Send className="w-4 h-4 mr-2" />Candidatar-me ao preço indicado</Button>
-                <Button variant={applicationType === "proposal" ? "default" : "outline"} className="w-full justify-start" onClick={() => setApplicationType("proposal")}><Euro className="w-4 h-4 mr-2" />Enviar proposta com preço diferente</Button>
+          <img
+            src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"
+            alt="K"
+            style={{ position: 'absolute', right: 16, top: 50, width: 40 }}
+          />
+        </div>
+
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px', paddingBottom: 120 }}>
+          {/* Employer card */}
+          {employer && (
+            <div style={{
+              background: '#2A2A2A', borderRadius: 16, padding: 16, borderLeft: '4px solid #FF6600',
+              display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12, marginTop: 12
+            }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%', background: '#FF6600',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF',
+                fontWeight: 'bold', fontSize: 14, flexShrink: 0
+              }}>
+                {employer.full_name?.charAt(0) || '?'}
               </div>
-              {applicationType && (
-                <div className="space-y-3">
-                  {applicationType === "proposal" && (
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Valor proposto (€)</label>
-                      <Input type="number" placeholder="Ex: 350" value={proposedPrice} onChange={(e) => setProposedPrice(e.target.value)} />
-                    </div>
-                  )}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Mensagem</label>
-                    <Textarea placeholder="Conte um pouco sobre a sua experiência..." value={message} onChange={(e) => setMessage(e.target.value)} rows={4} />
-                  </div>
-                  <Button onClick={handleSubmit} disabled={isSubmitting || !job.employer_id} className="w-full">{isSubmitting ? "Enviando..." : "Enviar candidatura"}</Button>
-                </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ color: '#FFF', fontWeight: 'bold', margin: 0, fontSize: 15 }}>{employer.full_name || 'Empregador'}</p>
+                <p style={{ color: '#AAA', fontSize: 13, margin: '2px 0 0 0' }}>
+                  {employer.employer_type === 'cia' ? 'Cia Employer' : 'Empregador'}
+                </p>
+              </div>
+              {employer.verified_level === 'ultra_verified' && (
+                <span style={{
+                  background: 'rgba(255, 102, 0, 0.15)', color: '#FF6600', border: '1px solid rgba(255, 102, 0, 0.3)',
+                  borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap'
+                }}>✓ Ultra Verified</span>
               )}
             </div>
           )}
-          {(user?.user_type === "employer" && job.employer_id === user.id) || user?.user_type === 'admin' ? (
-            <div className="pt-4 border-t flex gap-2">
-              <Button className="flex-1" onClick={() => { onClose(); navigate(createPageUrl("Applications")); }}>Ver candidaturas</Button>
-              <Button variant="destructive" className="flex-1" onClick={() => onDelete(job.id)}><Trash2 className="w-4 h-4 mr-2" /> Apagar Obra</Button>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: '#333', margin: '12px 0' }} />
+
+          {/* Details card */}
+          <div style={{
+            background: '#2A2A2A', borderRadius: 16, padding: 16, borderLeft: '4px solid #FF6600', marginBottom: 12
+          }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #333' }}>
+              <span style={{ fontSize: 18 }}>📍</span>
+              <span style={{ color: '#AAA', fontSize: 14 }}>{job.location}</span>
             </div>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #333' }}>
+              <span style={{ fontSize: 18 }}>🕐</span>
+              <span style={{ color: '#AAA', fontSize: 14 }}>Início: {job.start_date ? format(new Date(job.start_date), 'dd MMM', { locale: pt }) : 'Amanhã'}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 0' }}>
+              <span style={{ fontSize: 18 }}>💰</span>
+              <span style={{ color: '#FF6600', fontWeight: 'bold', fontSize: 14 }}>{formatPrice(job.price, job.price_type)}</span>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ color: '#FFF', fontWeight: 'bold', margin: '0 0 8px 0', fontSize: 14 }}>Descrição</p>
+            <p style={{ color: '#AAA', fontSize: 14, lineHeight: 1.6, margin: 0 }}>{job.description}</p>
+          </div>
+
+          {/* Photos placeholder */}
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ color: '#FFF', fontWeight: 'bold', margin: '0 0 8px 0', fontSize: 14 }}>Fotos do Local</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    flex: 1, height: 70, background: '#2A2A2A', borderRadius: 10
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Fixed apply button */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          padding: '16px 20px 32px', background: '#1A1A1A', borderTop: '1px solid #333'
+        }}>
+          {user?.user_type === 'worker' ? (
+            <button
+              onClick={() => {
+                if (!applicationType) setApplicationType('application');
+                else handleSubmit();
+              }}
+              disabled={isSubmitting}
+              style={{
+                width: '100%', background: '#FF6600', borderRadius: 50, padding: 16,
+                fontWeight: 700, fontSize: 16, color: '#FFF', border: 'none',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1
+              }}
+            >
+              {isSubmitting ? 'A enviar...' : 'Candidatar-me'}
+            </button>
           ) : null}
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Application form modal */}
+        {user?.user_type === 'worker' && applicationType && (
+          <div style={{
+            position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20
+          }} onClick={() => setApplicationType(null)}>
+            <div
+              style={{
+                background: '#2A2A2A', borderRadius: 16, padding: 20, width: '100%', maxWidth: 380
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 style={{ color: '#FFF', fontWeight: 'bold', margin: '0 0 16px 0' }}>
+                {applicationType === 'application' ? 'Candidatura' : 'Nova Proposta'}
+              </h2>
+              {applicationType === 'proposal' && (
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ color: '#AAA', fontSize: 13, display: 'block', marginBottom: 6 }}>Valor proposto (€)</label>
+                  <input
+                    type="number"
+                    placeholder="Ex: 350"
+                    value={proposedPrice}
+                    onChange={(e) => setProposedPrice(e.target.value)}
+                    style={{
+                      width: 'calc(100% - 16px)', padding: 8, background: '#1A1A1A', border: '1px solid #444',
+                      borderRadius: 8, color: '#FFF', fontSize: 14
+                    }}
+                  />
+                </div>
+              )}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ color: '#AAA', fontSize: 13, display: 'block', marginBottom: 6 }}>Mensagem</label>
+                <textarea
+                  placeholder="Conte um pouco sobre a sua experiência..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={4}
+                  style={{
+                    width: 'calc(100% - 16px)', padding: 8, background: '#1A1A1A', border: '1px solid #444',
+                    borderRadius: 8, color: '#FFF', fontSize: 14, resize: 'none'
+                  }}
+                />
+              </div>
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting || !message.trim()}
+                style={{
+                  width: '100%', background: '#FF6600', borderRadius: 8, padding: 12,
+                  fontWeight: 700, color: '#FFF', border: 'none', cursor: 'pointer',
+                  opacity: (isSubmitting || !message.trim()) ? 0.5 : 1
+                }}
+              >
+                {isSubmitting ? 'A enviar...' : 'Enviar'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
