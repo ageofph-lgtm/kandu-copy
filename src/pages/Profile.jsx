@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { Job } from "@/entities/Job";
 import ProfileForm from "../components/profile/ProfileForm";
 import DocumentsList from "../components/profile/DocumentsList";
 import VerificationBadge from "../components/profile/VerificationBadge";
@@ -42,6 +43,7 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [noShowStats, setNoShowStats] = useState({ noShows: 0, totalJobs: 0 });
   const avatarInputRef = useRef(null);
 
   useEffect(() => {
@@ -52,6 +54,12 @@ export default function Profile() {
     try {
       const userData = await User.me();
       setUser(userData);
+      if (userData.user_type === 'worker') {
+        const workerJobs = await Job.filter({ worker_id: userData.id });
+        const noShows = workerJobs.filter(j => j.status === 'cancelled').length;
+        const totalJobs = workerJobs.filter(j => ['completed', 'cancelled'].includes(j.status)).length;
+        setNoShowStats({ noShows, totalJobs });
+      }
       if (!userData.user_type) {
         setIsEditing(true);
       }
@@ -303,6 +311,42 @@ export default function Profile() {
         <div className="mb-6">
           <XPDisplay xp={user.xp || 0} />
         </div>
+
+        {/* No Show Rate — workers only */}
+        {user.user_type === 'worker' && (() => {
+          const { noShows, totalJobs } = noShowStats;
+          const rate = totalJobs > 0 ? Math.round((noShows / totalJobs) * 100) : 0;
+          const isGood = rate <= 10;
+          const isMid  = rate > 10 && rate <= 25;
+          const color  = isGood ? 'green' : isMid ? 'yellow' : 'red';
+          const colorMap = {
+            green:  { bg: 'bg-green-50',  border: 'border-green-200',  text: 'text-green-700',  badge: 'bg-green-100 text-green-800',  label: '✅ Excelente' },
+            yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', badge: 'bg-yellow-100 text-yellow-800', label: '⚠️ Razoável'  },
+            red:    { bg: 'bg-red-50',    border: 'border-red-200',    text: 'text-red-700',    badge: 'bg-red-100 text-red-800',      label: '🔴 Perigoso'  },
+          };
+          const c = colorMap[color];
+          return (
+            <div className={`mb-6 rounded-2xl border-2 ${c.bg} ${c.border} p-4`}>
+              <div className="flex items-center justify-between mb-2">
+                <p className="font-bold text-gray-800 text-sm">Taxa de Ausência (No-Show)</p>
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${c.badge}`}>{c.label}</span>
+              </div>
+              <div className="flex items-end gap-2 mb-3">
+                <span className={`text-4xl font-bold ${c.text}`}>{rate}%</span>
+                <span className="text-xs text-gray-400 mb-1">{noShows} ausência{noShows !== 1 ? 's' : ''} / {totalJobs} trabalho{totalJobs !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all duration-500 ${
+                    color === 'green' ? 'bg-green-500' : color === 'yellow' ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}
+                  style={{ width: `${Math.min(rate, 100)}%` }}
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">Calculado com base em trabalhos aceites e cancelados.</p>
+            </div>
+          );
+        })()}
 
         {/* Upgrade Verification */}
         <div className="mb-6">
