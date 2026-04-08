@@ -272,15 +272,13 @@ function getDistance(lat1, lon1, lat2, lon2) {
 }
 
 function WorkerHome({ user }) {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [viewMode, setViewMode] = useState("map");
   const [sheetJob, setSheetJob] = useState(null);
-  const [sheetExpanded, setSheetExpanded] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
-  const [locationError, setLocationError] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -295,7 +293,7 @@ function WorkerHome({ user }) {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
-      () => setLocationError(true)
+      () => {}
     );
   }, []);
 
@@ -309,164 +307,124 @@ function WorkerHome({ user }) {
     })
     .sort((a, b) => (a._dist ?? 9999) - (b._dist ?? 9999));
 
-  const mapCenter = userLocation || (user?.latitude && user?.longitude ? [user.latitude, user.longitude] : LISBON_COORDS);
-
   const openSheet = (job) => {
     setSheetJob(job);
-    setSheetExpanded(false);
   };
 
+  if (loading) {
+    return (
+      <div style={{ height: '100vh', background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="text-center">
+          <div className="text-6xl font-bold text-[#F26522] animate-pulse">φ</div>
+          <p className="text-gray-400 mt-2 text-sm">A carregar...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen flex flex-col relative bg-gray-900">
-      {/* Floating category pills */}
-      <div className="absolute top-4 left-0 right-0 z-10 px-4">
-        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-          <button
-            onClick={() => setSelectedCategory("all")}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold shadow-lg transition-colors ${
-              selectedCategory === "all" ? 'bg-[#F26522] text-white' : 'bg-white/95 text-gray-700'
-            }`}
-          >
-            Todos
-          </button>
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold shadow-lg transition-colors ${
-                selectedCategory === cat ? 'bg-[#F26522] text-white' : 'bg-white/95 text-gray-700'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+    <div style={{ height: '100vh', position: 'relative', overflow: 'hidden', background: '#1A1A1A' }}>
+      {/* Top bar */}
+      <div style={{
+        position: 'absolute', top: 0, zIndex: 10, width: '100%', background: '#111', padding: '50px 16px 12px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #222'
+      }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" alt="K" style={{ width: 32 }} />
+          <span style={{ fontWeight: 600, color: '#FFF', fontSize: 14 }}>📍 Lisboa, PT</span>
+        </div>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <span style={{ fontSize: 20 }}>🔔</span>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%', background: '#FF6600', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', color: '#FFF', fontWeight: 'bold', fontSize: 14
+          }}>
+            {user?.full_name?.charAt(0) || '?'}
+          </div>
         </div>
       </div>
 
-      {/* List/Map toggle */}
-      <div className="absolute top-16 right-4 z-10">
-        <button
-          onClick={() => setViewMode(v => v === 'map' ? 'list' : 'map')}
-          className="bg-white rounded-full shadow-lg px-4 py-2 flex items-center gap-2 text-sm font-semibold text-gray-700"
-        >
-          {viewMode === 'map' ? <List className="w-4 h-4" /> : <Map className="w-4 h-4" />}
-          {viewMode === 'map' ? 'Lista' : 'Mapa'}
-        </button>
+      {/* Search bar */}
+      <div style={{
+        position: 'absolute', top: 105, left: 16, right: 16, zIndex: 10,
+        background: '#2A2A2A', borderRadius: 24, padding: '10px 16px', display: 'flex',
+        gap: 8, alignItems: 'center'
+      }}>
+        <span style={{ color: '#FF6600' }}>🔍</span>
+        <input
+          type="text"
+          placeholder="O que precisas?"
+          style={{
+            background: 'transparent', border: 'none', color: '#FFF', flex: 1,
+            outline: 'none', fontSize: 14
+          }}
+        />
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 overflow-hidden">
-        {loading ? (
-          <div className="h-full flex items-center justify-center bg-gray-50">
-            <div className="text-center">
-              <div className="text-6xl font-bold text-[#F26522] animate-pulse">φ</div>
-              <p className="text-gray-500 mt-2">A carregar obras...</p>
-            </div>
-          </div>
-        ) : viewMode === 'map' ? (
-          <MapView
-            jobs={filteredJobs}
-            onJobClick={openSheet}
-            center={mapCenter}
-            radius={userLocation ? 10000 : null}
-            userLocation={userLocation}
-          />
-        ) : (
-          <div className="h-full overflow-auto pt-28 px-4 pb-28 bg-gray-50 space-y-3">
-            {filteredJobs.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="font-bold text-gray-900">Nenhum trabalho disponível</h3>
-                <p className="text-sm text-gray-500 mt-1">Tente outro filtro de categoria</p>
-              </div>
-            ) : filteredJobs.map(job => (
-              <div
-                key={job.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 cursor-pointer active:scale-[0.99] transition-transform"
-                onClick={() => openSheet(job)}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-bold text-gray-900 flex-1 mr-2 text-sm">{job.title}</h3>
-                  <p className="text-xl font-bold text-[#F26522] shrink-0">
-                    €{job.price}{job.price_type === 'hourly' ? '/h' : ''}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <Badge variant="secondary" className="text-xs">{job.category}</Badge>
-                  {job.urgency === 'high' && <Badge className="bg-red-100 text-red-700 text-xs border-0">🔴 Urgente</Badge>}
-                </div>
-                <p className="text-xs text-gray-400 flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />{job.location}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Map SVG background */}
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 400 800">
+        <defs>
+          <pattern id="mapGrid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="40" y2="0" stroke="#2a3a2a" strokeWidth="0.5" />
+            <line x1="0" y1="0" x2="0" y2="40" stroke="#2a3a2a" strokeWidth="0.5" />
+          </pattern>
+        </defs>
+        <rect width="400" height="800" fill="#1a3a2a" />
+        <rect width="400" height="800" fill="url(#mapGrid)" />
+        {/* Street names */}
+        <text x="50" y="200" fontSize="8" fill="#333" opacity="0.5">Av. da Liberdade</text>
+        <text x="80" y="450" fontSize="8" fill="#333" opacity="0.5" transform="rotate(-30 80 450)">R. Augusta</text>
+        <text x="250" y="350" fontSize="8" fill="#333" opacity="0.5">Av. Paulista</text>
+      </svg>
 
-      {/* Bottom Sheet */}
-      {sheetJob && (
-        <>
-          <div className="fixed inset-0 z-[55]" onClick={() => setSheetJob(null)} />
+      {/* Job pins on map */}
+      {filteredJobs.slice(0, 8).map((job, idx) => {
+        const angle = (idx / 8) * Math.PI * 2;
+        const x = 50 + 35 * Math.cos(angle);
+        const y = 50 + 35 * Math.sin(angle);
+        return (
           <div
-            className="fixed inset-x-0 z-[60] bg-white rounded-t-3xl shadow-2xl transition-all duration-300 overflow-hidden"
-            style={{ bottom: '80px', height: sheetExpanded ? '72vh' : '32vh' }}
-          >
-            {/* Drag handle */}
-            <div
-              className="flex justify-center pt-3 pb-2 cursor-pointer"
-              onClick={() => setSheetExpanded(e => !e)}
-            >
-              <div className="w-10 h-1 bg-gray-300 rounded-full" />
-            </div>
-            <button
-              onClick={() => setSheetJob(null)}
-              className="absolute top-3 right-4 p-1.5 rounded-full hover:bg-gray-100"
-            >
-              <X className="w-4 h-4 text-gray-400" />
-            </button>
+            key={job.id}
+            onClick={() => openSheet(job)}
+            style={{
+              position: 'absolute', left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)',
+              width: 28, height: 28, background: '#FF6600', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+              zIndex: 5
+            }}
+          />
+        );
+      })}
 
-            <div className="px-5 overflow-auto h-full pb-8">
-              <Badge variant="secondary" className="mb-2">{sheetJob.category}</Badge>
-              <p className="font-bold text-gray-900 text-lg leading-tight">{sheetJob.title}</p>
-              <p className="text-4xl font-bold text-[#F26522] mt-1">
-                €{sheetJob.price}
-                {sheetJob.price_type === 'hourly' && <span className="text-base font-normal text-gray-400">/h</span>}
-              </p>
-              <div className="flex items-center gap-3 mt-2">
-                {sheetJob.urgency === 'high' && <Badge className="bg-red-100 text-red-700 border-0 text-xs">🔴 Urgente</Badge>}
-                <span className="text-xs text-gray-400 flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />{sheetJob.location}
-                </span>
-              </div>
-
-              {sheetExpanded && (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-700 mb-1">Descrição</p>
-                    <p className="text-sm text-gray-600">{sheetJob.description}</p>
-                  </div>
-                  {sheetJob.start_date && (
-                    <p className="text-sm text-gray-500">📅 Início previsto: {sheetJob.start_date}</p>
-                  )}
-                  <Button
-                    className="w-full h-12 bg-[#F26522] hover:bg-orange-600 rounded-2xl text-base font-bold shadow-lg shadow-[#F26522]/20"
-                    onClick={() => setShowJobModal(true)}
-                  >
-                    Candidatar-me
-                  </Button>
-                </div>
-              )}
-
-              {!sheetExpanded && (
-                <p className="text-xs text-gray-400 mt-4 text-center">↑ Deslize para ver detalhes e candidatar-se</p>
-              )}
-            </div>
+      {/* Floating job card */}
+      {sheetJob && (
+        <div
+          onClick={() => setShowJobModal(true)}
+          style={{
+            position: 'absolute', bottom: 72, left: 16, right: 16,
+            background: '#2A2A2A', borderRadius: 20, padding: 16, borderLeft: '4px solid #FF6600',
+            display: 'flex', gap: 12, alignItems: 'center', cursor: 'pointer', zIndex: 20
+          }}
+        >
+          <div style={{
+            width: 48, height: 48, background: '#FF6600', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0
+          }}>🔧</div>
+          <div style={{ flex: 1 }}>
+            <p style={{ color: '#FFF', fontWeight: 'bold', margin: 0, fontSize: 15 }}>{sheetJob.title}</p>
+            <p style={{ color: '#AAA', fontSize: 13, margin: '4px 0 0 0' }}>📍 {sheetJob.location}</p>
           </div>
-        </>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+            <p style={{ color: '#FF6600', fontWeight: 'bold', margin: 0 }}>€{sheetJob.price}</p>
+            <span style={{ background: 'rgba(255, 102, 0, 0.15)', color: '#FF6600', padding: '4px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>
+              {sheetJob._dist ? `${sheetJob._dist.toFixed(1)}km` : '—'}
+            </span>
+          </div>
+        </div>
       )}
 
-      {/* Full job modal for apply form */}
+      {/* Full job modal */}
       {showJobModal && sheetJob && (
         <JobModal
           job={sheetJob}
@@ -475,6 +433,41 @@ function WorkerHome({ user }) {
           onApply={() => { setShowJobModal(false); setSheetJob(null); }}
         />
       )}
+
+      {/* Bottom nav */}
+      <nav style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, background: '#111', borderTop: '1px solid #222',
+        padding: '12px 0 20px', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', zIndex: 10
+      }}>
+        <button style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none',
+          color: '#FF6600', cursor: 'pointer', fontSize: 20
+        }}>
+          📍
+          <span style={{ fontSize: 10, color: '#FF6600' }}>Mapa</span>
+        </button>
+        <button onClick={() => navigate(createPageUrl("Home"))} style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none',
+          color: '#666', cursor: 'pointer', fontSize: 20
+        }}>
+          🔍
+          <span style={{ fontSize: 10, color: '#666' }}>Pesquisa</span>
+        </button>
+        <button onClick={() => navigate(createPageUrl("Chat"))} style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none',
+          color: '#666', cursor: 'pointer', fontSize: 20
+        }}>
+          💬
+          <span style={{ fontSize: 10, color: '#666' }}>Chat</span>
+        </button>
+        <button onClick={() => navigate(createPageUrl("Profile"))} style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none',
+          color: '#666', cursor: 'pointer', fontSize: 20
+        }}>
+          👤
+          <span style={{ fontSize: 10, color: '#666' }}>Perfil</span>
+        </button>
+      </nav>
     </div>
   );
 }
