@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, ArrowRight, Check, MapPin, Info } from "lucide-react";
-import PhoneVerificationModal from "@/components/PhoneVerificationModal";
+
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -59,7 +59,6 @@ export default function NewJob() {
   const [user, setUser] = useState(null);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
   const [formData, setFormData] = useState({
     title: "", category: "", description: "",
     location: "", start_date: "", end_date: "",
@@ -92,12 +91,10 @@ export default function NewJob() {
   };
 
   const handlePublish = () => {
-    // Trigger phone verification before each submission
-    setShowPhoneVerification(true);
+    handleSubmit();
   };
 
   const handleSubmit = async () => {
-    setShowPhoneVerification(false);
     setIsSubmitting(true);
     try {
       const coords = LOCATION_COORDS[formData.location];
@@ -386,13 +383,7 @@ export default function NewJob() {
           )}
         </Button>
       </div>
-      {showPhoneVerification && (
-        <PhoneVerificationModal
-          phone={user?.phone}
-          onVerified={handleSubmit}
-          onCancel={() => setShowPhoneVerification(false)}
-        />
-      )}
+
     </div>
   );
 }
