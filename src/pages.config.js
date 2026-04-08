@@ -48,6 +48,7 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AdminDashboard from './pages/AdminDashboard';
+import Splash from './pages/Splash';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -77,10 +78,11 @@ export const PAGES = {
     "Scan": Scan,
     "SetupProfile": SetupProfile,
     "Welcome": Welcome,
+    "Splash": Splash,
 }
 
 export const pagesConfig = {
-    mainPage: "Welcome",
+    mainPage: "Splash",
     Pages: PAGES,
     Layout: __Layout,
 };
