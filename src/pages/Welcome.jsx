@@ -1,16 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
-import { Wrench, Briefcase, Star, Shield, ArrowRight, CheckCircle } from "lucide-react";
+import { Wrench, Briefcase } from "lucide-react";
 
-const features = [
-  { icon: Briefcase, label: "Publique obras", desc: "Encontre o profissional certo para cada trabalho" },
-  { icon: Wrench, label: "Seja contratado", desc: "Candidate-se a obras e mostre o seu talento" },
-  { icon: Star, label: "Avaliações reais", desc: "Transparência e confiança em cada projeto" },
-  { icon: Shield, label: "Plataforma segura", desc: "Pagamentos e dados protegidos" },
-];
+// Hexagon pattern background SVG
+const HexBg = () => (
+  <div className="absolute inset-0 opacity-[0.07] pointer-events-none overflow-hidden">
+    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="hex" x="0" y="0" width="56" height="100" patternUnits="userSpaceOnUse">
+          <polygon points="28,2 54,16 54,44 28,58 2,44 2,16" fill="none" stroke="#F26522" strokeWidth="1"/>
+          <polygon points="0,58 26,72 26,100 0,114 -26,100 -26,72" fill="none" stroke="#F26522" strokeWidth="1"/>
+          <polygon points="56,58 82,72 82,100 56,114 30,100 30,72" fill="none" stroke="#F26522" strokeWidth="1"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#hex)"/>
+    </svg>
+  </div>
+);
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -22,12 +30,8 @@ export default function Welcome() {
         const isAuth = await base44.auth.isAuthenticated();
         if (isAuth) {
           const user = await base44.auth.me();
-          if (user?.user_type) {
-            navigate(createPageUrl("Home"));
-          } else {
-            navigate(createPageUrl("SetupProfile"));
-          }
-          return;
+          if (user?.user_type) { navigate(createPageUrl("Home")); return; }
+          navigate(createPageUrl("SetupProfile")); return;
         }
       } catch {}
       setChecking(false);
@@ -37,100 +41,63 @@ export default function Welcome() {
 
   if (checking) {
     return (
-      <div className="min-h-screen bg-[#F26522] flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-7xl font-bold text-white animate-pulse select-none">φ</div>
+      <div className="min-h-screen bg-[#1a1a1a] flex flex-col items-center justify-center">
+        <HexBg />
+        {/* Logo hexagon */}
+        <div className="relative mb-4">
+          <svg width="96" height="110" viewBox="0 0 96 110">
+            <polygon points="48,4 92,28 92,76 48,100 4,76 4,28" fill="#1a1a1a" stroke="#F26522" strokeWidth="3"/>
+            <text x="48" y="62" textAnchor="middle" fill="white" fontSize="38" fontWeight="900" fontFamily="system-ui">K</text>
+            <circle cx="35" cy="34" r="5" fill="#F26522"/>
+          </svg>
+        </div>
+        <p className="text-2xl font-black text-white tracking-widest">KANDU</p>
+        <div className="mt-6 w-32 h-1 bg-[#2a2a2a] rounded-full overflow-hidden">
+          <div className="h-full bg-[#F26522] rounded-full animate-pulse" style={{width:'60%'}} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col overflow-hidden">
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-[#F26522] via-orange-500 to-orange-700 px-6 pt-16 pb-24 flex flex-col items-center text-center overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-        
-        {/* Hexagon logo */}
-        <div className="relative mb-6">
-          <div
-            className="w-24 h-28 bg-white/20 flex items-center justify-center shadow-2xl"
-            style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-          >
-            <span className="text-5xl font-black text-white select-none">φ</span>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#1a1a1a] flex flex-col items-center justify-center px-6 relative overflow-hidden">
+      <HexBg />
 
-        <h1 className="text-4xl font-black text-white tracking-tight mb-2">KANDU</h1>
-        <p className="text-orange-100 text-lg font-medium mb-1">A plataforma de obras e serviços</p>
-        <p className="text-orange-200 text-sm max-w-xs">
-          Ligue empregadores a profissionais qualificados de construção civil em Portugal
-        </p>
-      </div>
-
-      {/* Wave divider */}
-      <div className="relative -mt-8 bg-white">
-        <svg viewBox="0 0 1440 80" className="w-full fill-white" preserveAspectRatio="none" style={{ marginTop: '-2px' }}>
-          <path d="M0,80 C360,0 1080,0 1440,80 L1440,80 L0,80 Z" />
+      {/* Logo */}
+      <div className="relative mb-6">
+        <svg width="96" height="110" viewBox="0 0 96 110">
+          <polygon points="48,4 92,28 92,76 48,100 4,76 4,28" fill="#1a1a1a" stroke="#F26522" strokeWidth="3"/>
+          <polygon points="48,18 80,36 80,72 48,90 16,72 16,36" fill="#111"/>
+          <text x="52" y="68" textAnchor="middle" fill="white" fontSize="44" fontWeight="900" fontFamily="system-ui">K</text>
+          <circle cx="36" cy="34" r="6" fill="#F26522"/>
         </svg>
       </div>
 
-      {/* Features */}
-      <div className="flex-1 px-6 -mt-4">
-        <h2 className="text-xl font-bold text-gray-900 mb-5 text-center">Tudo o que precisa numa só plataforma</h2>
-        <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto mb-8">
-          {features.map((f, i) => (
-            <div key={i} className="bg-gray-50 rounded-2xl p-4 flex flex-col gap-2 border border-gray-100">
-              <div className="w-10 h-10 bg-[#F26522]/10 rounded-xl flex items-center justify-center">
-                <f.icon className="w-5 h-5 text-[#F26522]" />
-              </div>
-              <p className="font-semibold text-sm text-gray-900">{f.label}</p>
-              <p className="text-xs text-gray-500 leading-snug">{f.desc}</p>
-            </div>
-          ))}
-        </div>
+      <h1 className="text-3xl font-black text-white tracking-widest mb-1">KANDU</h1>
+      <p className="text-base font-bold text-white mb-1">Find work. Find workers.</p>
+      <p className="text-sm text-gray-400 mb-12">Lisboa e arredores</p>
 
-        {/* Social proof */}
-        <div className="flex justify-center gap-6 mb-10 text-center">
-          <div>
-            <p className="text-2xl font-black text-[#F26522]">2k+</p>
-            <p className="text-xs text-gray-500">Profissionais</p>
-          </div>
-          <div className="w-px bg-gray-200" />
-          <div>
-            <p className="text-2xl font-black text-[#F26522]">5k+</p>
-            <p className="text-xs text-gray-500">Obras concluídas</p>
-          </div>
-          <div className="w-px bg-gray-200" />
-          <div>
-            <p className="text-2xl font-black text-[#F26522]">4.9★</p>
-            <p className="text-xs text-gray-500">Avaliação média</p>
-          </div>
-        </div>
+      <div className="w-full max-w-sm space-y-4">
+        <button
+          onClick={() => base44.auth.redirectToLogin(createPageUrl("SetupProfile") + "?type=worker")}
+          className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base flex items-center px-6 gap-4 transition-colors shadow-lg shadow-orange-900/30"
+        >
+          <Wrench className="w-6 h-6 shrink-0" />
+          <span>Sou Profissional</span>
+        </button>
+
+        <button
+          onClick={() => base44.auth.redirectToLogin(createPageUrl("SetupProfile") + "?type=employer")}
+          className="w-full h-14 bg-[#2a2a2a] hover:bg-[#333] border-2 border-[#3a3a3a] text-white font-bold rounded-2xl text-base flex items-center px-6 gap-4 transition-colors"
+        >
+          <Briefcase className="w-6 h-6 shrink-0" />
+          <span>Preciso de Profissional</span>
+        </button>
       </div>
 
-      {/* CTA Buttons */}
-      <div className="px-6 pb-10 space-y-3 max-w-sm mx-auto w-full">
-        <Button
-          onClick={() => base44.auth.redirectToLogin(createPageUrl("SetupProfile"))}
-          className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-xl shadow-[#F26522]/30 flex items-center justify-center gap-2"
-        >
-          Entrar na plataforma
-          <ArrowRight className="w-5 h-5" />
-        </Button>
-        <Button
-          onClick={() => base44.auth.redirectToLogin(createPageUrl("SetupProfile"))}
-          variant="outline"
-          className="w-full h-12 border-2 border-[#F26522] text-[#F26522] font-bold rounded-2xl text-base hover:bg-orange-50"
-        >
-          Criar conta gratuita
-        </Button>
-        <p className="text-center text-xs text-gray-400 mt-2">
-          Ao continuar, aceita os nossos <span className="underline cursor-pointer">Termos de Serviço</span>
-        </p>
-      </div>
+      <p className="text-xs text-gray-600 mt-10 text-center">
+        Interface 100% gratuita. Montelo usado pelo KANDU.
+      </p>
     </div>
   );
 }

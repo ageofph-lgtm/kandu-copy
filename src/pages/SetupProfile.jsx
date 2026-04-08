@@ -151,7 +151,7 @@ export default function SetupProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center">
           <div className="text-7xl font-bold text-[#F26522] animate-pulse select-none">φ</div>
           <p className="text-gray-500 mt-3">A carregar...</p>
@@ -160,22 +160,19 @@ export default function SetupProfile() {
     );
   }
 
-  // Não autenticado — mostrar ecrã de login
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen bg-[#1a1a1a] flex flex-col items-center justify-center px-6">
         <div className="text-center mb-10">
           <div className="text-7xl font-bold text-[#F26522] select-none mb-4">φ</div>
-          <h1 className="text-3xl font-bold text-gray-900">KANDU</h1>
+          <h1 className="text-3xl font-black text-white">KANDU</h1>
           <p className="text-gray-500 mt-2">A plataforma de profissionais de construção</p>
         </div>
-        <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">Entrar na plataforma</h2>
+        <div className="w-full max-w-sm bg-[#1f1f1f] border border-[#2a2a2a] rounded-3xl p-8">
+          <h2 className="text-xl font-bold text-white mb-2 text-center">Entrar na plataforma</h2>
           <p className="text-sm text-gray-500 text-center mb-6">Faça login ou crie uma conta para continuar</p>
-          <Button
-            onClick={() => base44.auth.redirectToLogin(window.location.href)}
-            className="w-full h-12 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-lg shadow-[#F26522]/30"
-          >
+          <Button onClick={() => base44.auth.redirectToLogin(window.location.href)}
+            className="w-full h-12 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base">
             Entrar / Criar Conta
           </Button>
         </div>
@@ -192,110 +189,69 @@ export default function SetupProfile() {
 
   const profile = visibleProfiles[activeIndex] || visibleProfiles[0];
 
-  // ── Step 1.5: Employer Subtype ──
   if (step === 1.5) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
+      <div className="min-h-screen bg-[#1a1a1a] flex flex-col">
         <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
         <div className="text-center pt-12 pb-6 px-4">
-          <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>
-          <h1 className="text-2xl font-bold text-gray-900">Tipo de Empregador</h1>
-          <p className="text-gray-500 mt-1 text-sm">Selecione o seu perfil de empregador</p>
+          <p className="text-gray-500 text-sm mb-1">2/3</p>
+          <h1 className="text-2xl font-black text-white">Tipo de Empregador</h1>
         </div>
 
         <div className="flex-1 flex flex-col justify-center px-6 pb-32 max-w-sm mx-auto w-full gap-4">
-          {/* Simple Employer */}
-          <button
-            onClick={() => setEmployerType('simple')}
-            className={`w-full rounded-2xl border-2 p-5 text-left transition-all ${
-              employerType === 'simple' ? 'border-[#F26522] bg-orange-50' : 'border-gray-200 bg-white'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
-                <Briefcase className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="font-bold text-gray-900">Simple Employer</p>
-                <p className="text-xs text-gray-500">Cliente particular — contrata profissionais para obras pessoais</p>
-              </div>
-              {employerType === 'simple' && <CheckCircle className="w-5 h-5 text-[#F26522] ml-auto" />}
-            </div>
-          </button>
-
-          {/* Cia Employer */}
-          <button
-            onClick={() => setEmployerType('cia')}
-            className={`w-full rounded-2xl border-2 p-5 text-left transition-all ${
-              employerType === 'cia' ? 'border-[#F26522] bg-orange-50' : 'border-gray-200 bg-white'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center shrink-0">
-                <Shield className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="font-bold text-gray-900">Cia Employer</p>
-                <p className="text-xs text-gray-500">Empresa — gere múltiplos clientes e projetos</p>
-              </div>
-              {employerType === 'cia' && <CheckCircle className="w-5 h-5 text-[#F26522] ml-auto" />}
-            </div>
-          </button>
-
-          {/* Clients Section for Cia */}
-          {employerType === 'cia' && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <p className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <span className="text-purple-600">🏢</span> Clients Section
-              </p>
-              <p className="text-xs text-gray-500 mb-4">Adicione os clientes da sua empresa (opcional — pode fazê-lo mais tarde)</p>
-
-              {/* Client list */}
-              {companyClients.map((c, i) => (
-                <div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 mb-2">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{c.name}</p>
-                    <p className="text-xs text-gray-500">{c.contact}{c.nif ? ` · NIF ${c.nif}` : ''}</p>
-                  </div>
-                  <button onClick={() => removeClient(i)} className="text-red-400 hover:text-red-600 p-1">
-                    <X className="w-4 h-4" />
-                  </button>
+          {/* Cards side by side */}
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={() => setEmployerType('simple')}
+              className={`rounded-2xl border-2 p-5 text-center transition-all ${
+                employerType === 'simple' ? 'border-[#F26522] bg-[#F26522]/10' : 'border-[#3a3a3a] bg-[#2a2a2a]'
+              }`}>
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 bg-[#333] rounded-xl flex items-center justify-center">
+                  <Briefcase className="w-6 h-6 text-gray-400" />
                 </div>
-              ))}
+                <p className="font-bold text-white text-sm">Simple Employer</p>
+                <p className="text-xs text-gray-500">Cliente Particular</p>
+              </div>
+              {employerType === 'simple' && <CheckCircle className="w-5 h-5 text-[#F26522] mx-auto mt-2" />}
+            </button>
 
-              {/* Add client form */}
-              <div className="space-y-2 mt-3">
-                <input
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
-                  placeholder="Nome do cliente *"
-                  value={newClient.name}
-                  onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))}
-                />
-                <input
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
-                  placeholder="Contacto (email ou telefone)"
-                  value={newClient.contact}
-                  onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))}
-                />
-                <input
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
-                  placeholder="NIF do cliente"
-                  value={newClient.nif}
-                  onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))}
-                />
-                <button
-                  onClick={addClient}
-                  disabled={!newClient.name}
-                  className="w-full border-2 border-dashed border-purple-300 rounded-xl py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 transition-colors disabled:opacity-40"
-                >
-                  + Adicionar cliente
-                </button>
+            <button onClick={() => setEmployerType('cia')}
+              className={`rounded-2xl border-2 p-5 text-center transition-all ${
+                employerType === 'cia' ? 'border-[#F26522] bg-[#F26522]/10' : 'border-[#3a3a3a] bg-[#2a2a2a]'
+              }`}>
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 bg-[#F26522]/20 rounded-xl flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-[#F26522]" />
+                </div>
+                <p className="font-bold text-[#F26522] text-sm">Cia Employer</p>
+                <p className="text-xs text-gray-500">Empresa ou Organização</p>
+              </div>
+              {employerType === 'cia' && <CheckCircle className="w-5 h-5 text-[#F26522] mx-auto mt-2" />}
+            </button>
+          </div>
+
+          {/* placeholder to satisfy closing button */}
+          <div style={{display:'none'}}>
+
+          </div>
+
+          {/* Cia form */}
+          {employerType === 'cia' && (
+            <div className="bg-[#2a2a2a] border border-[#F26522]/40 rounded-2xl p-5 space-y-3">
+              <input className="w-full bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#F26522] placeholder:text-gray-600" placeholder="Nome da Empresa" />
+              <input className="w-full bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#F26522] placeholder:text-gray-600" placeholder="NIF" />
+              <select className="w-full bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl px-4 py-3 text-gray-400 text-sm outline-none focus:border-[#F26522]">
+                <option>Setor de Atividade</option>
+                <option>Construção</option><option>Remodelarão</option><option>Elétrica</option>
+              </select>
+              <input className="w-full bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#F26522] placeholder:text-gray-600" placeholder="Website" />
+              <div className="bg-[#F26522]/20 border border-[#F26522]/40 rounded-xl px-3 py-2">
+                <p className="text-[#F26522] text-xs font-semibold">Empresas têm acesso a funcionalidades exclusivas</p>
               </div>
             </div>
           )}
 
-          <Button
-            onClick={handleEmployerContinue}
+          <Button onClick={handleEmployerContinue}
             disabled={!employerType}
             className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-xl shadow-[#F26522]/30"
           >
@@ -309,14 +265,12 @@ export default function SetupProfile() {
     );
   }
 
-  // ── Step 2: Identity Verification ──
   if (step === 2) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
+      <div className="min-h-screen bg-[#1a1a1a] flex flex-col">
         <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
         <div className="text-center pt-12 pb-6 px-4">
-          <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>
-          <h1 className="text-2xl font-bold text-gray-900">Verificar Identidade</h1>
+          <h1 className="text-2xl font-black text-white">Verificação de Identidade</h1>
           <p className="text-gray-500 mt-1 text-sm">Opcional — pode fazê-lo mais tarde no perfil</p>
         </div>
 
@@ -332,52 +286,28 @@ export default function SetupProfile() {
             </div>
           </div>
 
-          {/* Ultra Verified */}
-          <div className="bg-white rounded-2xl border-2 border-green-300 p-5 mb-6">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-                <BadgeCheck className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="font-bold text-gray-900">Ultra Verificado</p>
-                <p className="text-xs text-gray-500 mt-0.5">Submeta o seu documento de identidade (BI, Passaporte ou Carta). A análise é feita manualmente e por KYC.</p>
-              </div>
-            </div>
-
+          <div className="mb-6">
             <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFileSelect} />
-
-            {idDocPreview ? (
-              <div className="relative rounded-xl overflow-hidden border border-gray-200 mb-3">
-                <img src={idDocPreview} alt="Documento" className="w-full h-36 object-cover" />
-                <button onClick={() => { setIdDocFile(null); setIdDocPreview(null); }} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1">
-                  <X className="w-3 h-3" />
+            <div className="grid grid-cols-2 gap-3">
+              {[{label:'Frente do BI/CC', idx:0}, {label:'Verso do BI/CC', idx:1}].map(({label}) => (
+                <button key={label} onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-[#F26522]/60 rounded-2xl p-6 flex flex-col items-center gap-2 bg-[#2a2a2a] text-gray-400 hover:bg-[#333] transition-colors">
+                  <span className="text-2xl">📷</span>
+                  <span className="text-xs font-medium text-center">{label}</span>
                 </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full border-2 border-dashed border-green-300 rounded-xl p-6 flex flex-col items-center gap-2 text-green-600 hover:bg-green-50 transition-colors mb-3"
-              >
-                <Upload className="w-6 h-6" />
-                <span className="text-sm font-medium">Carregar documento</span>
-                <span className="text-xs text-gray-400">BI, Passaporte ou Carta de Condução</span>
-              </button>
-            )}
+              ))}
+            </div>
+            {idDocPreview && <img src={idDocPreview} className="mt-3 w-full h-32 object-cover rounded-xl border border-[#F26522]/40" />}
+            <p className="text-center text-xs text-gray-600 mt-3">De acordo con RGPD, os teus dados estãn protegidos.</p>
           </div>
 
-          <Button
-            onClick={() => handleFinish(false)}
-            disabled={isCreating || !idDocFile}
-            className="w-full h-13 bg-green-600 hover:bg-green-700 text-white font-bold rounded-2xl mb-3 shadow-lg"
+          <Button onClick={() => handleFinish(false)}
+            disabled={isCreating}
+            className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl mb-3"
           >
             {isUploading ? 'A enviar documento...' : isCreating ? 'A criar perfil...' : 'Submeter e continuar'}
           </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleFinish(true)}
-            disabled={isCreating}
-            className="w-full text-gray-500 hover:text-gray-700"
-          >
+          <Button variant="ghost" onClick={() => handleFinish(true)} disabled={isCreating} className="w-full text-gray-500">
             Saltar por agora
           </Button>
         </div>
@@ -386,87 +316,67 @@ export default function SetupProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
+    <div className="min-h-screen bg-[#1a1a1a] flex flex-col">
       <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
       {/* Header */}
       <div className="text-center pt-12 pb-6 px-4">
-        <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>
-        <h1 className="text-2xl font-bold text-gray-900">Bem-vindo ao KANDU</h1>
-        <p className="text-gray-600 mt-1 text-sm">Selecione o tipo de perfil</p>
-        {user && <p className="text-xs text-gray-400 mt-1">{user.email}</p>}
+        <h1 className="text-2xl font-black text-white">Como vais usar o KANDU?</h1>
+        {user && <p className="text-xs text-gray-600 mt-1">{user.email}</p>}
       </div>
 
-      {/* Carousel */}
-      <div className="flex-1 flex flex-col justify-center px-6 pb-32">
-        {/* Cards */}
-        <div className="relative">
-          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4" style={{ scrollbarWidth: 'none' }}>
-            {visibleProfiles.map((p, idx) => (
-              <div
-                key={p.type}
-                className={`flex-shrink-0 w-72 snap-center cursor-pointer transition-all duration-300 ${
-                  activeIndex === idx ? 'scale-100 opacity-100' : 'scale-95 opacity-60'
-                }`}
-                style={{ scrollSnapAlign: 'center' }}
-                onClick={() => setActiveIndex(idx)}
-              >
-                <div className={`bg-white rounded-3xl shadow-xl border-2 p-6 relative ${
-                  activeIndex === idx ? 'border-[#F26522] shadow-[#F26522]/20' : 'border-transparent'
-                }`}>
-                  {activeIndex === idx && (
-                    <div className="absolute top-4 right-4">
-                      <CheckCircle className="w-6 h-6 text-[#F26522]" />
-                    </div>
-                  )}
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${p.gradient} flex items-center justify-center mb-4 mx-auto shadow-lg`}>
-                    <p.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-center text-gray-900 mb-2">{p.title}</h3>
-                  <p className="text-sm text-gray-500 text-center mb-5">{p.description}</p>
-                  <div className="space-y-2">
-                    {p.features.map((feat, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                        <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                        {feat}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
+      {/* Cards */}
+      <div className="flex-1 flex flex-col justify-center px-6 pb-32 max-w-sm mx-auto w-full gap-4">
+        <button
+          onClick={() => { setActiveIndex(visibleProfiles.findIndex(p => p.type === 'worker')); }}
+          className={`w-full bg-[#2a2a2a] rounded-2xl p-5 text-left flex items-center gap-4 border-l-4 border-[#F26522] transition-all ${
+            visibleProfiles[activeIndex]?.type === 'worker' ? 'ring-2 ring-[#F26522]' : ''
+          }`}
+        >
+          <div className="w-14 h-14 flex items-center justify-center shrink-0">
+            <Wrench className="w-10 h-10 text-white" strokeWidth={1.5} />
           </div>
-        </div>
+          <div className="flex-1">
+            <p className="font-black text-white text-lg">Sou Profissional</p>
+            <p className="text-sm text-gray-400">Quero encontrar trabalho perto de mim</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-[#F26522] shrink-0" />
+        </button>
 
-        {/* Controls */}
-        <div className="flex justify-center items-center gap-4 mt-4">
-          <button
-            onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
-            disabled={activeIndex === 0}
-            className="p-2 rounded-full bg-white shadow disabled:opacity-30"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <div className="flex gap-2">
-            {visibleProfiles.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveIndex(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${activeIndex === idx ? 'bg-[#F26522] w-6' : 'bg-gray-300'}`}
-              />
-            ))}
+        <button
+          onClick={() => { setActiveIndex(visibleProfiles.findIndex(p => p.type === 'employer')); }}
+          className={`w-full bg-[#2a2a2a] rounded-2xl p-5 text-left flex items-center gap-4 border-l-4 border-[#F26522] transition-all ${
+            visibleProfiles[activeIndex]?.type === 'employer' ? 'ring-2 ring-[#F26522]' : ''
+          }`}
+        >
+          <div className="w-14 h-14 flex items-center justify-center shrink-0">
+            <Briefcase className="w-10 h-10 text-white" strokeWidth={1.5} />
           </div>
+          <div className="flex-1">
+            <p className="font-black text-white text-lg">Preciso de Profissional</p>
+            <p className="text-sm text-gray-400">Quero contratar para a minha obra</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-[#F26522] shrink-0" />
+        </button>
+
+        {isAdmin && (
           <button
-            onClick={() => setActiveIndex(Math.min(visibleProfiles.length - 1, activeIndex + 1))}
-            disabled={activeIndex === profileTypes.length - 1}
-            className="p-2 rounded-full bg-white shadow disabled:opacity-30"
+            onClick={() => { setActiveIndex(visibleProfiles.findIndex(p => p.type === 'admin')); }}
+            className="w-full bg-[#2a2a2a] rounded-2xl p-5 text-left flex items-center gap-4 border-l-4 border-purple-500"
           >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
+            <div className="w-14 h-14 flex items-center justify-center shrink-0">
+              <Shield className="w-10 h-10 text-purple-400" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1">
+              <p className="font-black text-white text-lg">Administrador</p>
+              <p className="text-sm text-gray-400">Gerir plataforma</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-purple-400 shrink-0" />
           </button>
-        </div>
+        )}
       </div>
 
       {/* Sticky CTA */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-4 bg-gradient-to-t from-white/95 via-white/80 to-transparent">
+      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-4 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/80 to-transparent">
         <Button
           onClick={handleContinueToVerify}
           disabled={isCreating}
