@@ -62,7 +62,6 @@ import Review from './pages/Review';
 import DashboardEmployer from './pages/DashboardEmployer';
 import Applicants from './pages/Applicants';
 import Search from './pages/Search';
-import ProfileKandu from './pages/ProfileKandu';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -71,7 +70,7 @@ import Home from './pages/Home';
 import MyJobs from './pages/MyJobs';
 import NewJob from './pages/NewJob.jsx';
 import Notifications from './pages/Notifications';
-import Profile from './pages/Profile';
+import Profile from './pages/ProfileKandu';
 import Scan from './pages/Scan';
 import SetupProfile from './pages/SetupProfile';
 import Welcome from './pages/Welcome';
@@ -106,7 +105,6 @@ export const PAGES = {
     "DashboardEmployer": DashboardEmployer,
     "Applicants": Applicants,
     "Search": Search,
-    "ProfileKandu": ProfileKandu,
 }
 
 export const pagesConfig = {
