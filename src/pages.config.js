@@ -62,6 +62,7 @@ import Review from './pages/Review';
 import DashboardEmployer from './pages/DashboardEmployer';
 import Applicants from './pages/Applicants';
 import Search from './pages/Search';
+import ProfileKandu from './pages/ProfileKandu';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -105,6 +106,7 @@ export const PAGES = {
     "DashboardEmployer": DashboardEmployer,
     "Applicants": Applicants,
     "Search": Search,
+    "ProfileKandu": ProfileKandu,
 }
 
 export const pagesConfig = {
