@@ -56,6 +56,7 @@ import KYCVerification from './pages/KYCVerification';
 import HomeProfessional from './pages/HomeProfessional';
 import JobDetail from './pages/JobDetail';
 import ChatKandu from './pages/ChatKandu';
+import PinCode from './pages/PinCode';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -93,6 +94,7 @@ export const PAGES = {
     "HomeProfessional": HomeProfessional,
     "JobDetail": JobDetail,
     "ChatKandu": ChatKandu,
+    "PinCode": PinCode,
 }
 
 export const pagesConfig = {
