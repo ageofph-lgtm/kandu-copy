@@ -52,6 +52,7 @@ import Splash from './pages/Splash';
 import SMSVerification from './pages/SMSVerification';
 import SelectProfile from './pages/SelectProfile';
 import CiaEmployer from './pages/CiaEmployer';
+import KYCVerification from './pages/KYCVerification';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -85,6 +86,7 @@ export const PAGES = {
     "SMSVerification": SMSVerification,
     "SelectProfile": SelectProfile,
     "CiaEmployer": CiaEmployer,
+    "KYCVerification": KYCVerification,
 }
 
 export const pagesConfig = {
