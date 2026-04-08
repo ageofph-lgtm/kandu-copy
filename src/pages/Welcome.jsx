@@ -48,84 +48,71 @@ export default function Welcome() {
     );
   }
 
+  const hexPattern = `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='104'><polygon points='60,2 118,32 118,72 60,102 2,72 2,32' fill='none' stroke='%23FF6600' stroke-width='1'/></svg>`;
+
+  const handleChoice = (type) => {
+    sessionStorage.setItem('pendingUserType', type);
+    base44.auth.redirectToLogin(createPageUrl("SetupProfile"));
+  };
+
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden" style={{ background: '#1A1A1A', color: '#FFFFFF' }}>
+    <div style={{
+      minHeight: '100vh', background: '#1A1A1A', display: 'flex',
+      flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: '28px', gap: '16px', position: 'relative', overflow: 'hidden'
+    }}>
+      {/* Hex pattern */}
+      <div style={{
+        position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none',
+        backgroundImage: `url("data:image/svg+xml,${hexPattern}")`,
+        backgroundRepeat: 'repeat'
+      }} />
 
-      {/* Hero */}
-      <div className="relative flex flex-col items-center text-center px-6 pt-16 pb-20 overflow-hidden">
-        {/* glow orb */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: '#FF6600' }} />
+      {/* Logo */}
+      <img
+        src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"
+        alt="KANDU"
+        style={{ width: 200, marginBottom: 24, position: 'relative', zIndex: 1 }}
+      />
 
-        {/* Hexagon logo */}
-        <div
-          className="w-24 h-28 flex items-center justify-center shadow-2xl mb-6 relative z-10"
-          style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)', background: '#FF6600' }}
-        >
-          <span className="text-5xl font-black text-white select-none">φ</span>
-        </div>
+      {/* Headline */}
+      <p style={{ fontSize: 28, fontWeight: 800, color: '#FFFFFF', textAlign: 'center', margin: 0, zIndex: 1 }}>
+        Find work. Find workers.
+      </p>
+      <p style={{ fontSize: 15, color: '#AAAAAA', textAlign: 'center', margin: 0, zIndex: 1 }}>
+        Lisboa e arredores
+      </p>
 
-        <h1 className="text-5xl font-black tracking-tight mb-2" style={{ color: '#FFFFFF' }}>KANDU</h1>
-        <p className="text-base font-semibold mb-1" style={{ color: '#FF6600' }}>A plataforma de obras e serviços</p>
-        <p className="text-sm max-w-xs leading-relaxed" style={{ color: '#AAAAAA' }}>
-          Ligue empregadores a profissionais qualificados de construção civil em Portugal
-        </p>
-      </div>
+      <div style={{ height: 16 }} />
 
-      {/* Features */}
-      <div className="flex-1 px-6">
-        <h2 className="text-base font-bold text-center mb-4" style={{ color: '#AAAAAA' }}>Tudo o que precisa numa só plataforma</h2>
-        <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto mb-8">
-          {features.map((f, i) => (
-            <div key={i} className="rounded-2xl p-4 flex flex-col gap-2 border" style={{ background: '#2A2A2A', borderColor: '#333333' }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,102,0,0.15)' }}>
-                <f.icon className="w-5 h-5" style={{ color: '#FF6600' }} />
-              </div>
-              <p className="font-semibold text-sm" style={{ color: '#FFFFFF' }}>{f.label}</p>
-              <p className="text-xs leading-snug" style={{ color: '#AAAAAA' }}>{f.desc}</p>
-            </div>
-          ))}
-        </div>
+      {/* Button 1 */}
+      <button
+        onClick={() => handleChoice('worker')}
+        style={{
+          width: '100%', maxWidth: 380, padding: '16px', borderRadius: 14,
+          background: '#FF6600', color: '#FFF', fontWeight: 700, border: 'none',
+          fontSize: 17, cursor: 'pointer', zIndex: 1
+        }}
+      >
+        🔧&nbsp;&nbsp;Sou Profissional
+      </button>
 
-        {/* Social proof */}
-        <div className="flex justify-center gap-6 mb-10 text-center">
-          <div>
-            <p className="text-2xl font-black" style={{ color: '#FF6600' }}>2k+</p>
-            <p className="text-xs" style={{ color: '#AAAAAA' }}>Profissionais</p>
-          </div>
-          <div className="w-px" style={{ background: '#333333' }} />
-          <div>
-            <p className="text-2xl font-black" style={{ color: '#FF6600' }}>5k+</p>
-            <p className="text-xs" style={{ color: '#AAAAAA' }}>Obras concluídas</p>
-          </div>
-          <div className="w-px" style={{ background: '#333333' }} />
-          <div>
-            <p className="text-2xl font-black" style={{ color: '#FF6600' }}>4.9★</p>
-            <p className="text-xs" style={{ color: '#AAAAAA' }}>Avaliação média</p>
-          </div>
-        </div>
-      </div>
+      {/* Button 2 */}
+      <button
+        onClick={() => handleChoice('employer')}
+        style={{
+          width: '100%', maxWidth: 380, padding: '16px', borderRadius: 14,
+          background: 'transparent', border: '2px solid #FF6600', color: '#FFF',
+          fontWeight: 700, fontSize: 17, cursor: 'pointer', zIndex: 1
+        }}
+      >
+        💼&nbsp;&nbsp;Preciso de Profissional
+      </button>
 
-      {/* CTA */}
-      <div className="px-6 pb-12 space-y-3 max-w-sm mx-auto w-full">
-        <button
-          onClick={() => base44.auth.redirectToLogin(createPageUrl("SetupProfile"))}
-          className="w-full h-14 font-bold rounded-2xl text-base flex items-center justify-center gap-2 shadow-2xl transition-opacity hover:opacity-90"
-          style={{ background: '#FF6600', color: '#FFFFFF' }}
-        >
-          Entrar na plataforma
-          <ArrowRight className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => base44.auth.redirectToLogin(createPageUrl("SetupProfile"))}
-          className="w-full h-12 font-bold rounded-2xl text-base border-2 transition-opacity hover:opacity-80"
-          style={{ borderColor: '#FF6600', color: '#FF6600', background: 'transparent' }}
-        >
-          Criar conta gratuita
-        </button>
-        <p className="text-center text-xs" style={{ color: '#555555' }}>
-          Ao continuar, aceita os nossos <span className="underline cursor-pointer" style={{ color: '#AAAAAA' }}>Termos de Serviço</span>
-        </p>
-      </div>
+      {/* Footer */}
+      <p style={{ fontSize: 11, color: '#666', textAlign: 'center', marginTop: 8, zIndex: 1, maxWidth: 300 }}>
+        Ao continuar, aceitas os Termos e Política de Privacidade (RGPD)
+      </p>
     </div>
   );
 }
