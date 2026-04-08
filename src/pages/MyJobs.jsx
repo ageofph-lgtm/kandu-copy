@@ -7,13 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User as UserIcon, QrCode, Navigation, MessageCircle, Trophy, MapPin } from "lucide-react";
+import DailyPinDisplay from "@/components/jobs/DailyPinDisplay";
+import PinVerificationModal from "@/components/jobs/PinVerificationModal";
+import CompletionModal from "@/components/applications/CompletionModal";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-function JobItem({ job, application, userType, navigate }) {
+function JobItem({ job, application, userType, navigate, currentUser }) {
   const [otherUser, setOtherUser] = useState(null);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
 
   useEffect(() => {
     const fetchOtherUser = async () => {
@@ -53,7 +58,7 @@ function JobItem({ job, application, userType, navigate }) {
         return (
           <Button
             className="w-full mt-3 bg-[#F26522] hover:bg-orange-600 rounded-xl h-10"
-            onClick={() => navigate(createPageUrl("Applications"))}
+            onClick={() => setShowPinModal(true)}
           >
             <QrCode className="w-4 h-4 mr-2" /> Finalizar Trabalho
           </Button>
@@ -75,12 +80,15 @@ function JobItem({ job, application, userType, navigate }) {
       }
       if (job.status === 'in_progress') {
         return (
-          <Button
-            className="w-full mt-3 bg-yellow-600 hover:bg-yellow-700 rounded-xl h-10"
-            onClick={() => navigate(createPageUrl("Applications"))}
-          >
-            <Trophy className="w-4 h-4 mr-2" /> Finalizar e Avaliar
-          </Button>
+          <>
+            <DailyPinDisplay jobId={job.id} />
+            <Button
+              className="w-full mt-3 bg-yellow-600 hover:bg-yellow-700 rounded-xl h-10"
+              onClick={() => setShowCompletionModal(true)}
+            >
+              <Trophy className="w-4 h-4 mr-2" /> Finalizar e Avaliar
+            </Button>
+          </>
         );
       }
       if (job.status === 'completed_by_employer') {
@@ -98,6 +106,25 @@ function JobItem({ job, application, userType, navigate }) {
   };
 
   return (
+    <>
+    {showPinModal && (
+      <PinVerificationModal
+        jobId={job.id}
+        jobTitle={job.title}
+        onVerified={() => { setShowPinModal(false); setShowCompletionModal(true); }}
+        onCancel={() => setShowPinModal(false)}
+      />
+    )}
+    {showCompletionModal && otherUser && currentUser && (
+      <CompletionModal
+        job={job}
+        application={application}
+        otherUser={otherUser}
+        currentUser={currentUser}
+        onClose={() => setShowCompletionModal(false)}
+        onComplete={() => { setShowCompletionModal(false); window.location.reload(); }}
+      />
+    )}
     <Card className="rounded-2xl border-gray-100 shadow-sm">
       <CardContent className="p-4 space-y-2">
         <div className="flex justify-between items-start gap-2">
@@ -127,6 +154,7 @@ function JobItem({ job, application, userType, navigate }) {
         {actionButton()}
       </CardContent>
     </Card>
+    </>  
   );
 }
 
@@ -226,7 +254,7 @@ export default function MyJobs() {
 
           <TabsContent value="scheduled" className="mt-4 space-y-3">
             {scheduledJobs.length > 0 ? scheduledJobs.map(job => (
-              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} />
+              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} />
             )) : (
               <EmptyState
                 emoji="📅"
@@ -240,7 +268,7 @@ export default function MyJobs() {
 
           <TabsContent value="in_progress" className="mt-4 space-y-3">
             {inProgressJobs.length > 0 ? inProgressJobs.map(job => (
-              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} />
+                <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} />
             )) : (
               <EmptyState
                 emoji="🔨"
@@ -254,7 +282,7 @@ export default function MyJobs() {
 
           <TabsContent value="history" className="mt-4 space-y-3">
             {historyJobs.length > 0 ? historyJobs.map(job => (
-              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} />
+              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} />
             )) : (
               <EmptyState
                 emoji="🏆"
