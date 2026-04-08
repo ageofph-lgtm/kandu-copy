@@ -42,8 +42,9 @@ export default function SetupProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showGdpr, setShowGdpr] = useState(false);
-  // step: 1 = choose type, 1.5 = employer subtype, 2 = verify identity
-  const [step, setStep] = useState(1);
+  const [phoneNumber, setPhoneNumber] = useState('+351 ');
+  // step: 0 = phone, 1 = choose type, 1.5 = employer subtype, 2 = verify identity
+  const [step, setStep] = useState(0);
   const [employerType, setEmployerType] = useState(null); // 'simple' | 'cia'
   const [companyClients, setCompanyClients] = useState([]);
   const [newClient, setNewClient] = useState({ name: '', contact: '', nif: '' });
@@ -109,6 +110,7 @@ export default function SetupProfile() {
 
   const handleContinueToVerify = () => {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
+    if (step === 0) { setStep(1); return; }
     if (!user.gdpr_accepted) { setShowGdpr(true); return; }
     const selectedType = visibleProfiles[activeIndex]?.type;
     if (selectedType === 'admin') { handleFinish(true); return; }
@@ -149,6 +151,57 @@ export default function SetupProfile() {
     }
   };
 
+  // ── Step 0: Phone Number ──
+  if (step === 0 && !loading && user) {
+    const darkBg = { minHeight: '100vh', background: '#1A1A1A', position: 'relative', overflow: 'hidden' };
+    const hexBg = {
+      position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none',
+      backgroundImage: `url("data:image/svg+xml,${hexPattern}")`,
+      backgroundRepeat: 'repeat'
+    };
+    return (
+      <div style={darkBg}>
+        <div style={hexBg} />
+        {/* Top bar */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '50px 20px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
+          <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{ width: 40 }} alt="K" />
+          <span style={{ background: '#FF6600', color: '#FFF', padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 700 }}>1 / 3</span>
+        </div>
+        {/* Content */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 20, padding: '28px', zIndex: 1, position: 'relative' }}>
+          <div style={{ fontSize: 64, lineHeight: 1 }}>📞</div>
+          <p style={{ fontSize: 22, fontWeight: 800, color: '#FFF', textAlign: 'center', margin: 0 }}>O teu número, a tua identidade</p>
+          <p style={{ fontSize: 14, color: '#AAAAAA', textAlign: 'center', margin: 0, maxWidth: 280 }}>Verificamos o teu número para garantir uma comunidade segura</p>
+          <input
+            type="tel"
+            value={phoneNumber}
+            onChange={e => setPhoneNumber(e.target.value)}
+            placeholder="+351 ___ ___ ___"
+            style={{
+              width: '100%', maxWidth: 380, background: '#2A2A2A', border: '2px solid #FF6600',
+              borderRadius: 50, padding: '14px 20px', textAlign: 'center', color: '#FFF',
+              fontSize: 18, outline: 'none', boxSizing: 'border-box'
+            }}
+          />
+          <button
+            onClick={async () => {
+              if (phoneNumber.trim().length > 6) {
+                await base44.auth.updateMe({ phone: phoneNumber.trim() });
+              }
+              setStep(1);
+            }}
+            style={{
+              width: '90%', maxWidth: 380, padding: 16, background: '#FF6600', borderRadius: 50,
+              fontWeight: 700, color: '#FFF', border: 'none', fontSize: 16, cursor: 'pointer'
+            }}
+          >
+            Continuar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex items-center justify-center">
@@ -160,7 +213,6 @@ export default function SetupProfile() {
     );
   }
 
-  // Não autenticado — mostrar ecrã de login
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col items-center justify-center px-6">
