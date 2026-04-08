@@ -48,29 +48,15 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AdminDashboard from './pages/AdminDashboard';
-import Splash from './pages/Splash';
-import SMSVerification from './pages/SMSVerification';
-import SelectProfile from './pages/SelectProfile';
-import CiaEmployer from './pages/CiaEmployer';
-import KYCVerification from './pages/KYCVerification';
-import HomeProfessional from './pages/HomeProfessional';
-import JobDetail from './pages/JobDetail';
-import ChatKandu from './pages/ChatKandu';
-import PinCode from './pages/PinCode';
-import CompletionModal from './pages/CompletionModal';
-import Review from './pages/Review';
-import DashboardEmployer from './pages/DashboardEmployer';
-import Applicants from './pages/Applicants';
-import Search from './pages/Search';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
-import Chat from './pages/ChatKandu';
-import Dashboard from './pages/DashboardEmployer';
-import Home from './pages/HomeProfessional';
+import Chat from './pages/Chat';
+import Dashboard from './pages/Dashboard';
+import Home from './pages/Home';
 import MyJobs from './pages/MyJobs';
-import NewJob from './pages/NewJob.jsx';
+import NewJob from './pages/NewJob';
 import Notifications from './pages/Notifications';
-import Profile from './pages/ProfileKandu';
+import Profile from './pages/Profile';
 import Scan from './pages/Scan';
 import SetupProfile from './pages/SetupProfile';
 import Welcome from './pages/Welcome';
@@ -91,24 +77,10 @@ export const PAGES = {
     "Scan": Scan,
     "SetupProfile": SetupProfile,
     "Welcome": Welcome,
-    "Splash": Splash,
-    "SMSVerification": SMSVerification,
-    "SelectProfile": SelectProfile,
-    "CiaEmployer": CiaEmployer,
-    "KYCVerification": KYCVerification,
-    "HomeProfessional": HomeProfessional,
-    "JobDetail": JobDetail,
-    "ChatKandu": ChatKandu,
-    "PinCode": PinCode,
-    "CompletionModal": CompletionModal,
-    "Review": Review,
-    "DashboardEmployer": DashboardEmployer,
-    "Applicants": Applicants,
-    "Search": Search,
 }
 
 export const pagesConfig = {
-    mainPage: "Splash",
+    mainPage: "Welcome",
     Pages: PAGES,
     Layout: __Layout,
 };
