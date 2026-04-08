@@ -246,116 +246,112 @@ export default function SetupProfile() {
 
   // ── Step 1.5: Employer Subtype ──
   if (step === 1.5) {
+    const darkBg = { minHeight: '100vh', background: '#1A1A1A', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' };
+    const sectors = ['Construção', 'Imobiliário', 'Instalação', 'Limpeza', 'Manutenção', 'Reparações', 'Outro'];
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
+      <div style={darkBg}>
         <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
-        <div className="text-center pt-12 pb-6 px-4">
-          <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>
-          <h1 className="text-2xl font-bold text-gray-900">Tipo de Empregador</h1>
-          <p className="text-gray-500 mt-1 text-sm">Selecione o seu perfil de empregador</p>
+        {/* Top bar */}
+        <div style={{ padding: '50px 20px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333' }}>
+          <button onClick={() => setStep(1)} style={{ fontSize: 22, color: '#FF6600', cursor: 'pointer', background: 'none', border: 'none' }}>←</button>
+          <h1 style={{ fontWeight: 700, fontSize: 17, color: '#FFF', margin: 0 }}>Tipo de Empregador</h1>
+          <span style={{ color: '#AAA', fontSize: 13 }}>2/3</span>
         </div>
-
-        <div className="flex-1 flex flex-col justify-center px-6 pb-32 max-w-sm mx-auto w-full gap-4">
-          {/* Simple Employer */}
-          <button
-            onClick={() => setEmployerType('simple')}
-            className={`w-full rounded-2xl border-2 p-5 text-left transition-all ${
-              employerType === 'simple' ? 'border-[#F26522] bg-orange-50' : 'border-gray-200 bg-white'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
-                <Briefcase className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="font-bold text-gray-900">Simple Employer</p>
-                <p className="text-xs text-gray-500">Cliente particular — contrata profissionais para obras pessoais</p>
-              </div>
-              {employerType === 'simple' && <CheckCircle className="w-5 h-5 text-[#F26522] ml-auto" />}
-            </div>
-          </button>
-
-          {/* Cia Employer */}
-          <button
-            onClick={() => setEmployerType('cia')}
-            className={`w-full rounded-2xl border-2 p-5 text-left transition-all ${
-              employerType === 'cia' ? 'border-[#F26522] bg-orange-50' : 'border-gray-200 bg-white'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center shrink-0">
-                <Shield className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="font-bold text-gray-900">Cia Employer</p>
-                <p className="text-xs text-gray-500">Empresa — gere múltiplos clientes e projetos</p>
-              </div>
-              {employerType === 'cia' && <CheckCircle className="w-5 h-5 text-[#F26522] ml-auto" />}
-            </div>
-          </button>
-
-          {/* Clients Section for Cia */}
+        
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '140px' }}>
+          {/* Grid de cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '20px 20px 0', marginBottom: '16px' }}>
+            {/* Simple Employer */}
+            <button
+              onClick={() => setEmployerType('simple')}
+              style={{
+                background: '#2A2A2A', borderRadius: 16, padding: 20, textAlign: 'center', border: employerType === 'simple' ? '2px solid #FF6600' : '2px solid #444',
+                cursor: 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center',
+              }}
+            >
+              <span style={{ fontSize: 40, color: '#888', marginBottom: 8 }}>👤</span>
+              <p style={{ fontWeight: 700, color: '#FFF', margin: 0, fontSize: 15 }}>Simple Employer</p>
+              <p style={{ color: '#AAA', fontSize: 12, margin: '4px 0 0 0' }}>Cliente Particular</p>
+            </button>
+            {/* Cia Employer */}
+            <button
+              onClick={() => setEmployerType('cia')}
+              style={{
+                background: '#2A2A2A', borderRadius: 16, padding: 20, textAlign: 'center', border: employerType === 'cia' ? '2px solid #FF6600' : '2px solid #444',
+                cursor: 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center',
+              }}
+            >
+              <span style={{ fontSize: 40, color: employerType === 'cia' ? '#FF6600' : '#888', marginBottom: 8 }}>🏢</span>
+              <p style={{ fontWeight: 700, color: '#FFF', margin: 0, fontSize: 15 }}>Cia Employer</p>
+              <p style={{ color: '#AAA', fontSize: 12, margin: '4px 0 0 0' }}>Empresa ou Organização</p>
+            </button>
+          </div>
+          
+          {/* Formulário expansível */}
           {employerType === 'cia' && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <p className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <span className="text-purple-600">🏢</span> Clients Section
-              </p>
-              <p className="text-xs text-gray-500 mb-4">Adicione os clientes da sua empresa (opcional — pode fazê-lo mais tarde)</p>
-
-              {/* Client list */}
-              {companyClients.map((c, i) => (
-                <div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 mb-2">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{c.name}</p>
-                    <p className="text-xs text-gray-500">{c.contact}{c.nif ? ` · NIF ${c.nif}` : ''}</p>
-                  </div>
-                  <button onClick={() => removeClient(i)} className="text-red-400 hover:text-red-600 p-1">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-
-              {/* Add client form */}
-              <div className="space-y-2 mt-3">
+            <div style={{ background: '#1E1E1E', borderTop: '3px solid #FF6600', borderRadius: '0 0 16px 16px', padding: 16, margin: '0 20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Nome da Empresa */}
+              <div>
+                <label style={{ color: '#AAA', fontSize: 12, display: 'block', marginBottom: 6 }}>Nome da Empresa</label>
                 <input
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
-                  placeholder="Nome do cliente *"
+                  type="text"
+                  placeholder="Nome"
                   value={newClient.name}
                   onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))}
+                  style={{ background: '#2A2A2A', border: '2px solid #FF6600', borderRadius: 10, padding: 12, color: '#FFF', width: 'calc(100% - 28px)', fontSize: 14 }}
                 />
+              </div>
+              {/* NIF */}
+              <div>
+                <label style={{ color: '#AAA', fontSize: 12, display: 'block', marginBottom: 6 }}>NIF</label>
                 <input
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
-                  placeholder="Contacto (email ou telefone)"
-                  value={newClient.contact}
-                  onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))}
-                />
-                <input
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
-                  placeholder="NIF do cliente"
+                  type="text"
+                  placeholder="123456789"
                   value={newClient.nif}
                   onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))}
+                  style={{ background: '#2A2A2A', border: '2px solid #444', borderRadius: 10, padding: 12, color: '#FFF', width: 'calc(100% - 28px)', fontSize: 14 }}
                 />
-                <button
-                  onClick={addClient}
-                  disabled={!newClient.name}
-                  className="w-full border-2 border-dashed border-purple-300 rounded-xl py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 transition-colors disabled:opacity-40"
-                >
-                  + Adicionar cliente
-                </button>
               </div>
+              {/* Setor de Atividade */}
+              <div>
+                <label style={{ color: '#AAA', fontSize: 12, display: 'block', marginBottom: 6 }}>Setor de Atividade</label>
+                <select
+                  value={newClient.contact}
+                  onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))}
+                  style={{ background: '#2A2A2A', border: '2px solid #444', borderRadius: 10, padding: 12, color: '#FFF', width: '100%', fontSize: 14 }}
+                >
+                  <option value="">Selecione...</option>
+                  {sectors.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              {/* Website */}
+              <div>
+                <label style={{ color: '#AAA', fontSize: 12, display: 'block', marginBottom: 6 }}>Website</label>
+                <input
+                  type="url"
+                  placeholder="https://exemplo.com"
+                  style={{ background: '#2A2A2A', border: '2px solid #444', borderRadius: 10, padding: 12, color: '#FFF', width: 'calc(100% - 28px)', fontSize: 14 }}
+                />
+              </div>
+              {/* Banner */}
+              <div style={{ background: '#FF6600', borderRadius: 8, padding: 10, color: '#FFF', fontWeight: 600, textAlign: 'center' }}>Empresas têm acesso a funcionalidades exclusivas</div>
             </div>
           )}
-
-          <Button
+        </div>
+        
+        {/* Sticky button */}
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px', background: '#1A1A1A', borderTop: '1px solid #333' }}>
+          <button
             onClick={handleEmployerContinue}
             disabled={!employerType}
-            className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-xl shadow-[#F26522]/30"
+            style={{
+              width: 'calc(100% - 40px)', padding: 16, background: employerType ? '#FF6600' : '#666', borderRadius: 14,
+              color: '#FFF', fontWeight: 700, border: 'none', cursor: employerType ? 'pointer' : 'not-allowed', fontSize: 16
+            }}
           >
             Continuar
-          </Button>
-          <Button variant="ghost" onClick={() => setStep(1)} className="w-full text-gray-500">
-            Voltar
-          </Button>
+          </button>
         </div>
       </div>
     );
