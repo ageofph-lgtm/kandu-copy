@@ -5,31 +5,8 @@ import XPGainToast from "@/components/XPGainToast";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Star,
-  Trophy,
-  Award,
-  Edit // Added for review icon
-} from "lucide-react";
+import { UploadFile } from "@/integrations/Core";
 import { createPageUrl } from "@/utils";
-
-const WORKER_QUALITIES = [
-  "Pontual", "Profissional", "Qualidade", "Comunicativo",
-  "Organizado", "Criativo", "Eficiente", "Confiável"
-];
-
-const EMPLOYER_QUALITIES = [
-  "Pagamento Rápido", "Comunicação Clara", "Condições Justas", "Organização",
-  "Flexível", "Respeitoso", "Transparente", "Acessível"
-];
 
 export default function CompletionModal({
   job,
@@ -39,20 +16,10 @@ export default function CompletionModal({
   onClose,
   onComplete
 }) {
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState("");
-  const [selectedQualities, setSelectedQualities] = useState([]);
+  const [photos, setPhotos] = useState([null, null, null]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [qualities, setQualities] = useState([]);
   const [xpToast, setXpToast] = useState({ show: false, gained: 0, total: 0 });
-
-  useEffect(() => {
-    if (otherUser?.user_type === 'worker') {
-      setQualities(WORKER_QUALITIES);
-    } else {
-      setQualities(EMPLOYER_QUALITIES);
-    }
-  }, [otherUser]);
+  const [uploading, setUploading] = useState(false);
 
   const checkIfEarly = () => {
     if (!job.end_date) return false;
@@ -61,76 +28,83 @@ export default function CompletionModal({
     return today < endDate;
   };
 
-  const handleQualityToggle = (quality) => {
-    setSelectedQualities(prev =>
-      prev.includes(quality)
-        ? prev.filter(q => q !== quality)
-        : [...prev, quality]
-    );
+  const baseXP = calcJobXP(5, job.price, checkIfEarly());
+  const bonusXP = baseXP * 5;
+
+  const handlePhotoUpload = async (index, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const { file_url } = await UploadFile({ file });
+      const newPhotos = [...photos];
+      newPhotos[index] = file_url;
+      setPhotos(newPhotos);
+    } catch (error) {
+      console.error("Erro ao enviar foto:", error);
+      alert("Erro ao enviar foto");
+    }
+    setUploading(false);
   };
 
   const handleSubmit = async () => {
-    if (!comment.trim()) {
-      alert("Por favor, deixe um comentário sobre a experiência.");
-      return;
-    }
-
     setIsSubmitting(true);
-
     try {
-      // Prazo de 7 dias para auto-revelar a avaliação
+      // Cria a avaliação com 5 estrelas automáticas (prova fotográfica)
       const visibleAfter = new Date();
       visibleAfter.setDate(visibleAfter.getDate() + 7);
 
-      // Cria a avaliação (oculta por defeito)
       const newRating = await Rating.create({
         job_id: job.id,
         rater_id: currentUser.id,
         rated_id: otherUser.id,
-        rating: rating,
-        comment: comment.trim(),
-        qualities: selectedQualities,
+        rating: 5,
+        comment: `Trabalho concluído com sucesso. Fotos anexadas: ${photos.filter(p => p).length}/3`,
+        qualities: ["Profissional", "Qualidade"],
         is_visible: false,
         visible_after: visibleAfter.toISOString()
       });
 
-      // Verifica se a outra parte já avaliou o mesmo job
+      // Verifica se a outra parte já avaliou
       const reciprocalRatings = await Rating.filter({ job_id: job.id, rater_id: otherUser.id });
       
       if (reciprocalRatings.length > 0) {
-        // Ambas as partes avaliaram — torna ambas visíveis
         await Rating.update(newRating.id, { is_visible: true });
         await Rating.update(reciprocalRatings[0].id, { is_visible: true });
       }
 
-      // XP para o utilizador avaliado
-      const xpGained = calcJobXP(rating, job.price, checkIfEarly());
+      // XP para o utilizador avaliado (com bonus de 5x se 3 fotos)
+      const photosCount = photos.filter(p => p).length;
+      const xpMultiplier = photosCount === 3 ? 5 : 1;
+      const xpGained = baseXP * xpMultiplier;
+      
       const updatedOther = applyXP(otherUser.xp || 0, xpGained);
       const existingRatings = await Rating.filter({ rated_id: otherUser.id, is_visible: true });
       const totalRatings = existingRatings.length;
       const ratingSum = existingRatings.reduce((sum, r) => sum + r.rating, 0);
-      const newAvgRating = totalRatings > 0 ? (ratingSum / totalRatings).toFixed(1) : rating;
+      const newAvgRating = totalRatings > 0 ? (ratingSum / totalRatings).toFixed(1) : 5;
 
       await User.update(otherUser.id, { ...updatedOther, rating: parseFloat(newAvgRating) });
 
-      // XP para o utilizador atual (por concluir/avaliar)
+      // XP para o utilizador atual (por concluir)
       const selfXPGained = XP_EVENTS.job_completed_self;
       const updatedSelf = applyXP(currentUser.xp || 0, selfXPGained);
       await User.update(currentUser.id, updatedSelf);
+
       setXpToast({ show: true, gained: selfXPGained, total: updatedSelf.xp });
       
-      // Lógica específica para cada tipo de utilizador
+      // Atualiza status da obra
       if (currentUser.user_type === 'employer') {
         await Job.update(job.id, { status: 'completed_by_employer' });
         await Notification.create({
           user_id: otherUser.id,
           type: "job_ready_for_review",
           title: "Obra finalizada! Avalie o empregador.",
-          message: `O trabalho "${job.title}" foi marcado como concluído. Por favor, deixe sua avaliação.`,
+          message: `O trabalho "${job.title}" foi marcado como concluído.`,
           related_id: job.id,
           action_url: createPageUrl("Applications")
         });
-
       } else if (currentUser.user_type === 'worker') {
         await Job.update(job.id, {
           status: 'completed',
@@ -139,8 +113,8 @@ export default function CompletionModal({
         await Notification.create({
           user_id: otherUser.id,
           type: "job_completed",
-          title: "Trabalho concluído e avaliado!",
-          message: `O profissional avaliou o seu trabalho em "${job.title}". A obra está oficialmente concluída.`,
+          title: "Trabalho concluído!",
+          message: `O profissional completou o trabalho "${job.title}" com fotos.`,
           related_id: job.id,
           action_url: createPageUrl("Profile")
         });
@@ -149,130 +123,162 @@ export default function CompletionModal({
       onComplete();
 
     } catch (error) {
-      console.error("Error completing job:", error);
+      console.error("Erro ao finalizar trabalho:", error);
       alert("Erro ao finalizar trabalho. Tente novamente.");
     }
-
     setIsSubmitting(false);
   };
-  
-  const isEmployerFlow = currentUser.user_type === 'employer';
 
   return (
     <>
-    <XPGainToast xpGained={xpToast.gained} newXP={xpToast.total} show={xpToast.show} onDone={() => { setXpToast(t => ({...t, show: false})); onClose(); }} />
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {isEmployerFlow ? <Trophy className="w-5 h-5 text-yellow-500" /> : <Edit className="w-5 h-5 text-blue-500" />}
-            {isEmployerFlow ? 'Finalizar e Avaliar Profissional' : 'Avaliar Empregador'}
-          </DialogTitle>
-        </DialogHeader>
+      <XPGainToast xpGained={xpToast.gained} newXP={xpToast.total} show={xpToast.show} onDone={() => { setXpToast(t => ({...t, show: false})); onClose(); }} />
+      
+      <div style={{
+        minHeight: '100vh', background: '#1A1A1A', padding: 24, display: 'flex', flexDirection: 'column',
+        position: 'fixed', inset: 0, zIndex: 50, overflowY: 'auto'
+      }}>
+        {/* Top row */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: 20
+        }}>
+          <img 
+            src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" 
+            alt="K" 
+            style={{ width: 32, height: 32 }}
+          />
+          <h1 style={{
+            fontWeight: 800, fontSize: 20, color: '#FFF', margin: 0
+          }}>
+            Obra Concluída! 🎉
+          </h1>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: 'none', color: '#AAA', fontSize: 20,
+              cursor: 'pointer'
+            }}
+          >
+            ✕
+          </button>
+        </div>
 
-        <div className="space-y-6">
-          <div className="bg-blue-50 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900">{job.title}</h3>
-            <p className="text-blue-700 text-sm mt-1">
-              Avaliar: {otherUser.full_name}
+        {/* 3 photo slots */}
+        <div style={{
+          display: 'flex', gap: 10, marginBottom: 16
+        }}>
+          {[0, 1, 2].map((idx) => (
+            <div
+              key={idx}
+              onClick={() => document.getElementById(`photo-${idx}`)?.click()}
+              style={{
+                flex: 1, position: 'relative', cursor: 'pointer'
+              }}
+            >
+              <div style={{
+                height: 90, background: photos[idx] ? '#FF660033' : '#2A2A2A',
+                border: photos[idx] ? '2px solid #FF6600' : '2px dashed #FF6600',
+                borderRadius: 12, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center'
+              }}>
+                <span style={{ fontSize: 28, color: '#FF6600' }}>📷</span>
+              </div>
+              <div style={{
+                position: 'absolute', top: 0, right: 0, background: '#FF6600',
+                color: '#FFF', borderRadius: '0 8px 0 8px', padding: '2px 6px',
+                fontSize: 11, fontWeight: 700
+              }}>
+                {idx + 1}/3
+              </div>
+              <input
+                id={`photo-${idx}`}
+                type="file"
+                accept="image/*"
+                onChange={(e) => handlePhotoUpload(idx, e)}
+                style={{ display: 'none' }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Banner */}
+        <div style={{
+          background: '#FF6600', borderRadius: 12, padding: '10px 14px',
+          textAlign: 'center', color: '#FFF', fontWeight: 700, marginBottom: 16,
+          boxShadow: '0 0 30px rgba(255, 102, 0, 0.4)'
+        }}>
+          Envia 3 fotos e multiplica o teu XP por 5x! ⚡
+        </div>
+
+        {/* XP Card */}
+        <div style={{
+          background: '#2A2A2A', borderRadius: 16, padding: 20, marginBottom: 20
+        }}>
+          {/* XP row */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 12, marginBottom: 12
+          }}>
+            <div>
+              <p style={{ fontWeight: 800, fontSize: 18, color: '#FFF', margin: 0 }}>
+                {baseXP} XP
+              </p>
+              <p style={{ color: '#AAA', fontSize: 12, margin: 0 }}>Base</p>
+            </div>
+            <span style={{ color: '#FF6600', fontSize: 20 }}>→</span>
+            <p style={{
+              fontWeight: 900, fontSize: 28, color: '#FF6600', margin: 0
+            }}>
+              {bonusXP} XP ⚡
             </p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Como avalia a experiência? *
-            </label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                  className="p-1"
-                >
-                  <Star
-                    className={`w-8 h-8 ${
-                      star <= rating
-                        ? 'text-yellow-400 fill-current'
-                        : 'text-gray-300'
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
+          {/* Progress bar */}
+          <div style={{
+            background: '#333', height: 10, borderRadius: 10, marginTop: 12,
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              width: '40%', height: '100%',
+              background: 'linear-gradient(90deg, #FF6600, #FFAA00)',
+              borderRadius: 10
+            }} />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Que qualidades destacaria?
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {qualities.map((quality) => (
-                <button
-                  key={quality}
-                  type="button"
-                  onClick={() => handleQualityToggle(quality)}
-                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                    selectedQualities.includes(quality)
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {quality}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Deixe um comentário *
-            </label>
-            <Textarea
-              placeholder="Descreva como foi a experiência..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows={4}
-            />
-          </div>
-
-          <div className="bg-green-50 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Award className="w-5 h-5 text-green-600" />
-              <span className="font-medium text-green-900">XP a ser atribuído</span>
-            </div>
-            <div className="flex justify-around text-center">
-              <div>
-                <p className="text-xs text-gray-500">Para {otherUser.full_name?.split(' ')[0]}</p>
-                <p className="font-bold text-lg text-green-900">+{calcJobXP(rating, job.price, checkIfEarly())} XP</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">Para si</p>
-                <p className="font-bold text-lg text-green-700">+{XP_EVENTS.job_completed_self} XP</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting || !comment.trim()}
-              className="flex-1 bg-green-600 hover:bg-green-700"
-            >
-              {isSubmitting ? "Finalizando..." : "Enviar Avaliação"}
-            </Button>
-          </div>
+          {/* Footer text */}
+          <p style={{
+            color: '#AAA', fontSize: 12, textAlign: 'center', marginTop: 8, margin: 0
+          }}>
+            Prova que o trabalho foi feito e ganha mais
+          </p>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Submit button */}
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting || uploading}
+          style={{
+            background: '#FF6600', color: '#FFF', border: 'none', borderRadius: 14,
+            padding: 16, fontWeight: 700, fontSize: 16, cursor: 'pointer',
+            opacity: (isSubmitting || uploading) ? 0.5 : 1,
+            width: '100%'
+          }}
+        >
+          {isSubmitting ? "A processar..." : "Submeter e Receber XP 🚀"}
+        </button>
+
+        {/* Cancel button */}
+        <button
+          onClick={onClose}
+          style={{
+            background: 'none', border: '1px solid #333', color: '#AAA',
+            borderRadius: 12, padding: 12, fontWeight: 600, fontSize: 14,
+            cursor: 'pointer', marginTop: 12
+          }}
+        >
+          Cancelar
+        </button>
+      </div>
     </>
   );
 }
