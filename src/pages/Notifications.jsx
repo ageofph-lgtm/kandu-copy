@@ -1,30 +1,43 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Notification } from "@/entities/Notification";
 import { User } from "@/entities/User";
-import { formatDistanceToNow } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Bell, 
+  CheckCircle,
+  X,
+  Clock,
+  Settings
+} from "lucide-react";
+import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
-function NotificationCard({ notification, onMarkAsRead }) {
+function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   const navigate = useNavigate();
 
   const getNotificationIcon = (type) => {
     switch(type) {
       case 'new_application':
       case 'new_proposal':
-        return '💼';
-      case 'job_ready_for_review':
-        return '⭐';
+        return '📝';
+      case 'job_accepted':
+        return '✅';
+      case 'job_rejected':
+        return '❌';
       case 'new_message':
         return '💬';
+      case 'job_started':
+        return '🚀';
+      case 'job_completed':
+        return '🎉';
       default:
-        return '📍';
+        return '🔔';
     }
-  };
-
-  const getIconBackground = (type) => {
-    if (type === 'new_message') return '#33333322';
-    return '#FF660022';
   };
 
   const handleClick = () => {
@@ -37,60 +50,58 @@ function NotificationCard({ notification, onMarkAsRead }) {
   };
 
   return (
-    <div
-      style={{
-        background: '#2A2A2A',
-        borderRadius: 14,
-        padding: '14px 16px',
-        borderLeft: '4px solid #FF6600',
-        display: 'flex',
-        gap: 12,
-        alignItems: 'flex-start',
-        cursor: 'pointer'
-      }}
+    <Card 
+      className={`cursor-pointer transition-all hover:shadow-md ${
+        notification.is_read ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'
+      }`}
       onClick={handleClick}
     >
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 12,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 18,
-          background: getIconBackground(notification.type),
-          flexShrink: 0
-        }}
-      >
-        {getNotificationIcon(notification.type)}
-      </div>
-      <div style={{ flex: 1 }}>
-        <h4 style={{
-          fontWeight: 700,
-          fontSize: 14,
-          color: '#FFF',
-          margin: '0 0 2px 0'
-        }}>
-          {notification.title}
-        </h4>
-        <p style={{
-          color: '#AAA',
-          fontSize: 13,
-          margin: 0
-        }}>
-          {notification.message}
-        </p>
-      </div>
-      <span style={{
-        color: '#AAA',
-        fontSize: 11,
-        flexShrink: 0,
-        whiteSpace: 'nowrap'
-      }}>
-        {formatDistanceToNow(new Date(notification.created_date), { locale: pt, addSuffix: false })}
-      </span>
-    </div>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-3 flex-1">
+            <div className="text-2xl">{getNotificationIcon(notification.type)}</div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h4 className="font-semibold text-gray-900">{notification.title}</h4>
+                {!notification.is_read && (
+                  <Badge className="bg-blue-500 h-2 w-2 p-0 rounded-full"></Badge>
+                )}
+              </div>
+              <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
+              <p className="text-xs text-gray-500">
+                {format(new Date(notification.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: pt })}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 ml-2">
+            {!notification.is_read && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMarkAsRead(notification);
+                }}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <CheckCircle className="w-4 h-4" />
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(notification);
+              }}
+              className="text-red-500 hover:text-red-700"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -107,8 +118,10 @@ export default function Notifications() {
 
       let notificationList;
       if (userData.user_type === 'admin') {
+        // Admin pode ver todas as notificações
         notificationList = await Notification.list("-created_date");
       } else {
+        // Usuários veem apenas suas notificações
         notificationList = await Notification.filter(
           { user_id: userData.id }, 
           "-created_date"
@@ -116,6 +129,7 @@ export default function Notifications() {
       }
 
       setNotifications(notificationList);
+      console.log("Loaded notifications:", notificationList);
     } catch (error) {
       console.error("Error loading notifications:", error);
     }
@@ -129,110 +143,116 @@ export default function Notifications() {
   const handleMarkAsRead = async (notification) => {
     try {
       await Notification.update(notification.id, { is_read: true });
-      loadData();
+      loadData(); // Recarregar para atualizar a visualização
     } catch (error) {
       console.error("Error marking notification as read:", error);
     }
   };
 
+  const handleMarkAllAsRead = async () => {
+    try {
+      const unreadNotifications = notifications.filter(n => !n.is_read);
+      for (const notification of unreadNotifications) {
+        await Notification.update(notification.id, { is_read: true });
+      }
+      loadData();
+    } catch (error) {
+      console.error("Error marking all as read:", error);
+    }
+  };
+
+  const handleDelete = async (notification) => {
+    if (!window.confirm("Tem certeza que deseja apagar esta notificação?")) {
+      return;
+    }
+
+    try {
+      await Notification.delete(notification.id);
+      loadData();
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      alert("Erro ao apagar notificação.");
+    }
+  };
+
   const unreadNotifications = notifications.filter(n => !n.is_read);
+  const readNotifications = notifications.filter(n => n.is_read);
 
   if (loading) {
     return (
-      <div style={{
-        background: '#1A1A1A',
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#AAA',
-        fontSize: 14
-      }}>
-        A carregar...
+      <div className="p-4 h-screen flex flex-col items-center justify-center">
+        <Settings className="w-12 h-12 text-gray-400 animate-spin mb-4" />
+        <p className="text-gray-500">A carregar notificações...</p>
       </div>
     );
   }
 
   return (
-    <div style={{
-      background: '#1A1A1A',
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      {/* Logo */}
-      <div style={{
-        paddingTop: 50,
-        textAlign: 'center',
-        marginBottom: 20
-      }}>
-        <span style={{
-          fontSize: 40,
-          fontWeight: 'bold',
-          color: '#FF6600'
-        }}>
-          φ
-        </span>
-      </div>
-
-      {/* Title + Badge */}
-      <div style={{
-        padding: '12px 20px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12
-      }}>
-        <h1 style={{
-          fontWeight: 800,
-          fontSize: 32,
-          color: '#FFF',
-          margin: 0
-        }}>
-          Notificações
-        </h1>
-        <div style={{
-          width: 28,
-          height: 28,
-          borderRadius: '50%',
-          background: '#FF6600',
-          color: '#FFF',
-          fontWeight: 700,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 12
-        }}>
-          {unreadNotifications.length}
-        </div>
-      </div>
-
-      {/* Notifications List */}
-      <div style={{
-        padding: '0 20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-        paddingBottom: 80,
-        flex: 1
-      }}>
-        {notifications.length > 0 ? (
-          notifications.map(notification => (
-            <NotificationCard 
-              key={notification.id} 
-              notification={notification}
-              onMarkAsRead={handleMarkAsRead}
-            />
-          ))
-        ) : (
-          <div style={{
-            textAlign: 'center',
-            color: '#AAA',
-            paddingTop: 40
-          }}>
-            <p style={{ fontSize: 14, margin: 0 }}>Nenhuma notificação</p>
-          </div>
+    <div className="p-4 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Notificações</h1>
+        {unreadNotifications.length > 0 && (
+          <Button onClick={handleMarkAllAsRead} variant="outline">
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Marcar todas como lidas
+          </Button>
         )}
       </div>
+      
+      <Tabs defaultValue="unread" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="unread">
+            <Bell className="w-4 h-4 mr-2" />
+            Não Lidas ({unreadNotifications.length})
+          </TabsTrigger>
+          <TabsTrigger value="all">
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Todas ({notifications.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="unread" className="mt-4">
+          <div className="space-y-4">
+            {unreadNotifications.length > 0 ? (
+              unreadNotifications.map(notification => (
+                <NotificationCard 
+                  key={notification.id} 
+                  notification={notification}
+                  onMarkAsRead={handleMarkAsRead}
+                  onDelete={handleDelete}
+                />
+              ))
+            ) : (
+              <Card className="text-center p-8">
+                <Bell className="mx-auto w-12 h-12 text-gray-400 mb-4" />
+                <h3 className="font-medium text-gray-800">Nenhuma notificação não lida</h3>
+                <p className="text-sm text-gray-500 mt-1">Está tudo em dia! 🎉</p>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="all" className="mt-4">
+          <div className="space-y-4">
+            {notifications.length > 0 ? (
+              notifications.map(notification => (
+                <NotificationCard 
+                  key={notification.id} 
+                  notification={notification}
+                  onMarkAsRead={handleMarkAsRead}
+                  onDelete={handleDelete}
+                />
+              ))
+            ) : (
+              <Card className="text-center p-8">
+                <Bell className="mx-auto w-12 h-12 text-gray-400 mb-4" />
+                <h3 className="font-medium text-gray-800">Nenhuma notificação</h3>
+                <p className="text-sm text-gray-500 mt-1">As notificações aparecerão aqui.</p>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

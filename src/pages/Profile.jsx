@@ -1,384 +1,428 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { User } from "@/entities/User";
-import { Job } from "@/entities/Job";
-import { Rating } from "@/entities/Rating";
-import { useNavigate, useLocation } from "react-router-dom";
+import { UploadFile } from "@/integrations/Core";
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { Button } from "@/components/ui/button";
+import {
+  ArrowLeft,
+  MoreVertical,
+  MessageSquare,
+  Bookmark,
+  Star,
+  Check,
+  Loader2,
+  Home,
+  Search,
+  Plus,
+  User as UserIcon,
+  Camera,
+  LogOut,
+  RefreshCw,
+  Edit2
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import { Job } from "@/entities/Job";
+import ProfileForm from "../components/profile/ProfileForm";
+import DocumentsList from "../components/profile/DocumentsList";
+import VerificationBadge from "../components/profile/VerificationBadge";
+import VerificationUpgrade from "../components/profile/VerificationUpgrade";
+import XPDisplay from "../components/profile/XPDisplay";
+import ReviewsSection from "../components/profile/ReviewsSection";
+import { base44 } from "@/api/base44Client";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [user, setUser] = useState(null);
-  const [profileUser, setProfileUser] = useState(null);
-  const [jobs, setJobs] = useState([]);
-  const [ratings, setRatings] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  const urlParams = new URLSearchParams(location.search);
-  const viewUserId = urlParams.get('userId');
+  const [isUploading, setIsUploading] = useState(false);
+  const [noShowStats, setNoShowStats] = useState({ noShows: 0, totalJobs: 0 });
+  const avatarInputRef = useRef(null);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        // Get current user
-        const currentUser = await User.me();
-        setUser(currentUser);
+    loadUser();
+  }, []);
 
-        // Get profile user (either from URL param or current user)
-        const targetUserId = viewUserId || currentUser.id;
-        const users = await User.filter({ id: targetUserId });
-        const targetUser = users[0];
-        setProfileUser(targetUser);
-
-        // Get user's jobs
-        const userJobs = await Job.filter({ employer_id: targetUserId });
-        setJobs(userJobs);
-
-        // Get ratings for this user
-        const userRatings = await Rating.filter({ rated_id: targetUserId });
-        setRatings(userRatings);
-      } catch (error) {
-        console.error("Error loading profile:", error);
+  const loadUser = async () => {
+    try {
+      const userData = await User.me();
+      setUser(userData);
+      if (userData.user_type === 'worker') {
+        const workerJobs = await Job.filter({ worker_id: userData.id });
+        const noShows = workerJobs.filter(j => j.status === 'cancelled').length;
+        const totalJobs = workerJobs.filter(j => ['completed', 'cancelled'].includes(j.status)).length;
+        setNoShowStats({ noShows, totalJobs });
       }
-      setLoading(false);
-    };
+      if (!userData.user_type) {
+        setIsEditing(true);
+      }
+    } catch (error) {
+      console.log("User not authenticated");
+    }
+    setLoading(false);
+  };
 
-    loadData();
-  }, [viewUserId]);
+  const syncToSupabase = async () => {
+    try {
+      await base44.functions.invoke('syncCurrentUserToSupabase', {});
+    } catch (e) {
+      console.error("Supabase sync error:", e);
+    }
+  };
+
+  const handleSave = async (profileData) => {
+    try {
+      await User.updateMyUserData(profileData);
+      await loadUser();
+      setIsEditing(false);
+      await syncToSupabase();
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+
+  const handleAvatarUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const { file_url } = await UploadFile({ file });
+      await User.updateMyUserData({ avatar_url: file_url });
+      await loadUser();
+      await syncToSupabase();
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await base44.auth.logout();
+  };
+
+  const handleChangeProfile = async () => {
+    try {
+      await base44.auth.updateMe({ user_type: null });
+      window.location.href = createPageUrl("SetupProfile");
+    } catch (error) {
+      console.error("Error changing profile:", error);
+    }
+  };
 
   if (loading) {
     return (
-      <div style={{ background: '#1A1A1A', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#FF6600', fontSize: 40, fontWeight: 'bold' }}>φ</div>
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-[#F26522] animate-spin" />
       </div>
     );
   }
 
-  if (!profileUser) {
-    return <div>Utilizador não encontrado</div>;
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <div className="text-center">
+          <UserIcon className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+          <p className="text-gray-500 mb-4">Não autenticado</p>
+          <Button 
+            className="bg-[#F26522] hover:bg-orange-600"
+            onClick={() => base44.auth.redirectToLogin(window.location.href)}
+          >
+            Fazer Login
+          </Button>
+        </div>
+      </div>
+    );
   }
 
-  const completedJobs = jobs.filter(j => j.status === 'completed').length;
-  const avgRating = ratings.length > 0
-    ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
-    : '—';
-  const xpLevel = Math.floor((profileUser.xp || 0) / 500);
-  const levelName = xpLevel > 10 ? 'Mestre' : xpLevel > 5 ? 'Experiente' : 'Iniciante';
-
-  return (
-    <div style={{
-      background: '#1A1A1A',
-      minHeight: '100vh',
-      padding: '50px 20px 80px',
-      overflowY: 'auto'
-    }}>
-      {/* Top bar */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20
-      }}>
-        <div style={{
-          fontSize: 32,
-          fontWeight: 'bold',
-          color: '#FF6600'
-        }}>
-          φ
-        </div>
-        <button
-          onClick={() => navigate(createPageUrl("Profile"))}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#FFF',
-            fontSize: 24,
-            cursor: 'pointer'
-          }}
-        >
-          ⚙️
-        </button>
-      </div>
-
-      {/* Hexagonal Avatar */}
-      <div style={{
-        margin: '20px auto 12px',
-        width: 100,
-        height: 100,
-        clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
-        overflow: 'hidden',
-        border: '4px solid #FF6600',
-        display: 'block'
-      }}>
-        <img
-          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profileUser.id}`}
-          alt={profileUser.full_name}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
+  if (isEditing) {
+    return (
+      <div className="p-4 max-w-md mx-auto bg-[#F8FAFC] min-h-screen">
+        <ProfileForm
+          user={user}
+          onSave={handleSave}
+          onCancel={() => setIsEditing(false)}
+          isFirstTime={!user.user_type}
         />
       </div>
+    );
+  }
 
-      {/* Name */}
-      <h1 style={{
-        fontWeight: 800,
-        fontSize: 20,
-        color: '#FFF',
-        textAlign: 'center',
-        margin: '12px 0 4px'
-      }}>
-        {profileUser.full_name}
-      </h1>
+  const specialties = user.skills || ["Pintura", "Elétrica", "Encanamento", "Alvenaria", "Pisos", "Telhados"];
+  
+  const portfolioImages = user.portfolio_images || [
+    "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=200&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1541123603104-512919d6a96c?w=200&h=200&fit=crop",
+  ];
 
-      {/* Role */}
-      <p style={{
-        color: '#AAA',
-        textAlign: 'center',
-        marginBottom: 10,
-        fontSize: 14
-      }}>
-        {profileUser.user_type === 'worker' ? 'Profissional' : 'Empregador'} · {profileUser.skills?.[0] || 'Especialista'}
-      </p>
+  const specIcons = {
+    "Pintura": "🎨",
+    "Elétrica": "⚡",
+    "Eletricidade": "⚡",
+    "Encanamento": "🔧",
+    "Canalização": "🔧",
+    "Alvenaria": "🧱",
+    "Pisos": "🏠",
+    "Pavimentos": "🏠",
+    "Telhados": "🏗️",
+    "Carpintaria": "🪚",
+    "Climatização": "❄️",
+    "Isolamentos": "🧱",
+    "Ladrilhador": "🔲",
+  };
 
-      {/* Badges */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        gap: 8,
-        marginBottom: 16
-      }}>
-        <div style={{
-          background: '#FF660022',
-          color: '#FF6600',
-          border: '1px solid #FF660044',
-          borderRadius: 20,
-          padding: '5px 14px',
-          fontSize: 13,
-          fontWeight: 600
-        }}>
-          ✓ Verificado
-        </div>
-        <div style={{
-          background: '#FFAA0022',
-          color: '#FFAA00',
-          border: '1px solid #FFAA0044',
-          borderRadius: 20,
-          padding: '5px 14px',
-          fontSize: 13,
-          fontWeight: 600
-        }}>
-          ⭐ Ultra Verificado
-        </div>
-      </div>
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] pb-20 md:pb-4">
+      <input
+        type="file"
+        ref={avatarInputRef}
+        onChange={handleAvatarUpload}
+        className="hidden"
+        accept="image/*"
+      />
 
-      {/* Stats Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr 1fr',
-        gap: 10,
-        margin: '16px 0',
-        marginBottom: 20
-      }}>
-        <div style={{
-          background: '#2A2A2A',
-          borderRadius: 14,
-          padding: '14px 8px',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            fontWeight: 800,
-            fontSize: 18,
-            color: '#FF6600',
-            marginBottom: 4
-          }}>
-            {completedJobs}
-          </div>
-          <div style={{
-            color: '#AAA',
-            fontSize: 11
-          }}>
-            Trabalhos
-          </div>
-        </div>
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200 px-4 py-3 flex justify-between items-center max-w-md mx-auto md:max-w-none">
+        <button 
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-[#1E293B]" />
+        </button>
+        <h1 className="text-lg font-bold tracking-tight">Perfil Profissional</h1>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+              <MoreVertical className="w-5 h-5 text-[#1E293B]" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setIsEditing(true)}>
+              <Edit2 className="w-4 h-4 mr-2" />
+              Editar Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleChangeProfile}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Trocar Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </header>
 
-        <div style={{
-          background: '#2A2A2A',
-          borderRadius: 14,
-          padding: '14px 8px',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            fontWeight: 800,
-            fontSize: 18,
-            color: '#FF6600',
-            marginBottom: 4
-          }}>
-            {avgRating} ★
-          </div>
-          <div style={{
-            color: '#AAA',
-            fontSize: 11
-          }}>
-            Avaliação
-          </div>
-        </div>
-
-        <div style={{
-          background: '#2A2A2A',
-          borderRadius: 14,
-          padding: '14px 8px',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            fontWeight: 800,
-            fontSize: 18,
-            color: '#22C55E',
-            marginBottom: 4
-          }}>
-            98%
-          </div>
-          <div style={{
-            color: '#AAA',
-            fontSize: 11
-          }}>
-            Presença
-          </div>
-        </div>
-      </div>
-
-      {/* XP Card */}
-      <div style={{
-        background: '#2A2A2A',
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 12
-      }}>
-        {/* XP Progress line with hexagons */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          marginBottom: 12,
-          position: 'relative',
-          height: 40
-        }}>
-          {/* Hexagon nodes */}
-          {[0, 1, 2, 3, 4].map(i => (
-            <div
-              key={i}
-              style={{
-                width: 16,
-                height: 16,
-                borderRadius: '50%',
-                background: i < 4 ? '#FF6600' : 'transparent',
-                border: i >= 4 ? '2px solid #555' : 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
-                position: 'relative',
-                zIndex: 2
-              }}
+      <main className="w-full max-w-md mx-auto px-4 pt-6">
+        {/* Profile Card */}
+        <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center mb-6">
+          {/* Hexagon Avatar */}
+          <div className="relative w-32 h-36 mb-4 group">
+            <div 
+              className="absolute inset-0 bg-gradient-to-br from-[#F26522] to-orange-600 opacity-20"
+              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)', transform: 'scale(1.05)' }}
             />
-          ))}
-          {/* Progress line behind */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: 0,
-              right: 0,
-              height: 3,
-              background: '#FF6600',
-              transform: 'translateY(-50%)',
-              zIndex: 1
-            }}
-          />
-        </div>
-
-        {/* XP Info row */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12
-        }}>
-          <div>
-            <div style={{
-              fontWeight: 800,
-              fontSize: 20,
-              color: '#FF6600'
-            }}>
-              {profileUser.xp || 0} XP
-            </div>
-          </div>
-          <div style={{
-            color: '#AAA',
-            fontSize: 13,
-            marginLeft: 'auto'
-          }}>
-            Nível: {levelName}
-          </div>
-        </div>
-      </div>
-
-      {/* No-show Badge */}
-      <div style={{
-        display: 'block',
-        width: 'fit-content',
-        margin: '0 auto 12px',
-        background: '#22C55E22',
-        border: '1px solid #22C55E44',
-        borderRadius: 20,
-        padding: '6px 16px'
-      }}>
-        <span style={{
-          color: '#22C55E',
-          fontWeight: 600,
-          fontSize: 13
-        }}>
-          ● No-show: 0.02%
-        </span>
-      </div>
-
-      {/* Skills/Specialties Card */}
-      <div style={{
-        background: '#2A2A2A',
-        borderRadius: 16,
-        padding: 16
-      }}>
-        <h2 style={{
-          fontWeight: 'bold',
-          fontSize: 15,
-          color: '#FFF',
-          margin: '0 0 10px 0'
-        }}>
-          Especialidades
-        </h2>
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 8
-        }}>
-          {(profileUser.skills || ['Elétrica', 'Solar', 'Automação']).map((skill, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: '#FF6600',
-                borderRadius: 20,
-                padding: '6px 14px',
-                color: '#FFF',
-                fontSize: 13,
-                fontWeight: 600
-              }}
+            <div 
+              className="absolute inset-0 bg-gradient-to-br from-[#F26522] to-orange-600"
+              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+            />
+            <div 
+              className="absolute inset-[3px] bg-gray-200 overflow-hidden flex items-center justify-center"
+              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
             >
-              {skill}
+              {isUploading ? (
+                <Loader2 className="w-8 h-8 text-[#F26522] animate-spin" />
+              ) : user.avatar_url ? (
+                <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#F26522] to-orange-600 flex items-center justify-center text-white text-4xl font-bold">
+                  {user.full_name?.charAt(0) || "U"}
+                </div>
+              )}
             </div>
-          ))}
+            <button 
+              onClick={() => avatarInputRef.current?.click()}
+              className="absolute bottom-1 right-1 bg-white text-[#1E293B] rounded-full p-1.5 border-2 border-white shadow-md hover:bg-gray-100 transition-colors z-20"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+          </div>
+
+          <h2 className="text-2xl font-bold text-[#1E293B] mb-1">
+            {user.full_name || "Nome não definido"}
+          </h2>
+          <p className="text-[#F26522] font-semibold text-sm uppercase tracking-wider mb-3 flex items-center gap-1">
+            <Check className="w-4 h-4" /> 
+            {user.user_type === 'worker' ? 'Profissional Certificado' : 'Empregador Verificado'}
+          </p>
+
+          {/* Verification Badge */}
+          <div className="mb-4">
+            <VerificationBadge level={user.verified_level || 'basic'} showDescription />
+          </div>
+
+          {/* Stats */}
+          <div className="flex items-center gap-6 mb-6 w-full justify-center">
+            <div className="text-center">
+              <div className="flex items-center justify-center text-yellow-400 font-bold text-lg">
+                <span>{user.rating || '4.9'}</span>
+                <Star className="w-4 h-4 ml-1 fill-yellow-400" />
+              </div>
+              <span className="text-xs text-[#64748B]">{user.reviews_count || '128'} Avaliações</span>
+            </div>
+            <div className="h-8 w-px bg-gray-200"></div>
+            <div className="text-center">
+              <div className="font-bold text-lg text-[#1E293B]">{user.success_rate || '98'}%</div>
+              <span className="text-xs text-[#64748B]">Taxa de Sucesso</span>
+            </div>
+            <div className="h-8 w-px bg-gray-200"></div>
+            <div className="text-center">
+              <div className="font-bold text-lg text-[#1E293B]">{user.years_experience || '7'}+</div>
+              <span className="text-xs text-[#64748B]">Anos Exp.</span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 w-full">
+            <Button 
+              onClick={() => setIsEditing(true)}
+              className="flex-1 bg-[#F26522] hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-orange-500/20"
+            >
+              <MessageSquare className="w-5 h-5 mr-2" />
+              Mensagem
+            </Button>
+            <button className="bg-gray-100 text-[#1E293B] p-3 rounded-xl hover:bg-gray-200 transition-colors">
+              <Bookmark className="w-5 h-5" />
+            </button>
+          </div>
         </div>
-      </div>
+
+        {/* XP Display */}
+        <div className="mb-6">
+          <XPDisplay xp={user.xp || 0} />
+        </div>
+
+        {/* No Show Rate — workers only */}
+        {user.user_type === 'worker' && (() => {
+          const { noShows, totalJobs } = noShowStats;
+          const rate = totalJobs > 0 ? Math.round((noShows / totalJobs) * 100) : 0;
+          const isGood = rate <= 10;
+          const isMid  = rate > 10 && rate <= 25;
+          const color  = isGood ? 'green' : isMid ? 'yellow' : 'red';
+          const colorMap = {
+            green:  { bg: 'bg-green-50',  border: 'border-green-200',  text: 'text-green-700',  badge: 'bg-green-100 text-green-800',  label: '✅ Excelente' },
+            yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', badge: 'bg-yellow-100 text-yellow-800', label: '⚠️ Razoável'  },
+            red:    { bg: 'bg-red-50',    border: 'border-red-200',    text: 'text-red-700',    badge: 'bg-red-100 text-red-800',      label: '🔴 Perigoso'  },
+          };
+          const c = colorMap[color];
+          return (
+            <div className={`mb-6 rounded-2xl border-2 ${c.bg} ${c.border} p-4`}>
+              <div className="flex items-center justify-between mb-2">
+                <p className="font-bold text-gray-800 text-sm">Taxa de Ausência (No-Show)</p>
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${c.badge}`}>{c.label}</span>
+              </div>
+              <div className="flex items-end gap-2 mb-3">
+                <span className={`text-4xl font-bold ${c.text}`}>{rate}%</span>
+                <span className="text-xs text-gray-400 mb-1">{noShows} ausência{noShows !== 1 ? 's' : ''} / {totalJobs} trabalho{totalJobs !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all duration-500 ${
+                    color === 'green' ? 'bg-green-500' : color === 'yellow' ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}
+                  style={{ width: `${Math.min(rate, 100)}%` }}
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">Calculado com base em trabalhos aceites e cancelados.</p>
+            </div>
+          );
+        })()}
+
+        {/* Upgrade Verification */}
+        <div className="mb-6">
+          <VerificationUpgrade user={user} onUpdate={loadUser} />
+        </div>
+
+        {/* Specialties Section */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-[#1E293B]">Especialidades</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {specialties.map((spec, idx) => (
+              <div
+                key={idx}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                style={{ 
+                  clipPath: 'polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%)',
+                  padding: '8px 20px'
+                }}
+              >
+                <span>{specIcons[spec] || "🔧"}</span> {spec}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* About Section */}
+        <section className="mb-8">
+          <h2 className="text-lg font-bold text-[#1E293B] mb-3">Sobre</h2>
+          <p className="text-[#64748B] leading-relaxed text-sm">
+            {user.bio || "Profissional dedicado com vasta experiência em reformas residenciais e comerciais. Foco na qualidade do acabamento e cumprimento rigoroso de prazos. Especialista em resolver problemas complexos de elétrica e hidráulica."}
+          </p>
+        </section>
+
+        {/* Portfolio Section */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-[#1E293B]">Portfólio Recente</h2>
+            <span className="text-sm text-[#64748B]">{portfolioImages.length} Projetos</span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {portfolioImages.slice(0, 5).map((img, idx) => (
+              <div 
+                key={idx}
+                className="relative w-[100px] h-[110px] shadow-sm overflow-hidden group"
+                style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+              >
+                <img 
+                  src={img}
+                  alt={`Portfolio ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Documents Section */}
+        <section className="mb-8">
+          <DocumentsList
+            documents={user.documents || []}
+            onUpdate={loadUser}
+            canEdit={true}
+          />
+        </section>
+
+        {/* Reviews Section */}
+        <section className="mb-8">
+          <h2 className="text-lg font-bold text-[#1E293B] mb-4">Avaliações</h2>
+          <ReviewsSection userId={user.id} />
+        </section>
+      </main>
+
+
     </div>
   );
 }

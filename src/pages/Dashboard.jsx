@@ -1,392 +1,227 @@
-import React, { useState, useEffect, useCallback } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, Plus, Settings, RefreshCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import JobCard from "../components/dashboard/JobCard";
+import MapView from "../components/dashboard/MapView";
+import JobModal from "../components/dashboard/JobModal";
+import { translations } from "../components/utils/translations";
 
-const CATEGORIES = ["Todos", "Elétrica", "Canalização", "Pintura", "Mão de Obra", "Carpintaria"];
+const LISBON_COORDS = [38.7223, -9.1393];
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
-  const [workers, setWorkers] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
-  const [filteredWorkers, setFilteredWorkers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Todos");
-  const [activeTab, setActiveTab] = useState("professionals");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [radius, setRadius] = useState(10000);
+  const [isCreatingSamples, setIsCreatingSamples] = useState(false);
 
-  const firstName = user?.full_name?.split(' ')[0] || 'there';
+  const t = (key) => {
+    return translations[user?.language || 'PT']?.[key] || translations.PT[key] || key;
+  };
 
-  const loadData = useCallback(async () => {
+  const categories = ["all", "Pintura", "Eletricidade", "Canalização", "Alvenaria", "Ladrilhador", "Carpintaria", "Climatização", "Isolamentos", "Pavimentos", "Telhados"];
+
+  const loadUserAndJobs = React.useCallback(async () => {
     setLoading(true);
     try {
       const userData = await User.me();
       setUser(userData);
 
-      const [jobList, userList] = await Promise.all([
-        Job.filter({ status: 'open' }, "-created_date"),
-        User.list()
-      ]);
+      if (!userData.user_type) {
+        navigate(createPageUrl("SetupProfile"));
+        return;
+      }
 
+      const jobList = await Job.list("-created_date");
       setJobs(jobList);
-      setWorkers(userList.filter(u => u.user_type === 'worker'));
       setFilteredJobs(jobList);
-      setFilteredWorkers(userList.filter(u => u.user_type === 'worker'));
     } catch (error) {
       console.error("Error loading data:", error);
+      if (error.response?.status === 401 || error.message?.includes('401')) {
+        navigate(createPageUrl("SetupProfile"));
+      }
     }
     setLoading(false);
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadUserAndJobs();
+  }, [loadUserAndJobs]);
 
-  const filterResults = useCallback(() => {
-    let jobsFiltered = jobs;
-    let workersFiltered = workers;
-
-    // Category filter
-    if (selectedCategory !== "Todos") {
-      jobsFiltered = jobsFiltered.filter(j => j.category === selectedCategory);
-    }
-
-    // Search filter
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      jobsFiltered = jobsFiltered.filter(j =>
-        j.title.toLowerCase().includes(term) ||
-        j.location.toLowerCase().includes(term)
-      );
-      workersFiltered = workersFiltered.filter(w =>
-        w.full_name?.toLowerCase().includes(term) ||
-        w.skills?.some(s => s.toLowerCase().includes(term))
-      );
-    }
-
-    setFilteredJobs(jobsFiltered);
-    setFilteredWorkers(workersFiltered);
-  }, [jobs, workers, searchTerm, selectedCategory]);
+  const filterJobs = React.useCallback(() => {
+    let filtered = jobs.filter((job) => {
+      if (selectedCategory !== "all" && job.category !== selectedCategory) return false;
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        return job.title.toLowerCase().includes(term) ||
+        job.location.toLowerCase().includes(term) ||
+        job.description.toLowerCase().includes(term);
+      }
+      return true;
+    });
+    setFilteredJobs(filtered);
+  }, [jobs, searchTerm, selectedCategory]);
 
   useEffect(() => {
-    filterResults();
-  }, [filterResults]);
+    filterJobs();
+  }, [filterJobs]);
+
+  const handleJobClick = async (job) => {
+    if (!user) return;
+    try {
+      await Job.update(job.id, { views: (job.views || 0) + 1 });
+      const updatedJob = { ...job, views: (job.views || 0) + 1 };
+      setSelectedJob(updatedJob);
+    } catch (error) {
+      console.error("Error updating job views:", error);
+      setSelectedJob(job); // Open modal even if view update fails
+    }
+  };
+
+  const getCenter = () => {
+    if (user && user.latitude && user.longitude) {
+      return [user.latitude, user.longitude];
+    }
+    return LISBON_COORDS;
+  };
+
+  const handleDeleteJob = async (jobId) => {
+    if (!window.confirm("Tem a certeza que quer apagar esta obra? Esta ação é irreversível.")) {
+      return;
+    }
+    try {
+      await Job.delete(jobId);
+      alert("Obra apagada com sucesso.");
+      setSelectedJob(null);
+      loadUserAndJobs();
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      alert("Ocorreu um erro ao apagar a obra.");
+    }
+  };
+
+  const createSampleJobs = async () => {
+    if (!user || user.user_type !== 'employer' && user.user_type !== 'admin') {
+      alert("Apenas empregadores ou administradores podem criar obras de exemplo.");
+      return;
+    }
+    setIsCreatingSamples(true);
+    try {
+      const sampleJobs = [
+      {
+        title: "Pintar fachada de prédio - Avenidas Novas",
+        category: "Pintura",
+        description: "Pintura completa da fachada de um prédio de 4 andares. Necessário andaimes. Cor a manter.",
+        location: "Lisboa - Avenidas Novas", latitude: 38.736, longitude: -9.153,
+        price_type: "fixed", price: 5500, status: "open", employer_id: user.id, views: 0, urgency: "low"
+      },
+      {
+        title: "Instalar quadro elétrico novo - Baixa",
+        category: "Eletricidade",
+        description: "Substituição de quadro elétrico antigo por um novo, com disjuntores modernos, em apartamento T2.",
+        location: "Lisboa - Baixa", latitude: 38.71, longitude: -9.138,
+        price_type: "fixed", price: 750, status: "open", employer_id: user.id, views: 0, urgency: "high"
+      },
+      {
+        title: "Remodelação completa de WC - Estrela",
+        category: "Canalização",
+        description: "Remodelação total de casa de banho com 5m². Inclui nova canalização, colocação de sanita, base de duche, e lavatório.",
+        location: "Lisboa - Estrela", latitude: 38.712, longitude: -9.16,
+        price_type: "fixed", price: 2800, status: "open", employer_id: user.id, views: 0, urgency: "medium"
+      },
+      {
+        title: "Montar cozinha de IKEA",
+        category: "Carpintaria",
+        description: "Montagem completa de móveis de cozinha da IKEA. Todos os módulos já estão no local.",
+        location: "Lisboa - Campo de Ourique", latitude: 38.7191, longitude: -9.1674,
+        price_type: "fixed", price: 400, status: "open", employer_id: user.id, views: 0, urgency: "medium"
+      }];
+
+      await Job.bulkCreate(sampleJobs);
+      alert("Obras de exemplo criadas com sucesso!");
+      await loadUserAndJobs();
+    } catch (error) {
+      console.error("Erro a criar obras de exemplo:", error);
+      alert("Ocorreu um erro ao criar as obras de exemplo.");
+    } finally {
+      setIsCreatingSamples(false);
+    }
+  };
 
   if (loading) {
     return (
-      <div style={{ background: '#1A1A1A', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#FF6600', fontSize: 40, fontWeight: 'bold' }}>φ</div>
-      </div>
-    );
+      <div className="h-screen flex flex-col items-center justify-center bg-gray-50">
+        <Settings className="w-12 h-12 text-gray-400 animate-spin mb-4" />
+        <p className="text-gray-500">A carregar...</p>
+      </div>);
+
   }
 
   if (!user) {
-    return <div>Erro ao carregar dados</div>;
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">Não autenticado</p>
+          <Button onClick={() => navigate(createPageUrl("SetupProfile"))}>Ir para Login</Button>
+        </div>
+      </div>);
+
   }
 
   return (
-    <div style={{
-      background: '#1A1A1A',
-      minHeight: '100vh',
-      paddingBottom: 80
-    }}>
-      {/* Top bar */}
-      <div style={{
-        padding: '50px 20px 12px'
-      }}>
-        <h1 style={{
-          fontWeight: 800,
-          fontSize: 20,
-          color: '#FFF',
-          margin: 0,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8
-        }}>
-          O que precisas, {firstName}?
-          <span style={{ color: '#FF6600', fontSize: 18 }}>📍</span>
-          <span style={{ color: '#FF6600', fontSize: 13 }}>Lisboa</span>
-        </h1>
+    <div className="h-screen flex flex-col bg-gray-50">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="flex-1 max-w-md relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Input placeholder={t('searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-11" />
+        </div>
+        <div className="flex items-center gap-2">
+          {(user?.user_type === 'employer' || user?.user_type === 'admin') &&
+          <Button onClick={createSampleJobs} variant="outline" disabled={isCreatingSamples} size="sm">
+              {isCreatingSamples ? <RefreshCcw className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+              Exemplos
+            </Button>
+          }
+          {(user?.user_type === 'employer' || user?.user_type === 'admin') &&
+          <Button onClick={() => navigate(createPageUrl("NewJob"))} className="bg-purple-800 text-slate-100 px-4 py-2 text-sm font-medium opacity-100 rounded-2xl inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-2" />
+              {t('newJob')}
+            </Button>
+          }
+        </div>
+      </header>
+      <div className="bg-white border-b border-gray-200 px-6 py-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          {categories.map((category) =>
+          <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => setSelectedCategory(category)} className="whitespace-nowrap">
+              {category === "all" ? t('allCategories') : t(category.toLowerCase()) || category}
+            </Button>
+          )}
+        </div>
       </div>
-
-      {/* Search bar */}
-      <div style={{
-        margin: '0 20px 12px',
-        background: '#2A2A2A',
-        borderRadius: 24,
-        padding: '12px 16px',
-        display: 'flex',
-        gap: 8,
-        alignItems: 'center'
-      }}>
-        <span style={{ color: '#FF6600', fontSize: 16 }}>🔍</span>
-        <input
-          type="text"
-          placeholder="Pesquisar..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: '#FFF',
-            flex: 1,
-            outline: 'none',
-            fontSize: 14,
-            fontFamily: 'inherit'
-          }}
-        />
+      <div className="flex-1 overflow-hidden">
+        <MapView jobs={filteredJobs} onJobClick={handleJobClick} center={getCenter()} radius={radius} />
       </div>
+      {selectedJob &&
+      <JobModal
+        job={selectedJob}
+        user={user}
+        onClose={() => setSelectedJob(null)}
+        onApply={() => {setSelectedJob(null);loadUserAndJobs();}}
+        onDelete={handleDeleteJob} />
 
-      {/* Tabs */}
-      <div style={{
-        margin: '0 20px 12px',
-        display: 'flex',
-        gap: 8
-      }}>
-        {['professionals', 'jobs'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              flex: 1,
-              borderRadius: 20,
-              padding: '10px 0',
-              textAlign: 'center',
-              fontWeight: 600,
-              fontSize: 13,
-              border: 'none',
-              cursor: 'pointer',
-              background: activeTab === tab ? '#FF6600' : '#2A2A2A',
-              color: activeTab === tab ? '#FFF' : '#AAA',
-              transition: 'all 0.2s'
-            }}
-          >
-            {tab === 'professionals' ? 'Por Profisionals' : 'Por Anúncios'}
-          </button>
-        ))}
-      </div>
+      }
+    </div>);
 
-      {/* Category filters */}
-      <div style={{
-        padding: '0 20px',
-        display: 'flex',
-        gap: 8,
-        overflowX: 'auto',
-        marginBottom: 12,
-        scrollbarWidth: 'none'
-      }}>
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            style={{
-              background: selectedCategory === cat ? '#FF6600' : '#2A2A2A',
-              color: selectedCategory === cat ? '#FFF' : '#AAA',
-              borderRadius: 20,
-              padding: '6px 14px',
-              fontSize: 13,
-              border: 'none',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.2s',
-              fontWeight: selectedCategory === cat ? 700 : 400
-            }}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Results list */}
-      <div style={{
-        padding: '0 20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10
-      }}>
-        {activeTab === 'professionals' ? (
-          filteredWorkers.length > 0 ? (
-            filteredWorkers.map(worker => (
-              <div
-                key={worker.id}
-                onClick={() => navigate(createPageUrl("Profile") + `?userId=${worker.id}`)}
-                style={{
-                  background: '#2A2A2A',
-                  borderRadius: 14,
-                  padding: 14,
-                  display: 'flex',
-                  gap: 12,
-                  alignItems: 'center',
-                  cursor: 'pointer'
-                }}
-              >
-                {/* Avatar */}
-                <div style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  background: '#888',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 20,
-                  flexShrink: 0
-                }}>
-                  👤
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1 }}>
-                  <p style={{
-                    fontWeight: 'bold',
-                    fontSize: 15,
-                    color: '#FFF',
-                    margin: 0
-                  }}>
-                    {worker.full_name}
-                  </p>
-                  <p style={{
-                    color: '#AAA',
-                    fontSize: 13,
-                    margin: '2px 0 4px 0'
-                  }}>
-                    {worker.skills?.[0] || 'Profissional'}
-                  </p>
-                  <div style={{
-                    display: 'flex',
-                    gap: 8,
-                    alignItems: 'center'
-                  }}>
-                    <span style={{
-                      color: '#FF6600',
-                      fontSize: 12,
-                      fontWeight: 600
-                    }}>
-                      ★ {(worker.rating || 4.5).toFixed(1)}
-                    </span>
-                    <span style={{
-                      background: '#FF6600',
-                      color: '#FFF',
-                      borderRadius: 20,
-                      padding: '2px 8px',
-                      fontSize: 11,
-                      fontWeight: 600
-                    }}>
-                      ✓ Verificado
-                    </span>
-                  </div>
-                </div>
-
-                {/* Distance badge */}
-                <span style={{
-                  background: '#FF6600',
-                  color: '#FFF',
-                  borderRadius: 20,
-                  padding: '4px 10px',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  flexShrink: 0
-                }}>
-                  5 km
-                </span>
-              </div>
-            ))
-          ) : (
-            <div style={{ textAlign: 'center', color: '#AAA', paddingTop: 40 }}>
-              <p>Nenhum profissional encontrado</p>
-            </div>
-          )
-        ) : (
-          filteredJobs.length > 0 ? (
-            filteredJobs.map(job => (
-              <div
-                key={job.id}
-                onClick={() => navigate(createPageUrl("Home"))}
-                style={{
-                  background: '#2A2A2A',
-                  border: '2px solid #FF6600',
-                  borderRadius: 14,
-                  padding: 14,
-                  display: 'flex',
-                  gap: 12,
-                  alignItems: 'center',
-                  cursor: 'pointer'
-                }}
-              >
-                {/* Avatar */}
-                <div style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  background: '#888',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 20,
-                  flexShrink: 0
-                }}>
-                  💼
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1 }}>
-                  <p style={{
-                    fontWeight: 'bold',
-                    fontSize: 15,
-                    color: '#FFF',
-                    margin: 0
-                  }}>
-                    {job.title}
-                  </p>
-                  <p style={{
-                    color: '#AAA',
-                    fontSize: 13,
-                    margin: '2px 0 4px 0'
-                  }}>
-                    📍 {job.location}
-                  </p>
-                  <span style={{
-                    color: '#FF6600',
-                    fontSize: 12,
-                    fontWeight: 600
-                  }}>
-                    ★ 4.9
-                  </span>
-                </div>
-
-                {/* Price badge */}
-                <span style={{
-                  background: '#FF6600',
-                  color: '#FFF',
-                  borderRadius: 20,
-                  padding: '4px 10px',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  flexShrink: 0
-                }}>
-                  €{job.price}
-                </span>
-              </div>
-            ))
-          ) : (
-            <div style={{ textAlign: 'center', color: '#AAA', paddingTop: 40 }}>
-              <p>Nenhum anúncio encontrado</p>
-            </div>
-          )
-        )}
-      </div>
-
-      {/* Logo */}
-      <div style={{
-        textAlign: 'center',
-        margin: '20px auto',
-        fontSize: 40
-      }}>
-        φ
-      </div>
-    </div>
-  );
 }

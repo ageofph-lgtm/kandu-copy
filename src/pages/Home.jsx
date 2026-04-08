@@ -83,259 +83,177 @@ function WorkerCard({ worker, onContact, onProfile }) {
 
 function EmployerHome({ user }) {
   const navigate = useNavigate();
+  const [workers, setWorkers] = useState([]);
   const [jobs, setJobs] = useState([]);
-  const [applicants, setApplicants] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [activeTab, setActiveTab] = useState("professionals");
   const [loading, setLoading] = useState(true);
 
-  const firstName = user?.full_name?.split(' ')[0] || 'João';
+  const firstName = user?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
 
   useEffect(() => {
     const load = async () => {
-      try {
-        const userJobs = await Job.filter({ employer_id: user.id }, "-created_date");
-        setJobs(userJobs);
-
-        // Fetch applicants for each job
-        const appMap = {};
-        for (const job of userJobs) {
-          const apps = await Application.filter({ job_id: job.id });
-          appMap[job.id] = apps;
-        }
-        setApplicants(appMap);
-      } catch (error) {
-        console.error("Error loading employer jobs:", error);
-      }
+      const [allUsers, openJobs] = await Promise.all([
+        User.list(),
+        Job.filter({ status: 'open' })
+      ]);
+      setWorkers(allUsers.filter(u => u.user_type === 'worker'));
+      setJobs(openJobs);
       setLoading(false);
     };
     load();
-  }, [user.id]);
+  }, []);
 
-  const activeJobs = jobs.filter(j => j.status === 'open');
+  const filtered = workers.filter(w => {
+    if (selectedCategory !== "all" && !w.skills?.includes(selectedCategory)) return false;
+    if (searchTerm) {
+      const t = searchTerm.toLowerCase();
+      return w.full_name?.toLowerCase().includes(t) ||
+             w.city?.toLowerCase().includes(t) ||
+             w.skills?.some(s => s.toLowerCase().includes(t));
+    }
+    return true;
+  });
 
-  if (loading) {
-    return (
-      <div style={{ background: '#1A1A1A', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#FF6600', fontSize: 40, fontWeight: 'bold' }}>φ</div>
-      </div>
-    );
-  }
+  const filteredJobs = jobs.filter(j => {
+    if (selectedCategory !== "all" && j.category !== selectedCategory) return false;
+    if (searchTerm) {
+      const t = searchTerm.toLowerCase();
+      return j.title?.toLowerCase().includes(t) ||
+             j.location?.toLowerCase().includes(t) ||
+             j.description?.toLowerCase().includes(t);
+    }
+    return true;
+  });
 
   return (
-    <div style={{ background: '#1A1A1A', minHeight: '100vh', position: 'relative', paddingBottom: 80 }}>
-      {/* Hex SVG background */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.08 }} viewBox="0 0 400 800">
-        <defs>
-          <pattern id="hexPattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-            <polygon points="30,0 60,15 60,45 30,60 0,45 0,15" fill="none" stroke="#FF6600" strokeWidth="1" />
-          </pattern>
-        </defs>
-        <rect width="400" height="800" fill="url(#hexPattern)" />
-      </svg>
-
-      {/* Content */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Top bar */}
-        <div style={{
-          padding: '50px 20px 12px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start'
-        }}>
-          <div>
-            <h1 style={{
-              fontWeight: 800,
-              fontSize: 20,
-              color: '#FFF',
-              margin: '0 0 4px 0'
-            }}>
-              O que precisas, {firstName}?
-            </h1>
-            <p style={{
-              color: '#AAA',
-              fontSize: 13,
-              margin: 0
-            }}>
-              📍 Lisboa
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <span style={{ fontSize: 20 }}>🔔</span>
-            <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              background: '#FF6600',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFF',
-              fontWeight: 'bold'
-            }}>
-              {user?.full_name?.charAt(0) || '?'}
-            </div>
-          </div>
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* Header */}
+      <div className="bg-white px-4 pt-5 pb-3 shadow-sm">
+        <p className="text-xs text-gray-400 mb-0.5">KANDU</p>
+        <h1 className="text-xl font-bold text-gray-900 mb-3">
+          What do you need, <span className="text-[#F26522]">{firstName}</span>?
+        </h1>
+        {/* Tab Toggle */}
+        <div className="flex bg-gray-100 rounded-2xl p-1 mb-3">
+          <button
+            onClick={() => { setActiveTab('professionals'); setSearchTerm(''); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              activeTab === 'professionals' ? 'bg-white text-[#F26522] shadow-sm' : 'text-gray-500'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            By Professionals
+          </button>
+          <button
+            onClick={() => { setActiveTab('ads'); setSearchTerm(''); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              activeTab === 'ads' ? 'bg-white text-[#F26522] shadow-sm' : 'text-gray-500'
+            }`}
+          >
+            <Megaphone className="w-4 h-4" />
+            By Ads
+          </button>
         </div>
-
-        {/* Publish button */}
-        <button
-          onClick={() => navigate(createPageUrl("NewJob"))}
-          style={{
-            margin: '16px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            background: '#FF6600',
-            borderRadius: 50,
-            padding: '14px 24px',
-            border: 'none',
-            cursor: 'pointer',
-            width: 'fit-content'
-          }}
-        >
-          <div style={{
-            width: 28,
-            height: 28,
-            border: '2px solid #FFF',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#FFF',
-            fontWeight: 700,
-            fontSize: 18
-          }}>
-            +
-          </div>
-          <span style={{ fontWeight: 700, fontSize: 16, color: '#FFF' }}>Publicar Obra</span>
-        </button>
-
-        {/* Active jobs section */}
-        <div style={{
-          padding: '0 20px',
-          marginBottom: 12,
-          display: 'flex',
-          gap: 10,
-          alignItems: 'center'
-        }}>
-          <h2 style={{
-            fontWeight: 700,
-            fontSize: 16,
-            color: '#FFF',
-            margin: 0
-          }}>
-            Os teus anúncios activos
-          </h2>
-          <div style={{
-            width: 22,
-            height: 22,
-            background: '#FF6600',
-            borderRadius: '50%',
-            color: '#FFF',
-            fontWeight: 700,
-            fontSize: 12,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            {activeJobs.length}
-          </div>
-        </div>
-
-        {/* Jobs list */}
-        <div style={{
-          padding: '0 20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 12
-        }}>
-          {activeJobs.length > 0 ? (
-            activeJobs.map(job => {
-              const jobApps = applicants[job.id] || [];
-              return (
-                <div
-                  key={job.id}
-                  style={{
-                    background: '#2A2A2A',
-                    borderRadius: 16,
-                    padding: 16,
-                    borderLeft: '6px solid #FF6600',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => navigate(createPageUrl("MyJobs"))}
-                >
-                  {/* Title + Badge */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <h3 style={{
-                      fontWeight: 'bold',
-                      fontSize: 16,
-                      color: '#FFF',
-                      margin: 0
-                    }}>
-                      {job.title}
-                    </h3>
-                    <span style={{
-                      background: '#FF6600',
-                      color: '#FFF',
-                      borderRadius: 20,
-                      padding: '4px 12px',
-                      fontSize: 12,
-                      fontWeight: 'bold'
-                    }}>
-                      Ativo
-                    </span>
-                  </div>
-
-                  {/* Applicants count */}
-                  <p style={{
-                    color: '#AAA',
-                    fontSize: 13,
-                    margin: '4px 0 12px 0'
-                  }}>
-                    {jobApps.length} candidato{jobApps.length !== 1 ? 's' : ''}
-                  </p>
-
-                  {/* Applicant avatars */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    {jobApps.slice(0, 2).map((app, idx) => (
-                      <div
-                        key={app.id}
-                        style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
-                          background: '#FF6600',
-                          border: '2px solid #2A2A2A',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#FFF',
-                          fontWeight: 'bold',
-                          fontSize: 10,
-                          marginLeft: idx > 0 ? -8 : 0
-                        }}
-                      >
-                        👤
-                      </div>
-                    ))}
-                    {jobApps.length > 2 && (
-                      <span style={{
-                        color: '#AAA',
-                        fontSize: 12,
-                        marginLeft: 4
-                      }}>
-                        +{jobApps.length - 2}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div style={{ textAlign: 'center', color: '#AAA', paddingTop: 40 }}>
-              <p>Nenhuma obra activa</p>
-            </div>
+        {/* Search */}
+        <div className="relative mb-3">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Input
+            placeholder={activeTab === 'professionals' ? 'Procurar profissional, cidade ou especialidade...' : 'Procurar obra, localização...'}
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="pl-12 h-12 rounded-full bg-gray-100 border-0 shadow-sm text-sm"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm("")} className="absolute right-4 top-1/2 -translate-y-1/2">
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
           )}
         </div>
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          <button
+            onClick={() => setSelectedCategory("all")}
+            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              selectedCategory === "all" ? 'bg-[#F26522] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Todos
+          </button>
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === cat ? 'bg-[#F26522] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-auto px-4 pt-4 pb-24">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-40">
+            <div className="text-5xl font-bold text-[#F26522] animate-pulse select-none">φ</div>
+            <p className="text-gray-400 text-sm mt-2">A carregar...</p>
+          </div>
+        ) : activeTab === 'professionals' ? (
+          filtered.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="font-bold text-gray-900">Nenhum profissional encontrado</h3>
+              <p className="text-sm text-gray-500 mt-1">Tente outra especialidade ou localidade</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-400 font-medium">{filtered.length} profissiona{filtered.length === 1 ? 'l' : 'is'} disponíve{filtered.length === 1 ? 'l' : 'is'}</p>
+              {filtered.map(worker => (
+                <WorkerCard
+                  key={worker.id}
+                  worker={worker}
+                  onContact={() => navigate(createPageUrl("Chat") + `?userId=${worker.id}`)}
+                  onProfile={() => navigate(createPageUrl("Profile") + `?userId=${worker.id}`)}
+                />
+              ))}
+            </div>
+          )
+        ) : (
+          filteredJobs.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">📋</div>
+              <h3 className="font-bold text-gray-900">Nenhum anúncio encontrado</h3>
+              <p className="text-sm text-gray-500 mt-1">Tente outro filtro de categoria</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-400 font-medium">{filteredJobs.length} anúncio{filteredJobs.length === 1 ? '' : 's'} disponíve{filteredJobs.length === 1 ? 'l' : 'is'}</p>
+              {filteredJobs.map(job => (
+                <div key={job.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-bold text-gray-900 flex-1 mr-2 text-sm">{job.title}</h3>
+                    <p className="text-xl font-bold text-[#F26522] shrink-0">
+                      €{job.price}{job.price_type === 'hourly' ? '/h' : ''}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <Badge variant="secondary" className="text-xs">{job.category}</Badge>
+                    {job.urgency === 'high' && <Badge className="bg-red-100 text-red-700 text-xs border-0">🔴 Urgente</Badge>}
+                    {job.price_type === 'negotiable' && <Badge className="bg-green-100 text-green-700 text-xs border-0">🤝 Negociável</Badge>}
+                  </div>
+                  <p className="text-xs text-gray-400 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />{job.location}
+                  </p>
+                  {job.description && (
+                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">{job.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )
+        )}
       </div>
     </div>
   );
@@ -354,13 +272,15 @@ function getDistance(lat1, lon1, lat2, lon2) {
 }
 
 function WorkerHome({ user }) {
-  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [viewMode, setViewMode] = useState("map");
   const [sheetJob, setSheetJob] = useState(null);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
+  const [locationError, setLocationError] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -375,7 +295,7 @@ function WorkerHome({ user }) {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
-      () => {}
+      () => setLocationError(true)
     );
   }, []);
 
@@ -389,124 +309,164 @@ function WorkerHome({ user }) {
     })
     .sort((a, b) => (a._dist ?? 9999) - (b._dist ?? 9999));
 
+  const mapCenter = userLocation || (user?.latitude && user?.longitude ? [user.latitude, user.longitude] : LISBON_COORDS);
+
   const openSheet = (job) => {
     setSheetJob(job);
+    setSheetExpanded(false);
   };
 
-  if (loading) {
-    return (
-      <div style={{ height: '100vh', background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="text-center">
-          <div className="text-6xl font-bold text-[#F26522] animate-pulse">φ</div>
-          <p className="text-gray-400 mt-2 text-sm">A carregar...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ height: '100vh', position: 'relative', overflow: 'hidden', background: '#1A1A1A' }}>
-      {/* Top bar */}
-      <div style={{
-        position: 'absolute', top: 0, zIndex: 10, width: '100%', background: '#111', padding: '50px 16px 12px',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #222'
-      }}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" alt="K" style={{ width: 32 }} />
-          <span style={{ fontWeight: 600, color: '#FFF', fontSize: 14 }}>📍 Lisboa, PT</span>
-        </div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <span style={{ fontSize: 20 }}>🔔</span>
-          <div style={{
-            width: 36, height: 36, borderRadius: '50%', background: '#FF6600', display: 'flex',
-            alignItems: 'center', justifyContent: 'center', color: '#FFF', fontWeight: 'bold', fontSize: 14
-          }}>
-            {user?.full_name?.charAt(0) || '?'}
-          </div>
+    <div className="h-screen flex flex-col relative bg-gray-900">
+      {/* Floating category pills */}
+      <div className="absolute top-4 left-0 right-0 z-10 px-4">
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          <button
+            onClick={() => setSelectedCategory("all")}
+            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold shadow-lg transition-colors ${
+              selectedCategory === "all" ? 'bg-[#F26522] text-white' : 'bg-white/95 text-gray-700'
+            }`}
+          >
+            Todos
+          </button>
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold shadow-lg transition-colors ${
+                selectedCategory === cat ? 'bg-[#F26522] text-white' : 'bg-white/95 text-gray-700'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Search bar */}
-      <div style={{
-        position: 'absolute', top: 105, left: 16, right: 16, zIndex: 10,
-        background: '#2A2A2A', borderRadius: 24, padding: '10px 16px', display: 'flex',
-        gap: 8, alignItems: 'center'
-      }}>
-        <span style={{ color: '#FF6600' }}>🔍</span>
-        <input
-          type="text"
-          placeholder="O que precisas?"
-          style={{
-            background: 'transparent', border: 'none', color: '#FFF', flex: 1,
-            outline: 'none', fontSize: 14
-          }}
-        />
-      </div>
-
-      {/* Map SVG background */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 400 800">
-        <defs>
-          <pattern id="mapGrid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="0" x2="40" y2="0" stroke="#2a3a2a" strokeWidth="0.5" />
-            <line x1="0" y1="0" x2="0" y2="40" stroke="#2a3a2a" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="400" height="800" fill="#1a3a2a" />
-        <rect width="400" height="800" fill="url(#mapGrid)" />
-        {/* Street names */}
-        <text x="50" y="200" fontSize="8" fill="#333" opacity="0.5">Av. da Liberdade</text>
-        <text x="80" y="450" fontSize="8" fill="#333" opacity="0.5" transform="rotate(-30 80 450)">R. Augusta</text>
-        <text x="250" y="350" fontSize="8" fill="#333" opacity="0.5">Av. Paulista</text>
-      </svg>
-
-      {/* Job pins on map */}
-      {filteredJobs.slice(0, 8).map((job, idx) => {
-        const angle = (idx / 8) * Math.PI * 2;
-        const x = 50 + 35 * Math.cos(angle);
-        const y = 50 + 35 * Math.sin(angle);
-        return (
-          <div
-            key={job.id}
-            onClick={() => openSheet(job)}
-            style={{
-              position: 'absolute', left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)',
-              width: 28, height: 28, background: '#FF6600', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-              clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-              zIndex: 5
-            }}
-          />
-        );
-      })}
-
-      {/* Floating job card */}
-      {sheetJob && (
-        <div
-          onClick={() => setShowJobModal(true)}
-          style={{
-            position: 'absolute', bottom: 72, left: 16, right: 16,
-            background: '#2A2A2A', borderRadius: 20, padding: 16, borderLeft: '4px solid #FF6600',
-            display: 'flex', gap: 12, alignItems: 'center', cursor: 'pointer', zIndex: 20
-          }}
+      {/* List/Map toggle */}
+      <div className="absolute top-16 right-4 z-10">
+        <button
+          onClick={() => setViewMode(v => v === 'map' ? 'list' : 'map')}
+          className="bg-white rounded-full shadow-lg px-4 py-2 flex items-center gap-2 text-sm font-semibold text-gray-700"
         >
-          <div style={{
-            width: 48, height: 48, background: '#FF6600', borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0
-          }}>🔧</div>
-          <div style={{ flex: 1 }}>
-            <p style={{ color: '#FFF', fontWeight: 'bold', margin: 0, fontSize: 15 }}>{sheetJob.title}</p>
-            <p style={{ color: '#AAA', fontSize: 13, margin: '4px 0 0 0' }}>📍 {sheetJob.location}</p>
+          {viewMode === 'map' ? <List className="w-4 h-4" /> : <Map className="w-4 h-4" />}
+          {viewMode === 'map' ? 'Lista' : 'Mapa'}
+        </button>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 overflow-hidden">
+        {loading ? (
+          <div className="h-full flex items-center justify-center bg-gray-50">
+            <div className="text-center">
+              <div className="text-6xl font-bold text-[#F26522] animate-pulse">φ</div>
+              <p className="text-gray-500 mt-2">A carregar obras...</p>
+            </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-            <p style={{ color: '#FF6600', fontWeight: 'bold', margin: 0 }}>€{sheetJob.price}</p>
-            <span style={{ background: 'rgba(255, 102, 0, 0.15)', color: '#FF6600', padding: '4px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>
-              {sheetJob._dist ? `${sheetJob._dist.toFixed(1)}km` : '—'}
-            </span>
+        ) : viewMode === 'map' ? (
+          <MapView
+            jobs={filteredJobs}
+            onJobClick={openSheet}
+            center={mapCenter}
+            radius={userLocation ? 10000 : null}
+            userLocation={userLocation}
+          />
+        ) : (
+          <div className="h-full overflow-auto pt-28 px-4 pb-28 bg-gray-50 space-y-3">
+            {filteredJobs.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="font-bold text-gray-900">Nenhum trabalho disponível</h3>
+                <p className="text-sm text-gray-500 mt-1">Tente outro filtro de categoria</p>
+              </div>
+            ) : filteredJobs.map(job => (
+              <div
+                key={job.id}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 cursor-pointer active:scale-[0.99] transition-transform"
+                onClick={() => openSheet(job)}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-bold text-gray-900 flex-1 mr-2 text-sm">{job.title}</h3>
+                  <p className="text-xl font-bold text-[#F26522] shrink-0">
+                    €{job.price}{job.price_type === 'hourly' ? '/h' : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <Badge variant="secondary" className="text-xs">{job.category}</Badge>
+                  {job.urgency === 'high' && <Badge className="bg-red-100 text-red-700 text-xs border-0">🔴 Urgente</Badge>}
+                </div>
+                <p className="text-xs text-gray-400 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />{job.location}
+                </p>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Bottom Sheet */}
+      {sheetJob && (
+        <>
+          <div className="fixed inset-0 z-[55]" onClick={() => setSheetJob(null)} />
+          <div
+            className="fixed inset-x-0 z-[60] bg-white rounded-t-3xl shadow-2xl transition-all duration-300 overflow-hidden"
+            style={{ bottom: '80px', height: sheetExpanded ? '72vh' : '32vh' }}
+          >
+            {/* Drag handle */}
+            <div
+              className="flex justify-center pt-3 pb-2 cursor-pointer"
+              onClick={() => setSheetExpanded(e => !e)}
+            >
+              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            </div>
+            <button
+              onClick={() => setSheetJob(null)}
+              className="absolute top-3 right-4 p-1.5 rounded-full hover:bg-gray-100"
+            >
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+
+            <div className="px-5 overflow-auto h-full pb-8">
+              <Badge variant="secondary" className="mb-2">{sheetJob.category}</Badge>
+              <p className="font-bold text-gray-900 text-lg leading-tight">{sheetJob.title}</p>
+              <p className="text-4xl font-bold text-[#F26522] mt-1">
+                €{sheetJob.price}
+                {sheetJob.price_type === 'hourly' && <span className="text-base font-normal text-gray-400">/h</span>}
+              </p>
+              <div className="flex items-center gap-3 mt-2">
+                {sheetJob.urgency === 'high' && <Badge className="bg-red-100 text-red-700 border-0 text-xs">🔴 Urgente</Badge>}
+                <span className="text-xs text-gray-400 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />{sheetJob.location}
+                </span>
+              </div>
+
+              {sheetExpanded && (
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Descrição</p>
+                    <p className="text-sm text-gray-600">{sheetJob.description}</p>
+                  </div>
+                  {sheetJob.start_date && (
+                    <p className="text-sm text-gray-500">📅 Início previsto: {sheetJob.start_date}</p>
+                  )}
+                  <Button
+                    className="w-full h-12 bg-[#F26522] hover:bg-orange-600 rounded-2xl text-base font-bold shadow-lg shadow-[#F26522]/20"
+                    onClick={() => setShowJobModal(true)}
+                  >
+                    Candidatar-me
+                  </Button>
+                </div>
+              )}
+
+              {!sheetExpanded && (
+                <p className="text-xs text-gray-400 mt-4 text-center">↑ Deslize para ver detalhes e candidatar-se</p>
+              )}
+            </div>
+          </div>
+        </>
       )}
 
-      {/* Full job modal */}
+      {/* Full job modal for apply form */}
       {showJobModal && sheetJob && (
         <JobModal
           job={sheetJob}
@@ -515,41 +475,6 @@ function WorkerHome({ user }) {
           onApply={() => { setShowJobModal(false); setSheetJob(null); }}
         />
       )}
-
-      {/* Bottom nav */}
-      <nav style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, background: '#111', borderTop: '1px solid #222',
-        padding: '12px 0 20px', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', zIndex: 10
-      }}>
-        <button style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none',
-          color: '#FF6600', cursor: 'pointer', fontSize: 20
-        }}>
-          📍
-          <span style={{ fontSize: 10, color: '#FF6600' }}>Mapa</span>
-        </button>
-        <button onClick={() => navigate(createPageUrl("Home"))} style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none',
-          color: '#666', cursor: 'pointer', fontSize: 20
-        }}>
-          🔍
-          <span style={{ fontSize: 10, color: '#666' }}>Pesquisa</span>
-        </button>
-        <button onClick={() => navigate(createPageUrl("Chat"))} style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none',
-          color: '#666', cursor: 'pointer', fontSize: 20
-        }}>
-          💬
-          <span style={{ fontSize: 10, color: '#666' }}>Chat</span>
-        </button>
-        <button onClick={() => navigate(createPageUrl("Profile"))} style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none',
-          color: '#666', cursor: 'pointer', fontSize: 20
-        }}>
-          👤
-          <span style={{ fontSize: 10, color: '#666' }}>Perfil</span>
-        </button>
-      </nav>
     </div>
   );
 }
