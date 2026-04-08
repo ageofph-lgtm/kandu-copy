@@ -1,135 +1,258 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Notification } from "@/entities/Notification";
 import { User } from "@/entities/User";
-import { Bell, Briefcase, Star, MapPin, MessageCircle, CheckCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Bell, 
+  CheckCircle,
+  X,
+  Clock,
+  Settings
+} from "lucide-react";
+import { format } from "date-fns";
+import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { formatDistanceToNow } from "date-fns";
-import { pt } from "date-fns/locale";
 
-const TYPE_CONFIG = {
-  new_application:  { icon: Briefcase, color: "text-[#F26522]", bg: "bg-[#F26522]/10" },
-  new_proposal:     { icon: Briefcase, color: "text-[#F26522]", bg: "bg-[#F26522]/10" },
-  job_accepted:     { icon: CheckCircle, color: "text-green-400", bg: "bg-green-400/10" },
-  job_rejected:     { icon: CheckCircle, color: "text-red-400", bg: "bg-red-400/10" },
-  new_message:      { icon: MessageCircle, color: "text-gray-400", bg: "bg-gray-400/10" },
-  job_started:      { icon: MapPin, color: "text-[#F26522]", bg: "bg-[#F26522]/10" },
-  job_completed:    { icon: Star, color: "text-yellow-400", bg: "bg-yellow-400/10" },
-  job_ready_for_review: { icon: Star, color: "text-yellow-400", bg: "bg-yellow-400/10" },
-};
-
-function NotifCard({ notif, onMarkRead, onDelete }) {
+function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   const navigate = useNavigate();
-  const cfg = TYPE_CONFIG[notif.type] || { icon: Bell, color: "text-[#F26522]", bg: "bg-[#F26522]/10" };
-  const Icon = cfg.icon;
 
-  const timeAgo = (() => {
-    try {
-      return formatDistanceToNow(new Date(notif.created_date), { addSuffix: false, locale: pt });
-    } catch { return ""; }
-  })();
+  const getNotificationIcon = (type) => {
+    switch(type) {
+      case 'new_application':
+      case 'new_proposal':
+        return '📝';
+      case 'job_accepted':
+        return '✅';
+      case 'job_rejected':
+        return '❌';
+      case 'new_message':
+        return '💬';
+      case 'job_started':
+        return '🚀';
+      case 'job_completed':
+        return '🎉';
+      default:
+        return '🔔';
+    }
+  };
 
   const handleClick = () => {
-    if (!notif.is_read) onMarkRead(notif);
-    if (notif.action_url) navigate(notif.action_url);
+    if (!notification.is_read) {
+      onMarkAsRead(notification);
+    }
+    if (notification.action_url) {
+      navigate(notification.action_url);
+    }
   };
 
   return (
-    <div
+    <Card 
+      className={`cursor-pointer transition-all hover:shadow-md ${
+        notification.is_read ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'
+      }`}
       onClick={handleClick}
-      className={`flex items-start gap-4 bg-[#232323] rounded-2xl p-4 cursor-pointer active:scale-[0.99] transition-transform border-l-4 ${notif.is_read ? 'border-transparent opacity-60' : 'border-[#F26522]'}`}
     >
-      <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${cfg.bg}`}>
-        <Icon className={`w-5 h-5 ${cfg.color}`} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <p className={`font-bold text-sm leading-tight ${notif.is_read ? 'text-gray-300' : 'text-white'}`}>{notif.title}</p>
-          <span className="text-xs text-gray-500 shrink-0">{timeAgo}</span>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-3 flex-1">
+            <div className="text-2xl">{getNotificationIcon(notification.type)}</div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h4 className="font-semibold text-gray-900">{notification.title}</h4>
+                {!notification.is_read && (
+                  <Badge className="bg-blue-500 h-2 w-2 p-0 rounded-full"></Badge>
+                )}
+              </div>
+              <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
+              <p className="text-xs text-gray-500">
+                {format(new Date(notification.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: pt })}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 ml-2">
+            {!notification.is_read && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMarkAsRead(notification);
+                }}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <CheckCircle className="w-4 h-4" />
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(notification);
+              }}
+              className="text-red-500 hover:text-red-700"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
-        <p className="text-xs text-gray-400 mt-1 leading-snug">{notif.message}</p>
-        {!notif.is_read && (
-          <span className="inline-block w-2 h-2 rounded-full bg-[#F26522] mt-2" />
-        )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
 export default function Notifications() {
+  const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
 
-  const load = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const u = await User.me();
-      setUser(u);
-      const list = u.user_type === 'admin'
-        ? await Notification.list("-created_date")
-        : await Notification.filter({ user_id: u.id }, "-created_date");
-      setNotifications(list);
-    } catch {}
+      const userData = await User.me();
+      setUser(userData);
+
+      let notificationList;
+      if (userData.user_type === 'admin') {
+        // Admin pode ver todas as notificações
+        notificationList = await Notification.list("-created_date");
+      } else {
+        // Usuários veem apenas suas notificações
+        notificationList = await Notification.filter(
+          { user_id: userData.id }, 
+          "-created_date"
+        );
+      }
+
+      setNotifications(notificationList);
+      console.log("Loaded notifications:", notificationList);
+    } catch (error) {
+      console.error("Error loading notifications:", error);
+    }
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-  const handleMarkRead = async (notif) => {
-    await Notification.update(notif.id, { is_read: true });
-    load();
-  };
-
-  const handleDelete = async (notif) => {
-    await Notification.delete(notif.id);
-    load();
-  };
-
-  const handleMarkAll = async () => {
-    for (const n of notifications.filter(n => !n.is_read)) {
-      await Notification.update(n.id, { is_read: true });
+  const handleMarkAsRead = async (notification) => {
+    try {
+      await Notification.update(notification.id, { is_read: true });
+      loadData(); // Recarregar para atualizar a visualização
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
     }
-    load();
   };
 
-  const unread = notifications.filter(n => !n.is_read);
+  const handleMarkAllAsRead = async () => {
+    try {
+      const unreadNotifications = notifications.filter(n => !n.is_read);
+      for (const notification of unreadNotifications) {
+        await Notification.update(notification.id, { is_read: true });
+      }
+      loadData();
+    } catch (error) {
+      console.error("Error marking all as read:", error);
+    }
+  };
+
+  const handleDelete = async (notification) => {
+    if (!window.confirm("Tem certeza que deseja apagar esta notificação?")) {
+      return;
+    }
+
+    try {
+      await Notification.delete(notification.id);
+      loadData();
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      alert("Erro ao apagar notificação.");
+    }
+  };
+
+  const unreadNotifications = notifications.filter(n => !n.is_read);
+  const readNotifications = notifications.filter(n => n.is_read);
+
+  if (loading) {
+    return (
+      <div className="p-4 h-screen flex flex-col items-center justify-center">
+        <Settings className="w-12 h-12 text-gray-400 animate-spin mb-4" />
+        <p className="text-gray-500">A carregar notificações...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] pb-24">
-      {/* Header */}
-      <div className="px-5 pt-6 pb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-black text-white">Notificações</h1>
-          {unread.length > 0 && (
-            <span className="w-8 h-8 bg-[#F26522] rounded-full flex items-center justify-center text-white text-sm font-bold">
-              {unread.length > 9 ? '9+' : unread.length}
-            </span>
-          )}
-        </div>
-        {unread.length > 0 && (
-          <button onClick={handleMarkAll} className="text-xs text-[#F26522] font-semibold">
-            Marcar todas
-          </button>
+    <div className="p-4 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Notificações</h1>
+        {unreadNotifications.length > 0 && (
+          <Button onClick={handleMarkAllAsRead} variant="outline">
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Marcar todas como lidas
+          </Button>
         )}
       </div>
+      
+      <Tabs defaultValue="unread" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="unread">
+            <Bell className="w-4 h-4 mr-2" />
+            Não Lidas ({unreadNotifications.length})
+          </TabsTrigger>
+          <TabsTrigger value="all">
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Todas ({notifications.length})
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="px-4 space-y-3">
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <div className="w-8 h-8 border-2 border-[#F26522] border-t-transparent rounded-full animate-spin" />
+        <TabsContent value="unread" className="mt-4">
+          <div className="space-y-4">
+            {unreadNotifications.length > 0 ? (
+              unreadNotifications.map(notification => (
+                <NotificationCard 
+                  key={notification.id} 
+                  notification={notification}
+                  onMarkAsRead={handleMarkAsRead}
+                  onDelete={handleDelete}
+                />
+              ))
+            ) : (
+              <Card className="text-center p-8">
+                <Bell className="mx-auto w-12 h-12 text-gray-400 mb-4" />
+                <h3 className="font-medium text-gray-800">Nenhuma notificação não lida</h3>
+                <p className="text-sm text-gray-500 mt-1">Está tudo em dia! 🎉</p>
+              </Card>
+            )}
           </div>
-        ) : notifications.length === 0 ? (
-          <div className="text-center py-20">
-            <Bell className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-400 font-medium">Sem notificações</p>
+        </TabsContent>
+
+        <TabsContent value="all" className="mt-4">
+          <div className="space-y-4">
+            {notifications.length > 0 ? (
+              notifications.map(notification => (
+                <NotificationCard 
+                  key={notification.id} 
+                  notification={notification}
+                  onMarkAsRead={handleMarkAsRead}
+                  onDelete={handleDelete}
+                />
+              ))
+            ) : (
+              <Card className="text-center p-8">
+                <Bell className="mx-auto w-12 h-12 text-gray-400 mb-4" />
+                <h3 className="font-medium text-gray-800">Nenhuma notificação</h3>
+                <p className="text-sm text-gray-500 mt-1">As notificações aparecerão aqui.</p>
+              </Card>
+            )}
           </div>
-        ) : (
-          notifications.map(n => (
-            <NotifCard key={n.id} notif={n} onMarkRead={handleMarkRead} onDelete={handleDelete} />
-          ))
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -119,11 +119,24 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-[#F26522] animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
         <div className="text-center">
-          <UserIcon className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-          <p className="text-gray-400 mb-4">Não autenticado</p>
-          <button className="bg-[#F26522] hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-2xl" onClick={() => base44.auth.redirectToLogin(window.location.href)}>Fazer Login</button>
+          <UserIcon className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+          <p className="text-gray-500 mb-4">Não autenticado</p>
+          <Button 
+            className="bg-[#F26522] hover:bg-orange-600"
+            onClick={() => base44.auth.redirectToLogin(window.location.href)}
+          >
+            Fazer Login
+          </Button>
         </div>
       </div>
     );
@@ -131,7 +144,7 @@ export default function Profile() {
 
   if (isEditing) {
     return (
-      <div className="p-4 max-w-md mx-auto bg-[#1a1a1a] min-h-screen">
+      <div className="p-4 max-w-md mx-auto bg-[#F8FAFC] min-h-screen">
         <ProfileForm
           user={user}
           onSave={handleSave}
@@ -169,13 +182,24 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-white pb-20 md:pb-4">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] pb-20 md:pb-4">
+      <input
+        type="file"
+        ref={avatarInputRef}
+        onChange={handleAvatarUpload}
+        className="hidden"
+        accept="image/*"
+      />
+
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#1a1a1a]/95 backdrop-blur-md border-b border-[#2a2a2a] px-4 py-3 flex justify-between items-center max-w-md mx-auto md:max-w-none">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors">
-          <ArrowLeft className="w-5 h-5 text-white" />
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200 px-4 py-3 flex justify-between items-center max-w-md mx-auto md:max-w-none">
+        <button 
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-[#1E293B]" />
         </button>
-        <h1 className="text-lg font-bold tracking-tight text-white">Perfil Profissional</h1>
+        <h1 className="text-lg font-bold tracking-tight">Perfil Profissional</h1>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
@@ -201,7 +225,7 @@ export default function Profile() {
 
       <main className="w-full max-w-md mx-auto px-4 pt-6">
         {/* Profile Card */}
-        <div className="relative bg-[#1f1f1f] rounded-2xl border border-[#2a2a2a] p-6 flex flex-col items-center mb-6">
+        <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center mb-6">
           {/* Hexagon Avatar */}
           <div className="relative w-32 h-36 mb-4 group">
             <div 
@@ -234,10 +258,10 @@ export default function Profile() {
             </button>
           </div>
 
-          <h2 className="text-2xl font-bold text-white mb-1">
+          <h2 className="text-2xl font-bold text-[#1E293B] mb-1">
             {user.full_name || "Nome não definido"}
           </h2>
-          <p className="text-gray-400 font-semibold text-sm mb-3 flex items-center gap-1">
+          <p className="text-[#F26522] font-semibold text-sm uppercase tracking-wider mb-3 flex items-center gap-1">
             <Check className="w-4 h-4" /> 
             {user.user_type === 'worker' ? 'Profissional Certificado' : 'Empregador Verificado'}
           </p>
@@ -248,28 +272,36 @@ export default function Profile() {
           </div>
 
           {/* Stats */}
-          <div className="flex gap-2 mb-5 w-full">
-            <div className="flex-1 bg-[#2a2a2a] rounded-2xl p-3 text-center">
-              <div className="font-black text-white text-lg">{user.completed_jobs_count || 0}</div>
-              <p className="text-xs text-gray-500">Trabalhos</p>
+          <div className="flex items-center gap-6 mb-6 w-full justify-center">
+            <div className="text-center">
+              <div className="flex items-center justify-center text-yellow-400 font-bold text-lg">
+                <span>{user.rating || '4.9'}</span>
+                <Star className="w-4 h-4 ml-1 fill-yellow-400" />
+              </div>
+              <span className="text-xs text-[#64748B]">{user.reviews_count || '128'} Avaliações</span>
             </div>
-            <div className="flex-1 bg-[#2a2a2a] rounded-2xl p-3 text-center">
-              <div className="font-black text-[#F26522] text-lg flex items-center justify-center gap-1">{user.rating || '4.9'} <Star className="w-3 h-3 fill-[#F26522]"/></div>
-              <p className="text-xs text-gray-500">Avaliação</p>
+            <div className="h-8 w-px bg-gray-200"></div>
+            <div className="text-center">
+              <div className="font-bold text-lg text-[#1E293B]">{user.success_rate || '98'}%</div>
+              <span className="text-xs text-[#64748B]">Taxa de Sucesso</span>
             </div>
-            <div className="flex-1 bg-[#2a2a2a] rounded-2xl p-3 text-center">
-              <div className="font-black text-green-400 text-lg">{user.success_rate || 98}%</div>
-              <p className="text-xs text-gray-500">Presença</p>
+            <div className="h-8 w-px bg-gray-200"></div>
+            <div className="text-center">
+              <div className="font-bold text-lg text-[#1E293B]">{user.years_experience || '7'}+</div>
+              <span className="text-xs text-[#64748B]">Anos Exp.</span>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-3 w-full">
-            <button onClick={() => setIsEditing(true)}
-              className="flex-1 bg-[#F26522] hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2">
-              <Edit2 className="w-4 h-4" /> Editar Perfil
-            </button>
-            <button className="bg-[#2a2a2a] text-gray-400 p-3 rounded-xl hover:bg-[#333] transition-colors">
+            <Button 
+              onClick={() => setIsEditing(true)}
+              className="flex-1 bg-[#F26522] hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-orange-500/20"
+            >
+              <MessageSquare className="w-5 h-5 mr-2" />
+              Mensagem
+            </Button>
+            <button className="bg-gray-100 text-[#1E293B] p-3 rounded-xl hover:bg-gray-200 transition-colors">
               <Bookmark className="w-5 h-5" />
             </button>
           </div>
@@ -324,12 +356,19 @@ export default function Profile() {
         {/* Specialties Section */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white">Especialidades</h2>
+            <h2 className="text-lg font-bold text-[#1E293B]">Especialidades</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {specialties.map((spec, idx) => (
-              <div key={idx} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F26522] text-white rounded-full text-sm font-semibold">
-                <span>{specIcons[spec] || '🔧'}</span> {spec}
+              <div
+                key={idx}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                style={{ 
+                  clipPath: 'polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%)',
+                  padding: '8px 20px'
+                }}
+              >
+                <span>{specIcons[spec] || "🔧"}</span> {spec}
               </div>
             ))}
           </div>
@@ -337,8 +376,8 @@ export default function Profile() {
 
         {/* About Section */}
         <section className="mb-8">
-          <h2 className="text-lg font-bold text-white mb-3">Sobre</h2>
-          <p className="text-gray-400 leading-relaxed text-sm">
+          <h2 className="text-lg font-bold text-[#1E293B] mb-3">Sobre</h2>
+          <p className="text-[#64748B] leading-relaxed text-sm">
             {user.bio || "Profissional dedicado com vasta experiência em reformas residenciais e comerciais. Foco na qualidade do acabamento e cumprimento rigoroso de prazos. Especialista em resolver problemas complexos de elétrica e hidráulica."}
           </p>
         </section>
@@ -346,7 +385,7 @@ export default function Profile() {
         {/* Portfolio Section */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white">Portfólio Recente</h2>
+            <h2 className="text-lg font-bold text-[#1E293B]">Portfólio Recente</h2>
             <span className="text-sm text-[#64748B]">{portfolioImages.length} Projetos</span>
           </div>
           <div className="flex flex-wrap justify-center gap-2">
@@ -378,7 +417,7 @@ export default function Profile() {
 
         {/* Reviews Section */}
         <section className="mb-8">
-          <h2 className="text-lg font-bold text-white mb-4">Avaliações</h2>
+          <h2 className="text-lg font-bold text-[#1E293B] mb-4">Avaliações</h2>
           <ReviewsSection userId={user.id} />
         </section>
       </main>
