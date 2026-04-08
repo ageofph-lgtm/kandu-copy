@@ -437,96 +437,63 @@ export default function SetupProfile() {
     );
   }
 
+  // ── Step 1: Profile Type Selection (Profissional vs Empregador) ──
+  if (step === 1) {
+    const darkBg = { minHeight: '100vh', background: '#1A1A1A', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' };
+    const hexBg = {
+      position: 'absolute', inset: 0, opacity: 0.04, pointerEvents: 'none',
+      backgroundImage: `url("data:image/svg+xml,${hexPattern}")`,
+      backgroundRepeat: 'repeat'
+    };
+    return (
+      <div style={darkBg}>
+        <div style={hexBg} />
+        {/* Logo */}
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{ width: 50, marginTop: '60px', position: 'relative', zIndex: 1 }} alt="K" />
+        {/* Title */}
+        <p style={{ fontSize: 22, fontWeight: 800, color: '#FFF', textAlign: 'center', margin: '32px 0 20px', zIndex: 1 }}>Como vais usar o KANDU?</p>
+        {/* Cards Container */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '0 20px', width: '100%', maxWidth: 380, zIndex: 1, flex: 1, justifyContent: 'center' }}>
+          {/* Card: Sou Profissional */}
+          <div
+            onClick={() => { setActiveIndex(1); handleContinueToVerify(); }}
+            style={{
+              background: '#2A2A2A', borderRadius: 16, padding: 20, display: 'flex', alignItems: 'center', gap: 16, borderLeft: '4px solid #FF6600',
+              cursor: 'pointer', transition: 'all 0.2s', border: activeIndex === 1 ? '2px solid #FF6600' : 'none', borderLeftWidth: activeIndex === 1 ? 2 : 4
+            }}
+          >
+            <span style={{ fontSize: 40 }}>\u26d1\ufe0f</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: 'bold', fontSize: 17, color: '#FFF', margin: 0 }}>Sou Profissional</p>
+              <p style={{ color: '#888', fontSize: 13, margin: '4px 0 0 0' }}>Quero encontrar trabalho perto de mim</p>
+            </div>
+            <span style={{ color: '#FF6600', fontSize: 20 }}>›</span>
+          </div>
+          {/* Card: Preciso de Profissional */}
+          <div
+            onClick={() => { setActiveIndex(0); handleContinueToVerify(); }}
+            style={{
+              background: '#2A2A2A', borderRadius: 16, padding: 20, display: 'flex', alignItems: 'center', gap: 16, borderLeft: '4px solid #FF6600',
+              cursor: 'pointer', transition: 'all 0.2s', border: activeIndex === 0 ? '2px solid #FF6600' : 'none', borderLeftWidth: activeIndex === 0 ? 2 : 4
+            }}
+          >
+            <span style={{ fontSize: 40 }}>\ud83d\udcbc</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: 'bold', fontSize: 17, color: '#FFF', margin: 0 }}>Preciso de Profissional</p>
+              <p style={{ color: '#888', fontSize: 13, margin: '4px 0 0 0' }}>Quero contratar para a minha obra</p>
+            </div>
+            <span style={{ color: '#FF6600', fontSize: 20 }}>›</span>
+          </div>
+        </div>
+        {/* Footer */}
+        <p style={{ color: '#444', fontSize: 11, textAlign: 'center', marginTop: '20px', zIndex: 1 }}>Interface simples, gratuita, montada usando o KANDU</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
       <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
-      {/* Header */}
-      <div className="text-center pt-12 pb-6 px-4">
-        <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>
-        <h1 className="text-2xl font-bold text-gray-900">Bem-vindo ao KANDU</h1>
-        <p className="text-gray-600 mt-1 text-sm">Selecione o tipo de perfil</p>
-        {user && <p className="text-xs text-gray-400 mt-1">{user.email}</p>}
-      </div>
-
-      {/* Carousel */}
-      <div className="flex-1 flex flex-col justify-center px-6 pb-32">
-        {/* Cards */}
-        <div className="relative">
-          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4" style={{ scrollbarWidth: 'none' }}>
-            {visibleProfiles.map((p, idx) => (
-              <div
-                key={p.type}
-                className={`flex-shrink-0 w-72 snap-center cursor-pointer transition-all duration-300 ${
-                  activeIndex === idx ? 'scale-100 opacity-100' : 'scale-95 opacity-60'
-                }`}
-                style={{ scrollSnapAlign: 'center' }}
-                onClick={() => setActiveIndex(idx)}
-              >
-                <div className={`bg-white rounded-3xl shadow-xl border-2 p-6 relative ${
-                  activeIndex === idx ? 'border-[#F26522] shadow-[#F26522]/20' : 'border-transparent'
-                }`}>
-                  {activeIndex === idx && (
-                    <div className="absolute top-4 right-4">
-                      <CheckCircle className="w-6 h-6 text-[#F26522]" />
-                    </div>
-                  )}
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${p.gradient} flex items-center justify-center mb-4 mx-auto shadow-lg`}>
-                    <p.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-center text-gray-900 mb-2">{p.title}</h3>
-                  <p className="text-sm text-gray-500 text-center mb-5">{p.description}</p>
-                  <div className="space-y-2">
-                    {p.features.map((feat, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                        <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                        {feat}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Controls */}
-        <div className="flex justify-center items-center gap-4 mt-4">
-          <button
-            onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
-            disabled={activeIndex === 0}
-            className="p-2 rounded-full bg-white shadow disabled:opacity-30"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <div className="flex gap-2">
-            {visibleProfiles.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveIndex(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${activeIndex === idx ? 'bg-[#F26522] w-6' : 'bg-gray-300'}`}
-              />
-            ))}
-          </div>
-          <button
-            onClick={() => setActiveIndex(Math.min(visibleProfiles.length - 1, activeIndex + 1))}
-            disabled={activeIndex === profileTypes.length - 1}
-            className="p-2 rounded-full bg-white shadow disabled:opacity-30"
-          >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
-      </div>
-
-      {/* Sticky CTA */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-4 bg-gradient-to-t from-white/95 via-white/80 to-transparent">
-        <Button
-          onClick={handleContinueToVerify}
-          disabled={isCreating}
-          className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-xl shadow-[#F26522]/30"
-        >
-          {user ? `Continuar como ${profile.title}` : 'Fazer Login'}
-        </Button>
-      </div>
     </div>
   );
 }
