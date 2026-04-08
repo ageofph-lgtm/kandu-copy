@@ -4,7 +4,7 @@ import { Job } from "@/entities/Job";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, List, Map, Star, X, Send } from "lucide-react";
+import { Search, MapPin, List, Map, Star, X, Send, Users, Megaphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import MapView from "../components/dashboard/MapView";
@@ -84,14 +84,22 @@ function WorkerCard({ worker, onContact, onProfile }) {
 function EmployerHome({ user }) {
   const navigate = useNavigate();
   const [workers, setWorkers] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [activeTab, setActiveTab] = useState("professionals");
   const [loading, setLoading] = useState(true);
+
+  const firstName = user?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
 
   useEffect(() => {
     const load = async () => {
-      const allUsers = await User.list();
+      const [allUsers, openJobs] = await Promise.all([
+        User.list(),
+        Job.filter({ status: 'open' })
+      ]);
       setWorkers(allUsers.filter(u => u.user_type === 'worker'));
+      setJobs(openJobs);
       setLoading(false);
     };
     load();
@@ -108,14 +116,51 @@ function EmployerHome({ user }) {
     return true;
   });
 
+  const filteredJobs = jobs.filter(j => {
+    if (selectedCategory !== "all" && j.category !== selectedCategory) return false;
+    if (searchTerm) {
+      const t = searchTerm.toLowerCase();
+      return j.title?.toLowerCase().includes(t) ||
+             j.location?.toLowerCase().includes(t) ||
+             j.description?.toLowerCase().includes(t);
+    }
+    return true;
+  });
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      {/* Search + Filters */}
-      <div className="bg-white px-4 pt-4 pb-3 shadow-sm">
+      {/* Header */}
+      <div className="bg-white px-4 pt-5 pb-3 shadow-sm">
+        <p className="text-xs text-gray-400 mb-0.5">KANDU</p>
+        <h1 className="text-xl font-bold text-gray-900 mb-3">
+          What do you need, <span className="text-[#F26522]">{firstName}</span>?
+        </h1>
+        {/* Tab Toggle */}
+        <div className="flex bg-gray-100 rounded-2xl p-1 mb-3">
+          <button
+            onClick={() => { setActiveTab('professionals'); setSearchTerm(''); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              activeTab === 'professionals' ? 'bg-white text-[#F26522] shadow-sm' : 'text-gray-500'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            By Professionals
+          </button>
+          <button
+            onClick={() => { setActiveTab('ads'); setSearchTerm(''); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              activeTab === 'ads' ? 'bg-white text-[#F26522] shadow-sm' : 'text-gray-500'
+            }`}
+          >
+            <Megaphone className="w-4 h-4" />
+            By Ads
+          </button>
+        </div>
+        {/* Search */}
         <div className="relative mb-3">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
-            placeholder="Procurar profissional, cidade ou especialidade..."
+            placeholder={activeTab === 'professionals' ? 'Procurar profissional, cidade ou especialidade...' : 'Procurar obra, localização...'}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="pl-12 h-12 rounded-full bg-gray-100 border-0 shadow-sm text-sm"
@@ -149,31 +194,65 @@ function EmployerHome({ user }) {
         </div>
       </div>
 
-      {/* Worker List */}
       <div className="flex-1 overflow-auto px-4 pt-4 pb-24">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-40">
             <div className="text-5xl font-bold text-[#F26522] animate-pulse select-none">φ</div>
-            <p className="text-gray-400 text-sm mt-2">A carregar profissionais...</p>
+            <p className="text-gray-400 text-sm mt-2">A carregar...</p>
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="font-bold text-gray-900">Nenhum profissional encontrado</h3>
-            <p className="text-sm text-gray-500 mt-1">Tente outra especialidade ou localidade</p>
-          </div>
+        ) : activeTab === 'professionals' ? (
+          filtered.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="font-bold text-gray-900">Nenhum profissional encontrado</h3>
+              <p className="text-sm text-gray-500 mt-1">Tente outra especialidade ou localidade</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-400 font-medium">{filtered.length} profissiona{filtered.length === 1 ? 'l' : 'is'} disponíve{filtered.length === 1 ? 'l' : 'is'}</p>
+              {filtered.map(worker => (
+                <WorkerCard
+                  key={worker.id}
+                  worker={worker}
+                  onContact={() => navigate(createPageUrl("Chat") + `?userId=${worker.id}`)}
+                  onProfile={() => navigate(createPageUrl("Profile") + `?userId=${worker.id}`)}
+                />
+              ))}
+            </div>
+          )
         ) : (
-          <div className="space-y-3">
-            <p className="text-xs text-gray-400 font-medium">{filtered.length} profissiona{filtered.length === 1 ? 'l' : 'is'} disponíve{filtered.length === 1 ? 'l' : 'is'}</p>
-            {filtered.map(worker => (
-              <WorkerCard
-                key={worker.id}
-                worker={worker}
-                onContact={() => navigate(createPageUrl("Chat") + `?userId=${worker.id}`)}
-                onProfile={() => navigate(createPageUrl("Profile") + `?userId=${worker.id}`)}
-              />
-            ))}
-          </div>
+          filteredJobs.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">📋</div>
+              <h3 className="font-bold text-gray-900">Nenhum anúncio encontrado</h3>
+              <p className="text-sm text-gray-500 mt-1">Tente outro filtro de categoria</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-400 font-medium">{filteredJobs.length} anúncio{filteredJobs.length === 1 ? '' : 's'} disponíve{filteredJobs.length === 1 ? 'l' : 'is'}</p>
+              {filteredJobs.map(job => (
+                <div key={job.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-bold text-gray-900 flex-1 mr-2 text-sm">{job.title}</h3>
+                    <p className="text-xl font-bold text-[#F26522] shrink-0">
+                      €{job.price}{job.price_type === 'hourly' ? '/h' : ''}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <Badge variant="secondary" className="text-xs">{job.category}</Badge>
+                    {job.urgency === 'high' && <Badge className="bg-red-100 text-red-700 text-xs border-0">🔴 Urgente</Badge>}
+                    {job.price_type === 'negotiable' && <Badge className="bg-green-100 text-green-700 text-xs border-0">🤝 Negociável</Badge>}
+                  </div>
+                  <p className="text-xs text-gray-400 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />{job.location}
+                  </p>
+                  {job.description && (
+                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">{job.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )
         )}
       </div>
     </div>
