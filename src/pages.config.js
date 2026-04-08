@@ -50,6 +50,7 @@
 import AdminDashboard from './pages/AdminDashboard';
 import Splash from './pages/Splash';
 import SMSVerification from './pages/SMSVerification';
+import SelectProfile from './pages/SelectProfile';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -81,6 +82,7 @@ export const PAGES = {
     "Welcome": Welcome,
     "Splash": Splash,
     "SMSVerification": SMSVerification,
+    "SelectProfile": SelectProfile,
 }
 
 export const pagesConfig = {
