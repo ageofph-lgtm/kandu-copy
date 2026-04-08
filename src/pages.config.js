@@ -66,7 +66,7 @@ import Chat from './pages/Chat';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import MyJobs from './pages/MyJobs';
-import NewJob from './pages/NewJob';
+import NewJob from './pages/NewJob.jsx';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import Scan from './pages/Scan';
