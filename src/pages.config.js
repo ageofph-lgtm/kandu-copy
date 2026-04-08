@@ -54,6 +54,7 @@ import SelectProfile from './pages/SelectProfile';
 import CiaEmployer from './pages/CiaEmployer';
 import KYCVerification from './pages/KYCVerification';
 import HomeProfessional from './pages/HomeProfessional';
+import JobDetail from './pages/JobDetail';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -89,6 +90,7 @@ export const PAGES = {
     "CiaEmployer": CiaEmployer,
     "KYCVerification": KYCVerification,
     "HomeProfessional": HomeProfessional,
+    "JobDetail": JobDetail,
 }
 
 export const pagesConfig = {
