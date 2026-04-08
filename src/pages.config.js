@@ -59,6 +59,7 @@ import ChatKandu from './pages/ChatKandu';
 import PinCode from './pages/PinCode';
 import CompletionModal from './pages/CompletionModal';
 import Review from './pages/Review';
+import DashboardEmployer from './pages/DashboardEmployer';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -99,6 +100,7 @@ export const PAGES = {
     "PinCode": PinCode,
     "CompletionModal": CompletionModal,
     "Review": Review,
+    "DashboardEmployer": DashboardEmployer,
 }
 
 export const pagesConfig = {
