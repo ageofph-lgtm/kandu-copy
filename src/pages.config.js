@@ -60,6 +60,7 @@ import PinCode from './pages/PinCode';
 import CompletionModal from './pages/CompletionModal';
 import Review from './pages/Review';
 import DashboardEmployer from './pages/DashboardEmployer';
+import Applicants from './pages/Applicants';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -101,6 +102,7 @@ export const PAGES = {
     "CompletionModal": CompletionModal,
     "Review": Review,
     "DashboardEmployer": DashboardEmployer,
+    "Applicants": Applicants,
 }
 
 export const pagesConfig = {
