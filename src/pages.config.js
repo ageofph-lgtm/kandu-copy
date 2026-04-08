@@ -49,6 +49,7 @@
  */
 import AdminDashboard from './pages/AdminDashboard';
 import Splash from './pages/Splash';
+import SMSVerification from './pages/SMSVerification';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -79,6 +80,7 @@ export const PAGES = {
     "SetupProfile": SetupProfile,
     "Welcome": Welcome,
     "Splash": Splash,
+    "SMSVerification": SMSVerification,
 }
 
 export const pagesConfig = {
