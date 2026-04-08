@@ -53,6 +53,7 @@ import SMSVerification from './pages/SMSVerification';
 import SelectProfile from './pages/SelectProfile';
 import CiaEmployer from './pages/CiaEmployer';
 import KYCVerification from './pages/KYCVerification';
+import HomeProfessional from './pages/HomeProfessional';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -87,6 +88,7 @@ export const PAGES = {
     "SelectProfile": SelectProfile,
     "CiaEmployer": CiaEmployer,
     "KYCVerification": KYCVerification,
+    "HomeProfessional": HomeProfessional,
 }
 
 export const pagesConfig = {
