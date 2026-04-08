@@ -57,6 +57,7 @@ import HomeProfessional from './pages/HomeProfessional';
 import JobDetail from './pages/JobDetail';
 import ChatKandu from './pages/ChatKandu';
 import PinCode from './pages/PinCode';
+import CompletionModal from './pages/CompletionModal';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
@@ -95,6 +96,7 @@ export const PAGES = {
     "JobDetail": JobDetail,
     "ChatKandu": ChatKandu,
     "PinCode": PinCode,
+    "CompletionModal": CompletionModal,
 }
 
 export const pagesConfig = {
