@@ -5,16 +5,19 @@ import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { Edit2, LogOut, RefreshCw } from "lucide-react";
+import { Edit2, LogOut, RefreshCw, FileText, Image as ImageIcon, Award, MapPin as MapPinIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileForm from "../components/profile/ProfileForm";
 import ReviewsSection from "../components/profile/ReviewsSection";
 import MapView from "../components/dashboard/MapView";
+import PortfolioGallery from "../components/profile/PortfolioGallery";
+import DocumentsList from "../components/profile/DocumentsList";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -224,6 +227,40 @@ export default function Profile() {
         </div>
       </div>
 
+      {/* Skills — só para workers */}
+      {user?.user_type === 'worker' && user?.skills && user.skills.length > 0 && (
+        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <Award style={{ width: 16, height: 16, color: "#FF6600" }} />
+            <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>Competências</p>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {user.skills.map((skill, i) => (
+              <span key={i} style={{ background: isDark ? "#333" : "#E5E5E5", color: text, padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Áreas de Atuação — só para workers */}
+      {user?.user_type === 'worker' && user?.service_areas && user.service_areas.length > 0 && (
+        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <MapPinIcon style={{ width: 16, height: 16, color: "#FF6600" }} />
+            <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>Áreas de Atuação</p>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {user.service_areas.map((area, i) => (
+              <span key={i} style={{ background: "transparent", border: "1px solid #FF6600", color: "#FF6600", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
+                {area}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Mapa */}
       {user?.latitude && user?.longitude && (
         <div style={{ background: surface, borderRadius: 16, marginBottom: 12, overflow: "hidden", height: 300, position: "relative" }}>
@@ -239,6 +276,38 @@ export default function Profile() {
         <p style={{ fontWeight: 700, fontSize: 15, color: text, marginBottom: 12 }}>Avaliações</p>
         <ReviewsSection userId={user?.id} />
       </div>
+
+      {/* Tabs Portfólio / Documentos — só para workers */}
+      {user?.user_type === 'worker' && isOwnProfile && (
+        <div style={{ background: surface, borderRadius: 16, marginBottom: 12, overflow: "hidden" }}>
+          <Tabs defaultValue="portfolio">
+            <TabsList style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: isDark ? "#222" : "#EEEEEE", margin: "0", borderRadius: "16px 16px 0 0", padding: 4, gap: 4 }}>
+              <TabsTrigger value="portfolio" style={{ display: "flex", alignItems: "center", gap: 6, borderRadius: 12, fontSize: 13, fontWeight: 600 }}>
+                <ImageIcon style={{ width: 14, height: 14 }} />
+                Portfólio
+              </TabsTrigger>
+              <TabsTrigger value="documents" style={{ display: "flex", alignItems: "center", gap: 6, borderRadius: 12, fontSize: 13, fontWeight: 600 }}>
+                <FileText style={{ width: 14, height: 14 }} />
+                Documentos
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="portfolio" style={{ padding: 16 }}>
+              <PortfolioGallery
+                images={user?.portfolio_images || []}
+                onUpdate={loadUser}
+                canEdit={isOwnProfile}
+              />
+            </TabsContent>
+            <TabsContent value="documents" style={{ padding: 16 }}>
+              <DocumentsList
+                documents={user?.documents || []}
+                onUpdate={loadUser}
+                canEdit={isOwnProfile}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
     </div>
   );
 }
