@@ -214,6 +214,12 @@ export default function Profile() {
 
       {/* Avatar Hexagonal */}
       <div style={{width:100,height:100,clipPath:"polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",overflow:"hidden",border:"4px solid #FF6600",margin:"0 auto 12px",cursor:isOwnProfile?"pointer":"default"}} onClick={() => isOwnProfile && avatarInputRef.current?.click()}>
+        {user.avatar_url ? (
+          <img src={user.avatar_url} alt="Avatar" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+        ) : (
+          <div style={{width:"100%",height:"100%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontSize:36,fontWeight:800}}>
+            {user.full_name?.charAt(0) || "U"}
+          </div>
         )}
       </div>
 
