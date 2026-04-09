@@ -223,20 +223,19 @@ export default function Chat() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <Settings className="w-12 h-12 mx-auto mb-3 text-gray-400 animate-spin" />
-          <p className="text-gray-500">A carregar conversas...</p>
-        </div>
+      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-white">
-      <div className={`w-full md:w-1/3 border-r border-gray-200 flex flex-col ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Conversas</h2>
+    <div style={{background:"#1A1A1A",height:"100vh",display:"flex",flexDirection:"column"}}>
+      {/* Conversation list panel */}
+      <div style={{display: selectedConversation ? "none" : "flex", flexDirection:"column", flex:1, overflow:"hidden"}} className="md:flex md:w-1/3 md:border-r md:border-[#222]">
+        <div style={{padding:"50px 20px 12px",background:"#111",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <h2 style={{fontSize:18,fontWeight:700,color:"#FFF",margin:0}}>Mensagens</h2>
+          <span style={{background:"#FF6600",color:"#FFF",borderRadius:20,padding:"3px 10px",fontSize:12,fontWeight:700}}>{conversations.length}</span>
         </div>
         <ConversationList
           conversations={conversations}
@@ -246,7 +245,8 @@ export default function Chat() {
         />
       </div>
 
-      <div className={`flex-1 ${!selectedConversation ? 'hidden md:flex' : 'flex'} flex-col`}>
+      {/* Chat window panel */}
+      <div style={{display: selectedConversation ? "flex" : "none", flexDirection:"column", flex:1, overflow:"hidden"}} className="md:flex">
         {selectedConversation ? (
           <ChatWindow
             conversation={selectedConversation}
@@ -256,12 +256,10 @@ export default function Chat() {
             onBack={() => setSelectedConversation(null)}
           />
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-              <p className="text-gray-500">
-                Selecione uma conversa para começar
-              </p>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%"}}>
+            <div style={{textAlign:"center"}}>
+              <MessageCircle style={{width:48,height:48,color:"#444",margin:"0 auto 12px"}} />
+              <p style={{color:"#555"}}>Selecione uma conversa para começar</p>
             </div>
           </div>
         )}

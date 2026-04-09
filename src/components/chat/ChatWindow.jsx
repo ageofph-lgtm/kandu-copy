@@ -86,132 +86,49 @@ export default function ChatWindow({
   };
 
   return (
-    <>
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-gray-200 bg-white">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={onBack}
-          className="md:hidden"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        
-        <Avatar>
-          <AvatarFallback className={`font-semibold ${
-            conversation.other_user.user_type === 'employer' 
-              ? 'bg-gray-700 text-white'
-              : 'bg-blue-500 text-white'
-          }`}>
-            {conversation.other_user.full_name?.charAt(0) || <User className="w-5 h-5" />}
-          </AvatarFallback>
-        </Avatar>
-        
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="font-medium text-gray-900">
-              {conversation.other_user.full_name || "Utilizador"}
-            </h3>
-            {conversation.other_user.verified && (
-              <Shield className="w-4 h-4 text-green-500" />
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge 
-              variant="outline" 
-              className={`text-xs ${
-                conversation.other_user.user_type === 'employer' 
-                  ? 'bg-gray-100 text-gray-700 border-gray-300'
-                  : 'bg-blue-100 text-blue-700 border-blue-300'
-              }`}
-            >
-              {conversation.other_user.user_type === 'worker' ? 'Profissional' : 'Empregador'}
-            </Badge>
-            {conversation.other_user.city && (
-              <span className="text-xs text-gray-500">
-                {conversation.other_user.city}
-              </span>
-            )}
-          </div>
+    <div style={{display:"flex",flexDirection:"column",height:"100%",background:"#1A1A1A"}}>
+      {/* Top Bar */}
+      <div style={{padding:"50px 16px 12px",background:"#111",display:"flex",alignItems:"center",gap:12}}>
+        <button onClick={onBack} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer",padding:0,lineHeight:1}}>←</button>
+        <div style={{width:36,height:36,borderRadius:"50%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:700,color:"#FFF",flexShrink:0}}>
+          {conversation.other_user.full_name?.charAt(0) || "?"}
         </div>
+        <div style={{flex:1}}>
+          <p style={{fontWeight:700,fontSize:14,color:"#FFF",margin:0}}>{conversation.other_user.full_name || "Utilizador"}</p>
+          <p style={{fontSize:11,color:"#22C55E",margin:0}}>● online</p>
+        </div>
+        <span style={{color:"#FF6600",fontSize:18,marginLeft:"auto",cursor:"pointer"}}>ℹ️</span>
       </div>
 
       {/* Job context banner */}
       {conversation.job_context && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-orange-50 border-b border-orange-100">
-          <Briefcase className="w-4 h-4 text-[#F26522] shrink-0" />
-          <p className="text-xs text-orange-700 font-medium truncate">
-            Obra: {conversation.job_context.job.title}
-          </p>
-          <span className="text-xs text-orange-400 ml-auto shrink-0">
-            {conversation.job_context.job.location}
-          </span>
+        <div style={{background:"#FF6600",padding:"8px 16px",display:"flex",gap:8,alignItems:"center"}}>
+          <span style={{fontSize:16}}>💼</span>
+          <span style={{fontWeight:700,color:"#FFF",fontSize:13,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{conversation.job_context.job.title}</span>
+          <span style={{color:"#FFF",fontSize:12,opacity:0.8}}>· Ativo</span>
         </div>
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+      <div style={{flex:1,overflowY:"auto",padding:16,display:"flex",flexDirection:"column",gap:10}}>
         {messages.map((message) => {
           const isOwn = message.sender_id === currentUser.id;
-          const style = getMessageStyle(message, isOwn);
-          
           return (
-            <div key={message.id} className={`flex ${style.container}`}>
-              <div className={`max-w-xs md:max-w-md ${style.bubble} p-3 shadow-sm`}>
-                {/* Avatar para mensagens do outro usuário */}
-                {!isOwn && (
-                  <div className="flex items-center gap-2 mb-2">
-                    <Avatar className="w-6 h-6">
-                      <AvatarFallback className={`text-xs font-semibold ${
-                        conversation.other_user.user_type === 'employer' 
-                          ? 'bg-gray-600 text-white'
-                          : 'bg-blue-400 text-white'
-                      }`}>
-                        {conversation.other_user.full_name?.charAt(0) || <User className="w-3 h-3" />}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs opacity-80">
-                      {conversation.other_user.full_name || "Utilizador"}
-                    </span>
-                  </div>
-                )}
-                
-                {/* Anexo */}
+            <div key={message.id} style={{display:"flex",justifyContent:isOwn?"flex-end":"flex-start"}}>
+              <div style={{alignSelf:isOwn?"flex-end":"flex-start",background:isOwn?"#FF6600":"#2A2A2A",borderRadius:isOwn?"16px 16px 4px 16px":"16px 16px 16px 4px",padding:"10px 14px",maxWidth:"75%",color:"#FFF",fontSize:14}}>
                 {message.attachment_url && (
-                  <div className="mb-2">
+                  <div style={{marginBottom:6}}>
                     {message.attachment_type === 'image' ? (
-                      <img 
-                        src={message.attachment_url} 
-                        alt="Anexo" 
-                        className="max-w-full rounded cursor-pointer"
-                        onClick={() => window.open(message.attachment_url, '_blank')}
-                      />
+                      <img src={message.attachment_url} alt="Anexo" style={{maxWidth:"100%",borderRadius:8,cursor:"pointer"}} onClick={() => window.open(message.attachment_url,'_blank')} />
                     ) : (
-                      <a 
-                        href={message.attachment_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className={`flex items-center gap-2 p-2 rounded ${
-                          isOwn ? (currentUser.user_type === 'employer' ? 'bg-gray-700' : 'bg-blue-600') : 'bg-gray-100 text-gray-900'
-                        }`}
-                      >
-                        <FileText className="w-4 h-4" />
-                        <span className="text-sm">Documento</span>
+                      <a href={message.attachment_url} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,color:"#FFF",fontSize:12}}>
+                        <FileText style={{width:14,height:14}} /> Documento
                       </a>
                     )}
                   </div>
                 )}
-                
-                {/* Mensagem */}
-                {message.message && (
-                  <p className="text-sm">{message.message}</p>
-                )}
-                
-                {/* Timestamp */}
-                <p className={`text-xs mt-1 ${style.time}`}>
-                  {formatMessageTime(message.created_date)}
-                </p>
+                {message.message && <p style={{margin:0}}>{message.message}</p>}
+                <p style={{fontSize:10,margin:"4px 0 0",opacity:0.7,textAlign:isOwn?"right":"left"}}>{formatMessageTime(message.created_date)}</p>
               </div>
             </div>
           );
@@ -219,45 +136,27 @@ export default function ChatWindow({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-3 bg-white border-t border-gray-100 pb-safe">
+      {/* Bottom bar */}
+      <div style={{padding:"12px 16px 28px",background:"#1A1A1A",display:"flex",gap:10,alignItems:"center"}}>
         <input
           ref={fileInputRef}
           type="file"
           accept="image/*,.pdf,.doc,.docx"
           onChange={handleFileUpload}
-          className="hidden"
+          style={{display:"none"}}
         />
-        <div className="flex items-center gap-2 bg-gray-50 rounded-2xl px-3 py-1 border border-gray-200">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="shrink-0 h-8 w-8 text-gray-400 hover:text-[#F26522]"
-          >
-            <Paperclip className="w-4 h-4" />
-          </Button>
-          <Input
-            placeholder="Escreva uma mensagem..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 px-0 text-sm"
-          />
-          <Button
-            onClick={handleSend}
-            disabled={!newMessage.trim() || isUploading}
-            size="icon"
-            className="shrink-0 h-9 w-9 bg-[#F26522] hover:bg-orange-600 rounded-xl"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
-        {isUploading && (
-          <p className="text-xs text-gray-400 mt-1 text-center">A enviar...</p>
-        )}
+        <input
+          placeholder="Escreve uma mensagem..."
+          value={newMessage}
+          onChange={e => setNewMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
+          style={{flex:1,background:"#2A2A2A",borderRadius:50,padding:"12px 16px",border:"none",color:"#FFF",outline:"none",fontSize:14}}
+        />
+        <button onClick={handleSend} disabled={!newMessage.trim()||isUploading}
+          style={{width:44,height:44,background:newMessage.trim()&&!isUploading?"#FF6600":"#333",borderRadius:"50%",color:"#FFF",fontSize:18,border:"none",cursor:newMessage.trim()?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          ➤
+        </button>
       </div>
-    </>
+    </div>
   );
 }
