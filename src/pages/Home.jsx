@@ -79,6 +79,7 @@ function EmployerHome({ user, isDark, logoIcon }) {
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#1A1A1A";
   const subtext = isDark ? "#AAAAAA" : "#666666";
+  const border = isDark ? "#333333" : "#E5E5E5";
   const headerBg = isDark ? "#111" : "#F0F0F0";
   const tabBg = isDark ? "#222" : "#EEEEEE";
   const [workers, setWorkers] = useState([]);
@@ -257,6 +258,8 @@ function WorkerHome({ user, isDark, logoIcon }) {
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#1A1A1A";
   const subtext = isDark ? "#AAAAAA" : "#666666";
+  const headerBg = isDark ? "#111" : "#F0F0F0";
+  const border = isDark ? "#333333" : "#E5E5E5";
   const [jobs, setJobs] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [viewMode, setViewMode] = useState("map");
