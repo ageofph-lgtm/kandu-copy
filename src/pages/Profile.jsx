@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ProfileForm from "../components/profile/ProfileForm";
 import ReviewsSection from "../components/profile/ReviewsSection";
+import MapView from "../components/dashboard/MapView";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -222,6 +223,14 @@ export default function Profile() {
           <div style={{ background: "#FF6600", height: "100%", borderRadius: 8, width: "50%", transition: "width 0.5s" }} />
         </div>
       </div>
+
+      {/* Mapa */}
+      {user?.latitude && user?.longitude && (
+        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12, overflow: "hidden", height: 280 }}>
+          <p style={{ fontWeight: 700, fontSize: 15, color: text, marginBottom: 12 }}>Localização</p>
+          <MapView jobs={[]} center={[user.latitude, user.longitude]} userLocation={[user.latitude, user.longitude]} radius={0} />
+        </div>
+      )}
 
       {/* Avaliações */}
       <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
