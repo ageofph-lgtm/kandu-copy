@@ -118,272 +118,129 @@ export default function NewJob() {
   const priceSuggestion = formData.category ? PRICE_SUGGESTIONS[formData.category] : null;
   const catIcon = CATEGORIES.find(c => c.name === formData.category)?.icon || "";
 
+  const inputStyle = {width:"100%",padding:14,background:"#2A2A2A",border:"2px solid #FF6600",borderRadius:12,color:"#FFF",boxSizing:"border-box",fontSize:15,outline:"none"};
+  const labelStyle = {color:"#AAAAAA",fontSize:13,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:8};
+  const sectionStyle = {borderBottom:"3px solid #FF6600",padding:"16px 20px"};
+  const FORM_CATS = ["Pintura","Eletricidade","Canalização","Alvenaria","Carpintaria","Pavimentos","Telhados","Remodeolação"];
+
   if (!user) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-4xl font-bold text-[#F26522] animate-pulse">φ</div>
+      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
-        <button
-          onClick={() => step > 1 ? setStep(step - 1) : navigate(-1)}
-          className="p-2 rounded-full hover:bg-gray-100"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
-        </button>
-        <div className="flex-1">
-          <p className="text-xs text-gray-400">Passo {step} de {STEP_LABELS.length}</p>
-          <h1 className="font-bold text-gray-900">{STEP_LABELS[step - 1]}</h1>
-        </div>
-        <span className="text-sm text-gray-400">{step}/{STEP_LABELS.length}</span>
+    <div style={{background:"#1A1A1A",minHeight:"100vh",paddingBottom:100}}>
+
+      {/* Top Bar */}
+      <div style={{padding:"50px 20px 12px",display:"flex",alignItems:"center",gap:12}}>
+        <button onClick={() => navigate(-1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer",padding:0}}>←</button>
+        <h1 style={{fontWeight:700,color:"#FFF",flex:1,textAlign:"center",margin:0,fontSize:18}}>Nova Obra</h1>
+        <span style={{width:22}} />
       </div>
 
-      {/* Progress Bar */}
-      <div className="bg-white px-4 pb-3">
-        <div className="flex gap-1">
-          {STEP_LABELS.map((_, i) => (
-            <div
-              key={i}
-              className={`flex-1 h-1 rounded-full transition-all duration-300 ${i < step ? 'bg-[#F26522]' : 'bg-gray-200'}`}
-            />
+      {/* Título */}
+      <div style={sectionStyle}>
+        <label style={labelStyle}>Título da Obra</label>
+        <input placeholder="Ex: Pintar apartamento T2" value={formData.title} onChange={e => set("title",e.target.value)} style={inputStyle} />
+      </div>
+
+      {/* Categoria */}
+      <div style={sectionStyle}>
+        <label style={labelStyle}>Categoria</label>
+        <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+          {CATEGORIES.map(cat => (
+            <button key={cat.name} onClick={() => set("category",cat.name)}
+              style={{background:formData.category===cat.name?"#FF6600":"#2A2A2A",color:formData.category===cat.name?"#FFF":"#AAAAAA",borderRadius:20,padding:"8px 14px",border:"none",cursor:"pointer",fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
+              {cat.icon} {cat.name}
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-auto p-4 pb-28">
-        <div className="max-w-lg mx-auto">
-
-          {/* STEP 1: O Quê */}
-          {step === 1 && (
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Título da obra *</label>
-                <Input
-                  placeholder="Ex: Pintar apartamento T2"
-                  value={formData.title}
-                  onChange={e => set("title", e.target.value)}
-                  className="h-12 rounded-xl border-gray-200 text-base"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Categoria *</label>
-                <div className="grid grid-cols-5 gap-2">
-                  {CATEGORIES.map(cat => (
-                    <button
-                      key={cat.name}
-                      onClick={() => set("category", cat.name)}
-                      className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all ${
-                        formData.category === cat.name
-                          ? 'border-[#F26522] bg-orange-50 scale-105 shadow-sm'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
-                      }`}
-                    >
-                      <span className="text-2xl mb-1">{cat.icon}</span>
-                      <span className="text-[9px] text-center text-gray-600 font-medium leading-tight">{cat.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Descrição *</label>
-                <Textarea
-                  placeholder="Descreva em detalhe o trabalho a realizar..."
-                  value={formData.description}
-                  onChange={e => set("description", e.target.value)}
-                  rows={4}
-                  className="rounded-xl border-gray-200"
-                />
-              </div>
+      {/* Preço */}
+      <div style={sectionStyle}>
+        <label style={labelStyle}>Tipo de Preço</label>
+        <div style={{display:"flex",gap:8,marginBottom:12}}>
+          {[{value:'fixed',label:'Projeto'},{value:'hourly',label:'Hora'},{value:'negotiable',label:'Negociável'}].map(pt => (
+            <button key={pt.value} onClick={() => set("price_type",pt.value)}
+              style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.price_type===pt.value?"#FF6600":"#2A2A2A",color:formData.price_type===pt.value?"#FFF":"#AAAAAA"}}>
+              {pt.label}
+            </button>
+          ))}
+        </div>
+        <label style={labelStyle}>Valor (€){formData.price_type==='hourly'?' / hora':''}</label>
+        <input type="number" inputMode="numeric" placeholder="0" value={formData.price} onChange={e => set("price",e.target.value)} style={inputStyle} />
+        {priceSuggestion && (
+          <div style={{background:"#FF660011",border:"1px solid #FF660033",borderRadius:10,padding:12,display:"flex",gap:8,marginTop:10,alignItems:"flex-start"}}>
+            <span style={{fontSize:16}}>&#x2139;&#xFE0F;</span>
+            <div>
+              <p style={{color:"#AAAAAA",fontSize:12,margin:0}}>Preço médio para {formData.category}: €{priceSuggestion.min}–€{priceSuggestion.max}</p>
+              <button onClick={() => set("price",String(priceSuggestion.avg))} style={{background:"none",border:"none",color:"#FF6600",fontSize:12,fontWeight:600,cursor:"pointer",padding:0,marginTop:4}}>Usar média: €{priceSuggestion.avg}</button>
             </div>
-          )}
+          </div>
+        )}
+      </div>
 
-          {/* STEP 2: Onde & Quando */}
-          {step === 2 && (
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Localização *</label>
-                <Select value={formData.location} onValueChange={v => set("location", v)}>
-                  <SelectTrigger className="h-12 rounded-xl border-gray-200">
-                    <SelectValue placeholder="Selecione a localização" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(LOCATION_COORDS).map(loc => (
-                      <SelectItem key={loc} value={loc}>
-                        <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" />{loc}</div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Urgência</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { value: 'low',    label: 'Baixa',  emoji: '🟢', active: 'border-blue-400   bg-blue-50   text-blue-700'   },
-                    { value: 'medium', label: 'Média',  emoji: '🟡', active: 'border-yellow-400 bg-yellow-50 text-yellow-700' },
-                    { value: 'high',   label: 'Alta',   emoji: '🔴', active: 'border-red-400    bg-red-50    text-red-700'    },
-                  ].map(u => (
-                    <button
-                      key={u.value}
-                      onClick={() => set("urgency", u.value)}
-                      className={`py-4 rounded-2xl border-2 font-medium text-sm transition-all ${
-                        formData.urgency === u.value ? u.active : 'border-gray-200 text-gray-500 bg-white'
-                      }`}
-                    >
-                      <div className="text-xl mb-1">{u.emoji}</div>
-                      {u.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Data de início</label>
-                  <Input type="date" value={formData.start_date} onChange={e => set("start_date", e.target.value)} className="h-12 rounded-xl border-gray-200" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Data de fim</label>
-                  <Input type="date" value={formData.end_date} onChange={e => set("end_date", e.target.value)} className="h-12 rounded-xl border-gray-200" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: Orçamento */}
-          {step === 3 && (
-            <div className="space-y-5">
-              {priceSuggestion && (
-                <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
-                  <p className="text-sm font-semibold text-orange-800 mb-1">
-                    💡 Preço médio para {catIcon} {formData.category}
-                  </p>
-                  <p className="text-xs text-orange-600 mb-2">
-                    Mercado: €{priceSuggestion.min} – €{priceSuggestion.max}
-                  </p>
-                  <button
-                    onClick={() => set("price", String(priceSuggestion.avg))}
-                    className="text-xs text-orange-700 font-semibold underline"
-                  >
-                    Usar valor médio (€{priceSuggestion.avg})
-                  </button>
-                </div>
-              )}
-              {/* Price disclaimer */}
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex gap-3">
-                <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-blue-700 leading-relaxed">
-                  <strong>Nota:</strong> The price basis will consider only the main job, hence, it does not take in consideration the quotes (goods, tools etc).
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Tipo de preço</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { value: 'fixed',      label: 'Projeto',    emoji: '💰' },
-                    { value: 'negotiable', label: 'Negociável', emoji: '🤝' },
-                    { value: 'hourly',     label: 'À hora',     emoji: '⏱️' },
-                  ].map(pt => (
-                    <button
-                      key={pt.value}
-                      onClick={() => set("price_type", pt.value)}
-                      className={`py-4 rounded-2xl border-2 font-medium text-sm transition-all ${
-                        formData.price_type === pt.value
-                          ? 'border-[#F26522] bg-orange-50 text-[#F26522]'
-                          : 'border-gray-200 text-gray-500 bg-white'
-                      }`}
-                    >
-                      <div className="text-2xl mb-1">{pt.emoji}</div>
-                      {pt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Valor (€){formData.price_type === 'hourly' ? ' / hora' : ''} *
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl font-bold">€</span>
-                  <Input
-                    type="number"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="0"
-                    value={formData.price}
-                    onChange={e => set("price", e.target.value)}
-                    className="h-16 pl-10 text-3xl font-bold rounded-xl border-gray-200 text-[#F26522]"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4: Revisão */}
-          {step === 4 && (
-            <div className="space-y-4">
-              <h2 className="font-bold text-lg text-gray-900 mb-4">Revise os detalhes</h2>
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 mr-3">
-                    <p className="font-bold text-gray-900 text-lg">{formData.title}</p>
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-xs font-medium px-2 py-1 rounded-full">
-                        {catIcon} {formData.category}
-                      </span>
-                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                        formData.urgency === 'high'   ? 'bg-red-100 text-red-700' :
-                        formData.urgency === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-blue-100 text-blue-700'
-                      }`}>
-                        {formData.urgency === 'high' ? '🔴 Alta urgência' : formData.urgency === 'medium' ? '🟡 Média urgência' : '🟢 Baixa urgência'}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-2xl font-bold text-[#F26522] shrink-0">
-                    €{formData.price}{formData.price_type === 'hourly' ? '/h' : ''}
-                  </p>
-                </div>
-                <hr className="border-gray-100" />
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <MapPin className="w-4 h-4 text-gray-400" /> {formData.location}
-                </div>
-                {formData.start_date && (
-                  <p className="text-sm text-gray-500">📅 {formData.start_date}{formData.end_date ? ` → ${formData.end_date}` : ''}</p>
-                )}
-                <hr className="border-gray-100" />
-                <p className="text-sm text-gray-600">{formData.description}</p>
-              </div>
-              <p className="text-xs text-center text-gray-400">
-                A obra ficará visível para profissionais na sua área imediatamente.
-              </p>
-            </div>
-          )}
+      {/* Localização */}
+      <div style={sectionStyle}>
+        <label style={labelStyle}>Localização</label>
+        <div style={{display:"flex",alignItems:"center",gap:10,background:"#2A2A2A",border:"2px solid #FF6600",borderRadius:12,padding:"0 14px"}}>
+          <span style={{color:"#FF6600",fontSize:18,flexShrink:0}}>📍</span>
+          <select value={formData.location} onChange={e => set("location",e.target.value)}
+            style={{flex:1,background:"transparent",border:"none",color:formData.location?"#FFF":"#888",fontSize:15,padding:"14px 0",outline:"none"}}>
+            <option value="" style={{background:"#2A2A2A"}}>Selecione a localização</option>
+            {Object.keys(LOCATION_COORDS).map(loc => (
+              <option key={loc} value={loc} style={{background:"#2A2A2A"}}>{loc}</option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
-        <Button
-          onClick={() => step < 4 ? setStep(step + 1) : handlePublish()}
-          disabled={!canGoNext() || isSubmitting}
-          className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-lg shadow-[#F26522]/20"
-        >
-          {step < 4 ? (
-            <span className="flex items-center">Próximo <ArrowRight className="w-5 h-5 ml-2" /></span>
-          ) : isSubmitting ? (
-            <span className="animate-pulse">φ &nbsp;A publicar...</span>
-          ) : (
-            <span className="flex items-center"><Check className="w-5 h-5 mr-2" /> Publicar Obra</span>
-          )}
-        </Button>
+      {/* Urgência */}
+      <div style={sectionStyle}>
+        <label style={labelStyle}>Urgência</label>
+        <div style={{display:"flex",gap:8}}>
+          {[{value:'low',label:'🟢 Baixa'},{value:'medium',label:'🟡 Média'},{value:'high',label:'🔴 Alta'}].map(u => (
+            <button key={u.value} onClick={() => set("urgency",u.value)}
+              style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.urgency===u.value?"#FF6600":"#2A2A2A",color:formData.urgency===u.value?"#FFF":"#AAAAAA"}}>
+              {u.label}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {/* Datas */}
+      <div style={sectionStyle}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div>
+            <label style={labelStyle}>Data Início</label>
+            <input type="date" value={formData.start_date} onChange={e => set("start_date",e.target.value)} style={{...inputStyle,colorScheme:"dark"}} />
+          </div>
+          <div>
+            <label style={labelStyle}>Data Fim</label>
+            <input type="date" value={formData.end_date} onChange={e => set("end_date",e.target.value)} style={{...inputStyle,colorScheme:"dark"}} />
+          </div>
+        </div>
+      </div>
+
+      {/* Descrição */}
+      <div style={sectionStyle}>
+        <label style={labelStyle}>Descrição</label>
+        <textarea placeholder="Descreva em detalhe o trabalho a realizar..." value={formData.description} onChange={e => set("description",e.target.value)}
+          style={{background:"#2A2A2A",border:"2px solid #FF6600",borderRadius:12,padding:14,color:"#FFF",resize:"none",height:100,width:"100%",boxSizing:"border-box",fontSize:15,outline:"none"}} />
+      </div>
+
+      {/* Sticky CTA */}
+      <div style={{position:"sticky",bottom:0,background:"#1A1A1A",padding:"16px 20px"}}>
+        <button onClick={handlePublish}
+          disabled={!formData.title.trim() || !formData.category || !formData.location || !formData.price || isSubmitting}
+          style={{width:"100%",padding:16,background:(!formData.title.trim()||!formData.category||!formData.location||!formData.price||isSubmitting)?"#333":"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:(!formData.title.trim()||!formData.category||!formData.location||!formData.price||isSubmitting)?"default":"pointer"}}>
+          {isSubmitting ? "A publicar..." : "Publicar Obra"}
+        </button>
+      </div>
     </div>
   );
 }
