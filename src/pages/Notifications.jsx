@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTheme } from "@/lib/ThemeContext";
 import { Notification } from "@/entities/Notification";
 import { User } from "@/entities/User";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,6 +89,11 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
 }
 
 export default function Notifications() {
+  const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -182,14 +188,14 @@ export default function Notifications() {
 
   if (loading) {
     return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
         <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:60, background:"white", borderRadius:8, padding:2, animation:"pulse 1.5s infinite"}} alt="" /> alt="" />
       </div>
     );
   }
 
   return (
-    <div style={{background:"#1A1A1A",minHeight:"100vh",paddingBottom:80}}>
+    <div style={{background:bg,minHeight:"100vh",paddingBottom:80}}>
       {/* Logo topo */}
       <div style={{paddingTop:50,display:"flex",justifyContent:"center"}}>
         <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:40, background:"white", borderRadius:8, padding:2}} alt="" /> alt="" />
@@ -197,7 +203,7 @@ export default function Notifications() {
 
       {/* Título + badge */}
       <div style={{padding:"12px 20px",display:"flex",alignItems:"center",gap:12}}>
-        <h1 style={{fontWeight:800,fontSize:32,color:"#FFF",margin:0,flex:1}}>Notificações</h1>
+        <h1 style={{fontWeight:800,fontSize:32,color:text,margin:0,flex:1}}>Notificações</h1>
         {unreadNotifications.length > 0 && (
           <div style={{width:28,height:28,borderRadius:"50%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontWeight:700,fontSize:14}}>
             {unreadNotifications.length}
@@ -220,16 +226,16 @@ export default function Notifications() {
           return (
             <div key={notif.id}
               onClick={() => { handleMarkAsRead(notif); if(notif.action_url) window.location.href=notif.action_url; }}
-              style={{background:"#2A2A2A",borderRadius:14,padding:"14px 16px",borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:notif.is_read?0.6:1}}>
+              style={{background:surface,borderRadius:14,padding:"14px 16px",borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:notif.is_read?0.6:1}}>
               <div style={{width:40,height:40,borderRadius:12,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
                 {icon}
               </div>
               <div style={{flex:1,minWidth:0}}>
-                <p style={{fontWeight:700,fontSize:14,color:"#FFF",margin:0}}>{notif.title}</p>
-                <p style={{color:"#AAAAAA",fontSize:13,marginTop:2,lineHeight:1.4}}>{notif.message}</p>
+                <p style={{fontWeight:700,fontSize:14,color:text,margin:0}}>{notif.title}</p>
+                <p style={{color:subtext,fontSize:13,marginTop:2,lineHeight:1.4}}>{notif.message}</p>
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flexShrink:0}}>
-                <span style={{color:"#AAAAAA",fontSize:11}}>{getRelativeTime(notif.created_date)}</span>
+                <span style={{color:subtext,fontSize:11}}>{getRelativeTime(notif.created_date)}</span>
                 <button onClick={e => {e.stopPropagation(); handleDelete(notif);}} style={{background:"none",border:"none",color:"#555",cursor:"pointer",fontSize:14,padding:0}}>×</button>
               </div>
             </div>

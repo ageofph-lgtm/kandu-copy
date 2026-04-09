@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
@@ -14,6 +15,16 @@ const features = [
 
 export default function Welcome() {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const logoH = isDark
+    ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
+    : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png";
+  const logoIcon = isDark
+    ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png"
+    : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png";
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
@@ -37,24 +48,24 @@ export default function Welcome() {
 
   if (checking) {
     return (
-      <div style={{minHeight:"100vh", background:"#1A1A1A", display:"flex", alignItems:"center", justifyContent:"center"}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:60, background:"white", borderRadius:8, padding:2, animation:"pulse 1.5s infinite"}} alt="KANDU" /> animation:"pulse 1.5s infinite"}} alt="KANDU" />
+      <div style={{minHeight:"100vh", background:bg, display:"flex", alignItems:"center", justifyContent:"center"}}>
+        <img src={logoIcon} style={{width:60, background:isDark?"white":"transparent", borderRadius:8, padding:isDark?2:0, animation:"pulse 1.5s infinite"}} alt="KANDU" />_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:60, background:"white", borderRadius:8, padding:2, animation:"pulse 1.5s infinite"}} alt="KANDU" /> animation:"pulse 1.5s infinite"}} alt="KANDU" />
       </div>
     );
   }
 
   return (
-    <div style={{minHeight:"100vh", background:"#1A1A1A", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:28, gap:20, position:"relative", overflow:"hidden"}}>
+    <div style={{minHeight:"100vh", background:bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:28, gap:20, position:"relative", overflow:"hidden"}}>
       {/* Hex pattern fundo */}
       <div style={{position:"absolute", inset:0, backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpolygon points='30,2 58,17 58,47 30,62 2,47 2,17' fill='none' stroke='%23FF6600' stroke-width='0.5' opacity='0.3'/%3E%3C/svg%3E\")", backgroundRepeat:"repeat", opacity:0.4, pointerEvents:"none"}} />
 
       {/* Logo */}
-      <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36, position:"relative", zIndex:1}} alt="KANDU" /> style={{width:200, position:"relative", zIndex:1}} alt="KANDU" />
+      <img src={logoH} style={{height:36, position:"relative", zIndex:1}} alt="KANDU" /> alt="KANDU" /> style={{width:200, position:"relative", zIndex:1}} alt="KANDU" />
 
       {/* Headline */}
       <div style={{textAlign:"center", position:"relative", zIndex:1}}>
-        <h1 style={{fontSize:28, fontWeight:800, color:"#FFFFFF", margin:"0 0 8px"}}>Find work. Find workers.</h1>
-        <p style={{fontSize:15, color:"#AAAAAA", margin:0}}>Lisboa e arredores</p>
+        <h1 style={{fontSize:28, fontWeight:800, color:text, margin:"0 0 8px"}}>Find work. Find workers.</h1>
+        <p style={{fontSize:15, color:subtext, margin:0}}>Lisboa e arredores</p>
       </div>
 
       {/* Botões */}

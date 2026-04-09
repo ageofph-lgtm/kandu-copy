@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTheme } from "@/lib/ThemeContext";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Application } from "@/entities/Application";
@@ -15,7 +16,11 @@ import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-function JobItem({ job, application, userType, navigate, currentUser }) {
+function JobItem({ job, application, userType, navigate, currentUser, isDark }) {
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const border = isDark ? "#333" : "#E5E5E5";
   const [otherUser, setOtherUser] = useState(null);
   const [showPinModal, setShowPinModal] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -128,10 +133,10 @@ function JobItem({ job, application, userType, navigate, currentUser }) {
         onComplete={() => { setShowCompletionModal(false); window.location.reload(); }}
       />
     )}
-    <div style={{background:"#2A2A2A",borderRadius:16,padding:16,borderLeft:"6px solid #FF6600"}}>
+    <div style={{background:surface,borderRadius:16,padding:16,borderLeft:"6px solid #FF6600"}}>
       {/* Row 1: title + status */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,marginBottom:8}}>
-        <h3 style={{fontWeight:700,color:"#FFF",fontSize:14,flex:1,margin:0,lineHeight:1.3}}>{job.title}</h3>
+        <h3 style={{fontWeight:700,color:text,fontSize:14,flex:1,margin:0,lineHeight:1.3}}>{job.title}</h3>
         <span style={{background:s.bg,color:s.color,fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:20,flexShrink:0}}>{s.label}</span>
       </div>
       {/* Row 2: location + price */}
@@ -143,11 +148,11 @@ function JobItem({ job, application, userType, navigate, currentUser }) {
       </div>
       {/* Other user */}
       {otherUser && (
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,paddingTop:8,borderTop:"1px solid #333"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,paddingTop:8,borderTop:`1px solid ${border}`}}>
           <div style={{width:24,height:24,borderRadius:"50%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontSize:11,fontWeight:700,flexShrink:0}}>
             {otherUser.full_name?.charAt(0)||"?"}
           </div>
-          <span style={{fontSize:12,color:"#AAAAAA"}}>{userType==='worker'?'Empregador':'Profissional'}: <strong style={{color:"#FFF"}}>{otherUser.full_name}</strong></span>
+          <span style={{fontSize:12,color:subtext}}>{userType==='worker'?'Empregador':'Profissional'}: <strong style={{color:text}}>{otherUser.full_name}</strong></span>
         </div>
       )}
       {actionButton()}
@@ -156,12 +161,14 @@ function JobItem({ job, application, userType, navigate, currentUser }) {
   );
 }
 
-function EmptyState({ emoji, title, description, onCta, ctaLabel }) {
+function EmptyState({ emoji, title, description, onCta, ctaLabel, isDark }) {
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
   return (
-    <div style={{background:"#2A2A2A",borderRadius:16,padding:40,textAlign:"center"}}>
+    <div style={{background:surface,borderRadius:16,padding:40,textAlign:"center"}}>
       <div style={{fontSize:48,marginBottom:12}}>{emoji}</div>
-      <h3 style={{color:"#AAAAAA",fontWeight:600,fontSize:16,margin:"0 0 6px"}}>{title}</h3>
-      {description && <p style={{color:"#666",fontSize:13,margin:"0 0 16px"}}>{description}</p>}
+      <h3 style={{color:subtext,fontWeight:600,fontSize:16,margin:"0 0 6px"}}>{title}</h3>
+      {description && <p style={{color:subtext,fontSize:13,margin:"0 0 16px"}}>{description}</p>}
       {onCta && ctaLabel && (
         <button onClick={onCta} style={{background:"#FF6600",border:"none",borderRadius:12,padding:"12px 24px",color:"#FFF",fontWeight:700,fontSize:14,cursor:"pointer"}}>{ctaLabel}</button>
       )}
@@ -171,6 +178,11 @@ function EmptyState({ emoji, title, description, onCta, ctaLabel }) {
 
 export default function MyJobs() {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
   const [user, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -216,9 +228,9 @@ export default function MyJobs() {
 
   if (loading) {
     return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
         <div style={{textAlign:"center"}}>
-          <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
+          <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
           <p style={{color:"#AAAAAA",marginTop:8,fontSize:13}}>A carregar...</p>
         </div>
       </div>
@@ -226,11 +238,11 @@ export default function MyJobs() {
   }
 
   return (
-    <div style={{background:"#1A1A1A",minHeight:"100vh",paddingBottom:80}}>
+    <div style={{background:bg,minHeight:"100vh",paddingBottom:80}}>
       {/* Top Bar */}
       <div style={{padding:"50px 20px 12px",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <h1 style={{fontWeight:800,fontSize:22,color:"#FFF",margin:0}}>As minhas obras</h1>
+          <h1 style={{fontWeight:800,fontSize:22,color:text,margin:0}}>As minhas obras</h1>
           <span style={{background:"#FF6600",color:"#FFF",borderRadius:"50%",minWidth:24,height:24,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700}}>{jobs.length}</span>
         </div>
         {user?.user_type === 'employer' && (
@@ -244,7 +256,7 @@ export default function MyJobs() {
       {/* Tabs */}
       <div style={{padding:"0 20px"}}>
         <Tabs defaultValue="in_progress">
-          <TabsList style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",background:"#222",borderRadius:16,padding:4,height:"auto"}} className="w-full">
+          <TabsList style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",background:surface,borderRadius:16,padding:4,height:"auto"}} className="w-full">
             <TabsTrigger value="scheduled" style={{borderRadius:12,display:"flex",flexDirection:"column",padding:"8px 0",fontSize:11}} className="data-[state=active]:bg-[#FF6600] data-[state=active]:text-white text-[#AAAAAA]">
               <span>Agendados</span>
               <span style={{fontWeight:700,fontSize:15}}>{scheduledJobs.length}</span>
@@ -261,9 +273,9 @@ export default function MyJobs() {
 
           <TabsContent value="scheduled" style={{marginTop:16,display:"flex",flexDirection:"column",gap:12}}>
             {scheduledJobs.length > 0 ? scheduledJobs.map(job => (
-              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} />
+              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} isDark={isDark} />
             )) : (
-              <EmptyState emoji="📅" title="Nenhum trabalho agendado"
+              <EmptyState emoji="📅" isDark={isDark} title="Nenhum trabalho agendado"
                 description={user?.user_type==='worker'?"Candidate-se a obras para começar.":"Publique uma obra e aceite candidaturas."}
                 onCta={user?.user_type==='employer'?() => navigate(createPageUrl("NewJob")):() => navigate(createPageUrl("Home"))}
                 ctaLabel={user?.user_type==='employer'?'+ Publicar Nova Obra':'🗺️ Explorar Obras'} />
@@ -272,9 +284,9 @@ export default function MyJobs() {
 
           <TabsContent value="in_progress" style={{marginTop:16,display:"flex",flexDirection:"column",gap:12}}>
             {inProgressJobs.length > 0 ? inProgressJobs.map(job => (
-              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} />
+              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} isDark={isDark} />
             )) : (
-              <EmptyState emoji="🔨" title="Nenhum trabalho em curso"
+              <EmptyState emoji="🔨" isDark={isDark} title="Nenhum trabalho em curso"
                 description="Os trabalhos aceites e em andamento aparecem aqui."
                 onCta={user?.user_type==='employer'?() => navigate(createPageUrl("NewJob")):() => navigate(createPageUrl("Home"))}
                 ctaLabel={user?.user_type==='employer'?'+ Publicar Obra':'🗺️ Explorar Obras'} />
@@ -283,9 +295,9 @@ export default function MyJobs() {
 
           <TabsContent value="history" style={{marginTop:16,display:"flex",flexDirection:"column",gap:12}}>
             {historyJobs.length > 0 ? historyJobs.map(job => (
-              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} />
+              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} isDark={isDark} />
             )) : (
-              <EmptyState emoji="🏆" title="Histórico vazio"
+              <EmptyState emoji="🏆" isDark={isDark} title="Histórico vazio"
                 description="Os trabalhos concluídos e o seu histórico aparecerão aqui." />
             )}
           </TabsContent>

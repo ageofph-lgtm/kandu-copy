@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTheme } from "@/lib/ThemeContext";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,13 @@ const LISBON_COORDS = [38.7223, -9.1393];
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const border = isDark ? "#222" : "#E5E5E5";
+  const headerBg = isDark ? "#111111" : "#F0F0F0";
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -160,32 +168,32 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
         <Settings className="w-12 h-12 animate-spin" style={{color:"#FF6600",marginBottom:16}} />
-        <p style={{color:"#AAAAAA"}}>A carregar...</p>
+        <p style={{color:subtext}}>A carregar...</p>
       </div>);
   }
 
   if (!user) {
     return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
         <div style={{textAlign:"center"}}>
-          <p style={{color:"#AAAAAA",marginBottom:16}}>Não autenticado</p>
+          <p style={{color:subtext,marginBottom:16}}>Não autenticado</p>
           <Button onClick={() => navigate(createPageUrl("SetupProfile"))}>Ir para Login</Button>
         </div>
       </div>);
   }
 
   return (
-    <div style={{height:"100vh",display:"flex",flexDirection:"column",background:"#1A1A1A"}}>
-      <header style={{background:"#111111",borderBottom:"1px solid #222",padding:"50px 24px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+    <div style={{height:"100vh",display:"flex",flexDirection:"column",background:bg}}>
+      <header style={{background:headerBg,borderBottom:`1px solid ${border}`,padding:"50px 24px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{flex:1,maxWidth:400,position:"relative"}}>
           <Search style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#AAAAAA",width:18,height:18}} />
-          <input placeholder={t('searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{width:"100%",background:"#2A2A2A",border:"2px solid #FF6600",borderRadius:12,padding:"10px 12px 10px 40px",color:"#FFF",fontSize:14,outline:"none",boxSizing:"border-box"}} />
+          <input placeholder={t('searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{width:"100%",background:surface,border:"2px solid #FF6600",borderRadius:12,padding:"10px 12px 10px 40px",color:"#FFF",fontSize:14,outline:"none",boxSizing:"border-box"}} />
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8,marginLeft:12}}>
           {(user?.user_type === 'employer' || user?.user_type === 'admin') &&
-          <button onClick={createSampleJobs} disabled={isCreatingSamples} style={{background:"#2A2A2A",border:"1px solid #444",borderRadius:10,padding:"8px 14px",color:"#AAAAAA",fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+          <button onClick={createSampleJobs} disabled={isCreatingSamples} style={{background:surface,border:`1px solid ${border}`,borderRadius:10,padding:"8px 14px",color:subtext,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
               {isCreatingSamples ? <RefreshCcw style={{width:14,height:14,animation:"spin 1s linear infinite"}} /> : <Plus style={{width:14,height:14}} />}
               Exemplos
             </button>
@@ -197,10 +205,11 @@ export default function Dashboard() {
           }
         </div>
       </header>
-      <div style={{background:"#111111",borderBottom:"1px solid #222",padding:"8px 24px",display:"flex",gap:8,overflowX:"auto"}}>
+      <div style={{background:headerBg,borderBottom:`1px solid ${border}`,padding:"8px 24px",display:"flex",gap:8,overflowX:"auto"}}>
         <div style={{display:"flex",gap:8}}>
           {categories.map((category) =>
-          <button key={category} onClick={() => setSelectedCategory(category)} style={{background:selectedCategory===category?"#FF6600":"#2A2A2A",border:selectedCategory===category?"none":"1px solid #333",borderRadius:20,padding:"6px 14px",color:selectedCategory===category?"#FFF":"#AAAAAA",fontSize:12,fontWeight:selectedCategory===category?700:400,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>
+          <button key={category} onClick={() => setSelectedCategory(category)} style={{background:selectedCategory===category?"#FF6600":surface,border:selectedCategory===category?"none":`1px solid ${border}`,
+            borderRadius:20,padding:"6px 14px",color:selectedCategory===category?"#FFF":subtext,fontSize:12,fontWeight:selectedCategory===category?700:400,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>
               {category === "all" ? t('allCategories') : t(category.toLowerCase()) || category}
             </button>
           )}

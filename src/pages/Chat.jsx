@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTheme } from "@/lib/ThemeContext";
 import { ChatMessage } from "@/entities/ChatMessage";
 import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
@@ -16,6 +17,11 @@ import ConversationList from "../components/chat/ConversationList";
 import ChatWindow from "../components/chat/ChatWindow";
 
 export default function Chat() {
+  const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const headerBg = isDark ? "#111" : "#F0F0F0";
+  const border = isDark ? "#222" : "#E5E5E5";
   const [conversations, setConversations] = useState([]);
   const [archivedConversations, setArchivedConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -223,18 +229,18 @@ export default function Chat() {
 
   if (loading) {
     return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
+      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
+        <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"} style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
       </div>
     );
   }
 
   return (
-    <div style={{background:"#1A1A1A",height:"100vh",display:"flex",flexDirection:"column"}}>
+    <div style={{background:bg,height:"100vh",display:"flex",flexDirection:"column"}}>
       {/* Conversation list panel */}
       <div style={{display: selectedConversation ? "none" : "flex", flexDirection:"column", flex:1, overflow:"hidden"}} className="md:flex md:w-1/3 md:border-r md:border-[#222]">
-        <div style={{padding:"50px 20px 12px",background:"#111",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <h2 style={{fontSize:18,fontWeight:700,color:"#FFF",margin:0}}>Mensagens</h2>
+        <div style={{padding:"50px 20px 12px",background:headerBg,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <h2 style={{fontSize:18,fontWeight:700,color:text,margin:0}}>Mensagens</h2>
           <span style={{background:"#FF6600",color:"#FFF",borderRadius:20,padding:"3px 10px",fontSize:12,fontWeight:700}}>{conversations.length}</span>
         </div>
         <ConversationList

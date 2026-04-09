@@ -1,5 +1,6 @@
 // v2
 import React, { useState, useEffect, useCallback } from "react";
+import { useTheme } from "@/lib/ThemeContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { User as UserEntity } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
@@ -47,13 +48,14 @@ const adminNavigationItems = [
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [user, setUser] = useState(null);
-  const [unreadNotifications, setUnreadNotifications] = useState({ chat: 0, applications: 0 });
-
-  const t = (key) => {
-    return translations[user?.language || 'PT']?.[key] || translations.PT[key] || key;
-  };
+  const { isDark, toggleTheme } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const border = isDark ? "#222" : "#E5E5E5";
+  const sidebarBg = isDark ? "#111111" : "#F8F8F8";
+  const bottomNavBg = isDark ? "#111111" : "#FFFFFF";
 
   const navItems = user?.user_type === 'admin'
     ? adminNavigationItems
@@ -143,24 +145,29 @@ export default function Layout({ children }) {
   }
 
   return (
-    <div style={{minHeight:"100vh", background:"#1A1A1A"}}>
+    <div style={{minHeight:"100vh", background:bg}}>
       <Toaster position="top-center" richColors />
 
       {/* Sidebar Desktop */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <div style={{flex:1, display:"flex", flexDirection:"column", minHeight:0, background:"#111111", borderRight:"1px solid #222"}}>
+        <div style={{flex:1, display:"flex", flexDirection:"column", minHeight:0, background:sidebarBg, borderRight:`1px solid ${border}`}}>
           <div style={{flex:1, display:"flex", flexDirection:"column", paddingTop:20, paddingBottom:16, overflowY:"auto"}}>
             <div style={{display:"flex", alignItems:"center", padding:"0 16px", marginBottom:32}}>
               <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36}} alt="KANDU" /> style={{width:140}} alt="KANDU" />
             </div>
+            <div style={{padding:"8px",marginBottom:4}}>
+              <button onClick={toggleTheme} title="Alternar tema" style={{background:"none",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",cursor:"pointer",fontSize:13,color:"#FF6600",fontWeight:600,whiteSpace:"nowrap",width:"100%"}}>
+                {isDark ? "☀️ Light" : "🌙 Dark"}
+              </button>
+            </div>
             <nav style={{flex:1, padding:"0 8px", display:"flex", flexDirection:"column", gap:4}}>
-              {navItems.map((item) => {
+                {navItems.map((item) => {
                 const isActive = location.pathname === item.url;
                 return (
                   <Link key={`desktop-${item.title}`} to={item.url}
                     style={{display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 12px", borderRadius:8, textDecoration:"none",
                       background: isActive ? "#FF660022" : "transparent",
-                      color: isActive ? "#FF6600" : "#AAAAAA",
+                      color: isActive ? "#FF6600" : subtext,
                       borderLeft: isActive ? "3px solid #FF6600" : "3px solid transparent",
                       fontWeight: isActive ? 600 : 400, fontSize:14, transition:"all 0.15s"}}>
                     <div style={{display:"flex", alignItems:"center", gap:12}}>
@@ -177,13 +184,13 @@ export default function Layout({ children }) {
               })}
             </nav>
           </div>
-          <div style={{borderTop:"1px solid #222", padding:"12px 16px", display:"flex", alignItems:"center", gap:10}}>
+          <div style={{borderTop:`1px solid ${border}`, padding:"12px 16px", display:"flex", alignItems:"center", gap:10}}>
             <div style={{width:36, height:36, borderRadius:"50%", background:"#FF6600", display:"flex", alignItems:"center", justifyContent:"center", color:"#FFF", fontWeight:700, fontSize:16, flexShrink:0}}>
               {user?.full_name?.charAt(0) || "U"}
             </div>
             <div>
-              <p style={{fontSize:13, fontWeight:600, color:"#FFF", margin:0}}>{user?.full_name || user?.email}</p>
-              <p style={{fontSize:11, color:"#AAAAAA", margin:0}}>{user?.user_type}</p>
+              <p style={{fontSize:13, fontWeight:600, color:text, margin:0}}>{user?.full_name || user?.email}</p>
+              <p style={{fontSize:11, color:subtext, margin:0}}>{user?.user_type}</p>
             </div>
           </div>
         </div>
@@ -197,7 +204,7 @@ export default function Layout({ children }) {
       </div>
 
       {/* Bottom Nav Mobile */}
-      <nav className="md:hidden" style={{position:"fixed", bottom:0, left:0, right:0, background:"#111111", borderTop:"1px solid #222222", zIndex:50, display:"flex", paddingBottom:"env(safe-area-inset-bottom)"}}>
+      <nav className="md:hidden" style={{position:"fixed", bottom:0, left:0, right:0, background:bottomNavBg, borderTop:`1px solid ${border}`, zIndex:50, display:"flex", paddingBottom:"env(safe-area-inset-bottom)"}}>
         <Link to={createPageUrl("Home")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Home")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
           <MapPin size={22} />
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Home")?700:400}}>Início</span>
