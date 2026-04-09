@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import LoadingScreen from "@/components/LoadingScreen";
 import { ChatMessage } from "@/entities/ChatMessage";
 import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
@@ -228,11 +229,7 @@ export default function Chat() {
   };
 
   if (loading) {
-    return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
-        <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"} style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
-      </div>
-    );
+    return <LoadingScreen label="A carregar..." />;
   }
 
   return (

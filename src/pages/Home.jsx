@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTheme } from "@/lib/ThemeContext";
+import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/entities/User";
 import { Job } from "@/entities/Job";
 import { Button } from "@/components/ui/button";
@@ -390,6 +392,7 @@ function WorkerHome({ user }) {
 // ============================================================
 export default function Home() {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -415,14 +418,7 @@ export default function Home() {
   }, [navigate]);
 
   if (loading) {
-    return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
-        <div style={{textAlign:"center"}}>
-          <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:80,animation:"pulse 1.5s infinite"}} alt="" />
-          <p style={{color:"#AAAAAA",marginTop:12,fontSize:13}}>A carregar...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen label="A carregar..." />;
   }
 
   if (!user || user.user_type === 'admin') return null;

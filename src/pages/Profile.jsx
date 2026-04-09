@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/entities/User";
 import { UploadFile } from "@/integrations/Core";
 import { useNavigate } from "react-router-dom";
@@ -118,11 +119,7 @@ export default function Profile() {
   };
 
   if (loading) {
-    return (
-      <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <Loader2 style={{width:40,height:40,color:"#FF6600",animation:"spin 1s linear infinite"}} />
-      </div>
-    );
+    return <LoadingScreen label="A carregar..." />;
   }
 
   if (!user) {
@@ -193,7 +190,7 @@ export default function Profile() {
 
       {/* Top Bar */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:32, background:"white", borderRadius:6, padding:2}} alt="" /> alt="" />
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:32, background:"white", borderRadius:6, padding:2}} alt="" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button style={{background:"none",border:"none",cursor:"pointer",fontSize:22}}>⚙️</button>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import LoadingScreen from "@/components/LoadingScreen";
 import { base44 } from "@/api/base44Client";
 import GdprConsent from "@/components/GdprConsent";
 import { Button } from "@/components/ui/button";
@@ -152,11 +153,7 @@ export default function SetupProfile() {
   const hexBg = {position:"absolute",inset:0,backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpolygon points='30,2 58,17 58,47 30,62 2,47 2,17' fill='none' stroke='%23FF6600' stroke-width='0.5' opacity='0.3'/%3E%3C/svg%3E\")",backgroundRepeat:"repeat",opacity:0.3,pointerEvents:"none"};
 
   if (loading) {
-    return (
-      <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:60, background:"white", borderRadius:8, padding:2, animation:"pulse 1.5s infinite"}} alt="KANDU" /> alt="KANDU" />
-      </div>
-    );
+    return <LoadingScreen label="A carregar..." />;
   }
 
   // Não autenticado — mostrar ecrã de login
