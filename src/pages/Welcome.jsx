@@ -49,7 +49,7 @@ export default function Welcome() {
   if (checking) {
     return (
       <div style={{minHeight:"100vh", background:bg, display:"flex", alignItems:"center", justifyContent:"center"}}>
-        <img src={logoIcon} style={{width:60, background:isDark?"white":"transparent", borderRadius:8, padding:isDark?2:0, animation:"pulse 1.5s infinite"}} alt="KANDU" />_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:60, background:"white", borderRadius:8, padding:2, animation:"pulse 1.5s infinite"}} alt="KANDU" /> animation:"pulse 1.5s infinite"}} alt="KANDU" />
+        <img src={logoIcon} style={{width:60, background:isDark?"white":"transparent", borderRadius:8, padding:isDark?2:0, animation:"pulse 1.5s infinite"}} alt="KANDU" />
       </div>
     );
   }
@@ -60,7 +60,7 @@ export default function Welcome() {
       <div style={{position:"absolute", inset:0, backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpolygon points='30,2 58,17 58,47 30,62 2,47 2,17' fill='none' stroke='%23FF6600' stroke-width='0.5' opacity='0.3'/%3E%3C/svg%3E\")", backgroundRepeat:"repeat", opacity:0.4, pointerEvents:"none"}} />
 
       {/* Logo */}
-      <img src={logoH} style={{height:36, position:"relative", zIndex:1}} alt="KANDU" /> alt="KANDU" /> style={{width:200, position:"relative", zIndex:1}} alt="KANDU" />
+      <img src={logoH} style={{height:36, position:"relative", zIndex:1}} alt="KANDU" />
 
       {/* Headline */}
       <div style={{textAlign:"center", position:"relative", zIndex:1}}>
