@@ -178,81 +178,82 @@ export default function Notifications() {
   const unreadNotifications = notifications.filter(n => !n.is_read);
   const readNotifications = notifications.filter(n => n.is_read);
 
+  const getIcon = (type) => {
+    switch(type) {
+      case 'new_application': case 'new_proposal': return {icon:'💼', bg:'#FF660022'};
+      case 'new_message': return {icon:'💬', bg:'#33333355'};
+      case 'job_accepted': return {icon:'✅', bg:'#22C55E22'};
+      case 'job_rejected': return {icon:'❌', bg:'#EF444422'};
+      default: return {icon:'📍', bg:'#FF660022'};
+    }
+  };
+
+  const getRelativeTime = (date) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const m = Math.floor(diff/60000);
+    if (m < 1) return 'agora';
+    if (m < 60) return `${m}m`;
+    const h = Math.floor(m/60);
+    if (h < 24) return `${h}h`;
+    return `${Math.floor(h/24)}d`;
+  };
+
   if (loading) {
     return (
-      <div className="p-4 h-screen flex flex-col items-center justify-center">
-        <Settings className="w-12 h-12 text-gray-400 animate-spin mb-4" />
-        <p className="text-gray-500">A carregar notificações...</p>
+      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
       </div>
     );
   }
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Notificações</h1>
+    <div style={{background:"#1A1A1A",minHeight:"100vh",paddingBottom:80}}>
+      {/* Logo topo */}
+      <div style={{paddingTop:50,display:"flex",justifyContent:"center"}}>
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:40,height:40,objectFit:"contain"}} alt="" />
+      </div>
+
+      {/* Título + badge */}
+      <div style={{padding:"12px 20px",display:"flex",alignItems:"center",gap:12}}>
+        <h1 style={{fontWeight:800,fontSize:32,color:"#FFF",margin:0,flex:1}}>Notificações</h1>
         {unreadNotifications.length > 0 && (
-          <Button onClick={handleMarkAllAsRead} variant="outline">
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Marcar todas como lidas
-          </Button>
+          <div style={{width:28,height:28,borderRadius:"50%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontWeight:700,fontSize:14}}>
+            {unreadNotifications.length}
+          </div>
+        )}
+        {unreadNotifications.length > 0 && (
+          <button onClick={handleMarkAllAsRead} style={{background:"none",border:"1px solid #FF660066",borderRadius:20,padding:"4px 12px",color:"#FF6600",fontSize:12,cursor:"pointer",fontWeight:600}}>Lidas</button>
         )}
       </div>
-      
-      <Tabs defaultValue="unread" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="unread">
-            <Bell className="w-4 h-4 mr-2" />
-            Não Lidas ({unreadNotifications.length})
-          </TabsTrigger>
-          <TabsTrigger value="all">
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Todas ({notifications.length})
-          </TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="unread" className="mt-4">
-          <div className="space-y-4">
-            {unreadNotifications.length > 0 ? (
-              unreadNotifications.map(notification => (
-                <NotificationCard 
-                  key={notification.id} 
-                  notification={notification}
-                  onMarkAsRead={handleMarkAsRead}
-                  onDelete={handleDelete}
-                />
-              ))
-            ) : (
-              <Card className="text-center p-8">
-                <Bell className="mx-auto w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="font-medium text-gray-800">Nenhuma notificação não lida</h3>
-                <p className="text-sm text-gray-500 mt-1">Está tudo em dia! 🎉</p>
-              </Card>
-            )}
+      {/* Lista */}
+      <div style={{padding:"0 20px",display:"flex",flexDirection:"column",gap:10,paddingBottom:80}}>
+        {notifications.length === 0 ? (
+          <div style={{textAlign:"center",padding:60}}>
+            <div style={{fontSize:48,marginBottom:12}}>🔔</div>
+            <p style={{color:"#AAAAAA",fontSize:15}}>Sem notificações</p>
           </div>
-        </TabsContent>
-
-        <TabsContent value="all" className="mt-4">
-          <div className="space-y-4">
-            {notifications.length > 0 ? (
-              notifications.map(notification => (
-                <NotificationCard 
-                  key={notification.id} 
-                  notification={notification}
-                  onMarkAsRead={handleMarkAsRead}
-                  onDelete={handleDelete}
-                />
-              ))
-            ) : (
-              <Card className="text-center p-8">
-                <Bell className="mx-auto w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="font-medium text-gray-800">Nenhuma notificação</h3>
-                <p className="text-sm text-gray-500 mt-1">As notificações aparecerão aqui.</p>
-              </Card>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
+        ) : notifications.map(notif => {
+          const {icon, bg} = getIcon(notif.type);
+          return (
+            <div key={notif.id}
+              onClick={() => { handleMarkAsRead(notif); if(notif.action_url) window.location.href=notif.action_url; }}
+              style={{background:"#2A2A2A",borderRadius:14,padding:"14px 16px",borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:notif.is_read?0.6:1}}>
+              <div style={{width:40,height:40,borderRadius:12,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
+                {icon}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <p style={{fontWeight:700,fontSize:14,color:"#FFF",margin:0}}>{notif.title}</p>
+                <p style={{color:"#AAAAAA",fontSize:13,marginTop:2,lineHeight:1.4}}>{notif.message}</p>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flexShrink:0}}>
+                <span style={{color:"#AAAAAA",fontSize:11}}>{getRelativeTime(notif.created_date)}</span>
+                <button onClick={e => {e.stopPropagation(); handleDelete(notif);}} style={{background:"none",border:"none",color:"#555",cursor:"pointer",fontSize:14,padding:0}}>×</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
