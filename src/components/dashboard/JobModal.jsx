@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTheme } from "@/lib/ThemeContext";
 import { Application } from "@/entities/Application";
 import { Notification } from "@/entities/Notification";
 import { ChatMessage } from "@/entities/ChatMessage";
@@ -17,6 +18,13 @@ import { createPageUrl } from "@/utils";
 
 export default function JobModal({ job, user, onClose, onApply, onDelete }) {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const surface2 = isDark ? "#1E1E1E" : "#EBEBEB";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const border = isDark ? "#333333" : "#E5E5E5";
   const [applicationType, setApplicationType] = useState(null);
   const [message, setMessage] = useState("");
   const [proposedPrice, setProposedPrice] = useState("");
@@ -97,66 +105,206 @@ export default function JobModal({ job, user, onClose, onApply, onDelete }) {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>{job.title}</span>
-            <Button variant="ghost" size="icon" onClick={onClose}><X className="w-4 h-4" /></Button>
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2"><Badge variant="secondary">{job.category}</Badge><Badge className="bg-green-100 text-green-800">{job.status}</Badge></div>
-            <div className="text-2xl font-bold text-blue-600">{formatPrice(job.price, job.price_type)}</div>
+      <DialogContent style={{ background: bg, border: `1px solid ${border}`, borderRadius: 20, maxWidth: 480, maxHeight: "90vh", overflowY: "auto", padding: 0 }}>
+        <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2 style={{ fontWeight: 700, color: text, fontSize: 17, margin: 0, flex: 1, paddingRight: 8 }}>{job.title}</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: subtext, fontSize: 22, cursor: "pointer", lineHeight: 1 }}>×</button>
+        </div>
+        <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Categoria e Status */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ background: "#FF660022", color: "#FF6600", border: "1px solid #FF660044", borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 600 }}>{job.category}</span>
+            <span style={{ background: "#22C55E22", color: "#22C55E", border: "1px solid #22C55E44", borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 600 }}>{job.status === 'open' ? 'Disponível' : job.status}</span>
           </div>
-          <div className="flex items-center gap-2 text-gray-600"><MapPin className="w-4 h-4" />{job.location}</div>
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-1"><Eye className="w-4 h-4" />{job.views || 0} visualizações</div>
-            <div className="flex items-center gap-1"><Clock className="w-4 h-4" />{format(new Date(job.created_date), "dd MMM, HH:mm", { locale: pt })}</div>
+
+          {/* Preço */}
+          <p style={{ fontWeight: 800, fontSize: 28, color: "#FF6600", margin: 0 }}>{formatPrice(job.price, job.price_type)}</p>
+
+          {/* Localização, Views, Data */}
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: subtext }}><MapPin style={{ width: 14, height: 14 }} />{job.location}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: subtext }}><Eye style={{ width: 14, height: 14 }} />{job.views || 0} views</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: subtext }}><Clock style={{ width: 14, height: 14 }} />{format(new Date(job.created_date), "dd MMM, HH:mm", { locale: pt })}</span>
           </div>
-          <div><h4 className="font-semibold mb-2">Descrição</h4><p className="text-gray-700">{job.description}</p></div>
+
+          {/* Descrição */}
+          <div style={{ background: surface2, borderRadius: 12, padding: 14 }}>
+            <p style={{ fontWeight: 600, color: text, fontSize: 13, margin: "0 0 6px" }}>Descrição</p>
+            <p style={{ color: subtext, fontSize: 13, lineHeight: 1.6, margin: 0 }}>{job.description}</p>
+          </div>
+
+          {/* Card do Empregador */}
           {employer && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <Avatar><AvatarFallback className="bg-purple-100 text-purple-700">{employer.full_name?.charAt(0) || <UserIcon className="w-5 h-5" />}</AvatarFallback></Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2"><span className="font-medium">{employer.full_name || "Empregador"}</span>{employer.verified && <Shield className="w-4 h-4 text-green-500" />}</div>
-                  <div className="flex items-center gap-1 text-sm text-gray-600"><Star className="w-3 h-3 text-yellow-500 fill-current" />{employer.rating || "N/A"} • {employer.city || "N/A"}</div>
-                </div>
-                <Button variant="outline" size="sm" onClick={handleOpenChat}><MessageCircle className="w-4 h-4 mr-1" />Chat</Button>
+            <div style={{ background: surface, borderRadius: 14, padding: 14, display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#FF6600", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF", fontWeight: 700, fontSize: 18, flexShrink: 0 }}>
+                {employer.full_name?.charAt(0) || "?"}
               </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontWeight: 700, color: text, fontSize: 14 }}>{employer.full_name || "Empregador"}</span>
+                  {employer.verified && <Shield style={{ width: 14, height: 14, color: "#22C55E" }} />}
+                </div>
+                <span style={{ fontSize: 12, color: subtext }}>★ {employer.rating || "N/A"} · {employer.city || "N/A"}</span>
+              </div>
+              <button onClick={handleOpenChat} style={{ background: "#FF660022", border: "1px solid #FF6600", borderRadius: 10, padding: "8px 14px", color: "#FF6600", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                <MessageCircle style={{ width: 14, height: 14 }} /> Chat
+              </button>
             </div>
           )}
+
+          {/* Secção de Candidatura */}
           {user?.user_type === "worker" && (
-            <div className="space-y-4 pt-4 border-t">
-              <h4 className="font-semibold">Como pretende responder?</h4>
-              <div className="space-y-2">
-                <Button variant={applicationType === "application" ? "default" : "outline"} className="w-full justify-start" onClick={() => setApplicationType("application")}><Send className="w-4 h-4 mr-2" />Candidatar-me ao preço indicado</Button>
-                <Button variant={applicationType === "proposal" ? "default" : "outline"} className="w-full justify-start" onClick={() => setApplicationType("proposal")}><Euro className="w-4 h-4 mr-2" />Enviar proposta com preço diferente</Button>
+            <div style={{ borderTop: `1px solid ${border}`, paddingTop: 16 }}>
+              <p style={{ fontWeight: 700, color: text, fontSize: 14, margin: "0 0 12px" }}>Como queres responder?</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <button
+                  onClick={() => setApplicationType("application")}
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 12,
+                    border: `2px solid ${applicationType === "application" ? "#FF6600" : border}`,
+                    background: applicationType === "application" ? "#FF660022" : "transparent",
+                    color: applicationType === "application" ? "#FF6600" : subtext,
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: 14,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    textAlign: "left"
+                  }}
+                >
+                  <Send style={{ width: 16, height: 16 }} /> Candidatar ao preço indicado (€{job.price})
+                </button>
+                <button
+                  onClick={() => setApplicationType("proposal")}
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 12,
+                    border: `2px solid ${applicationType === "proposal" ? "#FF6600" : border}`,
+                    background: applicationType === "proposal" ? "#FF660022" : "transparent",
+                    color: applicationType === "proposal" ? "#FF6600" : subtext,
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: 14,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    textAlign: "left"
+                  }}
+                >
+                  <Euro style={{ width: 16, height: 16 }} /> Propor preço diferente
+                </button>
               </div>
+
               {applicationType && (
-                <div className="space-y-3">
+                <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
                   {applicationType === "proposal" && (
                     <div>
-                      <label className="block text-sm font-medium mb-1">Valor proposto (€)</label>
-                      <Input type="number" placeholder="Ex: 350" value={proposedPrice} onChange={(e) => setProposedPrice(e.target.value)} />
+                      <label style={{ color: subtext, fontSize: 12, fontWeight: 600, display: "block", marginBottom: 6 }}>Valor proposto (€)</label>
+                      <input
+                        type="number"
+                        placeholder="Ex: 350"
+                        value={proposedPrice}
+                        onChange={(e) => setProposedPrice(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "12px 14px",
+                          background: surface,
+                          border: `2px solid #FF6600`,
+                          borderRadius: 12,
+                          color: text,
+                          fontSize: 15,
+                          outline: "none",
+                          boxSizing: "border-box"
+                        }}
+                      />
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Mensagem</label>
-                    <Textarea placeholder="Conte um pouco sobre a sua experiência..." value={message} onChange={(e) => setMessage(e.target.value)} rows={4} />
+                    <label style={{ color: subtext, fontSize: 12, fontWeight: 600, display: "block", marginBottom: 6 }}>Mensagem *</label>
+                    <textarea
+                      placeholder="Conta um pouco sobre a tua experiência..."
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      rows={4}
+                      style={{
+                        width: "100%",
+                        padding: "12px 14px",
+                        background: surface,
+                        border: `2px solid #FF6600`,
+                        borderRadius: 12,
+                        color: text,
+                        fontSize: 14,
+                        outline: "none",
+                        resize: "vertical",
+                        fontFamily: "inherit",
+                        boxSizing: "border-box"
+                      }}
+                    />
                   </div>
-                  <Button onClick={handleSubmit} disabled={isSubmitting || !job.employer_id} className="w-full">{isSubmitting ? "Enviando..." : "Enviar candidatura"}</Button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isSubmitting || !job.employer_id}
+                    style={{
+                      width: "100%",
+                      padding: "14px 0",
+                      background: isSubmitting ? "#555" : "#FF6600",
+                      border: "none",
+                      borderRadius: 14,
+                      color: "#FFF",
+                      fontWeight: 700,
+                      fontSize: 15,
+                      cursor: isSubmitting ? "not-allowed" : "pointer"
+                    }}
+                  >
+                    {isSubmitting ? "A enviar..." : "Enviar Candidatura"}
+                  </button>
                 </div>
               )}
             </div>
           )}
-          {(user?.user_type === "employer" && job.employer_id === user.id) || user?.user_type === 'admin' ? (
-            <div className="pt-4 border-t flex gap-2">
-              <Button className="flex-1" onClick={() => { onClose(); navigate(createPageUrl("Applications")); }}>Ver candidaturas</Button>
-              <Button variant="destructive" className="flex-1" onClick={() => onDelete(job.id)}><Trash2 className="w-4 h-4 mr-2" /> Apagar Obra</Button>
+
+          {/* Secção do Empregador/Admin */}
+          {((user?.user_type === "employer" && job.employer_id === user.id) || user?.user_type === 'admin') && (
+            <div style={{ borderTop: `1px solid ${border}`, paddingTop: 16, display: "flex", gap: 10 }}>
+              <button
+                style={{
+                  flex: 1,
+                  padding: "12px 0",
+                  background: "#FF6600",
+                  border: "none",
+                  borderRadius: 12,
+                  color: "#FFF",
+                  fontWeight: 700,
+                  fontSize: 14,
+                  cursor: "pointer"
+                }}
+                onClick={() => {
+                  onClose();
+                  navigate(createPageUrl("Applications"));
+                }}
+              >
+                Ver Candidaturas
+              </button>
+              <button
+                style={{
+                  flex: 1,
+                  padding: "12px 0",
+                  background: "#EF444422",
+                  border: "1px solid #EF4444",
+                  borderRadius: 12,
+                  color: "#EF4444",
+                  fontWeight: 700,
+                  fontSize: 14,
+                  cursor: "pointer"
+                }}
+                onClick={() => onDelete(job.id)}
+              >
+                🗑 Apagar
+              </button>
             </div>
-          ) : null}
+          )}
         </div>
       </DialogContent>
     </Dialog>
