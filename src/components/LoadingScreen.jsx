@@ -14,7 +14,7 @@ export default function LoadingScreen({ label }) {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: bg, gap: 16 }}>
       <img
         src={logo}
-        style={{ width: 80, height: 80, objectFit: "contain", animation: "spin 2s linear infinite", borderRadius: 0, background: "transparent" }}
+        style={{ width: 80, height: 80, objectFit: "contain", animation: "spin 2s linear infinite", borderRadius: 12 }}
         alt="KANDU"
       />
       {label && <p style={{ color: text, fontSize: 14, margin: 0 }}>{label}</p>}

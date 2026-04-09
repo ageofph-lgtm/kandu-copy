@@ -57,6 +57,12 @@ export default function Layout({ children }) {
   const text = isDark ? "#FFFFFF" : "#1A1A1A";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const border = isDark ? "#222" : "#E5E5E5";
+  const logoH = isDark
+    ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
+    : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png";
+  const logoIcon = isDark
+    ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png"
+    : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png";
   const sidebarBg = isDark ? "#111111" : "#F8F8F8";
   const bottomNavBg = isDark ? "#111111" : "#FFFFFF";
 
@@ -158,7 +164,7 @@ export default function Layout({ children }) {
         <div style={{flex:1, display:"flex", flexDirection:"column", minHeight:0, background:sidebarBg, borderRight:`1px solid ${border}`}}>
           <div style={{flex:1, display:"flex", flexDirection:"column", paddingTop:20, paddingBottom:16, overflowY:"auto"}}>
             <div style={{display:"flex", alignItems:"center", padding:"0 16px", marginBottom:32}}>
-              <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36}} alt="KANDU" />
+              <img src={logoH} style={{height:36, maxWidth:160, objectFit:"contain"}} alt="KANDU" />
             </div>
             <div style={{padding:"8px",marginBottom:4}}>
               <button onClick={toggleTheme} title="Alternar tema" style={{background:"none",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",cursor:"pointer",fontSize:13,color:"#FF6600",fontWeight:600,whiteSpace:"nowrap",width:"100%"}}>
