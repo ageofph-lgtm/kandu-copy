@@ -20,62 +20,63 @@ function ApplicationCard({ application, job, applicant, employer, onAccept, onDe
   const finalPrice = application.proposed_price || job.price;
 
   const getStatusBadge = (status, jobStatus) => {
-    if (jobStatus === 'completed') return <Badge className="bg-blue-500">Trabalho Finalizado</Badge>;
-    if (jobStatus === 'completed_by_employer') return <Badge className="bg-orange-500">Aguardando Sua Avaliação</Badge>;
+    if (jobStatus === 'completed') return <span style={{background:"#22C55E22",color:"#22C55E",border:"1px solid #22C55E44",borderRadius:20,padding:"4px 12px",fontSize:12,fontWeight:600}}>Trabalho Finalizado</span>;
+    if (jobStatus === 'completed_by_employer') return <span style={{background:"#FF660022",color:"#FF6600",border:"1px solid #FF660044",borderRadius:20,padding:"4px 12px",fontSize:12,fontWeight:600}}>Aguardando Sua Avaliação</span>;
     switch(status) {
-      case 'pending': return <Badge className="bg-yellow-500">Pendente</Badge>;
-      case 'accepted': return <Badge className="bg-green-500">Aceite</Badge>;
-      case 'rejected': return <Badge className="bg-red-500">Recusada</Badge>;
-      default: return <Badge variant="secondary">Desconhecido</Badge>;
+      case 'pending': return <span style={{background:"#FF660022",color:"#FF6600",border:"1px solid #FF660044",borderRadius:20,padding:"4px 12px",fontSize:12,fontWeight:600}}>Pendente</span>;
+      case 'accepted': return <span style={{background:"#22C55E22",color:"#22C55E",border:"1px solid #22C55E44",borderRadius:20,padding:"4px 12px",fontSize:12,fontWeight:600}}>Aceite</span>;
+      case 'rejected': return <span style={{background:"#EF444422",color:"#EF4444",border:"1px solid #EF444444",borderRadius:20,padding:"4px 12px",fontSize:12,fontWeight:600}}>Recusada</span>;
+      default: return <span style={{background:"#2A2A2A",color:"#AAAAAA",borderRadius:20,padding:"4px 12px",fontSize:12}}>Desconhecido</span>;
     }
   };
 
   const displayUser = userType === 'worker' ? employer : applicant;
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <Avatar><AvatarFallback className="bg-blue-500 text-white">{displayUser?.full_name?.charAt(0) || <UserIcon />}</AvatarFallback></Avatar>
-            <div>
-              <h3 className="font-semibold">{displayUser?.full_name || "Utilizador"}</h3>
-              <p className="text-sm text-gray-600">{job.title}</p>
-            </div>
+    <div style={{background:"#2A2A2A",borderRadius:14,padding:14,borderLeft:"4px solid #FF6600"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div style={{width:48,height:48,borderRadius:"50%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontWeight:700,fontSize:18,flexShrink:0}}>
+            {displayUser?.full_name?.charAt(0) || "?"}
           </div>
-          <div className="flex items-center gap-2">{getStatusBadge(application.status, job.status)}</div>
+          <div>
+            <h3 style={{fontWeight:600,color:"#FFF",margin:0}}>{displayUser?.full_name || "Utilizador"}</h3>
+            <p style={{fontSize:13,color:"#AAAAAA",margin:0}}>{job.title}</p>
+          </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div><p className="text-sm">{application.message}</p></div>
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-          <div><span className="text-sm text-gray-600">Valor:</span><p className="font-bold text-lg text-blue-600">€{finalPrice}{application.application_type === 'proposal' && <span className="text-xs text-gray-600 ml-2">(Proposto)</span>}</p></div>
-          {job.price !== finalPrice && <div className="text-right"><span className="text-xs text-gray-500">Preço original:</span><p className="text-sm line-through text-gray-400">€{job.price}</p></div>}
+        <div>{getStatusBadge(application.status, job.status)}</div>
+      </div>
+      <div style={{marginBottom:10}}><p style={{fontSize:13,color:"#AAAAAA",margin:0}}>{application.message}</p></div>
+      <div style={{background:"#1E1E1E",borderRadius:10,padding:12,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div>
+          <span style={{fontSize:12,color:"#AAAAAA"}}>Valor:</span>
+          <p style={{fontWeight:700,fontSize:18,color:"#FF6600",margin:0}}>€{finalPrice}{application.application_type === 'proposal' && <span style={{fontSize:11,color:"#AAAAAA",marginLeft:6}}>(Proposto)</span>}</p>
         </div>
-        <div className="text-xs text-gray-500">Enviado em: {format(new Date(application.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: pt })}</div>
-        {userType === 'employer' && application.status === 'pending' && (
-          <div className="flex gap-2 pt-2 border-t">
-            <Button variant="destructive" onClick={() => onDecline(application)} className="flex-1"><X className="w-4 h-4 mr-2" />Recusar</Button>
-            <Button onClick={() => onAccept(application)} className="flex-1 bg-green-600 hover:bg-green-700"><Check className="w-4 h-4 mr-2" />Aceitar</Button>
-          </div>
-        )}
-        {userType === 'employer' && application.status === 'accepted' && job.status === 'open' && (
-          <div className="pt-2 border-t">
-            <Button onClick={() => onStartJob(application, job)} className="w-full bg-blue-600 hover:bg-blue-700"><CheckCircle className="w-4 h-4 mr-2" />Iniciar Trabalho</Button>
-          </div>
-        )}
-        {userType === 'employer' && application.status === 'accepted' && job.status === 'in_progress' && (
-          <div className="pt-2 border-t">
-            <Button onClick={() => onComplete(application, job, applicant)} className="w-full bg-yellow-600 hover:bg-yellow-700"><Trophy className="w-4 h-4 mr-2" />Finalizar Obra e Avaliar</Button>
-          </div>
-        )}
-        {userType === 'worker' && job.status === 'completed_by_employer' && application.status === 'accepted' && (
-          <div className="pt-2 border-t">
-            <Button onClick={() => onComplete(application, job, employer)} className="w-full bg-blue-600 hover:bg-blue-700"><Edit className="w-4 h-4 mr-2" />Avaliar Empregador</Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        {job.price !== finalPrice && <div style={{textAlign:"right"}}><span style={{fontSize:11,color:"#555"}}>Original:</span><p style={{fontSize:13,textDecoration:"line-through",color:"#555",margin:0}}>€{job.price}</p></div>}
+      </div>
+      <div style={{fontSize:11,color:"#555",marginBottom:10}}>Enviado em: {format(new Date(application.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: pt })}</div>
+      {userType === 'employer' && application.status === 'pending' && (
+        <div style={{display:"flex",gap:8,paddingTop:10,borderTop:"1px solid #333"}}>
+          <button onClick={() => onDecline(application)} style={{flex:1,background:"#EF444422",color:"#EF4444",border:"1px solid #EF4444",borderRadius:10,padding:"8px 0",fontWeight:600,cursor:"pointer",fontSize:13}}>✕ Recusar</button>
+          <button onClick={() => onAccept(application)} style={{flex:1,background:"#22C55E",color:"#FFF",border:"none",borderRadius:10,padding:"8px 0",fontWeight:600,cursor:"pointer",fontSize:13}}>✓ Aceitar</button>
+        </div>
+      )}
+      {userType === 'employer' && application.status === 'accepted' && job.status === 'open' && (
+        <div style={{paddingTop:10,borderTop:"1px solid #333"}}>
+          <button onClick={() => onStartJob(application, job)} style={{width:"100%",background:"#FF6600",color:"#FFF",border:"none",borderRadius:10,padding:"10px 0",fontWeight:600,cursor:"pointer",fontSize:13}}>▶ Iniciar Trabalho</button>
+        </div>
+      )}
+      {userType === 'employer' && application.status === 'accepted' && job.status === 'in_progress' && (
+        <div style={{paddingTop:10,borderTop:"1px solid #333"}}>
+          <button onClick={() => onComplete(application, job, applicant)} style={{width:"100%",background:"#FF6600",color:"#FFF",border:"none",borderRadius:10,padding:"10px 0",fontWeight:600,cursor:"pointer",fontSize:13}}>🏆 Finalizar Obra e Avaliar</button>
+        </div>
+      )}
+      {userType === 'worker' && job.status === 'completed_by_employer' && application.status === 'accepted' && (
+        <div style={{paddingTop:10,borderTop:"1px solid #333"}}>
+          <button onClick={() => onComplete(application, job, employer)} style={{width:"100%",background:"#FF6600",color:"#FFF",border:"none",borderRadius:10,padding:"10px 0",fontWeight:600,cursor:"pointer",fontSize:13}}>✏️ Avaliar Empregador</button>
+        </div>
+      )}
+    </div>
   );
 }
 
