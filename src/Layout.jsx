@@ -151,7 +151,7 @@ export default function Layout({ children }) {
         <div style={{flex:1, display:"flex", flexDirection:"column", minHeight:0, background:"#111111", borderRight:"1px solid #222"}}>
           <div style={{flex:1, display:"flex", flexDirection:"column", paddingTop:20, paddingBottom:16, overflowY:"auto"}}>
             <div style={{display:"flex", alignItems:"center", padding:"0 16px", marginBottom:32}}>
-              <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png" style={{width:140}} alt="KANDU" />
+              <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36}} alt="KANDU" /> style={{width:140}} alt="KANDU" />
             </div>
             <nav style={{flex:1, padding:"0 8px", display:"flex", flexDirection:"column", gap:4}}>
               {navItems.map((item) => {

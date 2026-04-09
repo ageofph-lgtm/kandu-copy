@@ -193,7 +193,7 @@ export default function Profile() {
 
       {/* Top Bar */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:32,height:32,objectFit:"contain"}} alt="" />
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:32, background:"white", borderRadius:6, padding:2}} alt="" /> alt="" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button style={{background:"none",border:"none",cursor:"pointer",fontSize:22}}>⚙️</button>

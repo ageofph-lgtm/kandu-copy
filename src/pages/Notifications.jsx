@@ -183,7 +183,7 @@ export default function Notifications() {
   if (loading) {
     return (
       <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:60, background:"white", borderRadius:8, padding:2, animation:"pulse 1.5s infinite"}} alt="" /> alt="" />
       </div>
     );
   }
@@ -192,7 +192,7 @@ export default function Notifications() {
     <div style={{background:"#1A1A1A",minHeight:"100vh",paddingBottom:80}}>
       {/* Logo topo */}
       <div style={{paddingTop:50,display:"flex",justifyContent:"center"}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:40,height:40,objectFit:"contain"}} alt="" />
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:40, background:"white", borderRadius:8, padding:2}} alt="" /> alt="" />
       </div>
 
       {/* Título + badge */}
