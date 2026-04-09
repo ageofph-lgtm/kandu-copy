@@ -147,8 +147,10 @@ export default function Applications() {
       const usersToFetch = Array.from(userIds).filter(Boolean);
       const userMap = new Map();
       if (usersToFetch.length > 0) {
-        const fetchedUsers = await User.filter({ id: { $in: usersToFetch } });
-        fetchedUsers.forEach(u => userMap.set(u.id, u));
+        const fetchedUsers = await Promise.all(
+          usersToFetch.map(id => User.filter({ id }).then(r => r[0]).catch(() => null))
+        );
+        fetchedUsers.filter(Boolean).forEach(u => userMap.set(u.id, u));
       }
 
       const finalApplicants = {}, finalEmployers = {};
