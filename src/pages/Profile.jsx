@@ -42,28 +42,20 @@ import { base44 } from "@/api/base44Client";
 export default function Profile() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
-  const border = isDark ? "#333333" : "#E5E5E5";
-  const logoIcon = isDark
-    ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png"
-    : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png";
-  const [user, setUser] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const urlParams = new URLSearchParams(window.location.search);
+  const viewingUserId = urlParams.get('userId');
   const [isUploading, setIsUploading] = useState(false);
   const [noShowStats, setNoShowStats] = useState({ noShows: 0, totalJobs: 0 });
   const avatarInputRef = useRef(null);
 
   useEffect(() => {
     loadUser();
-  }, []);
+  }, [viewingUserId]);
 
   const loadUser = async () => {
     try {
-      const userData = await User.me();
+      const userData = viewingUserId ? (await User.filter({ id: viewingUserId }))?.[0] : await User.me();
+      if (!userData) throw new Error('User not found');
       setUser(userData);
       if (userData.user_type === 'worker') {
         const workerJobs = await Job.filter({ worker_id: userData.id });
@@ -149,7 +141,7 @@ export default function Profile() {
     );
   }
 
-  if (isEditing) {
+  if (isEditing && !viewingUserId) {
     return (
       <div style={{padding:16,maxWidth:480,margin:"0 auto",background:bg,minHeight:"100vh"}}>
         <ProfileForm user={user} onSave={handleSave} onCancel={() => setIsEditing(false)} isFirstTime={!user.user_type} />
@@ -157,6 +149,7 @@ export default function Profile() {
     );
   }
 
+  const isOwnProfile = !viewingUserId;
   const specialties = user.skills || ["Pintura", "Elétrica", "Encanamento", "Alvenaria", "Pisos", "Telhados"];
   
   const portfolioImages = user.portfolio_images || [
@@ -200,27 +193,27 @@ export default function Profile() {
 
       {/* Top Bar */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <img src={logoIcon} style={{width:32, background:isDark?"white":"transparent", borderRadius:6, padding:isDark?2:0}} alt="" />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button style={{background:"none",border:"none",cursor:"pointer",fontSize:22}}>⚙️</button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setIsEditing(true)}><Edit2 className="w-4 h-4 mr-2" /> Editar Perfil</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleChangeProfile}><RefreshCw className="w-4 h-4 mr-2" /> Trocar Perfil</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleLogout} className="text-red-600"><LogOut className="w-4 h-4 mr-2" /> Sair</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <button onClick={() => navigate(-1)} style={{background:"none",border:"none",cursor:"pointer",fontSize:20}}>←</button>
+        {isOwnProfile ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button style={{background:"none",border:"none",cursor:"pointer",fontSize:22}}>⚙️</button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setIsEditing(true)}><Edit2 className="w-4 h-4 mr-2" /> Editar Perfil</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleChangeProfile}><RefreshCw className="w-4 h-4 mr-2" /> Trocar Perfil</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600"><LogOut className="w-4 h-4 mr-2" /> Sair</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <button style={{background:"#FF6600",border:"none",borderRadius:8,padding:"8px 16px",color:"#FFF",fontWeight:600,cursor:"pointer",fontSize:13}} onClick={() => navigate(createPageUrl("Chat") + `?userId=${user.id}`)}>
+            💬 Contactar
+          </button>
+        )}
       </div>
 
       {/* Avatar Hexagonal */}
-      <div style={{width:100,height:100,clipPath:"polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",overflow:"hidden",border:"4px solid #FF6600",margin:"0 auto 12px",cursor:"pointer"}} onClick={() => avatarInputRef.current?.click()}>
-        {user.avatar_url ? (
-          <img src={user.avatar_url} alt="Avatar" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-        ) : (
-          <div style={{width:"100%",height:"100%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontSize:36,fontWeight:800}}>
-            {user.full_name?.charAt(0) || "U"}
-          </div>
+      <div style={{width:100,height:100,clipPath:"polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",overflow:"hidden",border:"4px solid #FF6600",margin:"0 auto 12px",cursor:isOwnProfile?"pointer":"default"}} onClick={() => isOwnProfile && avatarInputRef.current?.click()}>
         )}
       </div>
 
