@@ -170,6 +170,23 @@ export default function Applications() {
       const finalPrice = app.proposed_price || job.price;
 
       await Application.update(app.id, { status: "accepted" });
+      
+      // Rejeitar automaticamente as outras candidaturas pendentes para esta obra
+      try {
+        const otherPending = await Application.filter({ job_id: app.job_id, status: "pending" });
+        const toReject = otherPending.filter(a => a.id !== app.id);
+        await Promise.all(toReject.map(a => Application.update(a.id, { status: "rejected" })));
+        // Notificar os rejeitados
+        await Promise.all(toReject.map(a => Notification.create({
+          user_id: a.worker_id,
+          type: "job_rejected",
+          title: "❌ Candidatura Encerrada",
+          message: `A obra "${job.title}" foi atribuída a outro profissional.`,
+          related_id: app.job_id,
+          action_url: createPageUrl("Applications"),
+        })));
+      } catch(e) { console.error("Erro ao rejeitar outras candidaturas:", e); }
+      
       await Job.update(app.job_id, { status: 'in_progress', worker_id: app.worker_id, price: finalPrice });
 
       // XP ao worker por candidatura aceite
