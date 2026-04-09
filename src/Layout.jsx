@@ -2,9 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { User as UserEntity } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   MapPin,
   MessageCircle,
@@ -75,10 +72,10 @@ export default function Layout({ children }) {
       });
 
       const chatNotifications = allNotifications.filter(n => n.type === 'new_message');
-      
+
       const applicationNotificationTypes = [
-        'new_application', 'new_proposal', // For employers
-        'job_accepted', 'job_rejected', 'job_ready_for_review' // For workers
+        'new_application', 'new_proposal',
+        'job_accepted', 'job_rejected', 'job_ready_for_review'
       ];
       const applicationNotifications = allNotifications.filter(n =>
         applicationNotificationTypes.includes(n.type)
@@ -120,26 +117,21 @@ export default function Layout({ children }) {
 
   useEffect(() => {
     loadUserAndNotifications();
-    
-    // Configura um intervalo para recarregar notificações periodicamente
-    const intervalId = setInterval(loadUserAndNotifications, 30000); // A cada 30 segundos
-    return () => clearInterval(intervalId); // Limpa o intervalo ao desmontar
-
+    const intervalId = setInterval(loadUserAndNotifications, 30000);
+    return () => clearInterval(intervalId);
   }, [location.pathname, loadUserAndNotifications]);
 
-  // Redirecionar admin para AdminDashboard se tentar acessar Home
   useEffect(() => {
     if (user?.user_type === 'admin' && location.pathname === createPageUrl("Home")) {
       navigate(createPageUrl("AdminDashboard"));
     }
   }, [user, location.pathname, navigate]);
-  
+
   useEffect(() => {
     if (location.pathname === createPageUrl("Applications")) {
       markApplicationNotificationsAsRead();
     }
   }, [location.pathname, markApplicationNotificationsAsRead]);
-
 
   // Páginas sem layout
   if (
@@ -205,14 +197,12 @@ export default function Layout({ children }) {
 
       {/* Bottom Nav Mobile */}
       <nav className="md:hidden" style={{position:"fixed", bottom:0, left:0, right:0, background:"#111111", borderTop:"1px solid #222222", zIndex:50, display:"flex", paddingBottom:"env(safe-area-inset-bottom)"}}>
-        {/* Início */}
         <Link to={createPageUrl("Home")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Home")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
           <MapPin size={22} />
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Home")?700:400}}>Início</span>
           {location.pathname===createPageUrl("Home") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
         </Link>
 
-        {/* Trabalhos */}
         <Link to={createPageUrl("MyJobs")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("MyJobs")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0",position:"relative"}}>
           <div style={{position:"relative"}}>
             <FileText size={22} />
@@ -226,7 +216,6 @@ export default function Layout({ children }) {
           {location.pathname===createPageUrl("MyJobs") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
         </Link>
 
-        {/* FAB central */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",flex:1,paddingBottom:4}}>
           {user?.user_type === 'worker' ? (
             <Link to={createPageUrl("Scan")} style={{width:52,height:52,background:"#FF6600",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px #FF660066",textDecoration:"none",marginBottom:2}}>
@@ -239,7 +228,6 @@ export default function Layout({ children }) {
           )}
         </div>
 
-        {/* Chat */}
         <Link to={createPageUrl("Chat")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Chat")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
           <div style={{position:"relative"}}>
             <MessageCircle size={22} />
@@ -253,7 +241,6 @@ export default function Layout({ children }) {
           {location.pathname===createPageUrl("Chat") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
         </Link>
 
-        {/* Perfil */}
         <Link to={createPageUrl("Profile")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Profile")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
           <User size={22} />
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Profile")?700:400}}>Perfil</span>
