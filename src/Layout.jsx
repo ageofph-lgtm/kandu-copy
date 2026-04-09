@@ -1,3 +1,4 @@
+// v2
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { User as UserEntity } from "@/entities/User";
