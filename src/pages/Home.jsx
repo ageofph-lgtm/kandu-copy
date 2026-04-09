@@ -18,10 +18,13 @@ const CATEGORIES = ["Pintura", "Eletricidade", "Canalização", "Alvenaria", "La
 // ============================================================
 // EMPLOYER VIEW
 // ============================================================
-function WorkerCard({ worker, onContact, onProfile }) {
+function WorkerCard({ worker, onContact, onProfile, isDark }) {
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
   const stars = Math.min(5, Math.max(1, Math.round(worker.rating || 4)));
   return (
-    <div style={{background:"#2A2A2A",borderRadius:16,padding:16,borderLeft:"4px solid #FF6600"}}>
+    <div style={{background:surface,borderRadius:16,padding:16,borderLeft:"4px solid #FF6600"}}>
       <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:12}}>
         <div
           style={{width:52,height:52,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#FF6600",clipPath:'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',cursor:"pointer"}}
@@ -35,7 +38,7 @@ function WorkerCard({ worker, onContact, onProfile }) {
         </div>
         <div style={{flex:1,minWidth:0,cursor:"pointer"}} onClick={onProfile}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-            <h3 style={{fontWeight:700,color:"#FFF",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{worker.full_name || "Profissional"}</h3>
+            <h3 style={{fontWeight:700,color:text,margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{worker.full_name || "Profissional"}</h3>
             {worker.verified && <span style={{color:"#FF6600",fontWeight:700,fontSize:13}}>✓</span>}
           </div>
           <div style={{display:"flex",alignItems:"center",gap:2}}>
@@ -45,7 +48,7 @@ function WorkerCard({ worker, onContact, onProfile }) {
             <span style={{fontSize:11,color:"#AAAAAA",marginLeft:4}}>{worker.rating ? worker.rating.toFixed(1) : "Novo"}</span>
           </div>
           {worker.city && (
-            <p style={{fontSize:11,color:"#AAAAAA",display:"flex",alignItems:"center",gap:4,marginTop:2}}>
+            <p style={{fontSize:11,color:subtext,display:"flex",alignItems:"center",gap:4,marginTop:2}}>
               <MapPin style={{width:11,height:11}} />{worker.city}
             </p>
           )}
@@ -54,13 +57,13 @@ function WorkerCard({ worker, onContact, onProfile }) {
       {worker.skills?.length > 0 && (
         <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
           {worker.skills.slice(0,4).map((skill,i) => (
-            <span key={i} style={{fontSize:11,background:"#333",color:"#AAAAAA",padding:"2px 8px",borderRadius:20}}>{skill}</span>
+            <span key={i} style={{fontSize:11,background:isDark?"#333":"#E5E5E5",color:subtext,padding:"2px 8px",borderRadius:20}}>{skill}</span>
           ))}
           {worker.skills.length > 4 && <span style={{fontSize:11,color:"#666"}}>+{worker.skills.length-4}</span>}
         </div>
       )}
       {worker.bio && (
-        <p style={{fontSize:12,color:"#888",marginBottom:10,overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{worker.bio}</p>
+        <p style={{fontSize:12,color:subtext,marginBottom:10,overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{worker.bio}</p>
       )}
       <button style={{width:"100%",padding:"10px 0",background:"#FF6600",border:"none",borderRadius:12,color:"#FFF",fontWeight:700,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}} onClick={onContact}>
         <Send style={{width:14,height:14}} /> Contactar
@@ -69,8 +72,14 @@ function WorkerCard({ worker, onContact, onProfile }) {
   );
 }
 
-function EmployerHome({ user }) {
+function EmployerHome({ user, isDark }) {
   const navigate = useNavigate();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const headerBg = isDark ? "#111" : "#F0F0F0";
+  const tabBg = isDark ? "#222" : "#EEEEEE";
   const [workers, setWorkers] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -116,12 +125,12 @@ function EmployerHome({ user }) {
   });
 
   return (
-    <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column"}}>
+    <div style={{minHeight:"100vh",background:bg,display:"flex",flexDirection:"column"}}>
       {/* Top Bar */}
-      <div style={{background:"#111",padding:"50px 16px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div style={{background:headerBg,padding:"50px 16px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:32,height:32,objectFit:"contain"}} alt="" />
-          <span style={{color:"#FFF",fontWeight:700,fontSize:15}}>📍 Lisboa, PT</span>
+          <span style={{color:text,fontWeight:700,fontSize:15}}>📍 Lisboa, PT</span>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <span style={{fontSize:20}}>🔔</span>
@@ -132,35 +141,35 @@ function EmployerHome({ user }) {
       </div>
 
       {/* Tab Toggle */}
-      <div style={{display:"flex",background:"#222",margin:"12px 16px 0",borderRadius:16,padding:4}}>
+      <div style={{display:"flex",background:tabBg,margin:"12px 16px 0",borderRadius:16,padding:4}}>
         <button onClick={() => { setActiveTab('professionals'); setSearchTerm(''); }}
-          style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 0",borderRadius:12,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:activeTab==='professionals'?"#FF6600":"transparent",color:activeTab==='professionals'?"#FFF":"#AAAAAA"}}>
+          style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 0",borderRadius:12,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:activeTab==='professionals'?"#FF6600":"transparent",color:activeTab==='professionals'?"#FFF":subtext}}>
           <Users style={{width:15,height:15}} /> Profissionais
         </button>
         <button onClick={() => { setActiveTab('ads'); setSearchTerm(''); }}
-          style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 0",borderRadius:12,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:activeTab==='ads'?"#FF6600":"transparent",color:activeTab==='ads'?"#FFF":"#AAAAAA"}}>
+          style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 0",borderRadius:12,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:activeTab==='ads'?"#FF6600":"transparent",color:activeTab==='ads'?"#FFF":subtext}}>
           <Megaphone style={{width:15,height:15}} /> Anúncios
         </button>
       </div>
 
       {/* Search Bar */}
-      <div style={{background:"#2A2A2A",borderRadius:24,padding:"10px 16px",display:"flex",gap:8,alignItems:"center",margin:"10px 16px 0"}}>
+      <div style={{background:surface,borderRadius:24,padding:"10px 16px",display:"flex",gap:8,alignItems:"center",margin:"10px 16px 0",border:`1px solid ${isDark?"#333":"#E5E5E5"}`}}>
         <span style={{color:"#FF6600",fontSize:18}}>🔍</span>
         <input placeholder={activeTab==='professionals'?"Procurar profissional, cidade ou especialidade...":"Procurar obra, localização..."}
           value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-          style={{flex:1,background:"transparent",border:"none",outline:"none",color:"#FFF",fontSize:14}} />
+          style={{flex:1,background:"transparent",border:"none",outline:"none",color:text,fontSize:14}} />
         {searchTerm && <button onClick={() => setSearchTerm("")} style={{background:"none",border:"none",color:"#AAAAAA",cursor:"pointer",fontSize:18}}>×</button>}
       </div>
 
       {/* Filter Chips */}
       <div style={{display:"flex",gap:8,overflowX:"auto",padding:"8px 16px",scrollbarWidth:"none"}}>
         <button onClick={() => setSelectedCategory("all")}
-          style={{flexShrink:0,padding:"6px 14px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:selectedCategory==="all"?"#FF6600":"#2A2A2A",color:selectedCategory==="all"?"#FFF":"#AAAAAA"}}>
+          style={{flexShrink:0,padding:"6px 14px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:selectedCategory==="all"?"#FF6600":surface,color:selectedCategory==="all"?"#FFF":subtext}}>
           Todos
         </button>
         {CATEGORIES.map(cat => (
           <button key={cat} onClick={() => setSelectedCategory(cat)}
-            style={{flexShrink:0,padding:"6px 14px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:selectedCategory===cat?"#FF6600":"#2A2A2A",color:selectedCategory===cat?"#FFF":"#AAAAAA"}}>
+            style={{flexShrink:0,padding:"6px 14px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:selectedCategory===cat?"#FF6600":surface,color:selectedCategory===cat?"#FFF":subtext}}>
             {cat}
           </button>
         ))}
@@ -170,21 +179,21 @@ function EmployerHome({ user }) {
       <div style={{flex:1,overflowY:"auto",padding:"8px 16px 100px"}}>
         {loading ? (
           <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:160}}>
-            <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
-            <p style={{color:"#AAAAAA",fontSize:13,marginTop:8}}>A carregar...</p>
+            <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"} style={{width:60,animation:"spin 2s linear infinite"}} alt="" />
+            <p style={{color:subtext,fontSize:13,marginTop:8}}>A carregar...</p>
           </div>
         ) : activeTab === 'professionals' ? (
           filtered.length === 0 ? (
             <div style={{textAlign:"center",paddingTop:60}}>
               <div style={{fontSize:48,marginBottom:12}}>🔍</div>
-              <h3 style={{color:"#FFF",fontWeight:700}}>Nenhum profissional encontrado</h3>
-              <p style={{color:"#AAAAAA",fontSize:13,marginTop:4}}>Tente outra especialidade ou localidade</p>
+              <h3 style={{color:text,fontWeight:700}}>Nenhum profissional encontrado</h3>
+              <p style={{color:subtext,fontSize:13,marginTop:4}}>Tente outra especialidade ou localidade</p>
             </div>
           ) : (
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
-              <p style={{fontSize:11,color:"#AAAAAA",fontWeight:600}}>{filtered.length} profissiona{filtered.length===1?'l':'is'} disponíve{filtered.length===1?'l':'is'}</p>
+              <p style={{fontSize:11,color:subtext,fontWeight:600}}>{filtered.length} profissiona{filtered.length===1?'l':'is'} disponíve{filtered.length===1?'l':'is'}</p>
               {filtered.map(worker => (
-                <WorkerCard key={worker.id} worker={worker}
+                <WorkerCard key={worker.id} worker={worker} isDark={isDark}
                   onContact={() => navigate(createPageUrl("Chat") + `?userId=${worker.id}`)}
                   onProfile={() => navigate(createPageUrl("Profile") + `?userId=${worker.id}`)} />
               ))}
@@ -194,23 +203,23 @@ function EmployerHome({ user }) {
           filteredJobs.length === 0 ? (
             <div style={{textAlign:"center",paddingTop:60}}>
               <div style={{fontSize:48,marginBottom:12}}>📋</div>
-              <h3 style={{color:"#FFF",fontWeight:700}}>Nenhum anúncio encontrado</h3>
-              <p style={{color:"#AAAAAA",fontSize:13,marginTop:4}}>Tente outro filtro de categoria</p>
+              <h3 style={{color:text,fontWeight:700}}>Nenhum anúncio encontrado</h3>
+              <p style={{color:subtext,fontSize:13,marginTop:4}}>Tente outro filtro de categoria</p>
             </div>
           ) : (
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
-              <p style={{fontSize:11,color:"#AAAAAA",fontWeight:600}}>{filteredJobs.length} anúncio{filteredJobs.length===1?'':'s'} disponíve{filteredJobs.length===1?'l':'is'}</p>
+              <p style={{fontSize:11,color:subtext,fontWeight:600}}>{filteredJobs.length} anúncio{filteredJobs.length===1?'':'s'} disponíve{filteredJobs.length===1?'l':'is'}</p>
               {filteredJobs.map(job => (
-                <div key={job.id} style={{background:"#2A2A2A",borderRadius:16,padding:16,borderLeft:"4px solid #FF6600"}}>
+                <div key={job.id} style={{background:surface,borderRadius:16,padding:16,borderLeft:"4px solid #FF6600"}}>
                   <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:8}}>
-                    <h3 style={{fontWeight:700,color:"#FFF",flex:1,marginRight:8,fontSize:14,margin:0}}>{job.title}</h3>
+                    <h3 style={{fontWeight:700,color:text,flex:1,marginRight:8,fontSize:14,margin:0}}>{job.title}</h3>
                     <p style={{fontSize:18,fontWeight:700,color:"#FF6600",flexShrink:0,margin:0}}>€{job.price}{job.price_type==='hourly'?'/h':''}</p>
                   </div>
                   <div style={{display:"flex",gap:6,marginBottom:6,flexWrap:"wrap"}}>
-                    <span style={{fontSize:11,background:"#333",color:"#AAAAAA",padding:"2px 8px",borderRadius:20}}>{job.category}</span>
+                    <span style={{fontSize:11,background:isDark?"#333":"#E5E5E5",color:subtext,padding:"2px 8px",borderRadius:20}}>{job.category}</span>
                     {job.urgency==='high' && <span style={{fontSize:11,background:"#2D1A1A",color:"#EF4444",padding:"2px 8px",borderRadius:20}}>🔴 Urgente</span>}
                   </div>
-                  <p style={{fontSize:11,color:"#AAAAAA",display:"flex",alignItems:"center",gap:4,margin:0}}>
+                  <p style={{fontSize:11,color:subtext,display:"flex",alignItems:"center",gap:4,margin:0}}>
                     <MapPin style={{width:11,height:11}} />{job.location}
                   </p>
                 </div>
@@ -235,7 +244,11 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-function WorkerHome({ user }) {
+function WorkerHome({ user, isDark }) {
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
   const [jobs, setJobs] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [viewMode, setViewMode] = useState("map");
@@ -281,17 +294,17 @@ function WorkerHome({ user }) {
   };
 
   return (
-    <div style={{height:"100vh",display:"flex",flexDirection:"column",position:"relative",background:"#1A1A1A"}}>
+    <div style={{height:"100vh",display:"flex",flexDirection:"column",position:"relative",background:bg}}>
       {/* Floating category pills */}
       <div style={{position:"absolute",top:8,left:0,right:0,zIndex:10,padding:"0 16px"}}>
         <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
           <button onClick={() => setSelectedCategory("all")}
-            style={{flexShrink:0,padding:"8px 16px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,boxShadow:"0 2px 8px #0008",background:selectedCategory==="all"?"#FF6600":"#111",color:selectedCategory==="all"?"#FFF":"#CCC"}}>
+            style={{flexShrink:0,padding:"8px 16px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,boxShadow:"0 2px 8px #0008",background:selectedCategory==="all"?"#FF6600":isDark?"#111":"#EEEEEE",color:selectedCategory==="all"?"#FFF":isDark?"#CCC":"#444"}}>
             Todos
           </button>
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => setSelectedCategory(cat)}
-              style={{flexShrink:0,padding:"8px 16px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,boxShadow:"0 2px 8px #0008",background:selectedCategory===cat?"#FF6600":"#111",color:selectedCategory===cat?"#FFF":"#CCC"}}>
+              style={{flexShrink:0,padding:"8px 16px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,boxShadow:"0 2px 8px #0008",background:selectedCategory===cat?"#FF6600":isDark?"#111":"#EEEEEE",color:selectedCategory===cat?"#FFF":isDark?"#CCC":"#444"}}>
               {cat}
             </button>
           ))}
@@ -301,7 +314,7 @@ function WorkerHome({ user }) {
       {/* List/Map toggle */}
       <div style={{position:"absolute",top:56,right:16,zIndex:10}}>
         <button onClick={() => setViewMode(v => v==='map'?'list':'map')}
-          style={{background:"#111",borderRadius:20,boxShadow:"0 2px 8px #0008",padding:"8px 16px",display:"flex",alignItems:"center",gap:6,fontSize:13,fontWeight:600,color:"#FFF",border:"none",cursor:"pointer"}}>
+          style={{background:isDark?"#111":"#EEEEEE",borderRadius:20,boxShadow:"0 2px 8px #0008",padding:"8px 16px",display:"flex",alignItems:"center",gap:6,fontSize:13,fontWeight:600,color:isDark?"#FFF":"#333",border:"none",cursor:"pointer"}}>
           {viewMode==='map' ? <List style={{width:15,height:15}} /> : <Map style={{width:15,height:15}} />}
           {viewMode==='map' ? 'Lista' : 'Mapa'}
         </button>
@@ -310,33 +323,33 @@ function WorkerHome({ user }) {
       {/* Main content */}
       <div style={{flex:1,overflow:"hidden"}}>
         {loading ? (
-          <div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+          <div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
             <div style={{textAlign:"center"}}>
-              <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
-              <p style={{color:"#AAAAAA",marginTop:8,fontSize:13}}>A carregar obras...</p>
+              <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"} style={{width:60,animation:"spin 2s linear infinite"}} alt="" />
+              <p style={{color:subtext,marginTop:8,fontSize:13}}>A carregar obras...</p>
             </div>
           </div>
         ) : viewMode === 'map' ? (
           <MapView jobs={filteredJobs} onJobClick={openSheet} center={mapCenter} radius={userLocation?10000:null} userLocation={userLocation} />
         ) : (
-          <div style={{height:"100%",overflowY:"auto",paddingTop:112,paddingLeft:16,paddingRight:16,paddingBottom:100,background:"#1A1A1A",display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{height:"100%",overflowY:"auto",paddingTop:112,paddingLeft:16,paddingRight:16,paddingBottom:100,background:bg,display:"flex",flexDirection:"column",gap:12}}>
             {filteredJobs.length === 0 ? (
               <div style={{textAlign:"center",paddingTop:60}}>
                 <div style={{fontSize:48,marginBottom:12}}>🔍</div>
-                <h3 style={{color:"#FFF",fontWeight:700}}>Nenhum trabalho disponível</h3>
-                <p style={{color:"#AAAAAA",fontSize:13,marginTop:4}}>Tente outro filtro de categoria</p>
+                <h3 style={{color:text,fontWeight:700}}>Nenhum trabalho disponível</h3>
+                <p style={{color:subtext,fontSize:13,marginTop:4}}>Tente outro filtro de categoria</p>
               </div>
             ) : filteredJobs.map(job => (
-              <div key={job.id} style={{background:"#2A2A2A",borderRadius:16,padding:16,borderLeft:"4px solid #FF6600",cursor:"pointer"}} onClick={() => openSheet(job)}>
+              <div key={job.id} style={{background:surface,borderRadius:16,padding:16,borderLeft:"4px solid #FF6600",cursor:"pointer"}} onClick={() => openSheet(job)}>
                 <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:6}}>
-                  <h3 style={{fontWeight:700,color:"#FFF",flex:1,marginRight:8,fontSize:14,margin:0}}>{job.title}</h3>
+                  <h3 style={{fontWeight:700,color:text,flex:1,marginRight:8,fontSize:14,margin:0}}>{job.title}</h3>
                   <p style={{fontSize:18,fontWeight:700,color:"#FF6600",flexShrink:0,margin:0}}>€{job.price}{job.price_type==='hourly'?'/h':''}</p>
                 </div>
                 <div style={{display:"flex",gap:6,marginBottom:6,flexWrap:"wrap"}}>
-                  <span style={{fontSize:11,background:"#333",color:"#AAAAAA",padding:"2px 8px",borderRadius:20}}>{job.category}</span>
+                  <span style={{fontSize:11,background:isDark?"#333":"#E5E5E5",color:subtext,padding:"2px 8px",borderRadius:20}}>{job.category}</span>
                   {job.urgency==='high' && <span style={{fontSize:11,background:"#2D1A1A",color:"#EF4444",padding:"2px 8px",borderRadius:20}}>🔴 Urgente</span>}
                 </div>
-                <p style={{fontSize:11,color:"#AAAAAA",display:"flex",alignItems:"center",gap:4,margin:0}}>
+                <p style={{fontSize:11,color:subtext,display:"flex",alignItems:"center",gap:4,margin:0}}>
                   <MapPin style={{width:11,height:11}} />{job.location}
                 </p>
               </div>
@@ -349,24 +362,24 @@ function WorkerHome({ user }) {
       {sheetJob && (
         <>
           <div style={{position:"fixed",inset:0,zIndex:55}} onClick={() => setSheetJob(null)} />
-          <div style={{position:"fixed",left:0,right:0,zIndex:60,background:"#2A2A2A",borderRadius:"20px 20px 0 0",boxShadow:"0 -4px 30px #0008",transition:"height 0.3s",bottom:80,height:sheetExpanded?"72vh":"32vh",overflow:"hidden"}}>
+          <div style={{position:"fixed",left:0,right:0,zIndex:60,background:surface,borderRadius:"20px 20px 0 0",boxShadow:"0 -4px 30px #0008",transition:"height 0.3s",bottom:80,height:sheetExpanded?"72vh":"32vh",overflow:"hidden"}}>
             <div style={{display:"flex",justifyContent:"center",paddingTop:12,paddingBottom:8,cursor:"pointer"}} onClick={() => setSheetExpanded(e => !e)}>
               <div style={{width:40,height:4,background:"#444",borderRadius:4}} />
             </div>
             <button onClick={() => setSheetJob(null)} style={{position:"absolute",top:12,right:16,background:"none",border:"none",color:"#AAAAAA",cursor:"pointer",fontSize:20}}>×</button>
             <div style={{padding:"0 20px",overflowY:"auto",height:"100%",paddingBottom:32}}>
-              <span style={{fontSize:11,background:"#333",color:"#AAAAAA",padding:"2px 8px",borderRadius:20,display:"inline-block",marginBottom:6}}>{sheetJob.category}</span>
-              <p style={{fontWeight:700,color:"#FFF",fontSize:18,margin:"0 0 4px"}}>{sheetJob.title}</p>
-              <p style={{fontSize:36,fontWeight:700,color:"#FF6600",margin:"0 0 8px"}}>€{sheetJob.price}{sheetJob.price_type==='hourly'&&<span style={{fontSize:14,fontWeight:400,color:"#AAAAAA"}}>/h</span>}</p>
+              <span style={{fontSize:11,background:isDark?"#333":"#E5E5E5",color:subtext,padding:"2px 8px",borderRadius:20,display:"inline-block",marginBottom:6}}>{sheetJob.category}</span>
+              <p style={{fontWeight:700,color:text,fontSize:18,margin:"0 0 4px"}}>{sheetJob.title}</p>
+              <p style={{fontSize:36,fontWeight:700,color:"#FF6600",margin:"0 0 8px"}}>€{sheetJob.price}{sheetJob.price_type==='hourly'&&<span style={{fontSize:14,fontWeight:400,color:subtext}}>/h</span>}</p>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
                 {sheetJob.urgency==='high' && <span style={{fontSize:11,background:"#2D1A1A",color:"#EF4444",padding:"2px 8px",borderRadius:20}}>🔴 Urgente</span>}
-                <span style={{fontSize:11,color:"#AAAAAA",display:"flex",alignItems:"center",gap:4}}><MapPin style={{width:11,height:11}} />{sheetJob.location}</span>
+                <span style={{fontSize:11,color:subtext,display:"flex",alignItems:"center",gap:4}}><MapPin style={{width:11,height:11}} />{sheetJob.location}</span>
               </div>
               {sheetExpanded && (
                 <div style={{marginTop:16,display:"flex",flexDirection:"column",gap:16}}>
                   <div>
-                    <p style={{fontSize:13,fontWeight:600,color:"#FFF",marginBottom:4}}>Descrição</p>
-                    <p style={{fontSize:13,color:"#AAAAAA"}}>{sheetJob.description}</p>
+                    <p style={{fontSize:13,fontWeight:600,color:text,marginBottom:4}}>Descrição</p>
+                    <p style={{fontSize:13,color:subtext}}>{sheetJob.description}</p>
                   </div>
                   {sheetJob.start_date && <p style={{fontSize:13,color:"#AAAAAA"}}>📅 Início previsto: {sheetJob.start_date}</p>}
                   <button style={{width:"100%",padding:"14px 0",background:"#FF6600",border:"none",borderRadius:16,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer"}} onClick={() => setShowJobModal(true)}>
@@ -374,7 +387,7 @@ function WorkerHome({ user }) {
                   </button>
                 </div>
               )}
-              {!sheetExpanded && <p style={{fontSize:11,color:"#555",marginTop:16,textAlign:"center"}}>↑ Deslize para ver detalhes e candidatar-se</p>}
+              {!sheetExpanded && <p style={{fontSize:11,color:subtext,marginTop:16,textAlign:"center"}}>↑ Deslize para ver detalhes e candidatar-se</p>}
             </div>
           </div>
         </>
@@ -422,6 +435,6 @@ export default function Home() {
   }
 
   if (!user || user.user_type === 'admin') return null;
-  if (user.user_type === 'worker') return <WorkerHome user={user} />;
-  return <EmployerHome user={user} />;
+  if (user.user_type === 'worker') return <WorkerHome user={user} isDark={isDark} />;
+  return <EmployerHome user={user} isDark={isDark} />;
 }
