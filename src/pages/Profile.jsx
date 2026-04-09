@@ -65,7 +65,7 @@ export default function Profile() {
 
   const loadUser = async () => {
     try {
-      const userData = viewingUserId ? (await User.filter({ id: viewingUserId }))?.[0] : await User.me();
+      const userData = viewingUserId ? (await User.list())?.[0] : await base44.auth.me();
       if (!userData) throw new Error('User not found');
       setUser(userData);
       if (userData.user_type === 'worker') {
@@ -93,7 +93,7 @@ export default function Profile() {
 
   const handleSave = async (profileData) => {
     try {
-      await User.updateMyUserData(profileData);
+      await base44.auth.updateMe(profileData);
       await loadUser();
       setIsEditing(false);
       await syncToSupabase();
@@ -108,7 +108,7 @@ export default function Profile() {
     setIsUploading(true);
     try {
       const { file_url } = await UploadFile({ file });
-      await User.updateMyUserData({ avatar_url: file_url });
+      await base44.auth.updateMe({ avatar_url: file_url });
       await loadUser();
       await syncToSupabase();
     } catch (error) {
