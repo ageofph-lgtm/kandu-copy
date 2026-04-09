@@ -230,7 +230,7 @@ export default function MyJobs() {
     return (
       <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
         <div style={{textAlign:"center"}}>
-          <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
+          <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"} style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
           <p style={{color:"#AAAAAA",marginTop:8,fontSize:13}}>A carregar...</p>
         </div>
       </div>
