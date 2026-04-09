@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Button } from "@/components/ui/button";
@@ -167,11 +168,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
-        <Settings className="w-12 h-12 animate-spin" style={{color:"#FF6600",marginBottom:16}} />
-        <p style={{color:subtext}}>A carregar...</p>
-      </div>);
+    return <LoadingScreen label="A carregar..." />;
   }
 
   if (!user) {

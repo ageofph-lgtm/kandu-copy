@@ -11,10 +11,10 @@ export default function LoadingScreen({ label }) {
   const logo = isDark ? LOGO_DARK : LOGO_LIGHT;
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: bg, gap: 16 }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: bg, gap: 16 }}>
       <img
         src={logo}
-        style={{ width: 60, background: isDark ? "white" : "transparent", borderRadius: 8, padding: isDark ? 4 : 0, animation: "pulse 1.5s infinite" }}
+        style={{ width: 80, height: 80, objectFit: "contain", animation: "spin 2s linear infinite", borderRadius: 0, background: "transparent" }}
         alt="KANDU"
       />
       {label && <p style={{ color: text, fontSize: 14, margin: 0 }}>{label}</p>}
