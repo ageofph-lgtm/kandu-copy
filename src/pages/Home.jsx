@@ -3,6 +3,7 @@ import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/entities/User";
 import { Job } from "@/entities/Job";
+import { Application } from "@/entities/Application";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -269,15 +270,20 @@ function WorkerHome({ user, isDark, logoIcon }) {
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(false);
+  const [appliedJobIds, setAppliedJobIds] = useState(new Set());
 
   useEffect(() => {
     const load = async () => {
       const openJobs = await Job.filter({ status: 'open' });
       setJobs(openJobs);
+      try {
+        const myApps = await Application.filter({ worker_id: user.id });
+        setAppliedJobIds(new Set(myApps.map(a => a.job_id)));
+      } catch(e) {}
       setLoading(false);
     };
     load();
-  }, []);
+  }, [user.id]);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -416,9 +422,18 @@ function WorkerHome({ user, isDark, logoIcon }) {
                   {sheetJob.start_date && <p style={{fontSize:13,color:"#AAAAAA"}}>📅 Início previsto: {sheetJob.start_date}</p>}
                 </div>
               )}
-              <button style={{width:"100%",padding:"14px 0",background:"#FF6600",border:"none",borderRadius:16,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer",marginTop:12}} onClick={() => setShowJobModal(true)}>
-                Candidatar-me
-              </button>
+              {appliedJobIds.has(sheetJob?.id) ? (
+                <div style={{width:"100%",padding:"14px 0",background:"#22C55E22",border:"1px solid #22C55E",borderRadius:16,color:"#22C55E",fontWeight:700,fontSize:14,textAlign:"center",marginTop:12}}>
+                  ✓ Já te candidataste
+                </div>
+              ) : (
+                <button
+                  style={{width:"100%",padding:"14px 0",background:"#FF6600",border:"none",borderRadius:16,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer",marginTop:12}}
+                  onClick={() => setShowJobModal(true)}
+                >
+                  Candidatar-me
+                </button>
+              )}
             </div>
           </div>
         </>
