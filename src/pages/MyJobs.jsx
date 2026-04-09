@@ -220,12 +220,24 @@ export default function MyJobs() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const scheduledJobs  = jobs.filter(j => {
+  const scheduledJobs = jobs.filter(j => {
     if (user?.user_type === 'employer') return j.status === 'open' && j.worker_id;
-    return j.status === 'open' && j.worker_id === user?.id;
+    if (user?.user_type === 'worker') return j.status === 'open' && j.worker_id === user?.id;
+    return j.status === 'open';
   });
-  const inProgressJobs = jobs.filter(j => j.status === 'in_progress');
-  const historyJobs    = jobs.filter(j => ['completed', 'completed_by_employer', 'cancelled'].includes(j.status));
+
+  const inProgressJobs = jobs.filter(j => {
+    if (user?.user_type === 'worker') return j.status === 'in_progress' && j.worker_id === user?.id;
+    if (user?.user_type === 'employer') return j.status === 'in_progress' && j.employer_id === user?.id;
+    return j.status === 'in_progress';
+  });
+
+  const historyJobs = jobs.filter(j => {
+    const doneStatuses = ['completed', 'completed_by_employer', 'cancelled'];
+    if (user?.user_type === 'worker') return doneStatuses.includes(j.status) && j.worker_id === user?.id;
+    if (user?.user_type === 'employer') return doneStatuses.includes(j.status) && j.employer_id === user?.id;
+    return doneStatuses.includes(j.status);
+  });
 
   if (loading) {
     return <LoadingScreen label="A carregar..." />;
