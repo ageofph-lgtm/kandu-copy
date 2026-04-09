@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import LoadingScreen from "@/components/LoadingScreen";
 import { Notification } from "@/entities/Notification";
 import { User } from "@/entities/User";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +21,10 @@ import { createPageUrl } from "@/utils";
 
 function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
 
   const getNotificationIcon = (type) => {
     switch(type) {
@@ -52,7 +57,7 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
 
   return (
     <div
-      style={{background:"#2A2A2A",borderRadius:14,cursor:"pointer",opacity:notification.is_read?0.6:1}}
+      style={{background:surface,borderRadius:14,cursor:"pointer",opacity:notification.is_read?0.6:1}}
       onClick={handleClick}
     >
       <div style={{padding:16}}>
@@ -61,13 +66,13 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
             <div className="text-2xl">{getNotificationIcon(notification.type)}</div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h4 style={{fontWeight:600,fontSize:14,color:"#FFFFFF",margin:"0 0 2px"}}>{notification.title}</h4>
+                <h4 style={{fontWeight:600,fontSize:14,color:text,margin:"0 0 2px"}}>{notification.title}</h4>
                 {!notification.is_read && (
                   <span style={{width:8,height:8,borderRadius:"50%",background:"#FF6600",display:"inline-block",marginLeft:6,flexShrink:0}}></span>
                 )}
               </div>
-              <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
-              <p className="text-xs text-gray-500">
+              <p style={{fontSize:14,color:subtext,marginBottom:8}}>{notification.message}</p>
+              <p style={{fontSize:12,color:subtext}}>
                 {format(new Date(notification.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: pt })}
               </p>
             </div>
@@ -187,18 +192,14 @@ export default function Notifications() {
   };
 
   if (loading) {
-    return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:60, background:"white", borderRadius:8, padding:2, animation:"pulse 1.5s infinite"}} alt="" /> alt="" />
-      </div>
-    );
+    return <LoadingScreen label="A carregar..." />;
   }
 
   return (
     <div style={{background:bg,minHeight:"100vh",paddingBottom:80}}>
       {/* Logo topo */}
       <div style={{paddingTop:50,display:"flex",justifyContent:"center"}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:40, background:"white", borderRadius:8, padding:2}} alt="" /> alt="" />
+        <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"} style={{width:40, background:isDark?"white":"transparent", borderRadius:8, padding:isDark?2:0}} alt="" />
       </div>
 
       {/* Título + badge */}

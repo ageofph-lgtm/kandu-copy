@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/entities/User";
 import { UploadFile } from "@/integrations/Core";
@@ -40,6 +41,11 @@ import { base44 } from "@/api/base44Client";
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -141,7 +147,7 @@ export default function Profile() {
 
   if (isEditing) {
     return (
-      <div style={{padding:16,maxWidth:480,margin:"0 auto",background:"#1A1A1A",minHeight:"100vh"}}>
+      <div style={{padding:16,maxWidth:480,margin:"0 auto",background:bg,minHeight:"100vh"}}>
         <ProfileForm user={user} onSave={handleSave} onCancel={() => setIsEditing(false)} isFirstTime={!user.user_type} />
       </div>
     );
@@ -185,7 +191,7 @@ export default function Profile() {
   const xpProgress = Math.min(100, ((xp - xpNivelMin(xp)) / (xpNivelMax(xp) - xpNivelMin(xp))) * 100);
 
   return (
-    <div style={{background:"#1A1A1A",minHeight:"100vh",padding:"50px 20px 80px",overflowY:"auto"}}>
+    <div style={{background:bg,minHeight:"100vh",padding:"50px 20px 80px",overflowY:"auto"}}>
       <input type="file" ref={avatarInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
 
       {/* Top Bar */}
@@ -215,8 +221,8 @@ export default function Profile() {
       </div>
 
       {/* Nome e Tipo */}
-      <p style={{fontWeight:800,fontSize:20,color:"#FFF",textAlign:"center",margin:"0 0 4px"}}>{user.full_name || "Nome não definido"}</p>
-      <p style={{color:"#AAAAAA",textAlign:"center",marginBottom:10,fontSize:14}}>Profissional · {user.skills?.[0] || user.user_type}</p>
+      <p style={{fontWeight:800,fontSize:20,color:text,textAlign:"center",margin:"0 0 4px"}}>{user.full_name || "Nome não definido"}</p>
+      <p style={{color:subtext,textAlign:"center",marginBottom:10,fontSize:14}}>Profissional · {user.skills?.[0] || user.user_type}</p>
 
       {/* Badges */}
       <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:16,flexWrap:"wrap"}}>
@@ -230,22 +236,22 @@ export default function Profile() {
 
       {/* Grid Stats */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
-        <div style={{background:"#2A2A2A",borderRadius:14,padding:"14px 8px",textAlign:"center"}}>
-          <p style={{fontWeight:800,fontSize:18,color:"#FFF",margin:0}}>{user.completed_jobs || 0}</p>
-          <p style={{color:"#AAAAAA",fontSize:11,margin:0}}>Trabalhos</p>
+        <div style={{background:surface,borderRadius:14,padding:"14px 8px",textAlign:"center"}}>
+          <p style={{fontWeight:800,fontSize:18,color:text,margin:0}}>{user.completed_jobs || 0}</p>
+          <p style={{color:subtext,fontSize:11,margin:0}}>Trabalhos</p>
         </div>
-        <div style={{background:"#2A2A2A",borderRadius:14,padding:"14px 8px",textAlign:"center"}}>
+        <div style={{background:surface,borderRadius:14,padding:"14px 8px",textAlign:"center"}}>
           <p style={{fontWeight:800,fontSize:18,color:"#FF6600",margin:0}}>{user.rating?.toFixed(1) || "N/A"} ⭐</p>
-          <p style={{color:"#AAAAAA",fontSize:11,margin:0}}>Avaliação</p>
+          <p style={{color:subtext,fontSize:11,margin:0}}>Avaliação</p>
         </div>
-        <div style={{background:"#2A2A2A",borderRadius:14,padding:"14px 8px",textAlign:"center"}}>
+        <div style={{background:surface,borderRadius:14,padding:"14px 8px",textAlign:"center"}}>
           <p style={{fontWeight:800,fontSize:18,color:"#22C55E",margin:0}}>{user.attendance_rate || "—"}%</p>
-          <p style={{color:"#AAAAAA",fontSize:11,margin:0}}>Presença</p>
+          <p style={{color:subtext,fontSize:11,margin:0}}>Presença</p>
         </div>
       </div>
 
       {/* Card XP */}
-      <div style={{background:"#2A2A2A",borderRadius:16,padding:16,marginBottom:12}}>
+      <div style={{background:surface,borderRadius:16,padding:16,marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",marginBottom:10}}>
           <span style={{fontWeight:800,fontSize:20,color:"#FF6600"}}>{xp} XP</span>
           <span style={{color:"#AAAAAA",fontSize:13,marginLeft:"auto"}}>Nível: {getNivelFromXP(xp)}</span>
@@ -264,8 +270,8 @@ export default function Profile() {
 
       {/* Especialidades */}
       {user.user_type === 'worker' && user.skills?.length > 0 && (
-        <div style={{background:"#2A2A2A",borderRadius:16,padding:16,marginBottom:12}}>
-          <p style={{fontWeight:700,fontSize:15,color:"#FFF",marginBottom:10}}>Especialidades</p>
+        <div style={{background:surface,borderRadius:16,padding:16,marginBottom:12}}>
+          <p style={{fontWeight:700,fontSize:15,color:text,marginBottom:10}}>Especialidades</p>
           <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
             {user.skills.map((skill, i) => (
               <span key={i} style={{background:"#FF6600",borderRadius:20,padding:"6px 14px",color:"#FFF",fontSize:13}}>{skill}</span>
@@ -276,20 +282,20 @@ export default function Profile() {
 
       {/* Sobre */}
       {user.bio && (
-        <div style={{background:"#2A2A2A",borderRadius:16,padding:16,marginBottom:12}}>
-          <p style={{fontWeight:700,fontSize:15,color:"#FFF",marginBottom:8}}>Sobre</p>
-          <p style={{color:"#AAAAAA",fontSize:13,lineHeight:1.6}}>{user.bio}</p>
+        <div style={{background:surface,borderRadius:16,padding:16,marginBottom:12}}>
+          <p style={{fontWeight:700,fontSize:15,color:text,marginBottom:8}}>Sobre</p>
+          <p style={{color:subtext,fontSize:13,lineHeight:1.6}}>{user.bio}</p>
         </div>
       )}
 
       {/* Avaliações */}
-      <div style={{background:"#2A2A2A",borderRadius:16,padding:16,marginBottom:12}}>
-        <p style={{fontWeight:700,fontSize:15,color:"#FFF",marginBottom:12}}>Avaliações</p>
+      <div style={{background:surface,borderRadius:16,padding:16,marginBottom:12}}>
+        <p style={{fontWeight:700,fontSize:15,color:text,marginBottom:12}}>Avaliações</p>
         <ReviewsSection userId={user.id} />
       </div>
 
       {/* Documentos */}
-      <div style={{background:"#2A2A2A",borderRadius:16,padding:16,marginBottom:12}}>
+      <div style={{background:surface,borderRadius:16,padding:16,marginBottom:12}}>
         <DocumentsList documents={user.documents || []} onUpdate={loadUser} canEdit={true} />
       </div>
 

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTheme } from "@/lib/ThemeContext";
+import LoadingScreen from "@/components/LoadingScreen";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Job } from "@/entities/Job";
 import { Application } from "@/entities/Application";
@@ -11,6 +13,11 @@ import { pt } from "date-fns/locale";
 export default function ScanPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -112,17 +119,12 @@ export default function ScanPage() {
   };
 
   if (loading) {
-    return (
-      <div style={{ minHeight: "100vh", background: "#1A1A1A", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
-        <div style={{ width: 40, height: 40, border: "3px solid #FF6600", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        <p style={{ color: "#AAAAAA", fontSize: 14 }}>A verificar...</p>
-      </div>
-    );
+    return <LoadingScreen label="A verificar..." />;
   }
 
   if (error) {
     return (
-      <div style={{ minHeight: "100vh", background: "#1A1A1A", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, padding: 20 }}>
+      <div style={{ minHeight: "100vh", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, padding: 20 }}>
         <span style={{ fontSize: 40 }}>⚠️</span>
         <p style={{ color: "#EF4444", textAlign: "center", fontWeight: 600 }}>{error}</p>
         <button onClick={() => navigate(-1)} style={{ background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, cursor: "pointer" }}>Voltar</button>
@@ -131,24 +133,24 @@ export default function ScanPage() {
   }
 
   return (
-    <div style={{ background: "#1A1A1A", minHeight: "100vh", display: "flex", flexDirection: "column", backgroundImage: "radial-gradient(circle, #FF660008 1px, transparent 1px)", backgroundSize: "28px 28px" }}>
+    <div style={{ background: bg, minHeight: "100vh", display: "flex", flexDirection: "column", backgroundImage: "radial-gradient(circle, #FF660008 1px, transparent 1px)", backgroundSize: "28px 28px" }}>
 
       {/* Top Bar */}
       <div style={{ display: "flex", alignItems: "center", padding: "50px 20px 16px", gap: 12 }}>
         <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", color: "#FF6600", fontSize: 22, fontWeight: 700, lineHeight: 1 }}>←</button>
-        <span style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: 18, color: "#FFF" }}>Validar Presença</span>
+        <span style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: 18, color: text }}>Validar Presença</span>
         <div style={{ width: 22 }} />
       </div>
 
       {/* Toggle */}
       <div style={{ display: "flex", gap: 8, margin: "0 20px 24px" }}>
-        <button onClick={() => { setActiveView("employer"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "employer" ? "#FF6600" : "#2A2A2A", color: activeView === "employer" ? "#FFF" : "#AAAAAA" }}>👷 Empregador</button>
-        <button onClick={() => { setActiveView("professional"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "professional" ? "#FF6600" : "#2A2A2A", color: activeView === "professional" ? "#FFF" : "#AAAAAA" }}>🔧 Profissional</button>
+        <button onClick={() => { setActiveView("employer"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "employer" ? "#FF6600" : surface, color: activeView === "employer" ? "#FFF" : subtext }}>👷 Empregador</button>
+        <button onClick={() => { setActiveView("professional"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "professional" ? "#FF6600" : surface, color: activeView === "professional" ? "#FFF" : subtext }}>🔧 Profissional</button>
       </div>
 
       {activeView === "employer" ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0 20px", flex: 1 }}>
-          <p style={{ color: "#AAAAAA", fontSize: 14, marginBottom: 24, textAlign: "center" }}>Mostra este código ao profissional</p>
+          <p style={{ color: subtext, fontSize: 14, marginBottom: 24, textAlign: "center" }}>Mostra este código ao profissional</p>
           <div style={{ width: 200, height: 200, clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)", background: "#1A1A1A", border: "4px solid #FF6600", boxShadow: "0 0 40px #FF660088", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 42, fontWeight: 900, color: "#FF6600", letterSpacing: 6 }}>{dailyPin}</span>
           </div>
@@ -162,12 +164,12 @@ export default function ScanPage() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", padding: "0 20px", flex: 1 }}>
-          <p style={{ color: "#AAAAAA", fontSize: 14, textAlign: "center", marginBottom: 20 }}>Introduz o código fornecido pelo empregador</p>
+          <p style={{ color: subtext, fontSize: 14, textAlign: "center", marginBottom: 20 }}>Introduz o código fornecido pelo empregador</p>
 
           {/* PIN Boxes */}
           <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24 }}>
             {[0, 1, 2, 3, 4, 5].map(i => (
-              <div key={i} style={{ width: 44, height: 52, background: "#2A2A2A", borderRadius: 10, border: i === pinInput.length ? "2px solid #FF6600" : "2px solid #333", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: "#FFF" }}>
+              <div key={i} style={{ width: 44, height: 52, background: surface, borderRadius: 10, border: i === pinInput.length ? "2px solid #FF6600" : `2px solid ${isDark?"#333":"#CCC"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: text }}>
                 {pinInput[i] || ""}
               </div>
             ))}
@@ -177,7 +179,7 @@ export default function ScanPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, margin: "0 0 20px" }}>
             {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"].map((k, i) =>
               k === "" ? <div key={i} /> : (
-                <button key={i} onClick={() => handleKey(k)} style={{ background: "#2A2A2A", borderRadius: 12, padding: "14px 0", fontSize: k === "del" ? 18 : 20, fontWeight: 700, color: "#FFF", border: "none", cursor: "pointer" }}>
+                <button key={i} onClick={() => handleKey(k)} style={{ background: surface, borderRadius: 12, padding: "14px 0", fontSize: k === "del" ? 18 : 20, fontWeight: 700, color: text, border: "none", cursor: "pointer" }}>
                   {k === "del" ? "⌫" : k}
                 </button>
               )

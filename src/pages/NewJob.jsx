@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useTheme } from "@/lib/ThemeContext";
+import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Button } from "@/components/ui/button";
@@ -56,6 +58,11 @@ const STEP_LABELS = ["O Quê", "Onde & Quando", "Orçamento", "Revisão"];
 
 export default function NewJob() {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
   const [user, setUser] = useState(null);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,26 +125,22 @@ export default function NewJob() {
   const priceSuggestion = formData.category ? PRICE_SUGGESTIONS[formData.category] : null;
   const catIcon = CATEGORIES.find(c => c.name === formData.category)?.icon || "";
 
-  const inputStyle = {width:"100%",padding:14,background:"#2A2A2A",border:"2px solid #FF6600",borderRadius:12,color:"#FFF",boxSizing:"border-box",fontSize:15,outline:"none"};
-  const labelStyle = {color:"#AAAAAA",fontSize:13,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:8};
-  const sectionStyle = {borderBottom:"3px solid #FF6600",padding:"16px 20px"};
+  const inputStyle = {width:"100%",padding:14,background:surface,border:"2px solid #FF6600",borderRadius:12,color:text,boxSizing:"border-box",fontSize:15,outline:"none"};
+  const labelStyle = {color:subtext,fontSize:13,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:8};
+  const sectionStyle = {borderBottom:`3px solid #FF6600`,padding:"16px 20px"};
   const FORM_CATS = ["Pintura","Eletricidade","Canalização","Alvenaria","Carpintaria","Pavimentos","Telhados","Remodeolação"];
 
   if (!user) {
-    return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
-      </div>
-    );
+    return <LoadingScreen label="A carregar..." />;
   }
 
   return (
-    <div style={{background:"#1A1A1A",minHeight:"100vh",paddingBottom:100}}>
+    <div style={{background:bg,minHeight:"100vh",paddingBottom:100}}>
 
       {/* Top Bar */}
       <div style={{padding:"50px 20px 12px",display:"flex",alignItems:"center",gap:12}}>
         <button onClick={() => navigate(-1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer",padding:0}}>←</button>
-        <h1 style={{fontWeight:700,color:"#FFF",flex:1,textAlign:"center",margin:0,fontSize:18}}>Nova Obra</h1>
+        <h1 style={{fontWeight:700,color:text,flex:1,textAlign:"center",margin:0,fontSize:18}}>Nova Obra</h1>
         <span style={{width:22}} />
       </div>
 
@@ -153,7 +156,7 @@ export default function NewJob() {
         <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
           {CATEGORIES.map(cat => (
             <button key={cat.name} onClick={() => set("category",cat.name)}
-              style={{background:formData.category===cat.name?"#FF6600":"#2A2A2A",color:formData.category===cat.name?"#FFF":"#AAAAAA",borderRadius:20,padding:"8px 14px",border:"none",cursor:"pointer",fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
+              style={{background:formData.category===cat.name?"#FF6600":surface,color:formData.category===cat.name?"#FFF":subtext,borderRadius:20,padding:"8px 14px",border:"none",cursor:"pointer",fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
               {cat.icon} {cat.name}
             </button>
           ))}
@@ -166,7 +169,7 @@ export default function NewJob() {
         <div style={{display:"flex",gap:8,marginBottom:12}}>
           {[{value:'fixed',label:'Projeto'},{value:'hourly',label:'Hora'},{value:'negotiable',label:'Negociável'}].map(pt => (
             <button key={pt.value} onClick={() => set("price_type",pt.value)}
-              style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.price_type===pt.value?"#FF6600":"#2A2A2A",color:formData.price_type===pt.value?"#FFF":"#AAAAAA"}}>
+              style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.price_type===pt.value?"#FF6600":surface,color:formData.price_type===pt.value?"#FFF":subtext}}>
               {pt.label}
             </button>
           ))}
@@ -187,7 +190,7 @@ export default function NewJob() {
       {/* Localização */}
       <div style={sectionStyle}>
         <label style={labelStyle}>Localização</label>
-        <div style={{display:"flex",alignItems:"center",gap:10,background:"#2A2A2A",border:"2px solid #FF6600",borderRadius:12,padding:"0 14px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,background:surface,border:"2px solid #FF6600",borderRadius:12,padding:"0 14px"}}>
           <span style={{color:"#FF6600",fontSize:18,flexShrink:0}}>📍</span>
           <select value={formData.location} onChange={e => set("location",e.target.value)}
             style={{flex:1,background:"transparent",border:"none",color:formData.location?"#FFF":"#888",fontSize:15,padding:"14px 0",outline:"none"}}>
@@ -205,7 +208,7 @@ export default function NewJob() {
         <div style={{display:"flex",gap:8}}>
           {[{value:'low',label:'🟢 Baixa'},{value:'medium',label:'🟡 Média'},{value:'high',label:'🔴 Alta'}].map(u => (
             <button key={u.value} onClick={() => set("urgency",u.value)}
-              style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.urgency===u.value?"#FF6600":"#2A2A2A",color:formData.urgency===u.value?"#FFF":"#AAAAAA"}}>
+              style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.urgency===u.value?"#FF6600":surface,color:formData.urgency===u.value?"#FFF":subtext}}>
               {u.label}
             </button>
           ))}
@@ -230,11 +233,11 @@ export default function NewJob() {
       <div style={sectionStyle}>
         <label style={labelStyle}>Descrição</label>
         <textarea placeholder="Descreva em detalhe o trabalho a realizar..." value={formData.description} onChange={e => set("description",e.target.value)}
-          style={{background:"#2A2A2A",border:"2px solid #FF6600",borderRadius:12,padding:14,color:"#FFF",resize:"none",height:100,width:"100%",boxSizing:"border-box",fontSize:15,outline:"none"}} />
+          style={{background:surface,border:"2px solid #FF6600",borderRadius:12,padding:14,color:text,resize:"none",height:100,width:"100%",boxSizing:"border-box",fontSize:15,outline:"none"}} />
       </div>
 
       {/* Sticky CTA */}
-      <div style={{position:"sticky",bottom:0,background:"#1A1A1A",padding:"16px 20px"}}>
+      <div style={{position:"sticky",bottom:0,background:bg,padding:"16px 20px",borderTop:`1px solid ${isDark?"#333":"#EEE"}`}}>
         <button onClick={handlePublish}
           disabled={!formData.title.trim() || !formData.category || !formData.location || !formData.price || isSubmitting}
           style={{width:"100%",padding:16,background:(!formData.title.trim()||!formData.category||!formData.location||!formData.price||isSubmitting)?"#333":"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:(!formData.title.trim()||!formData.category||!formData.location||!formData.price||isSubmitting)?"default":"pointer"}}>
