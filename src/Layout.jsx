@@ -215,7 +215,7 @@ export default function Layout({ children }) {
       </div>
 
       {/* Bottom Nav Mobile */}
-      <nav className="md:hidden" style={{position:"fixed", bottom:0, left:0, right:0, background:bottomNavBg, borderTop:`1px solid ${border}`, zIndex:50, display:"flex", paddingBottom:"env(safe-area-inset-bottom)", position:"relative"}}>        <button onClick={toggleTheme} style={{position:"absolute",top:-36,right:12,background:isDark?"#2A2A2A":"#F0F0F0",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",fontSize:12,color:"#FF6600",fontWeight:700,cursor:"pointer",zIndex:51}}>
+      <nav className="md:hidden" style={{position:"fixed", bottom:0, left:0, right:0, background:bottomNavBg, borderTop:`1px solid ${border}`, zIndex:50, display:"flex", paddingBottom:"env(safe-area-inset-bottom)"}}>        <button onClick={toggleTheme} style={{position:"absolute",top:-36,right:12,background:isDark?"#2A2A2A":"#F0F0F0",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",fontSize:12,color:"#FF6600",fontWeight:700,cursor:"pointer",zIndex:51}}>
           {isDark ? "☀️ Light" : "🌙 Dark"}
         </button>
         <Link to={createPageUrl("Home")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Home")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
