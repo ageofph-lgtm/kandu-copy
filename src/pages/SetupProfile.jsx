@@ -149,13 +149,12 @@ export default function SetupProfile() {
     }
   };
 
+  const hexBg = {position:"absolute",inset:0,backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpolygon points='30,2 58,17 58,47 30,62 2,47 2,17' fill='none' stroke='%23FF6600' stroke-width='0.5' opacity='0.3'/%3E%3C/svg%3E\")",backgroundRepeat:"repeat",opacity:0.3,pointerEvents:"none"};
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-7xl font-bold text-[#F26522] animate-pulse select-none">φ</div>
-          <p className="text-gray-500 mt-3">A carregar...</p>
-        </div>
+      <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:80,animation:"pulse 1.5s infinite"}} alt="KANDU" />
       </div>
     );
   }
@@ -163,22 +162,15 @@ export default function SetupProfile() {
   // Não autenticado — mostrar ecrã de login
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col items-center justify-center px-6">
-        <div className="text-center mb-10">
-          <div className="text-7xl font-bold text-[#F26522] select-none mb-4">φ</div>
-          <h1 className="text-3xl font-bold text-gray-900">KANDU</h1>
-          <p className="text-gray-500 mt-2">A plataforma de profissionais de construção</p>
-        </div>
-        <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">Entrar na plataforma</h2>
-          <p className="text-sm text-gray-500 text-center mb-6">Faça login ou crie uma conta para continuar</p>
-          <Button
-            onClick={() => base44.auth.redirectToLogin(window.location.href)}
-            className="w-full h-12 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-lg shadow-[#F26522]/30"
-          >
-            Entrar / Criar Conta
-          </Button>
-        </div>
+      <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,position:"relative",overflow:"hidden"}}>
+        <div style={hexBg} />
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:80,marginBottom:24,position:"relative",zIndex:1}} alt="KANDU" />
+        <h2 style={{color:"#FFF",fontWeight:800,fontSize:22,marginBottom:8,position:"relative",zIndex:1}}>Entrar na plataforma</h2>
+        <p style={{color:"#AAAAAA",fontSize:14,marginBottom:24,position:"relative",zIndex:1}}>Faz login para continuares</p>
+        <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
+          style={{padding:"16px 40px",background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:"pointer",position:"relative",zIndex:1}}>
+          Entrar / Criar Conta
+        </button>
       </div>
     );
   }
@@ -195,115 +187,55 @@ export default function SetupProfile() {
   // ── Step 1.5: Employer Subtype ──
   if (step === 1.5) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
+      <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
-        <div className="text-center pt-12 pb-6 px-4">
-          <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>
-          <h1 className="text-2xl font-bold text-gray-900">Tipo de Empregador</h1>
-          <p className="text-gray-500 mt-1 text-sm">Selecione o seu perfil de empregador</p>
-        </div>
-
-        <div className="flex-1 flex flex-col justify-center px-6 pb-32 max-w-sm mx-auto w-full gap-4">
-          {/* Simple Employer */}
-          <button
-            onClick={() => setEmployerType('simple')}
-            className={`w-full rounded-2xl border-2 p-5 text-left transition-all ${
-              employerType === 'simple' ? 'border-[#F26522] bg-orange-50' : 'border-gray-200 bg-white'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
-                <Briefcase className="w-5 h-5 text-blue-600" />
+        <div style={hexBg} />
+        <div style={{flex:1,padding:"50px 20px 20px",position:"relative",zIndex:1}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,maxWidth:420,margin:"0 auto 24px"}}>
+            <button onClick={() => setStep(1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer"}}>←</button>
+            <span style={{fontWeight:700,color:"#FFF",fontSize:17}}>Tipo de Empregador</span>
+            <span style={{color:"#AAAAAA",fontSize:13}}>2/3</span>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16,maxWidth:420,margin:"0 auto 16px"}}>
+            {["simple","cia"].map(type => (
+              <div key={type} onClick={() => setEmployerType(type)}
+                style={{background:"#2A2A2A",borderRadius:16,padding:20,textAlign:"center",border:employerType===type?"2px solid #FF6600":"2px solid transparent",cursor:"pointer"}}>
+                <div style={{fontSize:36,marginBottom:8}}>{type==="cia" ? "🏢" : "👤"}</div>
+                <div style={{fontWeight:700,color:"#FFF",fontSize:14}}>{type==="cia" ? "Cia Employer" : "Simple Employer"}</div>
+                <div style={{color:"#AAAAAA",fontSize:12,marginTop:4}}>{type==="cia" ? "Empresa ou Organização" : "Cliente Particular"}</div>
               </div>
-              <div>
-                <p className="font-bold text-gray-900">Simple Employer</p>
-                <p className="text-xs text-gray-500">Cliente particular — contrata profissionais para obras pessoais</p>
-              </div>
-              {employerType === 'simple' && <CheckCircle className="w-5 h-5 text-[#F26522] ml-auto" />}
-            </div>
-          </button>
-
-          {/* Cia Employer */}
-          <button
-            onClick={() => setEmployerType('cia')}
-            className={`w-full rounded-2xl border-2 p-5 text-left transition-all ${
-              employerType === 'cia' ? 'border-[#F26522] bg-orange-50' : 'border-gray-200 bg-white'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center shrink-0">
-                <Shield className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="font-bold text-gray-900">Cia Employer</p>
-                <p className="text-xs text-gray-500">Empresa — gere múltiplos clientes e projetos</p>
-              </div>
-              {employerType === 'cia' && <CheckCircle className="w-5 h-5 text-[#F26522] ml-auto" />}
-            </div>
-          </button>
-
-          {/* Clients Section for Cia */}
-          {employerType === 'cia' && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <p className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <span className="text-purple-600">🏢</span> Clients Section
-              </p>
-              <p className="text-xs text-gray-500 mb-4">Adicione os clientes da sua empresa (opcional — pode fazê-lo mais tarde)</p>
-
-              {/* Client list */}
-              {companyClients.map((c, i) => (
-                <div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 mb-2">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{c.name}</p>
-                    <p className="text-xs text-gray-500">{c.contact}{c.nif ? ` · NIF ${c.nif}` : ''}</p>
-                  </div>
-                  <button onClick={() => removeClient(i)} className="text-red-400 hover:text-red-600 p-1">
-                    <X className="w-4 h-4" />
-                  </button>
+            ))}
+          </div>
+          {employerType === "cia" && (
+            <div style={{background:"#1E1E1E",borderTop:"3px solid #FF6600",borderRadius:"0 0 16px 16px",padding:16,display:"flex",flexDirection:"column",gap:12,maxWidth:420,margin:"0 auto 16px"}}>
+              {[{label:"Nome da Empresa",key:"name"},{label:"Contacto",key:"contact"},{label:"NIF",key:"nif"}].map(({label,key}) => (
+                <div key={key}>
+                  <label style={{color:"#AAAAAA",fontSize:13,display:"block",marginBottom:6}}>{label}</label>
+                  <input placeholder={label} value={newClient[key]} onChange={e => setNewClient(p => ({...p,[key]:e.target.value}))}
+                    style={{width:"100%",padding:12,background:"#2A2A2A",border:"2px solid #FF6600",borderRadius:10,color:"#FFF",boxSizing:"border-box",outline:"none"}} />
                 </div>
               ))}
-
-              {/* Add client form */}
-              <div className="space-y-2 mt-3">
-                <input
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
-                  placeholder="Nome do cliente *"
-                  value={newClient.name}
-                  onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))}
-                />
-                <input
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
-                  placeholder="Contacto (email ou telefone)"
-                  value={newClient.contact}
-                  onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))}
-                />
-                <input
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#F26522]"
-                  placeholder="NIF do cliente"
-                  value={newClient.nif}
-                  onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))}
-                />
-                <button
-                  onClick={addClient}
-                  disabled={!newClient.name}
-                  className="w-full border-2 border-dashed border-purple-300 rounded-xl py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 transition-colors disabled:opacity-40"
-                >
-                  + Adicionar cliente
-                </button>
-              </div>
+              <button onClick={addClient} disabled={!newClient.name}
+                style={{padding:10,background:newClient.name?"#FF6600":"#333",border:"none",borderRadius:10,color:"#FFF",fontWeight:600,cursor:newClient.name?"pointer":"default"}}>
+                + Adicionar cliente
+              </button>
+              {companyClients.map((c,i) => (
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#2A2A2A",borderRadius:10,padding:"8px 12px"}}>
+                  <div>
+                    <div style={{color:"#FFF",fontSize:14,fontWeight:600}}>{c.name}</div>
+                    <div style={{color:"#AAAAAA",fontSize:12}}>{c.contact}{c.nif ? ` · NIF ${c.nif}` : ""}</div>
+                  </div>
+                  <button onClick={() => removeClient(i)} style={{background:"none",border:"none",color:"#EF4444",cursor:"pointer",fontSize:18}}>×</button>
+                </div>
+              ))}
             </div>
           )}
-
-          <Button
-            onClick={handleEmployerContinue}
-            disabled={!employerType}
-            className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-xl shadow-[#F26522]/30"
-          >
-            Continuar
-          </Button>
-          <Button variant="ghost" onClick={() => setStep(1)} className="w-full text-gray-500">
-            Voltar
-          </Button>
+          <div style={{maxWidth:420,margin:"0 auto"}}>
+            <button onClick={handleEmployerContinue} disabled={!employerType}
+              style={{width:"100%",padding:16,background:employerType?"#FF6600":"#333",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:employerType?"pointer":"default"}}>
+              Continuar
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -312,168 +244,79 @@ export default function SetupProfile() {
   // ── Step 2: Identity Verification ──
   if (step === 2) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
+      <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
-        <div className="text-center pt-12 pb-6 px-4">
-          <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>
-          <h1 className="text-2xl font-bold text-gray-900">Verificar Identidade</h1>
-          <p className="text-gray-500 mt-1 text-sm">Opcional — pode fazê-lo mais tarde no perfil</p>
-        </div>
-
-        <div className="flex-1 flex flex-col justify-center px-6 pb-32 max-w-sm mx-auto w-full">
-          {/* Verified - already done */}
-          <div className="bg-white rounded-2xl border-2 border-blue-300 p-5 mb-4 flex items-start gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="font-bold text-gray-900 flex items-center gap-2">Verificado <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">✓ Ativo</span></p>
-              <p className="text-xs text-gray-500 mt-0.5">Email/telefone confirmados pelo sistema de autenticação.</p>
-            </div>
+        <div style={hexBg} />
+        <div style={{flex:1,padding:"50px 20px 20px",display:"flex",flexDirection:"column",alignItems:"center",gap:20,position:"relative",zIndex:1}}>
+          <div style={{display:"flex",alignItems:"center",width:"100%",maxWidth:420,justifyContent:"space-between"}}>
+            <button onClick={() => setStep(visibleProfiles[activeIndex]?.type==="employer" ? 1.5 : 1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer"}}>←</button>
+            <span style={{fontWeight:700,color:"#FFF",fontSize:17}}>Verificação de Identidade</span>
+            <span style={{width:22}} />
           </div>
-
-          {/* Ultra Verified */}
-          <div className="bg-white rounded-2xl border-2 border-green-300 p-5 mb-6">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-                <BadgeCheck className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="font-bold text-gray-900">Ultra Verificado</p>
-                <p className="text-xs text-gray-500 mt-0.5">Submeta o seu documento de identidade (BI, Passaporte ou Carta). A análise é feita manualmente e por KYC.</p>
-              </div>
-            </div>
-
-            <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFileSelect} />
-
-            {idDocPreview ? (
-              <div className="relative rounded-xl overflow-hidden border border-gray-200 mb-3">
-                <img src={idDocPreview} alt="Documento" className="w-full h-36 object-cover" />
-                <button onClick={() => { setIdDocFile(null); setIdDocPreview(null); }} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1">
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full border-2 border-dashed border-green-300 rounded-xl p-6 flex flex-col items-center gap-2 text-green-600 hover:bg-green-50 transition-colors mb-3"
-              >
-                <Upload className="w-6 h-6" />
-                <span className="text-sm font-medium">Carregar documento</span>
-                <span className="text-xs text-gray-400">BI, Passaporte ou Carta de Condução</span>
-              </button>
-            )}
+          <span style={{background:"#22C55E",color:"#FFF",padding:"8px 20px",borderRadius:20,fontWeight:700,fontSize:14}}>✓ Verified</span>
+          <div style={{width:160,height:160,clipPath:"polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",background:"#1A1A1A",border:"4px solid #FF6600",boxShadow:"0 0 30px #FF660066",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+            <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:50}} alt="" />
+            <span style={{fontWeight:900,color:"#FFF",fontSize:15,marginTop:4}}>Ultra</span>
+            <span style={{fontWeight:900,color:"#FFF",fontSize:15}}>Verified</span>
           </div>
-
-          <Button
-            onClick={() => handleFinish(false)}
-            disabled={isCreating || !idDocFile}
-            className="w-full h-13 bg-green-600 hover:bg-green-700 text-white font-bold rounded-2xl mb-3 shadow-lg"
-          >
-            {isUploading ? 'A enviar documento...' : isCreating ? 'A criar perfil...' : 'Submeter e continuar'}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleFinish(true)}
-            disabled={isCreating}
-            className="w-full text-gray-500 hover:text-gray-700"
-          >
-            Saltar por agora
-          </Button>
+          <p style={{color:"#AAAAAA",fontSize:14,textAlign:"center",maxWidth:300}}>Submete o teu documento de identidade para ganhar o badge máximo de confiança</p>
+          <input ref={fileInputRef} type="file" accept="image/*,application/pdf" style={{display:"none"}} onChange={handleFileSelect} />
+          {idDocPreview ? (
+            <div style={{position:"relative",width:"100%",maxWidth:420,borderRadius:12,overflow:"hidden",border:"2px solid #FF6600"}}>
+              <img src={idDocPreview} alt="Documento" style={{width:"100%",height:140,objectFit:"cover"}} />
+              <button onClick={() => { setIdDocFile(null); setIdDocPreview(null); }} style={{position:"absolute",top:8,right:8,background:"#EF4444",border:"none",borderRadius:"50%",width:28,height:28,color:"#FFF",cursor:"pointer",fontWeight:700}}>×</button>
+            </div>
+          ) : (
+            <div style={{display:"flex",gap:12,width:"100%",maxWidth:420}}>
+              {["Frente do BI/CC","Verso do BI/CC"].map(label => (
+                <div key={label} onClick={() => fileInputRef.current?.click()}
+                  style={{flex:1,height:100,background:"#2A2A2A",border:"2px dashed #FF6600",borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",gap:6}}>
+                  <span style={{fontSize:28,color:"#FF6600"}}>📷</span>
+                  <span style={{fontSize:12,color:"#AAAAAA"}}>{label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <p style={{fontSize:11,color:"#555",textAlign:"center"}}>De acordo com RGPD, os teus dados estão protegidos.</p>
+          <button onClick={() => handleFinish(false)} disabled={isCreating || !idDocFile}
+            style={{width:"100%",maxWidth:420,padding:16,background:idDocFile?"#FF6600":"#333",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:idDocFile?"pointer":"default"}}>
+            {isUploading ? "A carregar..." : isCreating ? "A criar perfil..." : "Submeter Documentos"}
+          </button>
+          <button onClick={() => handleFinish(true)} disabled={isCreating} style={{background:"none",border:"none",color:"#666",cursor:"pointer",fontSize:14}}>Fazer mais tarde</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-indigo-100 flex flex-col">
+    <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
-      {/* Header */}
-      <div className="text-center pt-12 pb-6 px-4">
-        <div className="text-6xl font-bold text-[#F26522] select-none mb-3">φ</div>
-        <h1 className="text-2xl font-bold text-gray-900">Bem-vindo ao KANDU</h1>
-        <p className="text-gray-600 mt-1 text-sm">Selecione o tipo de perfil</p>
-        {user && <p className="text-xs text-gray-400 mt-1">{user.email}</p>}
-      </div>
-
-      {/* Carousel */}
-      <div className="flex-1 flex flex-col justify-center px-6 pb-32">
-        {/* Cards */}
-        <div className="relative">
-          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4" style={{ scrollbarWidth: 'none' }}>
-            {visibleProfiles.map((p, idx) => (
-              <div
-                key={p.type}
-                className={`flex-shrink-0 w-72 snap-center cursor-pointer transition-all duration-300 ${
-                  activeIndex === idx ? 'scale-100 opacity-100' : 'scale-95 opacity-60'
-                }`}
-                style={{ scrollSnapAlign: 'center' }}
-                onClick={() => setActiveIndex(idx)}
-              >
-                <div className={`bg-white rounded-3xl shadow-xl border-2 p-6 relative ${
-                  activeIndex === idx ? 'border-[#F26522] shadow-[#F26522]/20' : 'border-transparent'
-                }`}>
-                  {activeIndex === idx && (
-                    <div className="absolute top-4 right-4">
-                      <CheckCircle className="w-6 h-6 text-[#F26522]" />
-                    </div>
-                  )}
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${p.gradient} flex items-center justify-center mb-4 mx-auto shadow-lg`}>
-                    <p.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-center text-gray-900 mb-2">{p.title}</h3>
-                  <p className="text-sm text-gray-500 text-center mb-5">{p.description}</p>
-                  <div className="space-y-2">
-                    {p.features.map((feat, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                        <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                        {feat}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+      <div style={hexBg} />
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"60px 20px 100px",gap:24,position:"relative",zIndex:1}}>
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:50}} alt="KANDU" />
+        <div style={{textAlign:"center"}}>
+          <h2 style={{fontSize:22,fontWeight:800,color:"#FFF",margin:"0 0 6px"}}>Como vais usar o KANDU?</h2>
+          {user && <p style={{fontSize:12,color:"#AAAAAA",margin:0}}>{user.email}</p>}
+        </div>
+        <div style={{width:"100%",maxWidth:420,display:"flex",flexDirection:"column",gap:14}}>
+          {visibleProfiles.map((profile, idx) => (
+            <div key={profile.type} onClick={() => setActiveIndex(idx)}
+              style={{background:"#2A2A2A",borderRadius:16,padding:20,borderLeft:"4px solid #FF6600",border:activeIndex===idx?"2px solid #FF6600":"2px solid transparent",borderLeft:"4px solid #FF6600",cursor:"pointer",display:"flex",alignItems:"center",gap:16}}>
+              <span style={{fontSize:38}}>{profile.type==="worker" ? "⛑️" : profile.type==="employer" ? "💼" : "🛡️"}</span>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700,fontSize:17,color:"#FFF"}}>{profile.title}</div>
+                <div style={{fontSize:13,color:"#AAAAAA",marginTop:4}}>{profile.description}</div>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Controls */}
-        <div className="flex justify-center items-center gap-4 mt-4">
-          <button
-            onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
-            disabled={activeIndex === 0}
-            className="p-2 rounded-full bg-white shadow disabled:opacity-30"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <div className="flex gap-2">
-            {visibleProfiles.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveIndex(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${activeIndex === idx ? 'bg-[#F26522] w-6' : 'bg-gray-300'}`}
-              />
-            ))}
-          </div>
-          <button
-            onClick={() => setActiveIndex(Math.min(visibleProfiles.length - 1, activeIndex + 1))}
-            disabled={activeIndex === profileTypes.length - 1}
-            className="p-2 rounded-full bg-white shadow disabled:opacity-30"
-          >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
-          </button>
+              <span style={{color:activeIndex===idx?"#FF6600":"#555",fontSize:22}}>›</span>
+            </div>
+          ))}
         </div>
       </div>
-
-      {/* Sticky CTA */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-4 bg-gradient-to-t from-white/95 via-white/80 to-transparent">
-        <Button
-          onClick={handleContinueToVerify}
-          disabled={isCreating}
-          className="w-full h-14 bg-[#F26522] hover:bg-orange-600 text-white font-bold rounded-2xl text-base shadow-xl shadow-[#F26522]/30"
-        >
-          {user ? `Continuar como ${profile.title}` : 'Fazer Login'}
-        </Button>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px 20px 28px",background:"linear-gradient(to top, #1A1A1A 70%, transparent)",zIndex:10}}>
+        <button onClick={handleContinueToVerify} disabled={isCreating}
+          style={{width:"100%",maxWidth:420,display:"block",margin:"0 auto",padding:16,background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:"pointer"}}>
+          {user ? `Continuar como ${visibleProfiles[activeIndex]?.title}` : 'Fazer Login'}
+        </button>
       </div>
     </div>
   );
