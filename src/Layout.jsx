@@ -143,162 +143,116 @@ export default function Layout({ children }) {
     return children;
   }
 
-  // Determinar itens de navegação baseado no tipo de usuário
-  const navItems = user?.user_type === 'admin' 
-    ? adminNavigationItems 
-    : user?.user_type === 'worker' 
-      ? workerNavigationItems 
-      : employerNavigationItems;
-
   return (
-            <div className="min-h-screen bg-gray-50">
-              <Toaster position="top-center" richColors />
-      {/* Sidebar - Desktop */}
+    <div style={{minHeight:"100vh", background:"#1A1A1A"}}>
+      <Toaster position="top-center" richColors />
+
+      {/* Sidebar Desktop */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <div className="flex-1 flex flex-col min-h-0 bg-white border-r border-gray-200">
-          <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-            <div className="flex items-center flex-shrink-0 px-4 mb-8">
-              <span className="text-3xl font-bold text-[#F26522] select-none">φ</span>
-              <span className="ml-2 text-lg font-bold text-gray-900">KANDU</span>
+        <div style={{flex:1, display:"flex", flexDirection:"column", minHeight:0, background:"#111111", borderRight:"1px solid #222"}}>
+          <div style={{flex:1, display:"flex", flexDirection:"column", paddingTop:20, paddingBottom:16, overflowY:"auto"}}>
+            <div style={{display:"flex", alignItems:"center", padding:"0 16px", marginBottom:32}}>
+              <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png" style={{width:140}} alt="KANDU" />
             </div>
-            <nav className="flex-1 px-2 space-y-1">
+            <nav style={{flex:1, padding:"0 8px", display:"flex", flexDirection:"column", gap:4}}>
               {navItems.map((item) => {
                 const isActive = location.pathname === item.url;
                 return (
-                  <Link
-                    key={`desktop-${item.title}`}
-                    to={item.url}
-                    className={`group flex items-center justify-between px-2 py-2 text-sm font-medium rounded-md transition-colors ${
-                      isActive
-                        ? "bg-blue-100 text-blue-900"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <item.icon className="mr-3 h-6 w-6 text-gray-400" />
+                  <Link key={`desktop-${item.title}`} to={item.url}
+                    style={{display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 12px", borderRadius:8, textDecoration:"none",
+                      background: isActive ? "#FF660022" : "transparent",
+                      color: isActive ? "#FF6600" : "#AAAAAA",
+                      borderLeft: isActive ? "3px solid #FF6600" : "3px solid transparent",
+                      fontWeight: isActive ? 600 : 400, fontSize:14, transition:"all 0.15s"}}>
+                    <div style={{display:"flex", alignItems:"center", gap:12}}>
+                      <item.icon size={18} />
                       {item.title === 'admin' ? 'Administração' : t(item.title)}
                     </div>
                     {item.title === 'applications' && unreadNotifications.applications > 0 && (
-                      <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs bg-blue-500">
+                      <span style={{background:"#FF6600", color:"#FFF", borderRadius:"50%", minWidth:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700}}>
                         {unreadNotifications.applications}
-                      </Badge>
+                      </span>
                     )}
                   </Link>
                 );
               })}
             </nav>
           </div>
-          <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-            <div className="flex items-center">
-              <Avatar>
-                <AvatarFallback className="bg-blue-500 text-white">
-                  {user?.full_name?.charAt(0) || <User className="w-5 h-5" />}
-                </AvatarFallback>
-              </Avatar>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-                  {user?.full_name || user?.email}
-                </p>
-                <p className="text-xs font-medium text-gray-500">{user?.user_type}</p>
-              </div>
+          <div style={{borderTop:"1px solid #222", padding:"12px 16px", display:"flex", alignItems:"center", gap:10}}>
+            <div style={{width:36, height:36, borderRadius:"50%", background:"#FF6600", display:"flex", alignItems:"center", justifyContent:"center", color:"#FFF", fontWeight:700, fontSize:16, flexShrink:0}}>
+              {user?.full_name?.charAt(0) || "U"}
+            </div>
+            <div>
+              <p style={{fontSize:13, fontWeight:600, color:"#FFF", margin:0}}>{user?.full_name || user?.email}</p>
+              <p style={{fontSize:11, color:"#AAAAAA", margin:0}}>{user?.user_type}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="md:pl-64 flex flex-col flex-1">
-        <main className="flex-1 pb-20 md:pb-0">
+      <div className="md:pl-64" style={{display:"flex", flexDirection:"column", flex:1}}>
+        <main style={{flex:1, paddingBottom:80}}>
           {children}
         </main>
       </div>
 
-      {/* --- Barra de Navegação Inferior (Mobile) --- */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 md:hidden z-50 px-2 pb-safe pt-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
-        <div className="flex justify-between items-end max-w-sm mx-auto pb-2">
-          {/* Início */}
-          <Link
-            to={createPageUrl("Home")}
-            className={`flex flex-col items-center justify-center w-16 transition-colors ${
-              location.pathname === createPageUrl("Home") ? 'text-[#F26522]' : 'text-gray-400'
-            }`}
-          >
-            <MapPin className="w-6 h-6" />
-            {location.pathname === createPageUrl("Home") && <span className="w-1 h-1 bg-[#F26522] rounded-full mt-1" />}
-            <span className="text-[10px] mt-0.5 font-medium">Início</span>
-          </Link>
+      {/* Bottom Nav Mobile */}
+      <nav className="md:hidden" style={{position:"fixed", bottom:0, left:0, right:0, background:"#111111", borderTop:"1px solid #222222", zIndex:50, display:"flex", paddingBottom:"env(safe-area-inset-bottom)"}}>
+        {/* Início */}
+        <Link to={createPageUrl("Home")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Home")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
+          <MapPin size={22} />
+          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Home")?700:400}}>Início</span>
+          {location.pathname===createPageUrl("Home") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
+        </Link>
 
-          {/* Meus Trabalhos */}
-          <Link
-            to={createPageUrl("MyJobs")}
-            className={`flex flex-col items-center justify-center w-16 transition-colors relative ${
-              location.pathname === createPageUrl("MyJobs") ? 'text-[#F26522]' : 'text-gray-400'
-            }`}
-          >
-            <div className="relative">
-              <FileText className="w-6 h-6" />
-              {unreadNotifications.applications > 0 && (
-                <Badge className="absolute -top-1 -right-2 h-4 w-4 p-0 flex items-center justify-center text-xs bg-[#F26522]">
-                  {unreadNotifications.applications > 9 ? '9+' : unreadNotifications.applications}
-                </Badge>
-              )}
-            </div>
-            {location.pathname === createPageUrl("MyJobs") && <span className="w-1 h-1 bg-[#F26522] rounded-full mt-1" />}
-            <span className="text-[10px] mt-0.5 font-medium">Trabalhos</span>
-          </Link>
-
-          {/* FAB Central — role-aware */}
-          <div className="relative -top-5 flex flex-col items-center w-16">
-            {user?.user_type === 'worker' ? (
-              <Link
-                to={createPageUrl("Scan")}
-                className="w-14 h-14 bg-[#F26522] text-white flex items-center justify-center shadow-xl shadow-[#F26522]/40 hover:bg-orange-600 transition-colors"
-                style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-              >
-                <QrCode className="w-6 h-6" />
-              </Link>
-            ) : (
-              <Link
-                to={createPageUrl("NewJob")}
-                className="w-14 h-14 bg-[#F26522] text-white flex items-center justify-center shadow-xl shadow-[#F26522]/40 hover:bg-orange-600 transition-colors"
-                style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-              >
-                <span className="text-3xl font-light leading-none">+</span>
-              </Link>
+        {/* Trabalhos */}
+        <Link to={createPageUrl("MyJobs")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("MyJobs")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0",position:"relative"}}>
+          <div style={{position:"relative"}}>
+            <FileText size={22} />
+            {unreadNotifications.applications > 0 && (
+              <span style={{position:"absolute",top:-6,right:-8,background:"#FF6600",color:"#FFF",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
+                {unreadNotifications.applications > 9 ? '9+' : unreadNotifications.applications}
+              </span>
             )}
           </div>
+          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("MyJobs")?700:400}}>Trabalhos</span>
+          {location.pathname===createPageUrl("MyJobs") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
+        </Link>
 
-          {/* Chat */}
-          <Link
-            to={createPageUrl("Chat")}
-            className={`flex flex-col items-center justify-center w-16 transition-colors relative ${
-              location.pathname === createPageUrl("Chat") ? 'text-[#F26522]' : 'text-gray-400'
-            }`}
-          >
-            <div className="relative">
-              <MessageCircle className="w-6 h-6" />
-              {unreadNotifications.chat > 0 && (
-                <Badge className="absolute -top-1 -right-2 h-4 w-4 p-0 flex items-center justify-center text-xs bg-[#F26522]">
-                  {unreadNotifications.chat > 9 ? '9+' : unreadNotifications.chat}
-                </Badge>
-              )}
-            </div>
-            {location.pathname === createPageUrl("Chat") && <span className="w-1 h-1 bg-[#F26522] rounded-full mt-1" />}
-            <span className="text-[10px] mt-0.5 font-medium">Chat</span>
-          </Link>
-
-          {/* Perfil */}
-          <Link
-            to={createPageUrl("Profile")}
-            className={`flex flex-col items-center justify-center w-16 transition-colors ${
-              location.pathname === createPageUrl("Profile") ? 'text-[#F26522]' : 'text-gray-400'
-            }`}
-          >
-            <User className="w-6 h-6" />
-            {location.pathname === createPageUrl("Profile") && <span className="w-1 h-1 bg-[#F26522] rounded-full mt-1" />}
-            <span className="text-[10px] mt-0.5 font-medium">Perfil</span>
-          </Link>
+        {/* FAB central */}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",flex:1,paddingBottom:4}}>
+          {user?.user_type === 'worker' ? (
+            <Link to={createPageUrl("Scan")} style={{width:52,height:52,background:"#FF6600",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px #FF660066",textDecoration:"none",marginBottom:2}}>
+              <QrCode size={24} color="#FFF" />
+            </Link>
+          ) : (
+            <Link to={createPageUrl("NewJob")} style={{width:52,height:52,background:"#FF6600",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px #FF660066",textDecoration:"none",marginBottom:2}}>
+              <span style={{color:"#FFF",fontSize:28,lineHeight:1,fontWeight:300}}>+</span>
+            </Link>
+          )}
         </div>
+
+        {/* Chat */}
+        <Link to={createPageUrl("Chat")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Chat")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
+          <div style={{position:"relative"}}>
+            <MessageCircle size={22} />
+            {unreadNotifications.chat > 0 && (
+              <span style={{position:"absolute",top:-6,right:-8,background:"#FF6600",color:"#FFF",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
+                {unreadNotifications.chat > 9 ? '9+' : unreadNotifications.chat}
+              </span>
+            )}
+          </div>
+          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Chat")?700:400}}>Chat</span>
+          {location.pathname===createPageUrl("Chat") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
+        </Link>
+
+        {/* Perfil */}
+        <Link to={createPageUrl("Profile")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Profile")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
+          <User size={22} />
+          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Profile")?700:400}}>Perfil</span>
+          {location.pathname===createPageUrl("Profile") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
+        </Link>
       </nav>
     </div>
   );
