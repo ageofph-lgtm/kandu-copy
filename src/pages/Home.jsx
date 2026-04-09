@@ -6,7 +6,8 @@ import { Job } from "@/entities/Job";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, List, Map, Star, X, Send, Users, Megaphone } from "lucide-react";
+import { Search, MapPin, List, Map, Star, X, Send, Users, Megaphone, Bell } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import MapView from "../components/dashboard/MapView";
@@ -72,7 +73,7 @@ function WorkerCard({ worker, onContact, onProfile, isDark }) {
   );
 }
 
-function EmployerHome({ user, isDark }) {
+function EmployerHome({ user, isDark, logoIcon }) {
   const navigate = useNavigate();
   const bg = isDark ? "#1A1A1A" : "#FFFFFF";
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
@@ -129,14 +130,21 @@ function EmployerHome({ user, isDark }) {
       {/* Top Bar */}
       <div style={{background:headerBg,padding:"50px 16px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:32,height:32,objectFit:"contain"}} alt="" />
-          <span style={{color:text,fontWeight:700,fontSize:15}}>📍 Lisboa, PT</span>
+          <img src={logoIcon} style={{width:32,height:32,objectFit:"contain"}} alt="KANDU" />
+          <MapPin style={{width:18,height:18, color:text}} />
+          <span style={{color:text,fontWeight:700,fontSize:15}}>Lisboa, PT</span>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <span style={{fontSize:20}}>🔔</span>
-          <div style={{width:36,height:36,borderRadius:"50%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontWeight:700,fontSize:16}}>
-            {user?.full_name?.charAt(0) || "U"}
-          </div>
+          <Link to={createPageUrl("Notifications")} style={{color:text, textDecoration:"none", display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", transition:"background 0.2s", "&:hover":{background:isDark?"#333":"#E0E0E0"}}}>
+            <Bell size={20} />
+          </Link>
+          <Link to={createPageUrl("Profile")} style={{width:36,height:36,clipPath:"polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontWeight:700,fontSize:16,overflow:"hidden",flexShrink:0}}>
+            {user?.profile_picture_url ? (
+              <img src={user.profile_picture_url} alt="Profile" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+            ) : (
+              user?.full_name?.charAt(0) || "U"
+            )}
+          </Link>
         </div>
       </div>
 
@@ -179,7 +187,7 @@ function EmployerHome({ user, isDark }) {
       <div style={{flex:1,overflowY:"auto",padding:"8px 16px 100px"}}>
         {loading ? (
           <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:160}}>
-            <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"} style={{width:60,animation:"spin 2s linear infinite"}} alt="" />
+            <img src={logoIcon} style={{width:60,animation:"spin 2s linear infinite"}} alt="KANDU" />
             <p style={{color:subtext,fontSize:13,marginTop:8}}>A carregar...</p>
           </div>
         ) : activeTab === 'professionals' ? (
@@ -244,7 +252,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-function WorkerHome({ user, isDark }) {
+function WorkerHome({ user, isDark, logoIcon }) {
   const bg = isDark ? "#1A1A1A" : "#FFFFFF";
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#1A1A1A";
@@ -294,7 +302,28 @@ function WorkerHome({ user, isDark }) {
   };
 
   return (
-    <div style={{height:"100vh",display:"flex",flexDirection:"column",position:"relative",background:bg}}>
+    <div style={{minHeight:"100vh",background:bg,display:"flex",flexDirection:"column"}}>
+      {/* Top Bar */}
+      <div style={{background:headerBg,padding:"50px 16px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <img src={logoIcon} style={{width:32,height:32,objectFit:"contain"}} alt="KANDU" />
+          <MapPin style={{width:18,height:18, color:text}} />
+          <span style={{color:text,fontWeight:700,fontSize:15}}>Lisboa, PT</span>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <Link to={createPageUrl("Notifications")} style={{color:text, textDecoration:"none", display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", transition:"background 0.2s", "&:hover":{background:isDark?"#333":"#E0E0E0"}}}>
+            <Bell size={20} />
+          </Link>
+          <Link to={createPageUrl("Profile")} style={{width:36,height:36,clipPath:"polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontWeight:700,fontSize:16,overflow:"hidden",flexShrink:0}}>
+            {user?.profile_picture_url ? (
+              <img src={user.profile_picture_url} alt="Profile" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+            ) : (
+              user?.full_name?.charAt(0) || "U"
+            )}
+          </Link>
+        </div>
+      </div>
+
       {/* Floating category pills */}
       <div style={{position:"absolute",top:8,left:0,right:0,zIndex:10,padding:"0 16px"}}>
         <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
@@ -325,7 +354,7 @@ function WorkerHome({ user, isDark }) {
         {loading ? (
           <div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
             <div style={{textAlign:"center"}}>
-              <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"} style={{width:60,animation:"spin 2s linear infinite"}} alt="" />
+              <img src={logoIcon} style={{width:60,animation:"spin 2s linear infinite"}} alt="KANDU" />
               <p style={{color:subtext,marginTop:8,fontSize:13}}>A carregar obras...</p>
             </div>
           </div>
@@ -435,6 +464,10 @@ export default function Home() {
   }
 
   if (!user || user.user_type === 'admin') return null;
-  if (user.user_type === 'worker') return <WorkerHome user={user} isDark={isDark} />;
-  return <EmployerHome user={user} isDark={isDark} />;
+  const logoIcon = isDark
+    ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png"
+    : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png";
+
+  if (user.user_type === 'worker') return <WorkerHome user={user} isDark={isDark} logoIcon={logoIcon} />;
+  return <EmployerHome user={user} isDark={isDark} logoIcon={logoIcon} />;
 }
