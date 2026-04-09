@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
@@ -99,128 +98,80 @@ export default function Calendar() {
     }
   };
 
+  const [selectedDay, setSelectedDay] = useState(new Date());
   const weekDays = getWeekDays();
+  const selectedDayJobs = getJobsForDay(selectedDay);
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      {/* Mobile Header */}
-      <div className="bg-white border-b px-4 py-3">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">Calendário</h1>
-          <Button size="icon" variant="outline">
-            <Filter className="w-4 h-4" />
-          </Button>
-        </div>
-        
-        {/* Navigation Week */}
-        <div className="flex items-center justify-between mt-3">
-          <Button 
-            size="icon" 
-            variant="outline"
-            onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          
-          <div className="text-center">
-            <p className="font-semibold text-gray-900">
-              {format(weekDays[0], "d MMM", { locale: pt })} - {format(weekDays[6], "d MMM", { locale: pt })}
-            </p>
-            <p className="text-sm text-gray-500">
-              {format(currentWeek, "yyyy", { locale: pt })}
-            </p>
-          </div>
-          
-          <Button 
-            size="icon" 
-            variant="outline"
-            onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
+    <div style={{background:"#1A1A1A",minHeight:"100vh",paddingBottom:80}}>
+
+      {/* Top Bar */}
+      <div style={{padding:"50px 20px 12px"}}>
+        <h1 style={{fontWeight:800,fontSize:22,color:"#FFF",margin:0}}>Calendário</h1>
+        <p style={{color:"#AAAAAA",fontSize:14,margin:"4px 0 0"}}>{format(currentWeek, "MMMM yyyy", {locale:pt})}</p>
       </div>
 
-      {/* Days of Week Header */}
-      <div className="bg-white border-b grid grid-cols-7 text-center py-2 text-xs font-medium text-gray-600">
-        {weekDays.map((day, index) => (
-          <div key={index} className={`py-1 ${isSameDay(day, new Date()) ? 'text-blue-600 font-bold' : ''}`}>
-            <div>{format(day, "EEE", { locale: pt })}</div>
-            <div className={`text-lg ${isSameDay(day, new Date()) ? 'bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto' : ''}`}>
-              {format(day, "d")}
+      {/* Week Nav */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 20px",marginBottom:12}}>
+        <button onClick={() => setCurrentWeek(subWeeks(currentWeek,1))} style={{background:"#2A2A2A",border:"none",borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#FF6600",fontSize:18}}>‹</button>
+        <span style={{color:"#AAAAAA",fontSize:13}}>{format(weekDays[0],"d MMM",{locale:pt})} — {format(weekDays[6],"d MMM",{locale:pt})}</span>
+        <button onClick={() => setCurrentWeek(addWeeks(currentWeek,1))} style={{background:"#2A2A2A",border:"none",borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#FF6600",fontSize:18}}>›</button>
+      </div>
+
+      {/* Week Days Grid */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,padding:"0 12px",marginBottom:20}}>
+        {weekDays.map((day, idx) => {
+          const isToday = isSameDay(day, new Date());
+          const isSelected = isSameDay(day, selectedDay);
+          const hasDots = getJobsForDay(day).length > 0;
+          return (
+            <div key={idx} onClick={() => setSelectedDay(day)} style={{display:"flex",flexDirection:"column",alignItems:"center",cursor:"pointer",gap:4}}>
+              <span style={{fontSize:11,color:"#AAAAAA",fontWeight:600}}>{format(day,"EEE",{locale:pt}).toUpperCase()}</span>
+              <div style={{width:34,height:34,borderRadius:"50%",background:isToday||isSelected?"#FF6600":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:isToday||isSelected?700:400,color:isToday||isSelected?"#FFF":"#FFF",fontSize:14}}>
+                {format(day,"d")}
+              </div>
+              {hasDots && <div style={{width:6,height:6,borderRadius:"50%",background:"#FF6600"}} />}
+              {!hasDots && <div style={{width:6,height:6}} />}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Events for selected day */}
+      <div style={{padding:"0 20px",display:"flex",flexDirection:"column",gap:10}}>
+        <p style={{fontWeight:700,fontSize:15,color:"#FFF",marginBottom:4}}>
+          {format(selectedDay,"EEEE, d MMMM",{locale:pt})}
+        </p>
+        {selectedDayJobs.length === 0 ? (
+          <div style={{textAlign:"center",paddingTop:40}}>
+            <div style={{fontSize:48,marginBottom:12}}>📅</div>
+            <p style={{color:"#AAAAAA"}}>Sem eventos para este dia</p>
+          </div>
+        ) : selectedDayJobs.map(job => (
+          <div key={job.id} style={{background:"#2A2A2A",borderRadius:14,padding:14,borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start"}}>
+            <span style={{fontSize:24}}>{job.status==="in_progress"?"🏗️":"📅"}</span>
+            <div style={{flex:1}}>
+              <p style={{fontWeight:700,color:"#FFF",margin:"0 0 4px",fontSize:15}}>{job.title}</p>
+              <p style={{color:"#AAAAAA",fontSize:13,margin:0}}>{job.location} · €{job.price}{job.price_type==="hourly"?"/h":""}</p>
+              <p style={{color:"#AAAAAA",fontSize:12,margin:"4px 0 0"}}>{format(parseISO(job.start_date),"dd/MM/yyyy",{locale:pt})}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Calendar Grid */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-7 divide-x">
-          {weekDays.map((day, index) => {
-            const dayJobs = getJobsForDay(day);
-            const isToday = isSameDay(day, new Date());
-            
-            return (
-              <div key={index} className="min-h-24 p-1">
-                {dayJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className={`mb-1 p-2 rounded text-xs ${getStatusColor(job.status)} text-white`}
-                  >
-                    <div className="font-medium truncate">{job.title}</div>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="truncate">{formatPrice(job.price, job.price_type)}</span>
-                      <span className="text-xs opacity-75">{job.category}</span>
-                    </div>
-                  </div>
-                ))}
-                
-                {/* Empty state */}
-                {dayJobs.length === 0 && (
-                  <div className="h-16 flex items-center justify-center">
-                    {user?.user_type === "employer" && (
-                      <Button size="sm" variant="ghost" className="text-xs text-gray-400">
-                        <Plus className="w-3 h-3" />
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+      {/* Stats */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,padding:"20px 20px 0"}}>
+        <div style={{background:"#2A2A2A",borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
+          <p style={{fontWeight:800,fontSize:18,color:"#FF6600",margin:0}}>{jobs.filter(j=>j.status==="open").length}</p>
+          <p style={{color:"#AAAAAA",fontSize:11,margin:0}}>Abertas</p>
         </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="bg-white border-t p-4">
-        <div className="grid grid-cols-4 gap-4 text-center">
-          <div>
-            <div className="text-lg font-bold text-blue-600">
-              {jobs.filter(j => j.status === 'open').length}
-            </div>
-            <div className="text-xs text-gray-600">Abertas</div>
-          </div>
-          
-          <div>
-            <div className="text-lg font-bold text-yellow-600">
-              {jobs.filter(j => j.status === 'in_progress').length}
-            </div>
-            <div className="text-xs text-gray-600">Em Curso</div>
-          </div>
-          
-          <div>
-            <div className="text-lg font-bold text-green-600">
-              {jobs.filter(j => j.status === 'completed').length}
-            </div>
-            <div className="text-xs text-gray-600">Concluídas</div>
-          </div>
-          
-          <div>
-            <div className="text-lg font-bold text-purple-600">
-              €{jobs.reduce((sum, j) => sum + (j.price || 0), 0).toLocaleString()}
-            </div>
-            <div className="text-xs text-gray-600">Total</div>
-          </div>
+        <div style={{background:"#2A2A2A",borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
+          <p style={{fontWeight:800,fontSize:18,color:"#FF6600",margin:0}}>{jobs.filter(j=>j.status==="in_progress").length}</p>
+          <p style={{color:"#AAAAAA",fontSize:11,margin:0}}>Em Curso</p>
+        </div>
+        <div style={{background:"#2A2A2A",borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
+          <p style={{fontWeight:800,fontSize:18,color:"#22C55E",margin:0}}>{jobs.filter(j=>j.status==="completed").length}</p>
+          <p style={{color:"#AAAAAA",fontSize:11,margin:0}}>Concluídas</p>
         </div>
       </div>
     </div>
