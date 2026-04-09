@@ -47,8 +47,8 @@ export default function Profile() {
       setLoading(true);
       let userData;
       if (viewingUserId) {
-        const users = await base44.entities.User.list();
-        userData = users.find(u => u.id === viewingUserId);
+        const users = await base44.entities.User.filter({ id: viewingUserId });
+        userData = users[0];
       } else {
         userData = await base44.auth.me();
       }
