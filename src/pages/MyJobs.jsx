@@ -105,6 +105,9 @@ function JobItem({ job, application, userType, navigate, currentUser }) {
     return null;
   };
 
+  const statusColor = { open: {bg:"#FF660033",color:"#FF6600",label:"Agendado"}, in_progress: {bg:"#3B82F633",color:"#60A5FA",label:"Em Curso"}, completed_by_employer: {bg:"#A855F733",color:"#C084FC",label:"Aguarda Avaliação"}, completed: {bg:"#22C55E33",color:"#22C55E",label:"Concluído"}, cancelled: {bg:"#44444433",color:"#AAAAAA",label:"Cancelado"} };
+  const s = statusColor[job.status] || {bg:"#33333333",color:"#AAA",label:job.status};
+
   return (
     <>
     {showPinModal && (
@@ -125,49 +128,42 @@ function JobItem({ job, application, userType, navigate, currentUser }) {
         onComplete={() => { setShowCompletionModal(false); window.location.reload(); }}
       />
     )}
-    <Card className="rounded-2xl border-gray-100 shadow-sm">
-      <CardContent className="p-4 space-y-2">
-        <div className="flex justify-between items-start gap-2">
-          <h3 className="font-bold text-gray-900 flex-1 text-sm leading-tight">{job.title}</h3>
-          {statusBadge()}
-        </div>
-        <div className="flex items-center justify-between">
-          <p className="text-2xl font-bold text-[#F26522]">
-            €{job.price}
-            {job.price_type === 'hourly' && <span className="text-sm font-normal text-gray-400">/h</span>}
-          </p>
-          {job.start_date && (
-            <span className="text-xs text-gray-400">
-              {format(new Date(job.start_date), "dd MMM yyyy", { locale: pt })}
-            </span>
-          )}
-        </div>
-        <p className="text-xs text-gray-400 flex items-center gap-1">
-          <MapPin className="w-3 h-3" />{job.location}
+    <div style={{background:"#2A2A2A",borderRadius:16,padding:16,borderLeft:"6px solid #FF6600"}}>
+      {/* Row 1: title + status */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,marginBottom:8}}>
+        <h3 style={{fontWeight:700,color:"#FFF",fontSize:14,flex:1,margin:0,lineHeight:1.3}}>{job.title}</h3>
+        <span style={{background:s.bg,color:s.color,fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:20,flexShrink:0}}>{s.label}</span>
+      </div>
+      {/* Row 2: location + price */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+        <p style={{fontSize:12,color:"#AAAAAA",display:"flex",alignItems:"center",gap:4,margin:0}}>
+          <MapPin style={{width:11,height:11}} />{job.location}
         </p>
-        {otherUser && (
-          <div className="flex items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-100">
-            <UserIcon className="w-3 h-3" />
-            <span>{userType === 'worker' ? 'Empregador' : 'Profissional'}: <strong>{otherUser.full_name}</strong></span>
+        <p style={{fontSize:16,fontWeight:700,color:"#FF6600",margin:0}}>€{job.price}{job.price_type==='hourly'&&<span style={{fontSize:11,fontWeight:400,color:"#AAAAAA"}}>/h</span>}</p>
+      </div>
+      {/* Other user */}
+      {otherUser && (
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,paddingTop:8,borderTop:"1px solid #333"}}>
+          <div style={{width:24,height:24,borderRadius:"50%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontSize:11,fontWeight:700,flexShrink:0}}>
+            {otherUser.full_name?.charAt(0)||"?"}
           </div>
-        )}
-        {actionButton()}
-      </CardContent>
-    </Card>
+          <span style={{fontSize:12,color:"#AAAAAA"}}>{userType==='worker'?'Empregador':'Profissional'}: <strong style={{color:"#FFF"}}>{otherUser.full_name}</strong></span>
+        </div>
+      )}
+      {actionButton()}
+    </div>
     </>  
   );
 }
 
 function EmptyState({ emoji, title, description, onCta, ctaLabel }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-      <div className="text-6xl mb-4">{emoji}</div>
-      <h3 className="font-bold text-gray-900 text-lg">{title}</h3>
-      <p className="text-sm text-gray-500 mt-1 max-w-xs">{description}</p>
+    <div style={{background:"#2A2A2A",borderRadius:16,padding:40,textAlign:"center"}}>
+      <div style={{fontSize:48,marginBottom:12}}>{emoji}</div>
+      <h3 style={{color:"#AAAAAA",fontWeight:600,fontSize:16,margin:"0 0 6px"}}>{title}</h3>
+      {description && <p style={{color:"#666",fontSize:13,margin:"0 0 16px"}}>{description}</p>}
       {onCta && ctaLabel && (
-        <Button className="mt-5 bg-[#F26522] hover:bg-orange-600 rounded-xl px-6" onClick={onCta}>
-          {ctaLabel}
-        </Button>
+        <button onClick={onCta} style={{background:"#FF6600",border:"none",borderRadius:12,padding:"12px 24px",color:"#FFF",fontWeight:700,fontSize:14,cursor:"pointer"}}>{ctaLabel}</button>
       )}
     </div>
   );
@@ -220,75 +216,77 @@ export default function MyJobs() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-5xl font-bold text-[#F26522] animate-pulse">φ</div>
-          <p className="text-gray-400 mt-2 text-sm">A carregar...</p>
+      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+        <div style={{textAlign:"center"}}>
+          <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
+          <p style={{color:"#AAAAAA",marginTop:8,fontSize:13}}>A carregar...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-24">
-      <div className="bg-white border-b px-4 pt-5 pb-3 sticky top-0 z-10">
-        <h1 className="text-2xl font-bold text-gray-900">Meus Trabalhos</h1>
+    <div style={{background:"#1A1A1A",minHeight:"100vh",paddingBottom:80}}>
+      {/* Top Bar */}
+      <div style={{padding:"50px 20px 12px",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <h1 style={{fontWeight:800,fontSize:22,color:"#FFF",margin:0}}>As minhas obras</h1>
+          <span style={{background:"#FF6600",color:"#FFF",borderRadius:"50%",minWidth:24,height:24,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700}}>{jobs.length}</span>
+        </div>
+        {user?.user_type === 'employer' && (
+          <button onClick={() => navigate(createPageUrl("NewJob"))}
+            style={{background:"#FF6600",borderRadius:50,padding:"10px 16px",border:"none",color:"#FFF",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+            + Publicar
+          </button>
+        )}
       </div>
 
-      <div className="px-4 pt-4">
+      {/* Tabs */}
+      <div style={{padding:"0 20px"}}>
         <Tabs defaultValue="in_progress">
-          <TabsList className="grid w-full grid-cols-3 rounded-2xl bg-gray-100 p-1 h-auto">
-            <TabsTrigger value="scheduled" className="rounded-xl flex flex-col py-2 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+          <TabsList style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",background:"#222",borderRadius:16,padding:4,height:"auto"}} className="w-full">
+            <TabsTrigger value="scheduled" style={{borderRadius:12,display:"flex",flexDirection:"column",padding:"8px 0",fontSize:11}} className="data-[state=active]:bg-[#FF6600] data-[state=active]:text-white text-[#AAAAAA]">
               <span>Agendados</span>
-              <span className="font-bold text-[#F26522] text-base">{scheduledJobs.length}</span>
+              <span style={{fontWeight:700,fontSize:15}}>{scheduledJobs.length}</span>
             </TabsTrigger>
-            <TabsTrigger value="in_progress" className="rounded-xl flex flex-col py-2 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <TabsTrigger value="in_progress" style={{borderRadius:12,display:"flex",flexDirection:"column",padding:"8px 0",fontSize:11}} className="data-[state=active]:bg-[#FF6600] data-[state=active]:text-white text-[#AAAAAA]">
               <span>Em Curso</span>
-              <span className="font-bold text-[#F26522] text-base">{inProgressJobs.length}</span>
+              <span style={{fontWeight:700,fontSize:15}}>{inProgressJobs.length}</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="rounded-xl flex flex-col py-2 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <TabsTrigger value="history" style={{borderRadius:12,display:"flex",flexDirection:"column",padding:"8px 0",fontSize:11}} className="data-[state=active]:bg-[#FF6600] data-[state=active]:text-white text-[#AAAAAA]">
               <span>Histórico</span>
-              <span className="font-bold text-[#F26522] text-base">{historyJobs.length}</span>
+              <span style={{fontWeight:700,fontSize:15}}>{historyJobs.length}</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="scheduled" className="mt-4 space-y-3">
+          <TabsContent value="scheduled" style={{marginTop:16,display:"flex",flexDirection:"column",gap:12}}>
             {scheduledJobs.length > 0 ? scheduledJobs.map(job => (
               <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} />
             )) : (
-              <EmptyState
-                emoji="📅"
-                title="Nenhum trabalho agendado"
-                description={user?.user_type === 'worker' ? "Candidate-se a obras para começar." : "Publique uma obra e aceite candidaturas."}
-                onCta={user?.user_type === 'employer' ? () => navigate(createPageUrl("NewJob")) : () => navigate(createPageUrl("Home"))}
-                ctaLabel={user?.user_type === 'employer' ? '+ Publicar Nova Obra' : '🗺️ Explorar Obras'}
-              />
+              <EmptyState emoji="📅" title="Nenhum trabalho agendado"
+                description={user?.user_type==='worker'?"Candidate-se a obras para começar.":"Publique uma obra e aceite candidaturas."}
+                onCta={user?.user_type==='employer'?() => navigate(createPageUrl("NewJob")):() => navigate(createPageUrl("Home"))}
+                ctaLabel={user?.user_type==='employer'?'+ Publicar Nova Obra':'🗺️ Explorar Obras'} />
             )}
           </TabsContent>
 
-          <TabsContent value="in_progress" className="mt-4 space-y-3">
+          <TabsContent value="in_progress" style={{marginTop:16,display:"flex",flexDirection:"column",gap:12}}>
             {inProgressJobs.length > 0 ? inProgressJobs.map(job => (
-                <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} />
+              <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} />
             )) : (
-              <EmptyState
-                emoji="🔨"
-                title="Nenhum trabalho em curso"
+              <EmptyState emoji="🔨" title="Nenhum trabalho em curso"
                 description="Os trabalhos aceites e em andamento aparecem aqui."
-                onCta={user?.user_type === 'employer' ? () => navigate(createPageUrl("NewJob")) : () => navigate(createPageUrl("Home"))}
-                ctaLabel={user?.user_type === 'employer' ? '+ Publicar Obra' : '🗺️ Explorar Obras'}
-              />
+                onCta={user?.user_type==='employer'?() => navigate(createPageUrl("NewJob")):() => navigate(createPageUrl("Home"))}
+                ctaLabel={user?.user_type==='employer'?'+ Publicar Obra':'🗺️ Explorar Obras'} />
             )}
           </TabsContent>
 
-          <TabsContent value="history" className="mt-4 space-y-3">
+          <TabsContent value="history" style={{marginTop:16,display:"flex",flexDirection:"column",gap:12}}>
             {historyJobs.length > 0 ? historyJobs.map(job => (
               <JobItem key={job.id} job={job} application={applications.find(a => a.job_id === job.id)} userType={user.user_type} navigate={navigate} currentUser={user} />
             )) : (
-              <EmptyState
-                emoji="🏆"
-                title="Histórico vazio"
-                description="Os trabalhos concluídos e o seu histórico aparecerão aqui."
-              />
+              <EmptyState emoji="🏆" title="Histórico vazio"
+                description="Os trabalhos concluídos e o seu histórico aparecerão aqui." />
             )}
           </TabsContent>
         </Tabs>
