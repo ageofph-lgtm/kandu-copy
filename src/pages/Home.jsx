@@ -414,12 +414,11 @@ function WorkerHome({ user, isDark, logoIcon }) {
                     <p style={{fontSize:13,color:subtext}}>{sheetJob.description}</p>
                   </div>
                   {sheetJob.start_date && <p style={{fontSize:13,color:"#AAAAAA"}}>📅 Início previsto: {sheetJob.start_date}</p>}
-                  <button style={{width:"100%",padding:"14px 0",background:"#FF6600",border:"none",borderRadius:16,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer"}} onClick={() => setShowJobModal(true)}>
-                    Candidatar-me
-                  </button>
                 </div>
               )}
-              {!sheetExpanded && <p style={{fontSize:11,color:subtext,marginTop:16,textAlign:"center"}}>↑ Deslize para ver detalhes e candidatar-se</p>}
+              <button style={{width:"100%",padding:"14px 0",background:"#FF6600",border:"none",borderRadius:16,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer",marginTop:12}} onClick={() => setShowJobModal(true)}>
+                Candidatar-me
+              </button>
             </div>
           </div>
         </>
