@@ -46,6 +46,10 @@ export default function Profile() {
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#1A1A1A";
   const subtext = isDark ? "#AAAAAA" : "#666666";
+  const border = isDark ? "#333333" : "#E5E5E5";
+  const logoIcon = isDark
+    ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png"
+    : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png";
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -196,7 +200,7 @@ export default function Profile() {
 
       {/* Top Bar */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png" style={{width:32, background:"white", borderRadius:6, padding:2}} alt="" />
+        <img src={logoIcon} style={{width:32, background:isDark?"white":"transparent", borderRadius:6, padding:isDark?2:0}} alt="" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button style={{background:"none",border:"none",cursor:"pointer",fontSize:22}}>⚙️</button>
@@ -210,7 +214,7 @@ export default function Profile() {
       </div>
 
       {/* Avatar Hexagonal */}
-      <div style={{width:100,height:100,clipPath:"polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",overflow:"hidden",border:"4px solid #FF6600",margin:"0 auto 12px",cursor:"pointer"}} onClick={() => avatarInputRef.current?.click()}>
+      <div style={{width:100,height:100,clipPath:"polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",overflow:"hidden",border:"4px solid #FF6600",margin:"0 auto 12px",cursor:"pointer"}} onClick={() => avatarInputRef.current?.click()}>
         {user.avatar_url ? (
           <img src={user.avatar_url} alt="Avatar" style={{width:"100%",height:"100%",objectFit:"cover"}} />
         ) : (
@@ -256,7 +260,7 @@ export default function Profile() {
           <span style={{fontWeight:800,fontSize:20,color:"#FF6600"}}>{xp} XP</span>
           <span style={{color:"#AAAAAA",fontSize:13,marginLeft:"auto"}}>Nível: {getNivelFromXP(xp)}</span>
         </div>
-        <div style={{background:"#333",height:8,borderRadius:8,overflow:"hidden"}}>
+        <div style={{background:border,height:8,borderRadius:8,overflow:"hidden"}}>
           <div style={{background:"#FF6600",height:"100%",borderRadius:8,width:`${xpProgress}%`,transition:"width 0.5s"}} />
         </div>
       </div>
