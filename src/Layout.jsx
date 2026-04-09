@@ -57,6 +57,12 @@ export default function Layout({ children }) {
     return translations[user?.language || 'PT']?.[key] || translations.PT[key] || key;
   };
 
+  const navItems = user?.user_type === 'admin'
+    ? adminNavigationItems
+    : user?.user_type === 'worker'
+    ? workerNavigationItems
+    : employerNavigationItems;
+
   const loadUserAndNotifications = useCallback(async () => {
     try {
       const userData = await UserEntity.me();
