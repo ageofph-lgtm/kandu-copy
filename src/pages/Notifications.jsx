@@ -218,9 +218,10 @@ export default function Notifications() {
       {/* Lista */}
       <div style={{padding:"0 20px",display:"flex",flexDirection:"column",gap:10,paddingBottom:80}}>
         {notifications.length === 0 ? (
-          <div style={{textAlign:"center",padding:60}}>
+          <div style={{textAlign:"center",padding:"60px 20px"}}>
             <div style={{fontSize:48,marginBottom:12}}>🔔</div>
-            <p style={{color:"#AAAAAA",fontSize:15}}>Sem notificações</p>
+            <p style={{color:subtext,fontSize:15,fontWeight:600,margin:"0 0 6px"}}>Sem notificações</p>
+            <p style={{color:"#555",fontSize:13,margin:0}}>Quando houver novidades, aparecem aqui</p>
           </div>
         ) : notifications.map(notif => {
           const {icon, bg} = getIcon(notif.type);
