@@ -60,8 +60,8 @@ export default function Layout({ children }) {
   const navItems = user?.user_type === 'admin'
     ? adminNavigationItems
     : user?.user_type === 'worker'
-    ? workerNavigationItems
-    : employerNavigationItems;
+      ? workerNavigationItems
+      : employerNavigationItems;
 
   const loadUserAndNotifications = useCallback(async () => {
     try {
