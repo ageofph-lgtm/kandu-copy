@@ -48,7 +48,10 @@ const adminNavigationItems = [
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isDark, toggleTheme } = useTheme();
+  const [user, setUser] = useState(null);
+  const [unreadNotifications, setUnreadNotifications] = useState({ chat: 0, applications: 0 });
   const bg = isDark ? "#1A1A1A" : "#FFFFFF";
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#1A1A1A";
@@ -56,6 +59,8 @@ export default function Layout({ children }) {
   const border = isDark ? "#222" : "#E5E5E5";
   const sidebarBg = isDark ? "#111111" : "#F8F8F8";
   const bottomNavBg = isDark ? "#111111" : "#FFFFFF";
+
+  const t = (key) => translations?.pt?.[key] || translations?.en?.[key] || key;
 
   const navItems = user?.user_type === 'admin'
     ? adminNavigationItems
@@ -153,7 +158,7 @@ export default function Layout({ children }) {
         <div style={{flex:1, display:"flex", flexDirection:"column", minHeight:0, background:sidebarBg, borderRight:`1px solid ${border}`}}>
           <div style={{flex:1, display:"flex", flexDirection:"column", paddingTop:20, paddingBottom:16, overflowY:"auto"}}>
             <div style={{display:"flex", alignItems:"center", padding:"0 16px", marginBottom:32}}>
-              <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36}} alt="KANDU" /> style={{width:140}} alt="KANDU" />
+              <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36}} alt="KANDU" />
             </div>
             <div style={{padding:"8px",marginBottom:4}}>
               <button onClick={toggleTheme} title="Alternar tema" style={{background:"none",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",cursor:"pointer",fontSize:13,color:"#FF6600",fontWeight:600,whiteSpace:"nowrap",width:"100%"}}>
