@@ -42,6 +42,17 @@ import { base44 } from "@/api/base44Client";
 export default function Profile() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const border = isDark ? "#333333" : "#E5E5E5";
+  const logoIcon = isDark
+    ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png"
+    : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png";
+  const [user, setUser] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const urlParams = new URLSearchParams(window.location.search);
   const viewingUserId = urlParams.get('userId');
   const [isUploading, setIsUploading] = useState(false);
