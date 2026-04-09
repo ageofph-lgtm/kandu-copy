@@ -127,7 +127,7 @@ function EmployerHome({ user, isDark, logoIcon }) {
   });
 
   return (
-    <div style={{minHeight:"100vh",background:bg,display:"flex",flexDirection:"column"}}>
+    <div style={{height:"100vh",background:bg,display:"flex",flexDirection:"column",overflow:"hidden"}}>
       {/* Top Bar */}
       <div style={{background:headerBg,padding:"50px 16px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -305,7 +305,7 @@ function WorkerHome({ user, isDark, logoIcon }) {
   };
 
   return (
-    <div style={{minHeight:"100vh",background:bg,display:"flex",flexDirection:"column"}}>
+    <div style={{height:"100vh",background:bg,display:"flex",flexDirection:"column",overflow:"hidden"}}>
       {/* Top Bar */}
       <div style={{background:headerBg,padding:"50px 16px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -362,7 +362,7 @@ function WorkerHome({ user, isDark, logoIcon }) {
             </div>
           </div>
         ) : viewMode === 'map' ? (
-          <MapView jobs={filteredJobs} onJobClick={openSheet} center={mapCenter} radius={userLocation?10000:null} userLocation={userLocation} />
+          <div style={{height:'100%'}}><MapView jobs={filteredJobs} onJobClick={openSheet} center={mapCenter} radius={userLocation?10000:null} userLocation={userLocation} /></div>
         ) : (
           <div style={{height:"100%",overflowY:"auto",paddingTop:112,paddingLeft:16,paddingRight:16,paddingBottom:100,background:bg,display:"flex",flexDirection:"column",gap:12}}>
             {filteredJobs.length === 0 ? (
