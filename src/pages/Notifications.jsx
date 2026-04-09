@@ -50,21 +50,19 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   };
 
   return (
-    <Card 
-      className={`cursor-pointer transition-all hover:shadow-md ${
-        notification.is_read ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'
-      }`}
+    <div
+      style={{background:"#2A2A2A",borderRadius:14,cursor:"pointer",opacity:notification.is_read?0.6:1}}
       onClick={handleClick}
     >
-      <CardContent className="p-4">
+      <div style={{padding:16}}>
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3 flex-1">
             <div className="text-2xl">{getNotificationIcon(notification.type)}</div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-semibold text-gray-900">{notification.title}</h4>
+                <h4 style={{fontWeight:600,fontSize:14,color:"#FFFFFF",margin:"0 0 2px"}}>{notification.title}</h4>
                 {!notification.is_read && (
-                  <Badge className="bg-blue-500 h-2 w-2 p-0 rounded-full"></Badge>
+                  <span style={{width:8,height:8,borderRadius:"50%",background:"#FF6600",display:"inline-block",marginLeft:6,flexShrink:0}}></span>
                 )}
               </div>
               <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
@@ -75,33 +73,17 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
           </div>
           <div className="flex items-center gap-1 ml-2">
             {!notification.is_read && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onMarkAsRead(notification);
-                }}
-                className="text-blue-600 hover:text-blue-800"
-              >
+              <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onMarkAsRead(notification); }} className="text-blue-600 hover:text-blue-800">
                 <CheckCircle className="w-4 h-4" />
               </Button>
             )}
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(notification);
-              }}
-              className="text-red-500 hover:text-red-700"
-            >
+            <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(notification); }} className="text-red-500 hover:text-red-700">
               <X className="w-4 h-4" />
             </Button>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
