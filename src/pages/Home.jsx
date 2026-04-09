@@ -19,64 +19,50 @@ const CATEGORIES = ["Pintura", "Eletricidade", "Canalização", "Alvenaria", "La
 function WorkerCard({ worker, onContact, onProfile }) {
   const stars = Math.min(5, Math.max(1, Math.round(worker.rating || 4)));
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform">
-      <div className="flex items-start gap-3 mb-3">
-        {/* Hexagonal avatar */}
+    <div style={{background:"#2A2A2A",borderRadius:16,padding:16,borderLeft:"4px solid #FF6600"}}>
+      <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:12}}>
         <div
-          className="w-14 h-14 flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-[#F26522] to-orange-600 cursor-pointer"
-          style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+          style={{width:52,height:52,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#FF6600",clipPath:'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',cursor:"pointer"}}
           onClick={onProfile}
         >
           {worker.avatar_url ? (
-            <img
-              src={worker.avatar_url}
-              alt={worker.full_name}
-              className="w-full h-full object-cover"
-              style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-            />
+            <img src={worker.avatar_url} alt={worker.full_name} style={{width:"100%",height:"100%",objectFit:"cover",clipPath:'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'}} />
           ) : (
-            <span className="text-white text-lg font-bold select-none">{worker.full_name?.charAt(0) || "?"}</span>
+            <span style={{color:"#FFF",fontSize:18,fontWeight:700}}>{worker.full_name?.charAt(0) || "?"}</span>
           )}
         </div>
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={onProfile}>
-          <div className="flex items-center gap-1 mb-0.5">
-            <h3 className="font-bold text-gray-900 truncate">{worker.full_name || "Profissional"}</h3>
-            {worker.verified && (
-              <span className="text-[#F26522] font-bold text-sm shrink-0" title="Verificado">φ</span>
-            )}
+        <div style={{flex:1,minWidth:0,cursor:"pointer"}} onClick={onProfile}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+            <h3 style={{fontWeight:700,color:"#FFF",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{worker.full_name || "Profissional"}</h3>
+            {worker.verified && <span style={{color:"#FF6600",fontWeight:700,fontSize:13}}>✓</span>}
           </div>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map(i => (
-              <Star key={i} className={`w-3 h-3 ${i <= stars ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />
+          <div style={{display:"flex",alignItems:"center",gap:2}}>
+            {[1,2,3,4,5].map(i => (
+              <Star key={i} style={{width:12,height:12,color:i<=stars?"#FF6600":"#444",fill:i<=stars?"#FF6600":"none"}} />
             ))}
-            <span className="text-xs text-gray-400 ml-1">{worker.rating ? worker.rating.toFixed(1) : "Novo"}</span>
+            <span style={{fontSize:11,color:"#AAAAAA",marginLeft:4}}>{worker.rating ? worker.rating.toFixed(1) : "Novo"}</span>
           </div>
           {worker.city && (
-            <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-              <MapPin className="w-3 h-3" />{worker.city}
+            <p style={{fontSize:11,color:"#AAAAAA",display:"flex",alignItems:"center",gap:4,marginTop:2}}>
+              <MapPin style={{width:11,height:11}} />{worker.city}
             </p>
           )}
         </div>
       </div>
       {worker.skills?.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {worker.skills.slice(0, 4).map((skill, i) => (
-            <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{skill}</span>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
+          {worker.skills.slice(0,4).map((skill,i) => (
+            <span key={i} style={{fontSize:11,background:"#333",color:"#AAAAAA",padding:"2px 8px",borderRadius:20}}>{skill}</span>
           ))}
-          {worker.skills.length > 4 && (
-            <span className="text-xs text-gray-400">+{worker.skills.length - 4}</span>
-          )}
+          {worker.skills.length > 4 && <span style={{fontSize:11,color:"#666"}}>+{worker.skills.length-4}</span>}
         </div>
       )}
       {worker.bio && (
-        <p className="text-xs text-gray-500 line-clamp-2 mb-3">{worker.bio}</p>
+        <p style={{fontSize:12,color:"#888",marginBottom:10,overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{worker.bio}</p>
       )}
-      <Button
-        className="w-full h-10 bg-[#F26522] hover:bg-orange-600 rounded-xl text-sm font-semibold"
-        onClick={onContact}
-      >
-        <Send className="w-4 h-4 mr-2" /> Contactar
-      </Button>
+      <button style={{width:"100%",padding:"10px 0",background:"#FF6600",border:"none",borderRadius:12,color:"#FFF",fontWeight:700,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}} onClick={onContact}>
+        <Send style={{width:14,height:14}} /> Contactar
+      </button>
     </div>
   );
 }
@@ -128,127 +114,103 @@ function EmployerHome({ user }) {
   });
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white px-4 pt-5 pb-3 shadow-sm">
-        <p className="text-xs text-gray-400 mb-0.5">KANDU</p>
-        <h1 className="text-xl font-bold text-gray-900 mb-3">
-          What do you need, <span className="text-[#F26522]">{firstName}</span>?
-        </h1>
-        {/* Tab Toggle */}
-        <div className="flex bg-gray-100 rounded-2xl p-1 mb-3">
-          <button
-            onClick={() => { setActiveTab('professionals'); setSearchTerm(''); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === 'professionals' ? 'bg-white text-[#F26522] shadow-sm' : 'text-gray-500'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            By Professionals
-          </button>
-          <button
-            onClick={() => { setActiveTab('ads'); setSearchTerm(''); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === 'ads' ? 'bg-white text-[#F26522] shadow-sm' : 'text-gray-500'
-            }`}
-          >
-            <Megaphone className="w-4 h-4" />
-            By Ads
-          </button>
+    <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column"}}>
+      {/* Top Bar */}
+      <div style={{background:"#111",padding:"50px 16px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:32,height:32,objectFit:"contain"}} alt="" />
+          <span style={{color:"#FFF",fontWeight:700,fontSize:15}}>📍 Lisboa, PT</span>
         </div>
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <Input
-            placeholder={activeTab === 'professionals' ? 'Procurar profissional, cidade ou especialidade...' : 'Procurar obra, localização...'}
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="pl-12 h-12 rounded-full bg-gray-100 border-0 shadow-sm text-sm"
-          />
-          {searchTerm && (
-            <button onClick={() => setSearchTerm("")} className="absolute right-4 top-1/2 -translate-y-1/2">
-              <X className="w-4 h-4 text-gray-400" />
-            </button>
-          )}
-        </div>
-        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-          <button
-            onClick={() => setSelectedCategory("all")}
-            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              selectedCategory === "all" ? 'bg-[#F26522] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            Todos
-          </button>
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                selectedCategory === cat ? 'bg-[#F26522] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <span style={{fontSize:20}}>🔔</span>
+          <div style={{width:36,height:36,borderRadius:"50%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontWeight:700,fontSize:16}}>
+            {user?.full_name?.charAt(0) || "U"}
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto px-4 pt-4 pb-24">
+      {/* Tab Toggle */}
+      <div style={{display:"flex",background:"#222",margin:"12px 16px 0",borderRadius:16,padding:4}}>
+        <button onClick={() => { setActiveTab('professionals'); setSearchTerm(''); }}
+          style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 0",borderRadius:12,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:activeTab==='professionals'?"#FF6600":"transparent",color:activeTab==='professionals'?"#FFF":"#AAAAAA"}}>
+          <Users style={{width:15,height:15}} /> Profissionais
+        </button>
+        <button onClick={() => { setActiveTab('ads'); setSearchTerm(''); }}
+          style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 0",borderRadius:12,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:activeTab==='ads'?"#FF6600":"transparent",color:activeTab==='ads'?"#FFF":"#AAAAAA"}}>
+          <Megaphone style={{width:15,height:15}} /> Anúncios
+        </button>
+      </div>
+
+      {/* Search Bar */}
+      <div style={{background:"#2A2A2A",borderRadius:24,padding:"10px 16px",display:"flex",gap:8,alignItems:"center",margin:"10px 16px 0"}}>
+        <span style={{color:"#FF6600",fontSize:18}}>🔍</span>
+        <input placeholder={activeTab==='professionals'?"Procurar profissional, cidade ou especialidade...":"Procurar obra, localização..."}
+          value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+          style={{flex:1,background:"transparent",border:"none",outline:"none",color:"#FFF",fontSize:14}} />
+        {searchTerm && <button onClick={() => setSearchTerm("")} style={{background:"none",border:"none",color:"#AAAAAA",cursor:"pointer",fontSize:18}}>×</button>}
+      </div>
+
+      {/* Filter Chips */}
+      <div style={{display:"flex",gap:8,overflowX:"auto",padding:"8px 16px",scrollbarWidth:"none"}}>
+        <button onClick={() => setSelectedCategory("all")}
+          style={{flexShrink:0,padding:"6px 14px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:selectedCategory==="all"?"#FF6600":"#2A2A2A",color:selectedCategory==="all"?"#FFF":"#AAAAAA"}}>
+          Todos
+        </button>
+        {CATEGORIES.map(cat => (
+          <button key={cat} onClick={() => setSelectedCategory(cat)}
+            style={{flexShrink:0,padding:"6px 14px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:selectedCategory===cat?"#FF6600":"#2A2A2A",color:selectedCategory===cat?"#FFF":"#AAAAAA"}}>
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={{flex:1,overflowY:"auto",padding:"8px 16px 100px"}}>
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-40">
-            <div className="text-5xl font-bold text-[#F26522] animate-pulse select-none">φ</div>
-            <p className="text-gray-400 text-sm mt-2">A carregar...</p>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:160}}>
+            <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
+            <p style={{color:"#AAAAAA",fontSize:13,marginTop:8}}>A carregar...</p>
           </div>
         ) : activeTab === 'professionals' ? (
           filtered.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="font-bold text-gray-900">Nenhum profissional encontrado</h3>
-              <p className="text-sm text-gray-500 mt-1">Tente outra especialidade ou localidade</p>
+            <div style={{textAlign:"center",paddingTop:60}}>
+              <div style={{fontSize:48,marginBottom:12}}>🔍</div>
+              <h3 style={{color:"#FFF",fontWeight:700}}>Nenhum profissional encontrado</h3>
+              <p style={{color:"#AAAAAA",fontSize:13,marginTop:4}}>Tente outra especialidade ou localidade</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              <p className="text-xs text-gray-400 font-medium">{filtered.length} profissiona{filtered.length === 1 ? 'l' : 'is'} disponíve{filtered.length === 1 ? 'l' : 'is'}</p>
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+              <p style={{fontSize:11,color:"#AAAAAA",fontWeight:600}}>{filtered.length} profissiona{filtered.length===1?'l':'is'} disponíve{filtered.length===1?'l':'is'}</p>
               {filtered.map(worker => (
-                <WorkerCard
-                  key={worker.id}
-                  worker={worker}
+                <WorkerCard key={worker.id} worker={worker}
                   onContact={() => navigate(createPageUrl("Chat") + `?userId=${worker.id}`)}
-                  onProfile={() => navigate(createPageUrl("Profile") + `?userId=${worker.id}`)}
-                />
+                  onProfile={() => navigate(createPageUrl("Profile") + `?userId=${worker.id}`)} />
               ))}
             </div>
           )
         ) : (
           filteredJobs.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">📋</div>
-              <h3 className="font-bold text-gray-900">Nenhum anúncio encontrado</h3>
-              <p className="text-sm text-gray-500 mt-1">Tente outro filtro de categoria</p>
+            <div style={{textAlign:"center",paddingTop:60}}>
+              <div style={{fontSize:48,marginBottom:12}}>📋</div>
+              <h3 style={{color:"#FFF",fontWeight:700}}>Nenhum anúncio encontrado</h3>
+              <p style={{color:"#AAAAAA",fontSize:13,marginTop:4}}>Tente outro filtro de categoria</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              <p className="text-xs text-gray-400 font-medium">{filteredJobs.length} anúncio{filteredJobs.length === 1 ? '' : 's'} disponíve{filteredJobs.length === 1 ? 'l' : 'is'}</p>
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+              <p style={{fontSize:11,color:"#AAAAAA",fontWeight:600}}>{filteredJobs.length} anúncio{filteredJobs.length===1?'':'s'} disponíve{filteredJobs.length===1?'l':'is'}</p>
               {filteredJobs.map(job => (
-                <div key={job.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-bold text-gray-900 flex-1 mr-2 text-sm">{job.title}</h3>
-                    <p className="text-xl font-bold text-[#F26522] shrink-0">
-                      €{job.price}{job.price_type === 'hourly' ? '/h' : ''}
-                    </p>
+                <div key={job.id} style={{background:"#2A2A2A",borderRadius:16,padding:16,borderLeft:"4px solid #FF6600"}}>
+                  <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:8}}>
+                    <h3 style={{fontWeight:700,color:"#FFF",flex:1,marginRight:8,fontSize:14,margin:0}}>{job.title}</h3>
+                    <p style={{fontSize:18,fontWeight:700,color:"#FF6600",flexShrink:0,margin:0}}>€{job.price}{job.price_type==='hourly'?'/h':''}</p>
                   </div>
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <Badge variant="secondary" className="text-xs">{job.category}</Badge>
-                    {job.urgency === 'high' && <Badge className="bg-red-100 text-red-700 text-xs border-0">🔴 Urgente</Badge>}
-                    {job.price_type === 'negotiable' && <Badge className="bg-green-100 text-green-700 text-xs border-0">🤝 Negociável</Badge>}
+                  <div style={{display:"flex",gap:6,marginBottom:6,flexWrap:"wrap"}}>
+                    <span style={{fontSize:11,background:"#333",color:"#AAAAAA",padding:"2px 8px",borderRadius:20}}>{job.category}</span>
+                    {job.urgency==='high' && <span style={{fontSize:11,background:"#2D1A1A",color:"#EF4444",padding:"2px 8px",borderRadius:20}}>🔴 Urgente</span>}
                   </div>
-                  <p className="text-xs text-gray-400 flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />{job.location}
+                  <p style={{fontSize:11,color:"#AAAAAA",display:"flex",alignItems:"center",gap:4,margin:0}}>
+                    <MapPin style={{width:11,height:11}} />{job.location}
                   </p>
-                  {job.description && (
-                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">{job.description}</p>
-                  )}
                 </div>
               ))}
             </div>
@@ -317,26 +279,17 @@ function WorkerHome({ user }) {
   };
 
   return (
-    <div className="h-screen flex flex-col relative bg-gray-900">
+    <div style={{height:"100vh",display:"flex",flexDirection:"column",position:"relative",background:"#1A1A1A"}}>
       {/* Floating category pills */}
-      <div className="absolute top-4 left-0 right-0 z-10 px-4">
-        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-          <button
-            onClick={() => setSelectedCategory("all")}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold shadow-lg transition-colors ${
-              selectedCategory === "all" ? 'bg-[#F26522] text-white' : 'bg-white/95 text-gray-700'
-            }`}
-          >
+      <div style={{position:"absolute",top:8,left:0,right:0,zIndex:10,padding:"0 16px"}}>
+        <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
+          <button onClick={() => setSelectedCategory("all")}
+            style={{flexShrink:0,padding:"8px 16px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,boxShadow:"0 2px 8px #0008",background:selectedCategory==="all"?"#FF6600":"#111",color:selectedCategory==="all"?"#FFF":"#CCC"}}>
             Todos
           </button>
           {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold shadow-lg transition-colors ${
-                selectedCategory === cat ? 'bg-[#F26522] text-white' : 'bg-white/95 text-gray-700'
-              }`}
-            >
+            <button key={cat} onClick={() => setSelectedCategory(cat)}
+              style={{flexShrink:0,padding:"8px 16px",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,boxShadow:"0 2px 8px #0008",background:selectedCategory===cat?"#FF6600":"#111",color:selectedCategory===cat?"#FFF":"#CCC"}}>
               {cat}
             </button>
           ))}
@@ -344,59 +297,45 @@ function WorkerHome({ user }) {
       </div>
 
       {/* List/Map toggle */}
-      <div className="absolute top-16 right-4 z-10">
-        <button
-          onClick={() => setViewMode(v => v === 'map' ? 'list' : 'map')}
-          className="bg-white rounded-full shadow-lg px-4 py-2 flex items-center gap-2 text-sm font-semibold text-gray-700"
-        >
-          {viewMode === 'map' ? <List className="w-4 h-4" /> : <Map className="w-4 h-4" />}
-          {viewMode === 'map' ? 'Lista' : 'Mapa'}
+      <div style={{position:"absolute",top:56,right:16,zIndex:10}}>
+        <button onClick={() => setViewMode(v => v==='map'?'list':'map')}
+          style={{background:"#111",borderRadius:20,boxShadow:"0 2px 8px #0008",padding:"8px 16px",display:"flex",alignItems:"center",gap:6,fontSize:13,fontWeight:600,color:"#FFF",border:"none",cursor:"pointer"}}>
+          {viewMode==='map' ? <List style={{width:15,height:15}} /> : <Map style={{width:15,height:15}} />}
+          {viewMode==='map' ? 'Lista' : 'Mapa'}
         </button>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-hidden">
+      <div style={{flex:1,overflow:"hidden"}}>
         {loading ? (
-          <div className="h-full flex items-center justify-center bg-gray-50">
-            <div className="text-center">
-              <div className="text-6xl font-bold text-[#F26522] animate-pulse">φ</div>
-              <p className="text-gray-500 mt-2">A carregar obras...</p>
+          <div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+            <div style={{textAlign:"center"}}>
+              <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:60,animation:"pulse 1.5s infinite"}} alt="" />
+              <p style={{color:"#AAAAAA",marginTop:8,fontSize:13}}>A carregar obras...</p>
             </div>
           </div>
         ) : viewMode === 'map' ? (
-          <MapView
-            jobs={filteredJobs}
-            onJobClick={openSheet}
-            center={mapCenter}
-            radius={userLocation ? 10000 : null}
-            userLocation={userLocation}
-          />
+          <MapView jobs={filteredJobs} onJobClick={openSheet} center={mapCenter} radius={userLocation?10000:null} userLocation={userLocation} />
         ) : (
-          <div className="h-full overflow-auto pt-28 px-4 pb-28 bg-gray-50 space-y-3">
+          <div style={{height:"100%",overflowY:"auto",paddingTop:112,paddingLeft:16,paddingRight:16,paddingBottom:100,background:"#1A1A1A",display:"flex",flexDirection:"column",gap:12}}>
             {filteredJobs.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="font-bold text-gray-900">Nenhum trabalho disponível</h3>
-                <p className="text-sm text-gray-500 mt-1">Tente outro filtro de categoria</p>
+              <div style={{textAlign:"center",paddingTop:60}}>
+                <div style={{fontSize:48,marginBottom:12}}>🔍</div>
+                <h3 style={{color:"#FFF",fontWeight:700}}>Nenhum trabalho disponível</h3>
+                <p style={{color:"#AAAAAA",fontSize:13,marginTop:4}}>Tente outro filtro de categoria</p>
               </div>
             ) : filteredJobs.map(job => (
-              <div
-                key={job.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 cursor-pointer active:scale-[0.99] transition-transform"
-                onClick={() => openSheet(job)}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-bold text-gray-900 flex-1 mr-2 text-sm">{job.title}</h3>
-                  <p className="text-xl font-bold text-[#F26522] shrink-0">
-                    €{job.price}{job.price_type === 'hourly' ? '/h' : ''}
-                  </p>
+              <div key={job.id} style={{background:"#2A2A2A",borderRadius:16,padding:16,borderLeft:"4px solid #FF6600",cursor:"pointer"}} onClick={() => openSheet(job)}>
+                <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:6}}>
+                  <h3 style={{fontWeight:700,color:"#FFF",flex:1,marginRight:8,fontSize:14,margin:0}}>{job.title}</h3>
+                  <p style={{fontSize:18,fontWeight:700,color:"#FF6600",flexShrink:0,margin:0}}>€{job.price}{job.price_type==='hourly'?'/h':''}</p>
                 </div>
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <Badge variant="secondary" className="text-xs">{job.category}</Badge>
-                  {job.urgency === 'high' && <Badge className="bg-red-100 text-red-700 text-xs border-0">🔴 Urgente</Badge>}
+                <div style={{display:"flex",gap:6,marginBottom:6,flexWrap:"wrap"}}>
+                  <span style={{fontSize:11,background:"#333",color:"#AAAAAA",padding:"2px 8px",borderRadius:20}}>{job.category}</span>
+                  {job.urgency==='high' && <span style={{fontSize:11,background:"#2D1A1A",color:"#EF4444",padding:"2px 8px",borderRadius:20}}>🔴 Urgente</span>}
                 </div>
-                <p className="text-xs text-gray-400 flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />{job.location}
+                <p style={{fontSize:11,color:"#AAAAAA",display:"flex",alignItems:"center",gap:4,margin:0}}>
+                  <MapPin style={{width:11,height:11}} />{job.location}
                 </p>
               </div>
             ))}
@@ -407,73 +346,40 @@ function WorkerHome({ user }) {
       {/* Bottom Sheet */}
       {sheetJob && (
         <>
-          <div className="fixed inset-0 z-[55]" onClick={() => setSheetJob(null)} />
-          <div
-            className="fixed inset-x-0 z-[60] bg-white rounded-t-3xl shadow-2xl transition-all duration-300 overflow-hidden"
-            style={{ bottom: '80px', height: sheetExpanded ? '72vh' : '32vh' }}
-          >
-            {/* Drag handle */}
-            <div
-              className="flex justify-center pt-3 pb-2 cursor-pointer"
-              onClick={() => setSheetExpanded(e => !e)}
-            >
-              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          <div style={{position:"fixed",inset:0,zIndex:55}} onClick={() => setSheetJob(null)} />
+          <div style={{position:"fixed",left:0,right:0,zIndex:60,background:"#2A2A2A",borderRadius:"20px 20px 0 0",boxShadow:"0 -4px 30px #0008",transition:"height 0.3s",bottom:80,height:sheetExpanded?"72vh":"32vh",overflow:"hidden"}}>
+            <div style={{display:"flex",justifyContent:"center",paddingTop:12,paddingBottom:8,cursor:"pointer"}} onClick={() => setSheetExpanded(e => !e)}>
+              <div style={{width:40,height:4,background:"#444",borderRadius:4}} />
             </div>
-            <button
-              onClick={() => setSheetJob(null)}
-              className="absolute top-3 right-4 p-1.5 rounded-full hover:bg-gray-100"
-            >
-              <X className="w-4 h-4 text-gray-400" />
-            </button>
-
-            <div className="px-5 overflow-auto h-full pb-8">
-              <Badge variant="secondary" className="mb-2">{sheetJob.category}</Badge>
-              <p className="font-bold text-gray-900 text-lg leading-tight">{sheetJob.title}</p>
-              <p className="text-4xl font-bold text-[#F26522] mt-1">
-                €{sheetJob.price}
-                {sheetJob.price_type === 'hourly' && <span className="text-base font-normal text-gray-400">/h</span>}
-              </p>
-              <div className="flex items-center gap-3 mt-2">
-                {sheetJob.urgency === 'high' && <Badge className="bg-red-100 text-red-700 border-0 text-xs">🔴 Urgente</Badge>}
-                <span className="text-xs text-gray-400 flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />{sheetJob.location}
-                </span>
+            <button onClick={() => setSheetJob(null)} style={{position:"absolute",top:12,right:16,background:"none",border:"none",color:"#AAAAAA",cursor:"pointer",fontSize:20}}>×</button>
+            <div style={{padding:"0 20px",overflowY:"auto",height:"100%",paddingBottom:32}}>
+              <span style={{fontSize:11,background:"#333",color:"#AAAAAA",padding:"2px 8px",borderRadius:20,display:"inline-block",marginBottom:6}}>{sheetJob.category}</span>
+              <p style={{fontWeight:700,color:"#FFF",fontSize:18,margin:"0 0 4px"}}>{sheetJob.title}</p>
+              <p style={{fontSize:36,fontWeight:700,color:"#FF6600",margin:"0 0 8px"}}>€{sheetJob.price}{sheetJob.price_type==='hourly'&&<span style={{fontSize:14,fontWeight:400,color:"#AAAAAA"}}>/h</span>}</p>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                {sheetJob.urgency==='high' && <span style={{fontSize:11,background:"#2D1A1A",color:"#EF4444",padding:"2px 8px",borderRadius:20}}>🔴 Urgente</span>}
+                <span style={{fontSize:11,color:"#AAAAAA",display:"flex",alignItems:"center",gap:4}}><MapPin style={{width:11,height:11}} />{sheetJob.location}</span>
               </div>
-
               {sheetExpanded && (
-                <div className="mt-4 space-y-4">
+                <div style={{marginTop:16,display:"flex",flexDirection:"column",gap:16}}>
                   <div>
-                    <p className="text-sm font-semibold text-gray-700 mb-1">Descrição</p>
-                    <p className="text-sm text-gray-600">{sheetJob.description}</p>
+                    <p style={{fontSize:13,fontWeight:600,color:"#FFF",marginBottom:4}}>Descrição</p>
+                    <p style={{fontSize:13,color:"#AAAAAA"}}>{sheetJob.description}</p>
                   </div>
-                  {sheetJob.start_date && (
-                    <p className="text-sm text-gray-500">📅 Início previsto: {sheetJob.start_date}</p>
-                  )}
-                  <Button
-                    className="w-full h-12 bg-[#F26522] hover:bg-orange-600 rounded-2xl text-base font-bold shadow-lg shadow-[#F26522]/20"
-                    onClick={() => setShowJobModal(true)}
-                  >
+                  {sheetJob.start_date && <p style={{fontSize:13,color:"#AAAAAA"}}>📅 Início previsto: {sheetJob.start_date}</p>}
+                  <button style={{width:"100%",padding:"14px 0",background:"#FF6600",border:"none",borderRadius:16,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer"}} onClick={() => setShowJobModal(true)}>
                     Candidatar-me
-                  </Button>
+                  </button>
                 </div>
               )}
-
-              {!sheetExpanded && (
-                <p className="text-xs text-gray-400 mt-4 text-center">↑ Deslize para ver detalhes e candidatar-se</p>
-              )}
+              {!sheetExpanded && <p style={{fontSize:11,color:"#555",marginTop:16,textAlign:"center"}}>↑ Deslize para ver detalhes e candidatar-se</p>}
             </div>
           </div>
         </>
       )}
 
-      {/* Full job modal for apply form */}
       {showJobModal && sheetJob && (
-        <JobModal
-          job={sheetJob}
-          user={user}
-          onClose={() => setShowJobModal(false)}
-          onApply={() => { setShowJobModal(false); setSheetJob(null); }}
-        />
+        <JobModal job={sheetJob} user={user} onClose={() => setShowJobModal(false)} onApply={() => { setShowJobModal(false); setSheetJob(null); }} />
       )}
     </div>
   );
@@ -510,10 +416,10 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="text-7xl font-bold text-[#F26522] animate-pulse select-none">φ</div>
-          <p className="text-gray-400 mt-3 text-sm">A carregar...</p>
+      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#1A1A1A"}}>
+        <div style={{textAlign:"center"}}>
+          <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png" style={{width:80,animation:"pulse 1.5s infinite"}} alt="" />
+          <p style={{color:"#AAAAAA",marginTop:12,fontSize:13}}>A carregar...</p>
         </div>
       </div>
     );
