@@ -226,9 +226,11 @@ export default function Profile() {
 
       {/* Mapa */}
       {user?.latitude && user?.longitude && (
-        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12, overflow: "hidden", height: 280 }}>
-          <p style={{ fontWeight: 700, fontSize: 15, color: text, marginBottom: 12 }}>Localização</p>
-          <MapView jobs={[]} center={[user.latitude, user.longitude]} userLocation={[user.latitude, user.longitude]} radius={0} />
+        <div style={{ background: surface, borderRadius: 16, marginBottom: 12, overflow: "hidden", height: 300, position: "relative" }}>
+          <p style={{ fontWeight: 700, fontSize: 15, color: text, padding: "16px 16px 0", position: "relative", zIndex: 1 }}>Localização</p>
+          <div style={{ position: "absolute", inset: 0, top: 50 }}>
+            <MapView jobs={[]} center={[user.latitude, user.longitude]} userLocation={[user.latitude, user.longitude]} radius={0} />
+          </div>
         </div>
       )}
 
