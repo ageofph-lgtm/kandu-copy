@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import GdprConsent from "@/components/GdprConsent";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Wrench, Shield, CheckCircle, ChevronLeft, ChevronRight, Upload, BadgeCheck, ShieldCheck, X, Building2 } from "lucide-react";
-import { UploadFile } from "@/integrations/Core";
+import { UploadFile } from "@/api/integrations";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
