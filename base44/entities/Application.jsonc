@@ -1,0 +1,39 @@
+{
+  "name": "Application",
+  "type": "object",
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "description": "ID da obra"
+    },
+    "worker_id": {
+      "type": "string",
+      "description": "ID do profissional candidato"
+    },
+    "employer_id": {
+      "type": "string",
+      "description": "ID do empregador"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "proposed_price": {
+      "type": "number",
+      "description": "Preço proposto pelo worker"
+    },
+    "message": {
+      "type": "string",
+      "description": "Mensagem de candidatura"
+    }
+  },
+  "required": [
+    "job_id",
+    "worker_id"
+  ]
+}
