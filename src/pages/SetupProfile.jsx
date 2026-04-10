@@ -159,9 +159,9 @@ export default function SetupProfile() {
   // Não autenticado — mostrar ecrã de login
   if (!user) {
     return (
-      <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,position:"relative",overflow:"hidden"}}>
+      <div style={{minHeight:"100vh",background:"#111016",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,position:"relative",overflow:"hidden"}}>
         <div style={hexBg} />
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36, objectFit:"contain", maxWidth:160}} alt="KANDU" />
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:64, objectFit:"contain", maxWidth:220}} alt="KANDU" />
         <h2 style={{color:"#FFF",fontWeight:800,fontSize:22,marginBottom:8,position:"relative",zIndex:1}}>Entrar na plataforma</h2>
         <p style={{color:"#AAAAAA",fontSize:14,marginBottom:24,position:"relative",zIndex:1}}>Faz login para continuares</p>
         <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
@@ -184,7 +184,7 @@ export default function SetupProfile() {
   // ── Step 1.5: Employer Subtype ──
   if (step === 1.5) {
     return (
-      <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      <div style={{minHeight:"100vh",background:"#111016",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
         <div style={hexBg} />
         <div style={{flex:1,padding:"50px 20px 20px",position:"relative",zIndex:1}}>
@@ -196,7 +196,7 @@ export default function SetupProfile() {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16,maxWidth:420,margin:"0 auto 16px"}}>
             {["simple","cia"].map(type => (
               <div key={type} onClick={() => setEmployerType(type)}
-                style={{background:"#2A2A2A",borderRadius:16,padding:20,textAlign:"center",border:employerType===type?"2px solid #FF6600":"2px solid transparent",cursor:"pointer"}}>
+                style={{background:"#1C1B22",borderRadius:16,padding:20,textAlign:"center",border:employerType===type?"2px solid #FF6600":"2px solid transparent",cursor:"pointer"}}>
                 <div style={{fontSize:36,marginBottom:8}}>{type==="cia" ? "🏢" : "👤"}</div>
                 <div style={{fontWeight:700,color:"#FFF",fontSize:14}}>{type==="cia" ? "Cia Employer" : "Simple Employer"}</div>
                 <div style={{color:"#AAAAAA",fontSize:12,marginTop:4}}>{type==="cia" ? "Empresa ou Organização" : "Cliente Particular"}</div>
@@ -209,7 +209,7 @@ export default function SetupProfile() {
                 <div key={key}>
                   <label style={{color:"#AAAAAA",fontSize:13,display:"block",marginBottom:6}}>{label}</label>
                   <input placeholder={label} value={newClient[key]} onChange={e => setNewClient(p => ({...p,[key]:e.target.value}))}
-                    style={{width:"100%",padding:12,background:"#2A2A2A",border:"2px solid #FF6600",borderRadius:10,color:"#FFF",boxSizing:"border-box",outline:"none"}} />
+                    style={{width:"100%",padding:12,background:"#1C1B22",border:"2px solid #FF6600",borderRadius:10,color:"#FFF",boxSizing:"border-box",outline:"none"}} />
                 </div>
               ))}
               <button onClick={addClient} disabled={!newClient.name}
@@ -217,7 +217,7 @@ export default function SetupProfile() {
                 + Adicionar cliente
               </button>
               {companyClients.map((c,i) => (
-                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#2A2A2A",borderRadius:10,padding:"8px 12px"}}>
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#1C1B22",borderRadius:10,padding:"8px 12px"}}>
                   <div>
                     <div style={{color:"#FFF",fontSize:14,fontWeight:600}}>{c.name}</div>
                     <div style={{color:"#AAAAAA",fontSize:12}}>{c.contact}{c.nif ? ` · NIF ${c.nif}` : ""}</div>
@@ -241,7 +241,7 @@ export default function SetupProfile() {
   // ── Step 2: Identity Verification ──
   if (step === 2) {
     return (
-      <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      <div style={{minHeight:"100vh",background:"#111016",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
         <div style={hexBg} />
         <div style={{flex:1,padding:"50px 20px 20px",display:"flex",flexDirection:"column",alignItems:"center",gap:20,position:"relative",zIndex:1}}>
@@ -251,8 +251,8 @@ export default function SetupProfile() {
             <span style={{width:22}} />
           </div>
           <span style={{background:"#22C55E",color:"#FFF",padding:"8px 20px",borderRadius:20,fontWeight:700,fontSize:14}}>✓ Verified</span>
-          <div style={{width:160,height:160,clipPath:"polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",background:"#1A1A1A",border:"4px solid #FF6600",boxShadow:"0 0 30px #FF660066",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-            <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36, objectFit:"contain", maxWidth:160}} alt="" />
+          <div style={{width:160,height:160,clipPath:"polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",background:"#111016",border:"4px solid #FF6600",boxShadow:"0 0 30px #FF660066",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+            <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:64, objectFit:"contain", maxWidth:220}} alt="" />
             <span style={{fontWeight:900,color:"#FFF",fontSize:15,marginTop:4}}>Ultra</span>
             <span style={{fontWeight:900,color:"#FFF",fontSize:15}}>Verified</span>
           </div>
@@ -267,7 +267,7 @@ export default function SetupProfile() {
             <div style={{display:"flex",gap:12,width:"100%",maxWidth:420}}>
               {["Frente do BI/CC","Verso do BI/CC"].map(label => (
                 <div key={label} onClick={() => fileInputRef.current?.click()}
-                  style={{flex:1,height:100,background:"#2A2A2A",border:"2px dashed #FF6600",borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",gap:6}}>
+                  style={{flex:1,height:100,background:"#1C1B22",border:"2px dashed #FF6600",borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",gap:6}}>
                   <span style={{fontSize:28,color:"#FF6600"}}>📷</span>
                   <span style={{fontSize:12,color:"#AAAAAA"}}>{label}</span>
                 </div>
@@ -286,11 +286,11 @@ export default function SetupProfile() {
   }
 
   return (
-    <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+    <div style={{minHeight:"100vh",background:"#111016",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
       <div style={hexBg} />
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"60px 20px 100px",gap:24,position:"relative",zIndex:1}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36, objectFit:"contain", maxWidth:160}} alt="KANDU" />
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:64, objectFit:"contain", maxWidth:220}} alt="KANDU" />
         <div style={{textAlign:"center"}}>
           <h2 style={{fontSize:22,fontWeight:800,color:"#FFF",margin:"0 0 6px"}}>Como vais usar o KANDU?</h2>
           {user && <p style={{fontSize:12,color:"#AAAAAA",margin:0}}>{user.email}</p>}
@@ -298,7 +298,7 @@ export default function SetupProfile() {
         <div style={{width:"100%",maxWidth:420,display:"flex",flexDirection:"column",gap:14}}>
           {visibleProfiles.map((profile, idx) => (
             <div key={profile.type} onClick={() => setActiveIndex(idx)}
-              style={{background:"#2A2A2A",borderRadius:16,padding:20,borderLeft:"4px solid #FF6600",border:activeIndex===idx?"2px solid #FF6600":"2px solid transparent",borderLeft:"4px solid #FF6600",cursor:"pointer",display:"flex",alignItems:"center",gap:16}}>
+              style={{background:"#1C1B22",borderRadius:16,padding:20,borderLeft:"4px solid #FF6600",border:activeIndex===idx?"2px solid #FF6600":"2px solid transparent",borderLeft:"4px solid #FF6600",cursor:"pointer",display:"flex",alignItems:"center",gap:16}}>
               <span style={{fontSize:38}}>{profile.type==="worker" ? "⛑️" : profile.type==="employer" ? "💼" : "🛡️"}</span>
               <div style={{flex:1}}>
                 <div style={{fontWeight:700,fontSize:17,color:"#FFF"}}>{profile.title}</div>
@@ -309,7 +309,7 @@ export default function SetupProfile() {
           ))}
         </div>
       </div>
-      <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px 20px 28px",background:"linear-gradient(to top, #1A1A1A 70%, transparent)",zIndex:10}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px 20px 28px",background:"linear-gradient(to top, #111016 70%, transparent)",zIndex:10}}>
         <button onClick={handleContinueToVerify} disabled={isCreating}
           style={{width:"100%",maxWidth:420,display:"block",margin:"0 auto",padding:16,background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:"pointer"}}>
           {user ? `Continuar como ${visibleProfiles[activeIndex]?.title}` : 'Fazer Login'}
