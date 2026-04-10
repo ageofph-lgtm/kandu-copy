@@ -1,0 +1,37 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID do utilizador destinatário"
+    },
+    "type": {
+      "type": "string",
+      "description": "Tipo de notificação"
+    },
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "related_id": {
+      "type": "string",
+      "description": "ID do recurso relacionado"
+    },
+    "action_url": {
+      "type": "string",
+      "description": "URL de destino ao clicar"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id",
+    "title",
+    "message"
+  ]
+}
