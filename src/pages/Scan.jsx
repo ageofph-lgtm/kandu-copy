@@ -14,9 +14,9 @@ export default function ScanPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark } = useTheme();
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const bg = isDark ? "#111016" : "#FFFFFF";
+  const surface = isDark ? "#1C1B22" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
 
   const [loading, setLoading] = useState(true);
@@ -151,7 +151,7 @@ export default function ScanPage() {
       {activeView === "employer" ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0 20px", flex: 1 }}>
           <p style={{ color: subtext, fontSize: 14, marginBottom: 24, textAlign: "center" }}>Mostra este código ao profissional</p>
-          <div style={{ width: 200, height: 200, clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)", background: "#1A1A1A", border: "4px solid #FF6600", boxShadow: "0 0 40px #FF660088", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 200, height: 200, clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)", background: "#111016", border: "4px solid #FF6600", boxShadow: "0 0 40px #FF660088", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 42, fontWeight: 900, color: "#FF6600", letterSpacing: 6 }}>{dailyPin}</span>
           </div>
           <p style={{ color: "#FF6600", fontWeight: 700, fontSize: 22, textAlign: "center", marginTop: 24 }}>⏱ {countdown}s</p>
