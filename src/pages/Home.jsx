@@ -39,7 +39,7 @@ function WorkerHome({ user, isDark }) {
   const [geoStatus, setGeoStatus] = useState("loading"); // "loading" | "ok" | "error"
   const [loading, setLoading] = useState(true);
 
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const surface = isDark ? "#1C1C1C" : "#FFFFFF";
   const surfaceAlpha = isDark ? "rgba(28,28,28,0.95)" : "rgba(255,255,255,0.95)";
@@ -249,9 +249,9 @@ function WorkerHome({ user, isDark }) {
 ───────────────────────────*/
 function EmployerHome({ user, isDark }) {
   const navigate = useNavigate();
-  const bg = isDark ? "#1A1A1A" : "#F5F5F5";
-  const surface = isDark ? "#2A2A2A" : "#FFFFFF";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const bg = isDark ? "#111016" : "#F5F5F5";
+  const surface = isDark ? "#1C1B22" : "#FFFFFF";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const border = isDark ? "#333" : "#E5E5E5";
   const firstName = user.full_name?.split(" ")[0] || "Utilizador";
@@ -259,7 +259,7 @@ function EmployerHome({ user, isDark }) {
   return (
     <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80 }}>
       <div style={{
-        background: isDark ? "#1A1A1A" : "#FFFFFF",
+        background: isDark ? "#111016" : "#FFFFFF",
         padding: "32px 24px 28px",
         borderBottom: isDark ? "none" : "1px solid #F0F0F0"
       }}>
@@ -267,7 +267,7 @@ function EmployerHome({ user, isDark }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ flex: 1 }}>
             <p style={{ margin: 0, fontSize: 13, color: isDark ? "#FF9944" : "#FF6600", fontWeight: 600 }}>Bem-vindo 👋</p>
-            <h1 style={{ margin: "4px 0 6px", fontSize: 28, fontWeight: 900, color: isDark ? "#FFFFFF" : "#1A1A1A", letterSpacing: -0.5 }}>
+            <h1 style={{ margin: "4px 0 6px", fontSize: 28, fontWeight: 900, color: isDark ? "#FFFFFF" : "#111016", letterSpacing: -0.5 }}>
               {firstName}
             </h1>
             <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: isDark ? "#AAAAAA" : "#444444" }}>
