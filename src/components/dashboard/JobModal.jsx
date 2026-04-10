@@ -215,7 +215,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                 background: "#FFF7F0", border: "1px solid #FFD0AA",
                 borderRadius: 14, padding: "12px 16px", marginBottom: 16
               }}>
-                <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: "#1A1A1A" }}>{job.title}</p>
+                <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: "#111016" }}>{job.title}</p>
                 <p style={{ margin: "4px 0 0", fontWeight: 800, fontSize: 18, color: "#FF6600" }}>
                   {formatPrice(job.price, job.price_type)}
                 </p>
@@ -225,7 +225,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
               </div>
 
               {/* Tipo */}
-              <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 14, color: "#1A1A1A" }}>Tipo de candidatura</p>
+              <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 14, color: "#111016" }}>Tipo de candidatura</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
                 {[
                   { type: "application", icon: "✅", label: "Aceito o preço", sub: formatPrice(job.price, job.price_type) },
@@ -242,7 +242,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                     }}
                   >
                     <div style={{ fontSize: 22 }}>{opt.icon}</div>
-                    <p style={{ margin: "4px 0 2px", fontWeight: 700, fontSize: 13, color: applicationType === opt.type ? "#FF6600" : "#1A1A1A" }}>
+                    <p style={{ margin: "4px 0 2px", fontWeight: 700, fontSize: 13, color: applicationType === opt.type ? "#FF6600" : "#111016" }}>
                       {opt.label}
                     </p>
                     <p style={{ margin: 0, fontSize: 11, color: "#888" }}>{opt.sub}</p>
@@ -252,7 +252,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
 
               {applicationType === "proposal" && (
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: "block", fontWeight: 700, fontSize: 14, color: "#1A1A1A", marginBottom: 6 }}>
+                  <label style={{ display: "block", fontWeight: 700, fontSize: 14, color: "#111016", marginBottom: 6 }}>
                     O teu valor (€) *
                   </label>
                   <Input
@@ -266,7 +266,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
               )}
 
               <div style={{ marginBottom: 20 }}>
-                <label style={{ display: "block", fontWeight: 700, fontSize: 14, color: "#1A1A1A", marginBottom: 6 }}>
+                <label style={{ display: "block", fontWeight: 700, fontSize: 14, color: "#111016", marginBottom: 6 }}>
                   Apresenta-te ao empregador *
                 </label>
                 <Textarea
