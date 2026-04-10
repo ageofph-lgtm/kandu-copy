@@ -138,7 +138,11 @@ export default function NewJob() {
     <div style={{background:bg,minHeight:"100vh",paddingBottom:100}}>
 
       {/* Top Bar */}
-      <div style={{padding:"50px 20px 12px",display:"flex",alignItems:"center",gap:12}}>
+      <div style={{padding:"14px 20px 8px"}}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:8}}>
+          <img src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"} alt="KANDU" style={{height:24,objectFit:"contain"}} />
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
         <button onClick={() => navigate(-1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer",padding:0}}>←</button>
         <h1 style={{fontWeight:700,color:text,flex:1,textAlign:"center",margin:0,fontSize:18}}>Nova Obra</h1>
         <span style={{width:22}} />
