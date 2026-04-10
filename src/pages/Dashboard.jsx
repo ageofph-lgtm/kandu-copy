@@ -1,6 +1,5 @@
+
 import React, { useState, useEffect } from "react";
-import { useTheme } from "@/lib/ThemeContext";
-import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Button } from "@/components/ui/button";
@@ -17,13 +16,6 @@ const LISBON_COORDS = [38.7223, -9.1393];
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { isDark } = useTheme();
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
-  const border = isDark ? "#222" : "#E5E5E5";
-  const headerBg = isDark ? "#111111" : "#F0F0F0";
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -168,47 +160,53 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <LoadingScreen label="A carregar..." />;
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-gray-50">
+        <Settings className="w-12 h-12 text-gray-400 animate-spin mb-4" />
+        <p className="text-gray-500">A carregar...</p>
+      </div>);
+
   }
 
   if (!user) {
     return (
-      <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:bg}}>
-        <div style={{textAlign:"center"}}>
-          <p style={{color:subtext,marginBottom:16}}>Não autenticado</p>
+      <div className="h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">Não autenticado</p>
           <Button onClick={() => navigate(createPageUrl("SetupProfile"))}>Ir para Login</Button>
         </div>
       </div>);
+
   }
 
   return (
-    <div style={{height:"100vh",display:"flex",flexDirection:"column",background:bg}}>
-      <header style={{background:headerBg,borderBottom:`1px solid ${border}`,padding:"50px 24px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{flex:1,maxWidth:400,position:"relative"}}>
-          <Search style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#AAAAAA",width:18,height:18}} />
-          <input placeholder={t('searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{width:"100%",background:surface,border:"2px solid #FF6600",borderRadius:12,padding:"10px 12px 10px 40px",color:"#FFF",fontSize:14,outline:"none",boxSizing:"border-box"}} />
+    <div className="h-screen flex flex-col bg-gray-50">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="flex-1 max-w-md relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Input placeholder={t('searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-11" />
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginLeft:12}}>
+        <div className="flex items-center gap-2">
           {(user?.user_type === 'employer' || user?.user_type === 'admin') &&
-          <button onClick={createSampleJobs} disabled={isCreatingSamples} style={{background:surface,border:`1px solid ${border}`,borderRadius:10,padding:"8px 14px",color:subtext,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
-              {isCreatingSamples ? <RefreshCcw style={{width:14,height:14,animation:"spin 1s linear infinite"}} /> : <Plus style={{width:14,height:14}} />}
+          <Button onClick={createSampleJobs} variant="outline" disabled={isCreatingSamples} size="sm">
+              {isCreatingSamples ? <RefreshCcw className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
               Exemplos
-            </button>
+            </Button>
           }
           {(user?.user_type === 'employer' || user?.user_type === 'admin') &&
-          <button onClick={() => navigate(createPageUrl("NewJob"))} style={{background:"#FF6600",border:"none",borderRadius:14,padding:"10px 18px",color:"#FFF",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
-              <Plus style={{width:14,height:14}} />{t('newJob')}
-            </button>
+          <Button onClick={() => navigate(createPageUrl("NewJob"))} className="bg-purple-800 text-slate-100 px-4 py-2 text-sm font-medium opacity-100 rounded-2xl inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-2" />
+              {t('newJob')}
+            </Button>
           }
         </div>
       </header>
-      <div style={{background:headerBg,borderBottom:`1px solid ${border}`,padding:"8px 24px",display:"flex",gap:8,overflowX:"auto"}}>
-        <div style={{display:"flex",gap:8}}>
+      <div className="bg-white border-b border-gray-200 px-6 py-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2">
           {categories.map((category) =>
-          <button key={category} onClick={() => setSelectedCategory(category)} style={{background:selectedCategory===category?"#FF6600":surface,border:selectedCategory===category?"none":`1px solid ${border}`,
-            borderRadius:20,padding:"6px 14px",color:selectedCategory===category?"#FFF":subtext,fontSize:12,fontWeight:selectedCategory===category?700:400,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>
+          <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => setSelectedCategory(category)} className="whitespace-nowrap">
               {category === "all" ? t('allCategories') : t(category.toLowerCase()) || category}
-            </button>
+            </Button>
           )}
         </div>
       </div>
