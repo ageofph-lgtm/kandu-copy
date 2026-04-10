@@ -282,7 +282,11 @@ export default function MyJobs() {
   return (
     <div style={{ background: bg, minHeight: "100vh", paddingBottom: 80 }}>
       {/* Header */}
-      <div style={{ background: surface, borderBottom: `1px solid ${isDark ? "#333" : "#E5E5E5"}`, padding: "20px 20px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ background: surface, borderBottom: `1px solid ${isDark ? "#333" : "#E5E5E5"}`, padding: "16px 20px 14px" }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+          <img src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"} alt="KANDU" style={{ height: 24, objectFit: "contain" }} />
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <p style={{ margin: 0, fontSize: 12, color: subtext }}>Gestão</p>
           <h1 style={{ margin: 0, fontWeight: 800, fontSize: 22, color: text }}>Trabalho</h1>
@@ -295,6 +299,7 @@ export default function MyJobs() {
             <Plus size={15} /> Publicar
           </button>
         )}
+        </div>
       </div>
 
       <div style={{ padding: "16px 20px" }}>
