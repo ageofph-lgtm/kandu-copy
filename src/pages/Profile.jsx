@@ -15,7 +15,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileForm from "../components/profile/ProfileForm";
 import ReviewsSection from "../components/profile/ReviewsSection";
-import MapView from "../components/dashboard/MapView";
 import PortfolioGallery from "../components/profile/PortfolioGallery";
 import DocumentsList from "../components/profile/DocumentsList";
 
@@ -149,7 +148,7 @@ export default function Profile() {
         {isOwnProfile ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22 }}>⚙️</button>
+              <button style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 6px", borderRadius: 8, display:"flex", alignItems:"center", justifyContent:"center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setIsEditing(true)}><Edit2 className="w-4 h-4 mr-2" /> Editar Perfil</DropdownMenuItem>
@@ -164,6 +163,16 @@ export default function Profile() {
         )}
       </div>
 
+
+      {/* KANDU Logo */}
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+        <img
+          src={isDark
+            ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
+            : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"}
+          alt="KANDU" style={{ height: 26, objectFit: "contain" }}
+        />
+      </div>
       {/* Avatar */}
       <div 
         style={{ 
@@ -261,15 +270,7 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Mapa */}
-      {user?.latitude && user?.longitude && (
-        <div style={{ background: surface, borderRadius: 16, marginBottom: 12, overflow: "hidden", height: 300, position: "relative" }}>
-          <p style={{ fontWeight: 700, fontSize: 15, color: text, padding: "16px 16px 0", position: "relative", zIndex: 1 }}>Localização</p>
-          <div style={{ position: "absolute", inset: 0, top: 50 }}>
-            <MapView jobs={[]} center={[user.latitude, user.longitude]} userLocation={[user.latitude, user.longitude]} radius={0} />
-          </div>
-        </div>
-      )}
+
 
       {/* Avaliações */}
       <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
