@@ -122,32 +122,47 @@ export default function CompletionModal({
       
       // Lógica específica para cada tipo de utilizador
       if (currentUser.user_type === 'employer') {
-        // Se worker já avaliou → obra vai direto para completed
-        const workerAlreadyRated = await Rating.filter({ job_id: job.id, rater_id: otherUser.id });
-        const finalStatus = workerAlreadyRated.length > 0 ? 'completed' : 'completed_by_employer';
-        await Job.update(job.id, { status: finalStatus, actual_end_date: finalStatus === 'completed' ? new Date().toISOString() : undefined });
-        await Notification.create({
-          user_id: otherUser.id,
-          type: "job_ready_for_review",
-          title: "Obra finalizada! Avalie o empregador.",
-          message: `O trabalho "${job.title}" foi marcado como concluído. Por favor, deixe sua avaliação.`,
-          related_id: job.id,
-          action_url: createPageUrl("MyJobs")
+        // Verifica se o worker já avaliou ESTE job especificamente
+        let workerRatedThisJob = [];
+        if (otherUser?.id) {
+          const workerRatings = await Rating.filter({ job_id: job.id, rater_id: otherUser.id });
+          workerRatedThisJob = workerRatings.filter(r => r.job_id === job.id);
+        }
+        // Só completa direto se worker já avaliou; caso contrário fica em completed_by_employer
+        const finalStatus = workerRatedThisJob.length > 0 ? 'completed' : 'completed_by_employer';
+        await Job.update(job.id, { 
+          status: finalStatus, 
+          actual_end_date: finalStatus === 'completed' ? new Date().toISOString() : undefined 
         });
+        if (finalStatus === 'completed_by_employer' && otherUser?.id) {
+          await Notification.create({
+            user_id: otherUser.id,
+            type: "job_ready_for_review",
+            title: "✍️ Avalia o empregador!",
+            message: `A obra "${job.title}" foi concluída. Abre Trabalho → Em Curso para avaliar.`,
+            related_id: job.id,
+            action_url: createPageUrl("MyJobs"),
+            is_read: false
+          });
+        }
 
       } else if (currentUser.user_type === 'worker') {
+        // Worker avalia → obra encerra definitivamente
         await Job.update(job.id, {
           status: 'completed',
           actual_end_date: new Date().toISOString()
         });
-        await Notification.create({
-          user_id: otherUser.id,
-          type: "job_completed",
-          title: "Trabalho concluído e avaliado!",
-          message: `O profissional avaliou o seu trabalho em "${job.title}". A obra está oficialmente concluída.`,
-          related_id: job.id,
-          action_url: createPageUrl("Profile")
-        });
+        if (otherUser?.id) {
+          await Notification.create({
+            user_id: otherUser.id,
+            type: "job_completed",
+            title: "⭐ Obra concluída!",
+            message: `O profissional avaliou o trabalho em "${job.title}". Obra oficialmente encerrada.`,
+            related_id: job.id,
+            action_url: createPageUrl("MyJobs"),
+            is_read: false
+          });
+        }
       }
 
       onComplete();
