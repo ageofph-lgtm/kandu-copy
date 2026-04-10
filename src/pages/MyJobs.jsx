@@ -495,7 +495,21 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
           </div>
         </div>
 
-        {expanded && (
+        {/* Banner de avaliação — sempre visível quando obra aguarda avaliação do worker */}
+        {needsWorkerEval && (
+          <div style={{ padding: "0 16px 14px" }}>
+            <button
+              onClick={() => setCompletion({ application, job, otherUser: employer })}
+              style={{ width: "100%", background: "linear-gradient(135deg, #A855F7, #7C3AED)", color: "#FFF",
+                border: "none", borderRadius: 14, padding: "15px", fontWeight: 800, fontSize: 15,
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                boxShadow: "0 4px 20px #A855F744" }}>
+              ✍️ Avaliar Empregador para concluir obra
+            </button>
+          </div>
+        )}
+
+        {expanded && !needsWorkerEval && (
           <div style={{ padding: "0 16px 16px", borderTop: `1px solid ${border}` }}>
             {employer && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
@@ -550,7 +564,6 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
                   {!showFinishPin ? (
                     <button onClick={async () => {
                       setShowFinishPin(true);
-                      // Notificar employer com o PIN
                       try {
                         await Notification.create({
                           user_id: job.employer_id, type: "completion_pin",
@@ -577,14 +590,6 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
                   )}
                 </div>
               </>
-            )}
-
-            {/* Worker avalia */}
-            {needsWorkerEval && (
-              <button onClick={() => setCompletion({ application, job, otherUser: employer })}
-                style={{ width: "100%", background: "#A855F722", color: "#A855F7", border: "1px solid #A855F744", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                ✍️ Avaliar Empregador
-              </button>
             )}
           </div>
         )}
