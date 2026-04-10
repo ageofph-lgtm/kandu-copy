@@ -649,6 +649,7 @@ export default function MyJobs() {
   const [user,         setUser]         = useState(null);
   const [jobs,         setJobs]         = useState([]);
   const [applications, setApplications] = useState([]);
+  const [usersById,    setUsersById]    = useState({});
   const [loading,      setLoading]      = useState(true);
   const [tab,          setTab]          = useState("pending");
 
@@ -676,6 +677,29 @@ export default function MyJobs() {
         jobList = await Job.list(); appList = await Application.list();
       }
       setJobs(jobList); setApplications(appList);
+
+      // Carregar todos os users referenciados (employer_id, worker_id) via asServiceRole
+      const userIds = [...new Set([
+        ...jobList.map(j => j.employer_id).filter(Boolean),
+        ...jobList.map(j => j.worker_id).filter(Boolean),
+        ...appList.map(a => a.worker_id).filter(Boolean),
+        ...appList.map(a => a.employer_id).filter(Boolean),
+      ])];
+      if (userIds.length) {
+        const userMap = {};
+        await Promise.all(userIds.map(uid =>
+          fetch('/api/functions/getUserById', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: uid })
+          })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => { if (data?.id) userMap[data.id] = data; })
+          .catch(() => {})
+        ));
+        setUsersById(userMap);
+      }
     } catch(e) { console.error(e); }
     setLoading(false);
   }, []);
@@ -785,7 +809,7 @@ export default function MyJobs() {
           ))
         ) : (
           currentData.map(job => (
-            <WorkerJobCard key={job.id} job={job}
+            <WorkerJobCard key={job.id} job={job} usersById={usersById}
               application={applications.find(a => a.job_id === job.id && a.worker_id === user.id)}
               user={user} onReload={loadData} isDark={isDark} surface={surface} text={text} subtext={subtext} border={border} />
           ))
