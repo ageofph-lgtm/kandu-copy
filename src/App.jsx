@@ -1,5 +1,5 @@
 import './App.css'
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -14,6 +14,8 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import SplashScreen from '@/components/SplashScreen';
 import LoadingScreen from '@/components/LoadingScreen';
 
+const SPLASH_KEY = "kandu_splash_v2";
+
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
@@ -22,72 +24,63 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
-const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
+// splashActive: se true, suprime o LoadingScreen (a splash já cobre esse tempo)
+const AuthenticatedApp = ({ splashActive }) => {
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show KANDU loading screen while checking auth
   if (isLoadingPublicSettings || isLoadingAuth) {
+    // Enquanto a splash está visível, não mostra nada por baixo
+    if (splashActive) return null;
     return <LoadingScreen />;
   }
 
-  // Handle authentication errors
   if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
+    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
+    if (authError.type === 'auth_required') { navigateToLogin(); return null; }
   }
 
-  // Render the main app
   return (
     <Routes>
       <Route path="/" element={
-        <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
-        </LayoutWrapper>
+        <LayoutWrapper currentPageName={mainPageKey}><MainPage /></LayoutWrapper>
       } />
       {Object.entries(Pages).map(([path, Page]) => (
-        <Route
-          key={path}
-          path={`/${path}`}
-          element={
-            <LayoutWrapper currentPageName={path}>
-              <Page />
-            </LayoutWrapper>
-          }
-        />
+        <Route key={path} path={`/${path}`} element={
+          <LayoutWrapper currentPageName={path}><Page /></LayoutWrapper>
+        } />
       ))}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
 
-
 function App() {
-  const [splashDone, setSplashDone] = useState(
-    () => !!sessionStorage.getItem("kandu_splash_v2")
+  const [splashActive, setSplashActive] = useState(
+    () => !sessionStorage.getItem(SPLASH_KEY)
   );
 
   return (
     <ThemeProvider>
-      {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
-      {splashDone && (
+      {/* Auth provider monta SEMPRE, em background — resolve o auth enquanto a splash corre */}
+      <QueryClientProvider client={queryClientInstance}>
         <AuthProvider>
-          <QueryClientProvider client={queryClientInstance}>
-            <Router>
-              <NavigationTracker />
-              <AuthenticatedApp />
-            </Router>
-            <Toaster />
-            <VisualEditAgent />
-          </QueryClientProvider>
+          <Router>
+            <NavigationTracker />
+            {/* Splash por cima de tudo — desaparece ao terminar */}
+            {splashActive && (
+              <SplashScreen onDone={() => setSplashActive(false)} />
+            )}
+            {/* App visível mas silencioso durante splash */}
+            <div style={{ visibility: splashActive ? "hidden" : "visible" }}>
+              <AuthenticatedApp splashActive={splashActive} />
+            </div>
+          </Router>
+          <Toaster />
+          <VisualEditAgent />
         </AuthProvider>
-      )}
+      </QueryClientProvider>
     </ThemeProvider>
-  )
+  );
 }
 
 export default App
