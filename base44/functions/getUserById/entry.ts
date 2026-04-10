@@ -1,14 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+    const base44 = createClient({ appId: Deno.env.get('APP_ID') || '' });
     const db = base44.asServiceRole;
-
-    // Requer autenticação
-    try { await base44.auth.me(); } catch {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const { userId } = await req.json();
     if (!userId) return Response.json({ error: 'userId required' }, { status: 400 });
@@ -18,7 +13,6 @@ Deno.serve(async (req) => {
 
     if (!user) return Response.json({ error: 'User not found' }, { status: 404 });
 
-    // Retornar apenas campos públicos
     return Response.json({
       id: user.id,
       full_name: user.full_name,
