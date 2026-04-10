@@ -16,8 +16,8 @@ const features = [
 export default function Welcome() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const bg = isDark ? "#111016" : "#FFFFFF";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const logoH = isDark
     ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
