@@ -12,6 +12,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import SplashScreen from '@/components/SplashScreen';
+import LoadingScreen from '@/components/LoadingScreen';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -24,13 +25,9 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
+  // Show KANDU loading screen while checking auth
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Handle authentication errors
@@ -71,7 +68,7 @@ const AuthenticatedApp = () => {
 
 function App() {
   const [splashDone, setSplashDone] = useState(
-    () => !!sessionStorage.getItem("kandu_splash_v1")
+    () => !!sessionStorage.getItem("kandu_splash_v2")
   );
 
   return (
