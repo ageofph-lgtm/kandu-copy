@@ -138,7 +138,7 @@ const STATUS_MAP = {
 };
 
 // ─── EMPLOYER JOB CARD ────────────────────────────────────────────────────────
-function EmployerJobCard({ job, applications, user, onReload, isDark, surface, text, subtext, border }) {
+function EmployerJobCard({ job, applications, user, usersById = {}, onReload, isDark, surface, text, subtext, border }) {
   const [expanded, setExpanded] = useState(false);
   const [showPin,        setShowPin]        = useState(false);
   const [showFinishPin,  setShowFinishPin]  = useState(false);  // employer digita PIN
@@ -151,10 +151,12 @@ function EmployerJobCard({ job, applications, user, onReload, isDark, surface, t
   const completionPin = getCompletionPin(job.id);
   const s = STATUS_MAP[job.status] || STATUS_MAP.cancelled;
 
+  // Usar usersById carregado pelo pai (evita RLS block)
   useEffect(() => {
-    if (job.worker_id)
-      User.filter({ id: job.worker_id }).then(r => r[0] && setOtherUser(r[0])).catch(() => {});
-  }, [job.worker_id]);
+    if (job.worker_id && usersById[job.worker_id]) {
+      setOtherUser(usersById[job.worker_id]);
+    }
+  }, [job.worker_id, usersById]);
 
   // Candidaturas pendentes para esta obra
   const pendingApps = applications.filter(a => a.job_id === job.id && a.status === "pending");
@@ -413,7 +415,7 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
 }
 
 // ─── WORKER JOB CARD ──────────────────────────────────────────────────────────
-function WorkerJobCard({ job, application, user, onReload, isDark, surface, text, subtext, border }) {
+function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDark, surface, text, subtext, border }) {
   const [expanded, setExpanded]     = useState(false);
   const [showKeypad,     setShowKeypad]     = useState(false);
   const [pinInput,       setPinInput]       = useState("");
@@ -432,18 +434,12 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
     return () => clearInterval(t);
   }, [showFinishPin]);
 
+  // Usar usersById carregado pelo pai (evita RLS block)
   useEffect(() => {
-    if (!job.employer_id) return;
-    fetch('/api/functions/getUserById', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: job.employer_id })
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.id) setEmployer(data); })
-      .catch(() => {});
-  }, [job.employer_id]);
+    if (job.employer_id && usersById[job.employer_id]) {
+      setEmployer(usersById[job.employer_id]);
+    }
+  }, [job.employer_id, usersById]);
 
   // Auto-expandir quando obra aguarda avaliação do worker
   useEffect(() => {
@@ -507,24 +503,11 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
         {needsWorkerEval && (
           <div style={{ padding: "0 16px 14px" }}>
             <button
-              onClick={async () => {
-                let resolvedEmployer = employer;
-                if (!resolvedEmployer && job.employer_id) {
-                  try {
-                    const r = await fetch('/api/functions/getUserById', {
-                      method: 'POST',
-                      credentials: 'include',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ userId: job.employer_id })
-                    });
-                    if (r.ok) {
-                      const data = await r.json();
-                      if (data?.id) { resolvedEmployer = data; setEmployer(data); }
-                    }
-                  } catch(_) {}
-                }
-                if (!resolvedEmployer?.id) {
-                  alert("Não foi possível carregar os dados do empregador. Tenta novamente.");
+              onClick={() => {
+                // employer é carregado pelo pai via usersById — fallback: usar employer_id como nome
+                const resolvedEmployer = employer || usersById[job.employer_id] || { id: job.employer_id, full_name: "Empregador" };
+                if (!resolvedEmployer.id) {
+                  alert("Não foi possível identificar o empregador. Tenta recarregar a página.");
                   return;
                 }
                 setCompletion({ application, job, otherUser: resolvedEmployer });
@@ -804,7 +787,7 @@ export default function MyJobs() {
           </div>
         ) : isEmployer ? (
           currentData.map(job => (
-            <EmployerJobCard key={job.id} job={job} applications={applications} user={user}
+            <EmployerJobCard key={job.id} job={job} applications={applications} user={user} usersById={usersById}
               onReload={loadData} isDark={isDark} surface={surface} text={text} subtext={subtext} border={border} />
           ))
         ) : (
