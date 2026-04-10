@@ -1,20 +1,18 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+    // Usar asServiceRole diretamente — sem verificação de session cookie
+    // (credentials:include não funciona no contexto Base44 iframe)
+    const base44 = createClient({ appId: Deno.env.get('APP_ID') || '' });
     const db = base44.asServiceRole;
 
-    // Verificar autenticação — qualquer utilizador autenticado pode chamar
-    let currentUser;
-    try {
-      currentUser = await base44.auth.me();
-    } catch {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await req.json();
-    const { jobId, applicationId, otherUserId, rating, comment, qualities } = body;
+    const { jobId, applicationId, otherUserId, raterId, rating, comment, qualities } = body;
+
+    if (!raterId) {
+      return Response.json({ error: 'raterId required' }, { status: 400 });
+    }
 
     if (!jobId || !otherUserId || !rating) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
@@ -26,7 +24,7 @@ Deno.serve(async (req) => {
 
     const newRating = await db.entities.Rating.create({
       job_id: jobId,
-      rater_id: currentUser.id,
+      rater_id: raterId,
       rated_id: otherUserId,
       rating: rating,
       comment: comment || '',
