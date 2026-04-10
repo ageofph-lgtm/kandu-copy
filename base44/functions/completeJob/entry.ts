@@ -76,9 +76,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── 4. Atualizar XP do utilizador atual ──────────────────────────────────
-    const selfXPGained = 30; // XP_EVENTS.job_completed_self
-    const newSelfXP = (currentUser.xp || 0) + selfXPGained;
+    // ── 4. Atualizar XP do utilizador que avaliou (raterId) ────────────────
+    const raterUser = await db.entities.User.get(raterId);
+    const selfXPGained = 30;
+    const newSelfXP = (raterUser?.xp || 0) + selfXPGained;
     const XP_LEVELS = [
       { name: "Novato", min: 0, max: 999 },
       { name: "Aprendiz", min: 1000, max: 4999 },
@@ -87,19 +88,20 @@ Deno.serve(async (req) => {
       { name: "Mestre", min: 40000, max: Infinity },
     ];
     const selfLevel = XP_LEVELS.find(l => newSelfXP >= l.min && newSelfXP <= l.max) || XP_LEVELS[0];
-    await db.entities.User.update(currentUser.id, {
+    await db.entities.User.update(raterId, {
       xp: newSelfXP,
       xp_level: selfLevel.name
     });
 
     // ── 5. Atualizar status da obra e enviar notificações ────────────────────
+    // raterUserType: determinado pelo campo user_type do rater
+    const raterType = raterUser?.user_type || raterUserType || 'worker';
     let finalJobStatus = 'completed';
     let notifTitle = '';
     let notifMessage = '';
     let notifTarget = otherUserId;
 
-    if (currentUser.user_type === 'employer') {
-      // Se worker já avaliou este job → completed; senão → completed_by_employer
+    if (raterType === 'employer') {
       const workerRatedThisJob = reciprocalForThisJob.length > 0;
       finalJobStatus = workerRatedThisJob ? 'completed' : 'completed_by_employer';
 
@@ -116,7 +118,7 @@ Deno.serve(async (req) => {
         notifMessage = `A obra foi concluída e avaliada por ambas as partes.`;
       }
 
-    } else if (currentUser.user_type === 'worker') {
+    } else {
       finalJobStatus = 'completed';
       await db.entities.Job.update(jobId, {
         status: 'completed',
