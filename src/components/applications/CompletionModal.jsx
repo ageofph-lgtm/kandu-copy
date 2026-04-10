@@ -121,7 +121,10 @@ export default function CompletionModal({
       
       // Lógica específica para cada tipo de utilizador
       if (currentUser.user_type === 'employer') {
-        await Job.update(job.id, { status: 'completed_by_employer' });
+        // Se worker já avaliou → obra vai direto para completed
+        const workerAlreadyRated = await Rating.filter({ job_id: job.id, rater_id: otherUser.id });
+        const finalStatus = workerAlreadyRated.length > 0 ? 'completed' : 'completed_by_employer';
+        await Job.update(job.id, { status: finalStatus, actual_end_date: finalStatus === 'completed' ? new Date().toISOString() : undefined });
         await Notification.create({
           user_id: otherUser.id,
           type: "job_ready_for_review",
@@ -157,13 +160,13 @@ export default function CompletionModal({
   };
   
   const isEmployerFlow = currentUser.user_type === 'employer';
-  const isDark = true;
-  const bg = "#1A1A1A";
-  const surface = "#2A2A2A";
-  const surface2 = "#1E1E1E";
-  const text = "#FFFFFF";
-  const subtext = "#AAAAAA";
-  const border = "#333333";
+  const { isDark } = useTheme();
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const surface2 = isDark ? "#1E1E1E" : "#EBEBEB";
+  const text = isDark ? "#FFFFFF" : "#111016";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const border = isDark ? "#333333" : "#E5E5E5";
 
   return (
     <>
@@ -217,7 +220,7 @@ export default function CompletionModal({
             <div>
               <label style={{color:subtext, fontSize:12, fontWeight:600, display:"block", marginBottom:8}}>Comentário *</label>
               <textarea placeholder="Descreve como foi a experiência..." value={comment} onChange={e => setComment(e.target.value)} rows={4}
-                style={{width:"100%", padding:"12px 14px", background:surface, border:"2px solid #FF6600", borderRadius:12, color:text, fontSize:14, outline:"none", resize:"vertical", fontFamily:"inherit", boxSizing:"border-box"}} />
+                style={{width:"100%", padding:"12px 14px", background:surface, border:"2px solid #FF6600", borderRadius:12, color:text, fontSize:14, outline:"none", resize:"vertical", fontFamily:"inherit", boxSizing:"border-box", colorScheme: isDark ? "dark" : "light"}} />
             </div>
 
             {/* XP Preview */}
