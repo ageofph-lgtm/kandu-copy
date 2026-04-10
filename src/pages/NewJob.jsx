@@ -112,7 +112,7 @@ export default function NewJob() {
         latitude: coords.lat + (Math.random() - 0.5) * 0.005,
         longitude: coords.lon + (Math.random() - 0.5) * 0.005,
         views: 0,
-        status: "open"
+        status: "pending_employer"
       });
       navigate(createPageUrl("MyJobs"));
     } catch (error) {
