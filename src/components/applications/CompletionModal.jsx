@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
-import { Rating } from "@/entities/Rating";
-import { calcJobXP, applyXP, XP_EVENTS } from "@/lib/xp";
 import XPGainToast from "@/components/XPGainToast";
-import { Job } from "@/entities/Job";
-import { User } from "@/entities/User";
-import { Notification } from "@/entities/Notification";
+import { XP_EVENTS } from "@/lib/xp";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -20,7 +16,6 @@ import {
   Award,
   Edit // Added for review icon
 } from "lucide-react";
-import { createPageUrl } from "@/utils";
 
 const WORKER_QUALITIES = [
   "Pontual", "Profissional", "Qualidade", "Comunicativo",
@@ -72,104 +67,46 @@ export default function CompletionModal({
 
   const handleSubmit = async () => {
     if (!comment.trim()) {
-      alert("Por favor, deixe um comentário sobre a experiência.");
+      alert("Por favor, deixa um comentário sobre a experiência.");
+      return;
+    }
+    if (!otherUser?.id) {
+      alert("Erro: utilizador não identificado. Tenta novamente.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Prazo de 7 dias para auto-revelar a avaliação
-      const visibleAfter = new Date();
-      visibleAfter.setDate(visibleAfter.getDate() + 7);
-
-      // Cria a avaliação (oculta por defeito)
-      const newRating = await Rating.create({
-        job_id: job.id,
-        rater_id: currentUser.id,
-        rated_id: otherUser.id,
-        rating: rating,
-        comment: comment.trim(),
-        qualities: selectedQualities,
-        is_visible: false,
-        visible_after: visibleAfter.toISOString()
+      // Chamar a backend function completeJob (usa asServiceRole para XP/rating)
+      const result = await fetch('/api/functions/completeJob', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobId: job.id,
+          applicationId: application?.id,
+          otherUserId: otherUser.id,
+          rating,
+          comment: comment.trim(),
+          qualities: selectedQualities
+        })
       });
 
-      // Verifica se a outra parte já avaliou o mesmo job
-      const reciprocalRatings = await Rating.filter({ job_id: job.id, rater_id: otherUser.id });
-      
-      if (reciprocalRatings.length > 0) {
-        // Ambas as partes avaliaram — torna ambas visíveis
-        await Rating.update(newRating.id, { is_visible: true });
-        await Rating.update(reciprocalRatings[0].id, { is_visible: true });
+      if (!result.ok) {
+        const err = await result.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${result.status}`);
       }
 
-      // XP para o utilizador avaliado
-      const xpGained = calcJobXP(rating, job.price, checkIfEarly());
-      const updatedOther = applyXP(otherUser.xp || 0, xpGained);
-      const existingRatings = await Rating.filter({ rated_id: otherUser.id, is_visible: true });
-      const totalRatings = existingRatings.length;
-      const ratingSum = existingRatings.reduce((sum, r) => sum + r.rating, 0);
-      const newAvgRating = totalRatings > 0 ? (ratingSum / totalRatings).toFixed(1) : rating;
+      const data = await result.json();
 
-      await User.update(otherUser.id, { ...updatedOther, rating: parseFloat(newAvgRating) });
-
-      // XP para o utilizador atual (por concluir/avaliar)
-      const selfXPGained = XP_EVENTS.job_completed_self;
-      const updatedSelf = applyXP(currentUser.xp || 0, selfXPGained);
-      await User.update(currentUser.id, updatedSelf);
-      setXpToast({ show: true, gained: selfXPGained, total: updatedSelf.xp });
-      
-      // Lógica específica para cada tipo de utilizador
-      if (currentUser.user_type === 'employer') {
-        // Verifica se o worker já avaliou ESTE job especificamente
-        let workerRatedThisJob = [];
-        if (otherUser?.id) {
-          const workerRatings = await Rating.filter({ job_id: job.id, rater_id: otherUser.id });
-          workerRatedThisJob = workerRatings.filter(r => r.job_id === job.id);
-        }
-        // Só completa direto se worker já avaliou; caso contrário fica em completed_by_employer
-        const finalStatus = workerRatedThisJob.length > 0 ? 'completed' : 'completed_by_employer';
-        await Job.update(job.id, { 
-          status: finalStatus, 
-          actual_end_date: finalStatus === 'completed' ? new Date().toISOString() : undefined 
-        });
-        if (finalStatus === 'completed_by_employer' && otherUser?.id) {
-          await Notification.create({
-            user_id: otherUser.id,
-            type: "job_ready_for_review",
-            title: "✍️ Avalia o empregador!",
-            message: `A obra "${job.title}" foi concluída. Abre Trabalho → Em Curso para avaliar.`,
-            related_id: job.id,
-            action_url: createPageUrl("MyJobs"),
-            is_read: false
-          });
-        }
-
-      } else if (currentUser.user_type === 'worker') {
-        // Worker avalia → obra encerra definitivamente
-        await Job.update(job.id, {
-          status: 'completed',
-          actual_end_date: new Date().toISOString()
-        });
-        if (otherUser?.id) {
-          await Notification.create({
-            user_id: otherUser.id,
-            type: "job_completed",
-            title: "⭐ Obra concluída!",
-            message: `O profissional avaliou o trabalho em "${job.title}". Obra oficialmente encerrada.`,
-            related_id: job.id,
-            action_url: createPageUrl("MyJobs"),
-            is_read: false
-          });
-        }
-      }
+      // Mostrar XP ganho
+      setXpToast({ show: true, gained: data.selfXPGained || 30, total: data.newSelfXP || 30 });
 
       onComplete();
 
     } catch (error) {
       console.error("Error completing job:", error);
-      alert("Erro ao finalizar trabalho. Tente novamente.");
+      alert("Erro ao finalizar trabalho: " + error.message);
     }
 
     setIsSubmitting(false);
