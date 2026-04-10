@@ -87,6 +87,8 @@ export default function CompletionModal({
           jobId: job.id,
           applicationId: application?.id,
           otherUserId: otherUser.id,
+          raterId: currentUser.id,
+          raterUserType: currentUser.user_type,
           rating,
           comment: comment.trim(),
           qualities: selectedQualities
