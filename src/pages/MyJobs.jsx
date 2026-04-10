@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import LoadingScreen from "@/components/LoadingScreen";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function getDailyPin(jobId) {
@@ -718,35 +719,7 @@ export default function MyJobs() {
 
   const currentData = tab === "pending" ? pendingJobs : tab === "active" ? activeJobs : historyJobs;
 
-  if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#111016", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 24 }}>
-      <style>{`
-        @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes kanduPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(0.96)}}
-        @keyframes hexRing{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-      `}</style>
-      {/* Logo pulsante */}
-      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {/* Anel laranja a girar */}
-        <div style={{
-          position: "absolute",
-          width: 100, height: 100,
-          borderRadius: "50%",
-          border: "3px solid transparent",
-          borderTopColor: "#FF6600",
-          borderRightColor: "#FF660055",
-          animation: "hexRing 1s linear infinite"
-        }} />
-        {/* Logo no centro */}
-        <img
-          src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"
-          alt="KANDU"
-          style={{ width: 72, height: 72, objectFit: "contain", animation: "kanduPulse 1.8s ease-in-out infinite", borderRadius: 16 }}
-        />
-      </div>
-      <p style={{ color: "#FF6600", fontSize: 13, fontWeight: 700, letterSpacing: 2, margin: 0 }}>A CARREGAR…</p>
-    </div>
-  );
+  if (loading) return <LoadingScreen />;
 
   return (
     <div style={{ background: bg, minHeight: "100vh", paddingBottom: 90 }}>
