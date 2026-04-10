@@ -499,7 +499,22 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
         {needsWorkerEval && (
           <div style={{ padding: "0 16px 14px" }}>
             <button
-              onClick={() => setCompletion({ application, job, otherUser: employer })}
+              onClick={async () => {
+                // Garantir que o employer está carregado antes de abrir o modal
+                let resolvedEmployer = employer;
+                if (!resolvedEmployer && job.employer_id) {
+                  try {
+                    const r = await User.filter({ id: job.employer_id });
+                    resolvedEmployer = r[0] || null;
+                    if (resolvedEmployer) setEmployer(resolvedEmployer);
+                  } catch(_) {}
+                }
+                if (!resolvedEmployer) {
+                  alert("Não foi possível carregar os dados do empregador. Tenta novamente.");
+                  return;
+                }
+                setCompletion({ application, job, otherUser: resolvedEmployer });
+              }}
               style={{ width: "100%", background: "linear-gradient(135deg, #A855F7, #7C3AED)", color: "#FFF",
                 border: "none", borderRadius: 14, padding: "15px", fontWeight: 800, fontSize: 15,
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
