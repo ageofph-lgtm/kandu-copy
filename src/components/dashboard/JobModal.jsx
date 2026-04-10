@@ -14,7 +14,7 @@ import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-export default function JobModal({ job, user, onClose, onApply, onDelete }) {
+export default function JobModal({ job, user, onClose, onApply, onDelete, distanceKm }) {
   const navigate = useNavigate();
   const [step, setStep] = useState("detail"); // "detail" | "apply" | "success"
   const [applicationType, setApplicationType] = useState("application");
@@ -324,6 +324,17 @@ export default function JobModal({ job, user, onClose, onApply, onDelete }) {
               <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#666", fontSize: 14, marginBottom: 8 }}>
                 <MapPin size={15} color="#FF6600" />
                 {job.location}
+                {distanceKm !== null && distanceKm !== undefined && (
+                  <span style={{
+                    marginLeft: 6, background: "#FFF7F0", color: "#FF6600",
+                    borderRadius: 20, padding: "2px 10px", fontSize: 12, fontWeight: 700,
+                    border: "1px solid #FFD0AA", flexShrink: 0
+                  }}>
+                    📍 {distanceKm < 1
+                      ? `${Math.round(distanceKm * 1000)}m de si`
+                      : `${distanceKm.toFixed(1)}km de si`}
+                  </span>
+                )}
               </div>
 
               <div style={{ display: "flex", gap: 16, fontSize: 12, color: "#AAA", marginBottom: 14 }}>
