@@ -638,6 +638,8 @@ export default function MyJobs() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    // Timeout de segurança — garante que o loading nunca fica preso
+    const safetyTimer = setTimeout(() => setLoading(false), 10000);
     try {
       const cu = await User.me(); setUser(cu);
       let jobList = [], appList = [];
@@ -647,7 +649,6 @@ export default function MyJobs() {
         appList = myApps;
         const allJobsRaw = await Job.list();
         const jobMap = {}; allJobsRaw.forEach(j => jobMap[j.id] = j);
-        // Incluir jobs de TODAS as candidaturas (não só pending) para apanhar histórico
         const appJobs = [...new Set(myApps.map(a => a.job_id).filter(Boolean))].map(id => jobMap[id]).filter(Boolean);
         const asWorker = await Job.filter({ worker_id: cu.id });
         const merged = [...asWorker]; appJobs.forEach(j => { if (!merged.find(x => x.id === j.id)) merged.push(j); });
@@ -661,7 +662,7 @@ export default function MyJobs() {
       }
       setJobs(jobList); setApplications(appList);
 
-      // Carregar todos os users referenciados (employer_id, worker_id) via asServiceRole
+      // Carregar users referenciados — com timeout individual por fetch
       const userIds = [...new Set([
         ...jobList.map(j => j.employer_id).filter(Boolean),
         ...jobList.map(j => j.worker_id).filter(Boolean),
@@ -670,20 +671,24 @@ export default function MyJobs() {
       ])];
       if (userIds.length) {
         const userMap = {};
-        await Promise.all(userIds.map(uid =>
-          fetch('/api/functions/getUserById', {
+        const fetchWithTimeout = (uid) => {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 5000);
+          return fetch('/api/functions/getUserById', {
             method: 'POST',
-            credentials: 'include',
+            signal: ctrl.signal,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: uid })
           })
           .then(r => r.ok ? r.json() : null)
-          .then(data => { if (data?.id) userMap[data.id] = data; })
-          .catch(() => {})
-        ));
+          .then(data => { clearTimeout(t); if (data?.id) userMap[data.id] = data; })
+          .catch(() => clearTimeout(t));
+        };
+        await Promise.all(userIds.map(fetchWithTimeout));
         setUsersById(userMap);
       }
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error('loadData error:', e); }
+    clearTimeout(safetyTimer);
     setLoading(false);
   }, []);
 
@@ -714,10 +719,32 @@ export default function MyJobs() {
   const currentData = tab === "pending" ? pendingJobs : tab === "active" ? activeJobs : historyJobs;
 
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
-      <div style={{ width: 40, height: 40, border: "3px solid #FF6600", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-      <p style={{ color: subtext, fontSize: 14 }}>A carregar…</p>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+    <div style={{ minHeight: "100vh", background: "#111016", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 24 }}>
+      <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes kanduPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(0.96)}}
+        @keyframes hexRing{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+      `}</style>
+      {/* Logo pulsante */}
+      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {/* Anel laranja a girar */}
+        <div style={{
+          position: "absolute",
+          width: 100, height: 100,
+          borderRadius: "50%",
+          border: "3px solid transparent",
+          borderTopColor: "#FF6600",
+          borderRightColor: "#FF660055",
+          animation: "hexRing 1s linear infinite"
+        }} />
+        {/* Logo no centro */}
+        <img
+          src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"
+          alt="KANDU"
+          style={{ width: 72, height: 72, objectFit: "contain", animation: "kanduPulse 1.8s ease-in-out infinite", borderRadius: 16 }}
+        />
+      </div>
+      <p style={{ color: "#FF6600", fontSize: 13, fontWeight: 700, letterSpacing: 2, margin: 0 }}>A CARREGAR…</p>
     </div>
   );
 
