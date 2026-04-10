@@ -433,8 +433,16 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
   }, [showFinishPin]);
 
   useEffect(() => {
-    if (job.employer_id)
-      User.filter({ id: job.employer_id }).then(r => r[0] && setEmployer(r[0])).catch(() => {});
+    if (!job.employer_id) return;
+    // User.filter com RLS não retorna outros utilizadores — usar backend function
+    fetch('/api/functions/getUserById', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: job.employer_id })
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.id) setEmployer(data); })
+      .catch(() => {});
   }, [job.employer_id]);
 
   // Auto-expandir quando obra aguarda avaliação do worker
@@ -500,16 +508,21 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
           <div style={{ padding: "0 16px 14px" }}>
             <button
               onClick={async () => {
-                // Garantir que o employer está carregado antes de abrir o modal
                 let resolvedEmployer = employer;
                 if (!resolvedEmployer && job.employer_id) {
                   try {
-                    const r = await User.filter({ id: job.employer_id });
-                    resolvedEmployer = r[0] || null;
-                    if (resolvedEmployer) setEmployer(resolvedEmployer);
+                    const r = await fetch('/api/functions/getUserById', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ userId: job.employer_id })
+                    });
+                    if (r.ok) {
+                      const data = await r.json();
+                      if (data?.id) { resolvedEmployer = data; setEmployer(data); }
+                    }
                   } catch(_) {}
                 }
-                if (!resolvedEmployer) {
+                if (!resolvedEmployer?.id) {
                   alert("Não foi possível carregar os dados do empregador. Tenta novamente.");
                   return;
                 }
