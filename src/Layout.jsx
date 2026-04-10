@@ -107,28 +107,42 @@ export default function Layout({ children }) {
       );
 
       const newAppCount = applicationNotifications.length;
-      // Disparar notificação push se houver novas candidaturas
+      // Disparar notificação push se houver novas candidaturas ou PINs
       if (newAppCount > prevAppCount.current && prevAppCount.current !== 0) {
-        if ("Notification" in window && Notification.permission === "granted") {
-          const diff = newAppCount - prevAppCount.current;
-          const n = new window.Notification("KANDU — Nova candidatura! 📋", {
-            body: diff === 1 ? "Tens uma nova candidatura à tua obra." : `Tens ${diff} novas candidaturas às tuas obras.`,
-            icon: "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png",
-            badge: "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png",
-            tag: "kandu-application",
-          });
-          // Som de notificação via AudioContext
-          try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const diff = newAppCount - prevAppCount.current;
+        // Som via AudioContext (funciona mesmo sem permissão de notificação)
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          [880, 1100, 1320].forEach((freq, i) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.connect(gain); gain.connect(ctx.destination);
-            osc.frequency.setValueAtTime(880, ctx.currentTime);
-            osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.3, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-            osc.start(); osc.stop(ctx.currentTime + 0.4);
-          } catch (_) {}
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.2);
+            osc.start(ctx.currentTime + i * 0.12);
+            osc.stop(ctx.currentTime + i * 0.12 + 0.2);
+          });
+        } catch(_) {}
+        // Vibração (mobile)
+        try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch(_) {}
+        // Notificação nativa
+        if ("Notification" in window) {
+          const fire = () => {
+            try {
+              new window.Notification("KANDU — Nova candidatura! 📋", {
+                body: diff === 1 ? "Tens uma nova candidatura à tua obra." : `Tens ${diff} novas candidaturas.`,
+                icon: "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png",
+                tag: "kandu-application",
+                requireInteraction: false,
+              });
+            } catch(_) {}
+          };
+          if (window.Notification.permission === "granted") {
+            fire();
+          } else if (window.Notification.permission !== "denied") {
+            window.Notification.requestPermission().then(p => { if (p === "granted") fire(); });
+          }
         }
       }
       prevAppCount.current = newAppCount;
@@ -286,7 +300,7 @@ export default function Layout({ children }) {
 
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",flex:1,paddingBottom:4}}>
           {/* PIN de localização estilizado — leva a Notifications */}
-          <Link to={createPageUrl("Notifications")} style={{position:"relative",textDecoration:"none",marginBottom:2,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <Link to={createPageUrl("Notifications")} style={{position:"relative",textDecoration:"none",marginBottom:2,marginTop:-20,display:"flex",alignItems:"center",justifyContent:"center"}}>
             {/* Sombra / glow laranja */}
             <div style={{position:"absolute",width:64,height:64,borderRadius:"50%",background:"#FF6600",filter:"blur(14px)",opacity:0.4,top:4}} />
             {/* Corpo do PIN */}
@@ -321,18 +335,6 @@ export default function Layout({ children }) {
           {location.pathname===createPageUrl("Chat") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
         </Link>
 
-        <Link to={createPageUrl("Notifications")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Notifications")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0",position:"relative"}}>
-          <div style={{position:"relative"}}>
-            <Bell size={22} />
-            {(unreadNotifications.applications + unreadNotifications.chat) > 0 && (
-              <span style={{position:"absolute",top:-6,right:-8,background:"#FF6600",color:"#FFF",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
-                {(unreadNotifications.applications + unreadNotifications.chat) > 9 ? '9+' : (unreadNotifications.applications + unreadNotifications.chat)}
-              </span>
-            )}
-          </div>
-          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Notifications")?700:400}}>Alertas</span>
-          {location.pathname===createPageUrl("Notifications") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
-        </Link>
 
         <Link to={createPageUrl("Profile")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Profile")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
           <User size={22} />
