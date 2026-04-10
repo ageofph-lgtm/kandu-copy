@@ -277,13 +277,13 @@ export default function Applications() {
       )}
 
       {/* Header */}
-      <div style={{ background: isDark ? "#1A1A1A" : "#FFFFFF", borderBottom: isDark ? "1px solid #333" : "1px solid #F0F0F0", padding: "14px 20px 12px", position: "sticky", top: 0, zIndex: 10 }}>
+      <div style={{ background: isDark ? "#111016" : "#FFFFFF", borderBottom: isDark ? "1px solid #333" : "1px solid #F0F0F0", padding: "14px 20px 12px", position: "sticky", top: 0, zIndex: 10 }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
           <img src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"} alt="KANDU" style={{ height: 24, objectFit: "contain" }} />
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 20, color: isDark ? "#FFF" : "#1A1A1A" }}>Candidaturas</h1>
+            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 20, color: isDark ? "#FFF" : "#111016" }}>Candidaturas</h1>
             <p style={{ margin: 0, fontSize: 11, color: isDark ? "#AAA" : "#888" }}>{applications.length} total</p>
           </div>
           <Button size="sm" variant="outline" onClick={loadData}>
