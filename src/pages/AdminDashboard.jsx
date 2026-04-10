@@ -6,6 +6,7 @@ import { Application } from "@/entities/Application";
 import { Blacklist } from "@/entities/Blacklist";
 // Removed ChatMessage import as its cleanup logic is moved
 // Removed Notification import as its cleanup logic is moved
+import LoadingScreen from "@/components/LoadingScreen";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -456,14 +457,7 @@ export default function AdminDashboard() {
     blacklistCount: blacklistEntries.length
   };
 
-  if (loading) { // Removed cleanupMessage from condition
-    return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-50">
-        <Loader2 className="w-12 h-12 text-gray-400 animate-spin mb-4" />
-        <p className="text-gray-500">A carregar painel administrativo...</p>
-      </div>
-    );
-  }
+  if (loading) return <LoadingScreen label="Painel de Administração" />;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
