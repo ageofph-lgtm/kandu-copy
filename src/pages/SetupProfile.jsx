@@ -161,7 +161,7 @@ export default function SetupProfile() {
     return (
       <div style={{minHeight:"100vh",background:"#1A1A1A",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,position:"relative",overflow:"hidden"}}>
         <div style={hexBg} />
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36, objectFit:"contain", maxWidth:160}}} alt="KANDU" />
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36, objectFit:"contain", maxWidth:160}} alt="KANDU" />
         <h2 style={{color:"#FFF",fontWeight:800,fontSize:22,marginBottom:8,position:"relative",zIndex:1}}>Entrar na plataforma</h2>
         <p style={{color:"#AAAAAA",fontSize:14,marginBottom:24,position:"relative",zIndex:1}}>Faz login para continuares</p>
         <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
@@ -252,7 +252,7 @@ export default function SetupProfile() {
           </div>
           <span style={{background:"#22C55E",color:"#FFF",padding:"8px 20px",borderRadius:20,fontWeight:700,fontSize:14}}>✓ Verified</span>
           <div style={{width:160,height:160,clipPath:"polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",background:"#1A1A1A",border:"4px solid #FF6600",boxShadow:"0 0 30px #FF660066",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-            <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36, objectFit:"contain", maxWidth:160}}} alt="" />
+            <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36, objectFit:"contain", maxWidth:160}} alt="" />
             <span style={{fontWeight:900,color:"#FFF",fontSize:15,marginTop:4}}>Ultra</span>
             <span style={{fontWeight:900,color:"#FFF",fontSize:15}}>Verified</span>
           </div>
@@ -290,7 +290,7 @@ export default function SetupProfile() {
       <GdprConsent open={showGdpr} onAccept={handleGdprAccept} />
       <div style={hexBg} />
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"60px 20px 100px",gap:24,position:"relative",zIndex:1}}>
-        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36, objectFit:"contain", maxWidth:160}}} alt="KANDU" />
+        <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:36, objectFit:"contain", maxWidth:160}} alt="KANDU" />
         <div style={{textAlign:"center"}}>
           <h2 style={{fontSize:22,fontWeight:800,color:"#FFF",margin:"0 0 6px"}}>Como vais usar o KANDU?</h2>
           {user && <p style={{fontSize:12,color:"#AAAAAA",margin:0}}>{user.email}</p>}

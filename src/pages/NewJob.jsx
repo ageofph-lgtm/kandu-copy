@@ -147,6 +147,7 @@ export default function NewJob() {
         <h1 style={{fontWeight:700,color:text,flex:1,textAlign:"center",margin:0,fontSize:18}}>Nova Obra</h1>
         <span style={{width:22}} />
       </div>
+      </div>
 
       {/* Progress Bar */}
       <div style={{padding:"8px 20px 16px"}}>
