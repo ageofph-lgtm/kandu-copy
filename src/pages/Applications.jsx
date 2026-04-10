@@ -205,8 +205,16 @@ export default function Applications() {
       const job = jobs[app.job_id];
       if (!job) return;
       const finalPrice = app.proposed_price || job.price;
+
+      // Aceitar esta candidatura
       await Application.update(app.id, { status: "accepted" });
       await Job.update(app.job_id, { status: 'in_progress', worker_id: app.worker_id, price: finalPrice });
+
+      // Rejeitar automaticamente todas as outras candidaturas pendentes para esta obra
+      const otherApps = applications.filter(a => a.job_id === app.job_id && a.id !== app.id && a.status === 'pending');
+      await Promise.all(otherApps.map(a => Application.update(a.id, { status: "rejected" })));
+
+      // Notificar o worker aceite
       await Notification.create({
         user_id: app.worker_id,
         type: "job_accepted",
@@ -215,6 +223,19 @@ export default function Applications() {
         related_id: app.job_id,
         action_url: createPageUrl("Applications"),
       });
+
+      // Notificar workers rejeitados
+      await Promise.all(otherApps.map(a =>
+        Notification.create({
+          user_id: a.worker_id,
+          type: "application_rejected",
+          title: "Candidatura não selecionada",
+          message: `Outro profissional foi selecionado para "${job.title}". Continue a candidatar-se a outras obras!`,
+          related_id: app.job_id,
+          action_url: createPageUrl("Home"),
+        })
+      ));
+
       loadData();
     } catch (error) {
       console.error("Erro ao aceitar:", error);
