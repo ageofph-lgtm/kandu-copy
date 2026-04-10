@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Application } from "@/entities/Application";
 import { Notification } from "@/entities/Notification";
 import CompletionModal from "@/components/applications/CompletionModal";
-import { MapPin, Plus, ChevronDown, ChevronUp, Camera } from "lucide-react";
+import { MapPin, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
@@ -100,92 +100,29 @@ function PinKeypad({ value, onChange, isDark, surface, text, onConfirm }) {
   );
 }
 
-// ─── QR display (worker gera) — usa Google Charts API sem dependências ──────────
-function QrDisplay({ value, isDark }) {
-  const encoded = encodeURIComponent(value);
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encoded}&bgcolor=ffffff&color=000000&margin=10`;
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-      <div style={{ background: "#FFF", padding: 10, borderRadius: 14, boxShadow: "0 0 24px #FF660044", display: "inline-block" }}>
-        <img src={qrUrl} alt="QR Code" width={150} height={150} style={{ display: "block", borderRadius: 6 }} />
-      </div>
-      <span style={{ color: "#22C55E", fontSize: 13, fontWeight: 700 }}>📷 Mostra este QR ao empregador</span>
-    </div>
-  );
+// ─── PIN de finalização (diferente do PIN de presença) ───────────────────────
+// Usa hora do dia + job.id para ser único por sessão de trabalho
+function getCompletionPin(jobId) {
+  if (!jobId) return "------";
+  const hour = new Date().getHours();
+  return String(((jobId.charCodeAt(2) || 7) * 251 + (jobId.charCodeAt(4) || 3) * 97 + hour * 19) % 900000 + 100000);
 }
 
-// ─── QR Reader (employer lê) ─────────────────────────────────────────────────
-function QrReader({ onRead, onClose, isDark, surface, text, subtext, border }) {
-  const videoRef = useRef(null);
-  const [manual, setManual] = useState("");
-  const [camErr, setCamErr] = useState(false);
-  const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-
-  useEffect(() => {
-    if (!isMobile) return;
-    let stream = null;
-    let scanInterval = null;
-    let active = true;
-
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-      .then(s => {
-        if (!active) { s.getTracks().forEach(t => t.stop()); return; }
-        stream = s;
-        if (videoRef.current) videoRef.current.srcObject = s;
-        if ("BarcodeDetector" in window) {
-          const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
-          scanInterval = setInterval(async () => {
-            if (!videoRef.current || !active) return;
-            try {
-              const codes = await detector.detect(videoRef.current);
-              if (codes.length > 0 && active) {
-                active = false;
-                clearInterval(scanInterval);
-                onRead(codes[0].rawValue);
-              }
-            } catch (_) {}
-          }, 600);
-        }
-      })
-      .catch(() => { if (active) setCamErr(true); });
-
-    return () => {
-      active = false;
-      if (scanInterval) clearInterval(scanInterval);
-      if (stream) stream.getTracks().forEach(t => t.stop());
-    };
-  }, []);
-
+// Display hexágono verde para PIN de finalização
+function CompletionPinDisplay({ pin, countdown, isDark }) {
   return (
-    <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 16 }}>
-      <p style={{ color: text, fontWeight: 700, fontSize: 14, margin: "0 0 10px" }}>📷 Ler QR do Profissional</p>
-      {isMobile && !camErr ? (
-        <>
-          <div style={{ borderRadius: 10, overflow: "hidden", marginBottom: 10, position: "relative", background: "#000" }}>
-            <video ref={videoRef} autoPlay playsInline muted style={{ width: "100%", maxHeight: 220, objectFit: "cover" }} />
-            <div style={{ position: "absolute", inset: 0, border: "3px solid #FF6600", borderRadius: 10, pointerEvents: "none" }} />
-          </div>
-          <p style={{ color: subtext, fontSize: 12, textAlign: "center", marginBottom: 8 }}>Aponta a câmera para o QR do profissional</p>
-        </>
-      ) : (
-        <>
-          <p style={{ color: subtext, fontSize: 13, marginBottom: 8 }}>Insere o código de conclusão:</p>
-          <input value={manual} onChange={e => setManual(e.target.value)}
-            placeholder="KANDU-COMPLETE-..."
-            style={{ width: "100%", background: isDark ? "#1A1A1A" : "#FFF", border: `1px solid ${border}`,
-              borderRadius: 10, padding: "10px 12px", color: text, fontSize: 13, boxSizing: "border-box", marginBottom: 8 }} />
-          <button onClick={() => onRead(manual)}
-            style={{ width: "100%", background: "#22C55E", color: "#FFF", border: "none", borderRadius: 10,
-              padding: "11px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 6 }}>
-            Confirmar e Finalizar
-          </button>
-        </>
-      )}
-      <button onClick={onClose}
-        style={{ width: "100%", background: "transparent", color: subtext, border: `1px solid ${border}`,
-          borderRadius: 10, padding: "9px", fontSize: 13, cursor: "pointer" }}>
-        Cancelar
-      </button>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "10px 0" }}>
+      <div style={{
+        width: 140, height: 140,
+        clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",
+        background: isDark ? "#050505" : "#0A1A0A",
+        boxShadow: "0 0 28px #22C55E77",
+        display: "flex", alignItems: "center", justifyContent: "center"
+      }}>
+        <span style={{ fontSize: 26, fontWeight: 900, color: "#22C55E", letterSpacing: 2 }}>{pin}</span>
+      </div>
+      <span style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>⏱ {countdown}s</span>
+      <span style={{ color: "#AAAAAA", fontSize: 12 }}>Envia este PIN ao empregador</span>
     </div>
   );
 }
@@ -203,13 +140,15 @@ const STATUS_MAP = {
 // ─── EMPLOYER JOB CARD ────────────────────────────────────────────────────────
 function EmployerJobCard({ job, applications, user, onReload, isDark, surface, text, subtext, border }) {
   const [expanded, setExpanded] = useState(false);
-  const [showPin, setShowPin]   = useState(false);
-  const [showQr, setShowQr]     = useState(false);
-  const [completion, setCompletion] = useState(null);
+  const [showPin,        setShowPin]        = useState(false);
+  const [showFinishPin,  setShowFinishPin]  = useState(false);  // employer digita PIN
+  const [finishPinInput, setFinishPinInput] = useState("");
+  const [completion,     setCompletion]     = useState(null);
   const [otherUser, setOtherUser]   = useState(null);
   const pinCountdown = useCountdown(showPin);
   const navigate = useNavigate();
   const pin = getDailyPin(job.id);
+  const completionPin = getCompletionPin(job.id);
   const s = STATUS_MAP[job.status] || STATUS_MAP.cancelled;
 
   useEffect(() => {
@@ -238,35 +177,30 @@ function EmployerJobCard({ job, applications, user, onReload, isDark, surface, t
     }
   };
 
-  const handleQrRead = async (code) => {
-    const trimmed = code.trim();
-    const expected = `KANDU-COMPLETE-${job.id}`;
-    // Aceita: código exacto OU contém o job.id OU últimos 12 chars batem
-    const valid = trimmed === expected
-      || trimmed.includes(job.id)
-      || (job.id && trimmed.includes(job.id.slice(-12)));
-    if (valid) {
-      const app = applications.find(a => a.job_id === job.id && a.status === "accepted");
-      // Parar câmera antes de abrir modal
-      setShowQr(false);
-      if (!app) {
-        // Não encontrou candidatura aceite — finalizar a obra directamente
-        try {
-          await Job.update(job.id, { status: "completed_by_employer" });
-          await Notification.create({
-            user_id: job.worker_id, type: "job_completed",
-            title: "🏁 Obra finalizada!",
-            message: `O empregador finalizou a obra "${job.title}". Avalia a experiência!`,
-            related_id: job.id, action_url: createPageUrl("MyJobs"), is_read: false
-          });
-          onReload();
-        } catch(e) { alert("Erro ao finalizar: " + e.message); }
-        return;
-      }
-      setCompletion({ application: app, job, otherUser });
-    } else {
-      alert("QR inválido. Pede ao profissional para mostrar o QR gerado na app.");
+  const handleFinishPin = async () => {
+    if (finishPinInput !== completionPin) {
+      alert("❌ PIN incorreto. Pede ao profissional para te mostrar o PIN de finalização.");
+      setFinishPinInput("");
+      return;
     }
+    setShowFinishPin(false);
+    const app = applications.find(a => a.job_id === job.id && a.status === "accepted");
+    if (!app) {
+      // sem candidatura aceite — finalizar directo
+      try {
+        await Job.update(job.id, { status: "completed_by_employer" });
+        await Notification.create({
+          user_id: job.worker_id, type: "job_completed",
+          title: "🏁 Obra finalizada!",
+          message: `O empregador finalizou a obra "${job.title}". Avalia a experiência em Trabalhos!`,
+          related_id: job.id, action_url: createPageUrl("MyJobs"), is_read: false
+        });
+        playPing();
+        onReload();
+      } catch(e) { alert("Erro ao finalizar: " + e.message); }
+      return;
+    }
+    setCompletion({ application: app, job, otherUser });
   };
 
   const handlePublish = async () => {
@@ -367,16 +301,27 @@ function EmployerJobCard({ job, applications, user, onReload, isDark, surface, t
                   )}
                 </div>
 
-                {/* QR Finalizar */}
-                {!showQr ? (
-                  <button onClick={() => setShowQr(true)}
-                    style={{ width: "100%", background: "#22C55E22", color: "#22C55E", border: "1px solid #22C55E44", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                    📷 Ler QR e Finalizar Obra
-                  </button>
-                ) : (
-                  <QrReader onRead={handleQrRead} onClose={() => setShowQr(false)}
-                    isDark={isDark} surface={surface} text={text} subtext={subtext} border={border} />
-                )}
+                {/* PIN Finalizar (employer digita o PIN que o worker enviou) */}
+                <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14 }}>
+                  <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>🏁 Finalizar Obra</p>
+                  {!showFinishPin ? (
+                    <button onClick={() => setShowFinishPin(true)}
+                      style={{ width: "100%", background: "#22C55E22", color: "#22C55E", border: "1px solid #22C55E44", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                      Inserir PIN de Conclusão do Profissional
+                    </button>
+                  ) : (
+                    <>
+                      <PinKeypad value={finishPinInput} onChange={setFinishPinInput}
+                        isDark={isDark} surface={isDark ? "#1A1A1A" : "#FFF"} text={text}
+                        onConfirm={handleFinishPin} />
+                      <button onClick={() => { setShowFinishPin(false); setFinishPinInput(""); }}
+                        style={{ width: "100%", marginTop: 6, background: "transparent", color: subtext,
+                          border: `1px solid ${border}`, borderRadius: 10, padding: "8px", fontSize: 12, cursor: "pointer" }}>
+                        Cancelar
+                      </button>
+                    </>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -460,15 +405,22 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
 // ─── WORKER JOB CARD ──────────────────────────────────────────────────────────
 function WorkerJobCard({ job, application, user, onReload, isDark, surface, text, subtext, border }) {
   const [expanded, setExpanded]     = useState(false);
-  const [showKeypad, setShowKeypad] = useState(false);
-  const [pinInput, setPinInput]     = useState("");
-  const [pinOk, setPinOk]           = useState(false);
-  const [showQr, setShowQr]         = useState(false);
-  const [completion, setCompletion] = useState(null);
+  const [showKeypad,     setShowKeypad]     = useState(false);
+  const [pinInput,       setPinInput]       = useState("");
+  const [pinOk,          setPinOk]          = useState(false);
+  const [showFinishPin,  setShowFinishPin]  = useState(false);  // worker mostra PIN
+  const [finishCountdown,setFinishCountdown]= useState(30);
+  const [completion,     setCompletion]     = useState(null);
   const [employer, setEmployer]     = useState(null);
   const s = STATUS_MAP[job.status] || STATUS_MAP.cancelled;
   const expectedPin = getDailyPin(job.id);
-  const qrValue = `KANDU-COMPLETE-${job.id}`;
+  const completionPin = getCompletionPin(job.id);
+  // countdown do PIN de finalização
+  useEffect(() => {
+    if (!showFinishPin) { setFinishCountdown(30); return; }
+    const t = setInterval(() => setFinishCountdown(p => p <= 1 ? (clearInterval(t), 0) : p - 1), 1000);
+    return () => clearInterval(t);
+  }, [showFinishPin]);
 
   useEffect(() => {
     if (job.employer_id)
@@ -575,20 +527,34 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
                   )}
                 </div>
 
-                {/* Gerar QR finalizar */}
+                {/* PIN de finalização (worker gera e envia ao employer) */}
                 <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14 }}>
                   <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>🏁 Finalizar Obra</p>
-                  {!showQr ? (
-                    <button onClick={() => setShowQr(true)}
+                  {!showFinishPin ? (
+                    <button onClick={async () => {
+                      setShowFinishPin(true);
+                      // Notificar employer com o PIN
+                      try {
+                        await Notification.create({
+                          user_id: job.employer_id, type: "completion_pin",
+                          title: "🏁 PIN de conclusão recebido!",
+                          message: `PIN de conclusão para "${job.title}": ${completionPin} — Vai a Trabalhos → Em Curso e insere este código para finalizar.`,
+                          related_id: job.id, action_url: createPageUrl("MyJobs"), is_read: false
+                        });
+                        playPing();
+                        sendBrowserPush("KANDU — Obra Concluída! 🏁", `PIN: ${completionPin} — "${job.title}". Insere no app para finalizar.`);
+                      } catch(_) {}
+                    }}
                       style={{ width: "100%", background: "#22C55E22", color: "#22C55E", border: "1px solid #22C55E44", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                      Gerar QR de Conclusão
+                      Gerar PIN de Conclusão e Notificar Empregador
                     </button>
                   ) : (
                     <>
-                      <QrDisplay value={qrValue} isDark={isDark} />
-                      <button onClick={() => setShowQr(false)}
-                        style={{ width: "100%", marginTop: 8, background: "transparent", color: subtext, border: `1px solid ${border}`, borderRadius: 10, padding: "8px", fontSize: 12, cursor: "pointer" }}>
-                        Fechar QR
+                      <CompletionPinDisplay pin={completionPin} countdown={finishCountdown} isDark={isDark} />
+                      <button onClick={() => setShowFinishPin(false)}
+                        style={{ width: "100%", marginTop: 4, background: "transparent", color: subtext,
+                          border: `1px solid ${border}`, borderRadius: 10, padding: "8px", fontSize: 12, cursor: "pointer" }}>
+                        Fechar PIN
                       </button>
                     </>
                   )}
