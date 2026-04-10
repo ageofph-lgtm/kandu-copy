@@ -31,9 +31,9 @@ export default function Profile() {
   const viewingUserId = urlParams.get('userId');
   const isOwnProfile = !viewingUserId;
 
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const bg = isDark ? "#111016" : "#FFFFFF";
+  const surface = isDark ? "#1C1B22" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const border = isDark ? "#333333" : "#E5E5E5";
 
@@ -77,13 +77,19 @@ export default function Profile() {
   const handleAvatarUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+    // 🚀 Optimistic update: show preview immediately
+    const localPreview = URL.createObjectURL(file);
+    setUser(prev => ({ ...prev, avatar_url: localPreview }));
     setIsUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       await base44.auth.updateMe({ avatar_url: file_url });
-      await loadUser();
+      // Replace local preview with real URL
+      setUser(prev => ({ ...prev, avatar_url: file_url }));
+      URL.revokeObjectURL(localPreview);
     } catch (error) {
       console.error("Error uploading avatar:", error);
+      await loadUser(); // revert on error
     } finally {
       setIsUploading(false);
     }
@@ -148,7 +154,7 @@ export default function Profile() {
         {isOwnProfile ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 6px", borderRadius: 8, display:"flex", alignItems:"center", justifyContent:"center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>
+              <button style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 6px", borderRadius: 8, display:"flex", alignItems:"center", justifyContent:"center", color: text }}><svg width="18" height="18" viewBox="0 0 24 24" fill={text}><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setIsEditing(true)}><Edit2 className="w-4 h-4 mr-2" /> Editar Perfil</DropdownMenuItem>
