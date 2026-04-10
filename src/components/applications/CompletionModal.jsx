@@ -81,6 +81,7 @@ export default function CompletionModal({
       // Chamar a backend function completeJob (usa asServiceRole para XP/rating)
       const result = await fetch('/api/functions/completeJob', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           jobId: job.id,
