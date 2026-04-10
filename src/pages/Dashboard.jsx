@@ -11,6 +11,7 @@ import JobCard from "../components/dashboard/JobCard";
 import MapView from "../components/dashboard/MapView";
 import JobModal from "../components/dashboard/JobModal";
 import { translations } from "../components/utils/translations";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const LISBON_COORDS = [38.7223, -9.1393];
 
@@ -159,14 +160,7 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-gray-50">
-        <Settings className="w-12 h-12 text-gray-400 animate-spin mb-4" />
-        <p className="text-gray-500">A carregar...</p>
-      </div>);
-
-  }
+  if (loading) return <LoadingScreen />;
 
   if (!user) {
     return (
