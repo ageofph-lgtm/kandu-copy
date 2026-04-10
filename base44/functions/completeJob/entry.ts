@@ -1,10 +1,10 @@
-import { createClient } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   try {
-    // Usar asServiceRole diretamente — sem verificação de session cookie
-    // (credentials:include não funciona no contexto Base44 iframe)
-    const base44 = createClient({ appId: Deno.env.get('APP_ID') || '' });
+    // createClientFromRequest injeta BASE44_SERVICE_TOKEN automaticamente
+    // Não verificamos auth — raterId vem no body do frontend autenticado
+    const base44 = createClientFromRequest(req);
     const db = base44.asServiceRole;
 
     const body = await req.json();
