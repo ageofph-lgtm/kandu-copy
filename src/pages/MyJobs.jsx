@@ -17,8 +17,8 @@ import { createPageUrl } from "@/utils";
 
 /* ── Cartão de obra ── */
 function JobItem({ job, application, userType, navigate, currentUser, isDark, onReload }) {
-  const surface = isDark ? "#2A2A2A" : "#FFFFFF";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const surface = isDark ? "#1C1B22" : "#FFFFFF";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const border = isDark ? "#333" : "#E5E5E5";
   const [otherUser, setOtherUser] = useState(null);
@@ -164,7 +164,7 @@ function JobItem({ job, application, userType, navigate, currentUser, isDark, on
 }
 
 function EmptyState({ emoji, title, description, onCta, ctaLabel, isDark }) {
-  const surface = isDark ? "#2A2A2A" : "#F8F8F8";
+  const surface = isDark ? "#1C1B22" : "#F8F8F8";
   const subtext = isDark ? "#AAAAAA" : "#888";
   return (
     <div style={{ background: surface, borderRadius: 16, padding: "36px 24px", textAlign: "center" }}>
@@ -183,9 +183,9 @@ function EmptyState({ emoji, title, description, onCta, ctaLabel, isDark }) {
 export default function MyJobs() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const bg = isDark ? "#1A1A1A" : "#F5F5F5";
-  const surface = isDark ? "#2A2A2A" : "#FFFFFF";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const bg = isDark ? "#111016" : "#F5F5F5";
+  const surface = isDark ? "#1C1B22" : "#FFFFFF";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
 
   const [user, setUser] = useState(null);
@@ -304,7 +304,7 @@ export default function MyJobs() {
 
       <div style={{ padding: "16px 20px" }}>
         <Tabs defaultValue="pending">
-          <TabsList style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: isDark ? "#2A2A2A" : "#EBEBEB", borderRadius: 14, padding: 4, height: "auto" }} className="w-full">
+          <TabsList style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: isDark ? "#1C1B22" : "#EBEBEB", borderRadius: 14, padding: 4, height: "auto" }} className="w-full">
             {[
               { value: "pending", label: isWorker ? "Pendentes" : "Publicadas", count: pendingJobs.length },
               { value: "active",  label: "Em Curso",   count: activeJobs.length },
@@ -341,7 +341,7 @@ export default function MyJobs() {
             ))}
             {/* Info contextual para o profissional */}
             {isWorker && pendingJobs.length > 0 && (
-              <div style={{ background: isDark ? "#2A2A2A" : "#FFF7E6", borderRadius: 12, padding: "10px 14px", fontSize: 12, color: "#92400E" }}>
+              <div style={{ background: isDark ? "#1C1B22" : "#FFF7E6", borderRadius: 12, padding: "10px 14px", fontSize: 12, color: "#92400E" }}>
                 ⏳ As tuas candidaturas ficam pendentes até o empregador aceitar ou recusar.
               </div>
             )}
