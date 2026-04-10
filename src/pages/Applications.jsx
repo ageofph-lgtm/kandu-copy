@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTheme } from "@/lib/ThemeContext";
 import { Application } from "@/entities/Application";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
@@ -118,6 +119,7 @@ function ApplicationCard({ application, job, applicant, employer, onAccept, onDe
 
 export default function Applications() {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const [user, setUser] = useState(null);
   const [applications, setApplications] = useState([]);
   const [jobs, setJobs] = useState({});        // id -> job
@@ -253,7 +255,7 @@ export default function Applications() {
   if (loading) {
     return (
       <div className="p-4 h-screen flex flex-col items-center justify-center">
-        <Settings className="w-12 h-12 text-[#F26522] animate-spin mb-4" />
+        <div style={{width:44,height:44,border:"4px solid #FF6600",borderTop:"4px solid transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto 16px"}} />
         <p className="text-gray-500">A carregar candidaturas...</p>
       </div>
     );
@@ -275,14 +277,19 @@ export default function Applications() {
       )}
 
       {/* Header */}
-      <div className="px-4 py-5 border-b border-gray-100 bg-white sticky top-0 z-10 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Candidaturas</h1>
-          <p className="text-xs text-gray-500">{applications.length} total</p>
+      <div style={{ background: isDark ? "#1A1A1A" : "#FFFFFF", borderBottom: isDark ? "1px solid #333" : "1px solid #F0F0F0", padding: "14px 20px 12px", position: "sticky", top: 0, zIndex: 10 }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+          <img src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"} alt="KANDU" style={{ height: 24, objectFit: "contain" }} />
         </div>
-        <Button size="sm" variant="outline" onClick={loadData}>
-          <RefreshCw className="w-4 h-4" />
-        </Button>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 20, color: isDark ? "#FFF" : "#1A1A1A" }}>Candidaturas</h1>
+            <p style={{ margin: 0, fontSize: 11, color: isDark ? "#AAA" : "#888" }}>{applications.length} total</p>
+          </div>
+          <Button size="sm" variant="outline" onClick={loadData}>
+            <RefreshCw className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       <div className="p-4">
