@@ -59,9 +59,9 @@ const STEP_LABELS = ["O Quê", "Onde & Quando", "Orçamento", "Revisão"];
 export default function NewJob() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const bg = isDark ? "#111016" : "#FFFFFF";
+  const surface = isDark ? "#1C1B22" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const [user, setUser] = useState(null);
   const [step, setStep] = useState(1);
@@ -200,9 +200,9 @@ export default function NewJob() {
               <span style={{color:"#FF6600",fontSize:18,flexShrink:0}}>📍</span>
               <select value={formData.location} onChange={e => set("location",e.target.value)}
                 style={{flex:1,background:"transparent",border:"none",color:formData.location?"#FFF":"#888",fontSize:15,padding:"14px 0",outline:"none"}}>
-                <option value="" style={{background:"#2A2A2A"}}>Selecione a localização</option>
+                <option value="" style={{background:"#1C1B22"}}>Selecione a localização</option>
                 {Object.keys(LOCATION_COORDS).map(loc => (
-                  <option key={loc} value={loc} style={{background:"#2A2A2A"}}>{loc}</option>
+                  <option key={loc} value={loc} style={{background:"#1C1B22"}}>{loc}</option>
                 ))}
               </select>
             </div>
