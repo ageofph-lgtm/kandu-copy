@@ -24,7 +24,7 @@ function statusLabel(appStatus, jobStatus) {
 }
 
 // ── Candidate card (employer view) ────────────────────────────────────────────
-function CandidateCard({ application, job, worker, onAccept, onReject, onComplete, isDark }) {
+function CandidateCard({ application, job, worker, onAccept, onReject, onComplete, onSendPin, isDark }) {
   const surface  = isDark ? "#1C1B22" : "#FFFFFF";
   const text     = isDark ? "#FFFFFF" : "#111016";
   const subtext  = isDark ? "#AAAAAA" : "#666";
@@ -84,6 +84,12 @@ function CandidateCard({ application, job, worker, onAccept, onReject, onComplet
             ✓ Aceitar e Contratar
           </button>
         </div>
+      )}
+      {isActive && onSendPin && (
+        <button onClick={() => onSendPin(job, worker)}
+          style={{ width: "100%", marginTop: 8, background: "#3B82F622", color: "#3B82F6", border: "1px solid #3B82F644", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+          📍 Enviar PIN ao Profissional
+        </button>
       )}
       {needsEval && (
         <button onClick={() => onComplete(application, job, worker)}
@@ -154,6 +160,8 @@ export default function Applications() {
   const [activeTab,       setActiveTab]       = useState("pending");
   const [showCompletion,  setShowCompletion]  = useState(false);
   const [selectedCompletion, setSelectedCompletion] = useState(null);
+  const [pinModal,        setPinModal]        = useState(null); // { job, worker }
+  const [pinCountdown,    setPinCountdown]    = useState(30);
 
   // Employer job filter
   const [selectedJobId, setSelectedJobId] = useState("all");
@@ -212,6 +220,25 @@ export default function Applications() {
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // Daily PIN baseado no job.id + dia do mês
+  const getDailyPin = (job) => {
+    if (!job) return "------";
+    return String(((job.id?.charCodeAt(0) || 1) * 137 + new Date().getDate() * 31) % 900000 + 100000);
+  };
+
+  // Countdown para o modal de PIN
+  useEffect(() => {
+    if (!pinModal) return;
+    setPinCountdown(30);
+    const timer = setInterval(() => {
+      setPinCountdown(prev => {
+        if (prev <= 1) { clearInterval(timer); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [pinModal]);
 
   const handleAccept = async (app) => {
     try {
@@ -371,6 +398,7 @@ export default function Applications() {
               onAccept={handleAccept}
               onReject={handleReject}
               onComplete={handleComplete}
+              onSendPin={(job, worker) => setPinModal({ job, worker })}
               isDark={isDark}
             />
           ))
@@ -397,6 +425,43 @@ export default function Applications() {
           onClose={() => setShowCompletion(false)}
           onComplete={() => { setShowCompletion(false); loadData(); }}
         />
+      )}
+
+      {/* Modal PIN */}
+      {pinModal && (
+        <div style={{ position: "fixed", inset: 0, background: "#000A", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+          onClick={() => setPinModal(null)}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ background: isDark ? "#1C1B22" : "#FFF", borderRadius: 24, padding: 32, width: "100%", maxWidth: 360, textAlign: "center", boxShadow: "0 8px 48px #0008" }}>
+            {/* PIN icon */}
+            <div style={{ margin: "0 auto 16px", width: 64, height: 64, background: "#FF660022", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>📍</div>
+            <h2 style={{ color: text, fontWeight: 800, fontSize: 20, margin: "0 0 4px" }}>PIN do Dia</h2>
+            <p style={{ color: subtext, fontSize: 13, margin: "0 0 24px" }}>
+              Mostra este PIN ao profissional <strong style={{ color: text }}>{pinModal.worker?.full_name?.split(" ")[0]}</strong> para confirmar a presença
+            </p>
+
+            {/* Hexagonal PIN display */}
+            <div style={{ margin: "0 auto 8px", width: 180, height: 180,
+              clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",
+              background: isDark ? "#111016" : "#1A1A1A",
+              border: "4px solid #FF6600",
+              boxShadow: "0 0 40px #FF660066",
+              display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 36, fontWeight: 900, color: "#FF6600", letterSpacing: 4 }}>
+                {getDailyPin(pinModal.job)}
+              </span>
+            </div>
+
+            {/* Countdown */}
+            <p style={{ color: "#FF6600", fontWeight: 700, fontSize: 18, margin: "12px 0 0" }}>⏱ {pinCountdown}s</p>
+            <p style={{ color: subtext, fontSize: 12, margin: "4px 0 24px" }}>{pinModal.job?.title}</p>
+
+            <button onClick={() => setPinModal(null)}
+              style={{ width: "100%", background: "#FF6600", color: "#FFF", border: "none", borderRadius: 14, padding: "14px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
+              Fechar
+            </button>
+          </div>
+        </div>
       )}
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
