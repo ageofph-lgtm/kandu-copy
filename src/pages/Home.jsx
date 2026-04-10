@@ -259,18 +259,27 @@ function EmployerHome({ user, isDark }) {
   return (
     <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80 }}>
       <div style={{
-        background: isDark
-          ? "linear-gradient(135deg, #1F1108 0%, #2A1A0A 100%)"
-          : "linear-gradient(135deg, #FF6600 0%, #FF8C00 100%)",
-        padding: "40px 24px 32px"
+        background: isDark ? "#1A1A1A" : "#FFFFFF",
+        padding: "32px 24px 28px",
+        borderBottom: isDark ? "none" : "1px solid #F0F0F0"
       }}>
-        <p style={{ margin: 0, fontSize: 14, color: isDark ? "#FF9944" : "rgba(255,255,255,0.8)", fontWeight: 500 }}>Bem-vindo 👋</p>
-        <h1 style={{ margin: "4px 0 6px", fontSize: 30, fontWeight: 900, color: isDark ? "#FF6600" : "#FFF", letterSpacing: -0.5 }}>
-          {firstName}
-        </h1>
-        <p style={{ margin: 0, fontSize: 20, fontWeight: 700, color: isDark ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.9)" }}>
-          O que precisa?
-        </p>
+        {/* Logo grande à direita + saudação à esquerda */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: 0, fontSize: 13, color: isDark ? "#FF9944" : "#FF6600", fontWeight: 600 }}>Bem-vindo 👋</p>
+            <h1 style={{ margin: "4px 0 6px", fontSize: 28, fontWeight: 900, color: isDark ? "#FFFFFF" : "#1A1A1A", letterSpacing: -0.5 }}>
+              {firstName}
+            </h1>
+            <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: isDark ? "#AAAAAA" : "#444444" }}>
+              O que precisa?
+            </p>
+          </div>
+          <img
+            src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"}
+            alt="KANDU"
+            style={{ height: 48, objectFit: "contain", flexShrink: 0, maxWidth: 140 }}
+          />
+        </div>
       </div>
 
       <div style={{ padding: "24px 20px" }}>
