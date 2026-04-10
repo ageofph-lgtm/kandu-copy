@@ -4,135 +4,56 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Application } from "@/entities/Application";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import MapView from "@/components/dashboard/MapView";
 import JobModal from "@/components/dashboard/JobModal";
-import { Search, Plus, MapPin, Clock, ChevronRight } from "lucide-react";
+import { Search, Plus, List, MapIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { translations } from "@/components/utils/translations";
 
 const LISBON_COORDS = [38.7223, -9.1393];
 const CATEGORIES = ["Todos", "Pintura", "Eletricidade", "Canalização", "Alvenaria", "Ladrilhador", "Carpintaria", "Climatização", "Isolamentos", "Pavimentos", "Telhados"];
 
-function JobCard({ job, onClick, isDark }) {
-  const surface = isDark ? "#2A2A2A" : "#FFFFFF";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
-  const border = isDark ? "#333" : "#E5E5E5";
-  const urgencyColor = { low: "#22c55e", medium: "#f59e0b", high: "#ef4444" };
-  const urgencyLabel = { low: "Normal", medium: "Urgente", high: "Muito Urgente" };
-
-  return (
-    <div
-      onClick={() => onClick(job)}
-      style={{
-        background: surface, border: `1px solid ${border}`, borderRadius: 16,
-        padding: "14px 16px", cursor: "pointer", transition: "transform 0.15s, box-shadow 0.15s", marginBottom: 10,
-      }}
-      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(255,102,0,0.15)"; }}
-      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-        <div style={{ flex: 1, marginRight: 10 }}>
-          <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: text, lineHeight: 1.3 }}>{job.title}</p>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-            <MapPin size={12} color="#FF6600" />
-            <span style={{ fontSize: 12, color: subtext }}>{job.location}</span>
-          </div>
-        </div>
-        <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: "#FF6600" }}>
-            €{job.price}{job.price_type === "hourly" ? "/h" : ""}
-          </p>
-          {job.urgency && (
-            <span style={{ fontSize: 10, color: urgencyColor[job.urgency] || "#22c55e", fontWeight: 600 }}>
-              ● {urgencyLabel[job.urgency] || "Normal"}
-            </span>
-          )}
-        </div>
-      </div>
-      <p style={{ margin: "0 0 10px", fontSize: 13, color: subtext, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-        {job.description}
-      </p>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Badge style={{ background: "#FF660022", color: "#FF6600", border: "none", fontSize: 11, fontWeight: 600 }}>
-          {job.category}
-        </Badge>
-        <span style={{ fontSize: 11, color: subtext, display: "flex", alignItems: "center", gap: 4 }}>
-          <Clock size={11} /> {new Date(job.created_date).toLocaleDateString("pt-PT")}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-export default function Home() {
-  const navigate = useNavigate();
-  const { isDark } = useTheme();
-  const [user, setUser] = useState(null);
+/* ─────────────────────────────────────────────
+   HOME DO PROFISSIONAL  (worker)
+   Primário: mapa fullscreen + sheet de lista
+───────────────────────────────────────────── */
+function WorkerHome({ user, isDark }) {
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
-  const [myJobs, setMyJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-  const [viewMode, setViewMode] = useState("list");
-  const [stats, setStats] = useState({ applied: 0, active: 0, posted: 0 });
+  const [showList, setShowList] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const bg = isDark ? "#1A1A1A" : "#F5F5F5";
-  const surface = isDark ? "#2A2A2A" : "#FFFFFF";
   const text = isDark ? "#FFFFFF" : "#1A1A1A";
   const subtext = isDark ? "#AAAAAA" : "#666666";
+  const surface = isDark ? "#1E1E1E" : "#FFFFFF";
   const border = isDark ? "#333" : "#E5E5E5";
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const userData = await User.me();
-      if (!userData) { navigate(createPageUrl("Welcome")); return; }
-      if (!userData.user_type) { navigate(createPageUrl("SetupProfile")); return; }
-      setUser(userData);
-
-      const allJobs = await Job.list("-created_date");
-      const openJobs = allJobs.filter(j => j.status === "open");
-      setJobs(openJobs);
-      setFilteredJobs(openJobs);
-
-      if (userData.user_type === "worker") {
-        const apps = await Application.filter({ worker_id: userData.id });
-        const active = apps.filter(a => ["accepted", "in_progress"].includes(a.status));
-        setStats({ applied: apps.length, active: active.length, posted: 0 });
-      } else if (userData.user_type === "employer") {
-        const myPostedJobs = allJobs.filter(j => j.employer_id === userData.id);
-        const activeJobs = myPostedJobs.filter(j => ["open", "in_progress"].includes(j.status));
-        setMyJobs(myPostedJobs.slice(0, 3));
-        setStats({ applied: 0, active: activeJobs.length, posted: myPostedJobs.length });
-      }
-    } catch (error) {
-      console.error("Error loading home:", error);
-      navigate(createPageUrl("Welcome"));
-    }
-    setLoading(false);
-  }, [navigate]);
-
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    Job.list("-created_date").then(all => {
+      const open = all.filter(j => j.status === "open");
+      setJobs(open);
+      setFilteredJobs(open);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
-    let filtered = [...jobs];
-    if (selectedCategory !== "Todos") filtered = filtered.filter(j => j.category === selectedCategory);
+    let f = [...jobs];
+    if (selectedCategory !== "Todos") f = f.filter(j => j.category === selectedCategory);
     if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(j =>
-        j.title?.toLowerCase().includes(term) ||
-        j.location?.toLowerCase().includes(term) ||
-        j.category?.toLowerCase().includes(term)
+      const t = searchTerm.toLowerCase();
+      f = f.filter(j =>
+        j.title?.toLowerCase().includes(t) ||
+        j.location?.toLowerCase().includes(t) ||
+        j.category?.toLowerCase().includes(t)
       );
     }
-    setFilteredJobs(filtered);
+    setFilteredJobs(f);
   }, [jobs, selectedCategory, searchTerm]);
 
   const handleJobClick = async (job) => {
@@ -140,197 +61,358 @@ export default function Home() {
     setSelectedJob({ ...job, views: (job.views || 0) + 1 });
   };
 
-  const getMapCenter = () => {
-    if (user?.latitude && user?.longitude) return [user.latitude, user.longitude];
-    return LISBON_COORDS;
-  };
+  const center = user?.latitude && user?.longitude
+    ? [user.latitude, user.longitude]
+    : LISBON_COORDS;
 
   if (loading) return <LoadingScreen />;
-  if (!user) return null;
-
-  const isWorker = user.user_type === "worker";
-  const isEmployer = user.user_type === "employer";
 
   return (
-    <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80 }}>
+    <div style={{ position: "relative", height: "calc(100vh - 60px)", overflow: "hidden" }}>
 
-      {/* Header */}
-      <div style={{ background: surface, borderBottom: `1px solid ${border}`, padding: "16px 20px 12px", position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <div>
-            <p style={{ margin: 0, fontSize: 13, color: subtext }}>
-              {isWorker ? "Obras disponíveis" : "Painel do Empregador"}
-            </p>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: text }}>
-              Olá, {user.full_name?.split(" ")[0] || "Utilizador"} 👋
-            </h1>
-          </div>
-          {isEmployer && (
-            <Button
-              onClick={() => navigate(createPageUrl("NewJob"))}
-              style={{ background: "#FF6600", color: "#FFF", borderRadius: 12, fontWeight: 700, fontSize: 13, padding: "8px 14px", border: "none", display: "flex", alignItems: "center", gap: 6 }}
-            >
-              <Plus size={16} /> Nova Obra
-            </Button>
-          )}
-        </div>
-        <div style={{ position: "relative" }}>
-          <Search size={16} color={subtext} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-          <Input
+      {/* ── MAPA (base layer, sempre visível) ── */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+        <MapView jobs={filteredJobs} onJobClick={handleJobClick} center={center} radius={15000} />
+      </div>
+
+      {/* ── SEARCH + CATEGORIAS (flutuante em cima do mapa) ── */}
+      <div style={{
+        position: "absolute", top: 16, left: 16, right: 16, zIndex: 20,
+        display: "flex", flexDirection: "column", gap: 8
+      }}>
+        {/* Search */}
+        <div style={{
+          background: surface, borderRadius: 14, padding: "8px 14px",
+          display: "flex", alignItems: "center", gap: 8,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.18)"
+        }}>
+          <Search size={16} color="#FF6600" />
+          <input
             placeholder="Pesquisar obras..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            style={{ paddingLeft: 36, background: isDark ? "#111" : "#F0F0F0", border: "none", borderRadius: 12, color: text, height: 40 }}
+            style={{
+              background: "none", border: "none", outline: "none",
+              color: text, fontSize: 14, flex: 1
+            }}
           />
         </div>
-      </div>
 
-      <div style={{ padding: "16px 20px" }}>
-
-        {/* Stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
-          {isWorker ? (
-            <>
-              <div style={{ background: surface, borderRadius: 14, padding: "12px 10px", textAlign: "center", border: `1px solid ${border}` }}>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#FF6600" }}>{filteredJobs.length}</p>
-                <p style={{ margin: 0, fontSize: 11, color: subtext, marginTop: 2 }}>Disponíveis</p>
-              </div>
-              <div style={{ background: surface, borderRadius: 14, padding: "12px 10px", textAlign: "center", border: `1px solid ${border}` }}>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#22c55e" }}>{stats.active}</p>
-                <p style={{ margin: 0, fontSize: 11, color: subtext, marginTop: 2 }}>Activos</p>
-              </div>
-              <div style={{ background: surface, borderRadius: 14, padding: "12px 10px", textAlign: "center", border: `1px solid ${border}` }}>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#3b82f6" }}>{stats.applied}</p>
-                <p style={{ margin: 0, fontSize: 11, color: subtext, marginTop: 2 }}>Candidaturas</p>
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ background: surface, borderRadius: 14, padding: "12px 10px", textAlign: "center", border: `1px solid ${border}` }}>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#FF6600" }}>{stats.posted}</p>
-                <p style={{ margin: 0, fontSize: 11, color: subtext, marginTop: 2 }}>Minhas Obras</p>
-              </div>
-              <div style={{ background: surface, borderRadius: 14, padding: "12px 10px", textAlign: "center", border: `1px solid ${border}` }}>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#22c55e" }}>{stats.active}</p>
-                <p style={{ margin: 0, fontSize: 11, color: subtext, marginTop: 2 }}>Activas</p>
-              </div>
-              <div style={{ background: surface, borderRadius: 14, padding: "12px 10px", textAlign: "center", border: `1px solid ${border}` }}>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#3b82f6" }}>{filteredJobs.length}</p>
-                <p style={{ margin: 0, fontSize: 11, color: subtext, marginTop: 2 }}>No mercado</p>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Categories */}
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 8, marginBottom: 16 }}>
+        {/* Category pills */}
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
           {CATEGORIES.map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               style={{
-                flexShrink: 0, padding: "6px 14px", borderRadius: 20, border: "none", cursor: "pointer",
-                background: selectedCategory === cat ? "#FF6600" : (isDark ? "#2A2A2A" : "#EBEBEB"),
+                flexShrink: 0, padding: "5px 12px", borderRadius: 20, border: "none", cursor: "pointer",
+                background: selectedCategory === cat ? "#FF6600" : (isDark ? "rgba(30,30,30,0.92)" : "rgba(255,255,255,0.92)"),
                 color: selectedCategory === cat ? "#FFF" : subtext,
-                fontWeight: selectedCategory === cat ? 700 : 400, fontSize: 13, transition: "all 0.15s",
+                fontWeight: selectedCategory === cat ? 700 : 500, fontSize: 12,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.12)", transition: "all 0.15s"
               }}
             >
               {cat}
             </button>
           ))}
         </div>
-
-        {/* View toggle */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-          {["list", "map"].map(mode => (
-            <button
-              key={mode}
-              onClick={() => setViewMode(mode)}
-              style={{
-                flex: 1, padding: "8px", borderRadius: 10, border: `1px solid ${border}`, cursor: "pointer",
-                background: viewMode === mode ? "#FF6600" : surface,
-                color: viewMode === mode ? "#FFF" : subtext, fontWeight: 600, fontSize: 13,
-              }}
-            >
-              {mode === "list" ? "📋 Lista" : "🗺️ Mapa"}
-            </button>
-          ))}
-        </div>
-
-        {/* Employer quick section */}
-        {isEmployer && myJobs.length > 0 && (
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <h2 style={{ margin: 0, fontWeight: 700, fontSize: 15, color: text }}>As Minhas Obras</h2>
-              <button
-                onClick={() => navigate(createPageUrl("MyJobs"))}
-                style={{ background: "none", border: "none", color: "#FF6600", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
-              >
-                Ver todas <ChevronRight size={14} />
-              </button>
-            </div>
-            {myJobs.map(job => (
-              <JobCard key={job.id} job={job} onClick={handleJobClick} isDark={isDark} />
-            ))}
-          </div>
-        )}
-
-        {/* Section title */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <h2 style={{ margin: 0, fontWeight: 700, fontSize: 15, color: text }}>
-            {isWorker ? "Obras perto de si" : "Mercado de obras"}
-          </h2>
-          <span style={{ fontSize: 12, color: subtext }}>{filteredJobs.length} resultado{filteredJobs.length !== 1 ? "s" : ""}</span>
-        </div>
-
-        {/* LIST */}
-        {viewMode === "list" && (
-          <div>
-            {filteredJobs.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "40px 20px" }}>
-                <p style={{ fontSize: 40, margin: "0 0 10px" }}>🔍</p>
-                <p style={{ color: subtext, fontSize: 14, margin: 0 }}>
-                  {searchTerm || selectedCategory !== "Todos"
-                    ? "Nenhuma obra encontrada com esses filtros."
-                    : "Não há obras disponíveis de momento."}
-                </p>
-                {isEmployer && (
-                  <Button
-                    onClick={() => navigate(createPageUrl("NewJob"))}
-                    style={{ marginTop: 16, background: "#FF6600", color: "#FFF", borderRadius: 12, fontWeight: 700 }}
-                  >
-                    Publicar obra
-                  </Button>
-                )}
-              </div>
-            ) : (
-              filteredJobs.map(job => (
-                <JobCard key={job.id} job={job} onClick={handleJobClick} isDark={isDark} />
-              ))
-            )}
-          </div>
-        )}
-
-        {/* MAP */}
-        {viewMode === "map" && (
-          <div style={{ borderRadius: 16, overflow: "hidden", height: 420, border: `1px solid ${border}` }}>
-            <MapView jobs={filteredJobs} onJobClick={handleJobClick} center={getMapCenter()} radius={15000} />
-          </div>
-        )}
       </div>
 
+      {/* ── CONTADOR + BOTÃO LISTA ── */}
+      <div style={{
+        position: "absolute", bottom: showList ? "52%" : 24, left: "50%", transform: "translateX(-50%)",
+        zIndex: 20, display: "flex", alignItems: "center", gap: 8, transition: "bottom 0.3s ease"
+      }}>
+        <div style={{
+          background: surface, borderRadius: 20, padding: "6px 14px",
+          fontSize: 12, fontWeight: 700, color: "#FF6600",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.2)"
+        }}>
+          {filteredJobs.length} obra{filteredJobs.length !== 1 ? "s" : ""}
+        </div>
+        <button
+          onClick={() => setShowList(v => !v)}
+          style={{
+            background: showList ? "#FF6600" : surface, color: showList ? "#FFF" : "#FF6600",
+            border: "none", borderRadius: 20, padding: "6px 14px",
+            fontSize: 12, fontWeight: 700, cursor: "pointer",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
+            display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s"
+          }}
+        >
+          <List size={14} /> Lista
+        </button>
+      </div>
+
+      {/* ── SHEET DE LISTA (slide-up) ── */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 10,
+        background: surface, borderRadius: "20px 20px 0 0",
+        boxShadow: "0 -4px 20px rgba(0,0,0,0.15)",
+        transform: showList ? "translateY(0)" : "translateY(100%)",
+        transition: "transform 0.35s cubic-bezier(0.4,0,0.2,1)",
+        maxHeight: "50vh", display: "flex", flexDirection: "column"
+      }}>
+        {/* Handle */}
+        <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 4px" }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: isDark ? "#444" : "#DDD" }} />
+        </div>
+        <div style={{ overflowY: "auto", padding: "0 16px 16px", flex: 1 }}>
+          {filteredJobs.length === 0 ? (
+            <p style={{ textAlign: "center", color: subtext, padding: "20px 0", fontSize: 14 }}>
+              Nenhuma obra encontrada.
+            </p>
+          ) : filteredJobs.map(job => (
+            <div
+              key={job.id}
+              onClick={() => { handleJobClick(job); setShowList(false); }}
+              style={{
+                padding: "12px 0", borderBottom: `1px solid ${border}`, cursor: "pointer",
+                display: "flex", justifyContent: "space-between", alignItems: "center"
+              }}
+            >
+              <div style={{ flex: 1, marginRight: 10 }}>
+                <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: text }}>{job.title}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 12, color: subtext }}>{job.location} · {job.category}</p>
+              </div>
+              <p style={{ margin: 0, fontWeight: 800, color: "#FF6600", fontSize: 15, flexShrink: 0 }}>
+                €{job.price}{job.price_type === "hourly" ? "/h" : ""}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Job Modal */}
       {selectedJob && (
         <JobModal
           job={selectedJob}
           user={user}
           onClose={() => setSelectedJob(null)}
-          onApply={() => { setSelectedJob(null); loadData(); }}
+          onApply={() => setSelectedJob(null)}
           onDelete={async (jobId) => {
             if (!window.confirm("Apagar esta obra?")) return;
-            try { await Job.delete(jobId); setSelectedJob(null); loadData(); } catch (e) { console.error(e); }
+            try { await Job.delete(jobId); setSelectedJob(null); } catch {}
           }}
         />
       )}
     </div>
   );
+}
+
+/* ─────────────────────────────────────────────
+   HOME DO EMPREGADOR
+   Painel simples: saudação + acções rápidas
+───────────────────────────────────────────── */
+function EmployerHome({ user, isDark }) {
+  const navigate = useNavigate();
+  const [myJobs, setMyJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const bg = isDark ? "#1A1A1A" : "#F5F5F5";
+  const surface = isDark ? "#2A2A2A" : "#FFFFFF";
+  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const border = isDark ? "#333" : "#E5E5E5";
+
+  useEffect(() => {
+    Job.filter({ employer_id: user.id }).then(jobs => {
+      setMyJobs(jobs.filter(j => ["open", "in_progress"].includes(j.status)));
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [user.id]);
+
+  const firstName = user.full_name?.split(" ")[0] || "Utilizador";
+
+  const QUICK_ACTIONS = [
+    {
+      icon: "🏗️", label: "Publicar\nObra",
+      desc: "Encontra o profissional certo",
+      action: () => navigate(createPageUrl("NewJob")),
+      primary: true
+    },
+    {
+      icon: "📋", label: "As Minhas\nObras",
+      desc: "Gere os seus trabalhos",
+      action: () => navigate(createPageUrl("MyJobs")),
+      primary: false
+    },
+    {
+      icon: "👥", label: "Candidaturas",
+      desc: "Veja quem quer trabalhar",
+      action: () => navigate(createPageUrl("Applications")),
+      primary: false
+    },
+    {
+      icon: "💬", label: "Chat",
+      desc: "Fale com profissionais",
+      action: () => navigate(createPageUrl("Chat")),
+      primary: false
+    },
+  ];
+
+  if (loading) return <LoadingScreen />;
+
+  return (
+    <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80 }}>
+
+      {/* Header de saudação */}
+      <div style={{
+        background: isDark
+          ? "linear-gradient(135deg, #1A1A1A 0%, #2A1A0A 100%)"
+          : "linear-gradient(135deg, #FF6600 0%, #FF8C00 100%)",
+        padding: "32px 24px 28px"
+      }}>
+        <p style={{ margin: 0, fontSize: 14, color: isDark ? "#FF8844" : "rgba(255,255,255,0.8)", fontWeight: 500 }}>
+          Bem-vindo de volta 👋
+        </p>
+        <h1 style={{ margin: "4px 0 8px", fontSize: 28, fontWeight: 900, color: isDark ? "#FF6600" : "#FFFFFF", letterSpacing: -0.5 }}>
+          {firstName}
+        </h1>
+        <p style={{
+          margin: 0, fontSize: 18, fontWeight: 700,
+          color: isDark ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.9)"
+        }}>
+          O que precisa hoje?
+        </p>
+
+        {/* Mini stats */}
+        <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+          <div style={{
+            background: "rgba(255,255,255,0.15)", borderRadius: 12,
+            padding: "10px 16px", backdropFilter: "blur(8px)", flex: 1, textAlign: "center"
+          }}>
+            <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#FFF" }}>{myJobs.length}</p>
+            <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.8)" }}>Obras Activas</p>
+          </div>
+          <div style={{
+            background: "rgba(255,255,255,0.15)", borderRadius: 12,
+            padding: "10px 16px", backdropFilter: "blur(8px)", flex: 1, textAlign: "center"
+          }}>
+            <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#FFF" }}>
+              {myJobs.filter(j => j.status === "in_progress").length}
+            </p>
+            <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.8)" }}>Em Curso</p>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: "24px 20px" }}>
+
+        {/* Acção principal em destaque */}
+        <button
+          onClick={() => navigate(createPageUrl("NewJob"))}
+          style={{
+            width: "100%", background: "#FF6600", color: "#FFF",
+            border: "none", borderRadius: 20, padding: "22px 24px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            cursor: "pointer", marginBottom: 16,
+            boxShadow: "0 8px 24px rgba(255,102,0,0.35)",
+            transition: "transform 0.15s, box-shadow 0.15s"
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.02)"; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+        >
+          <div style={{ textAlign: "left" }}>
+            <p style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>+ Publicar Nova Obra</p>
+            <p style={{ margin: "4px 0 0", fontSize: 13, opacity: 0.85 }}>Encontra o profissional certo em minutos</p>
+          </div>
+          <span style={{ fontSize: 36 }}>🏗️</span>
+        </button>
+
+        {/* Grid de acções secundárias */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {[
+            { icon: "📋", label: "Minhas Obras", desc: "Gere os seus trabalhos", to: "MyJobs" },
+            { icon: "👥", label: "Candidaturas", desc: "Veja quem quer trabalhar", to: "Applications" },
+            { icon: "💬", label: "Chat", desc: "Fale com profissionais", to: "Chat" },
+            { icon: "👤", label: "Perfil", desc: "Edite os seus dados", to: "Profile" },
+          ].map(({ icon, label, desc, to }) => (
+            <button
+              key={to}
+              onClick={() => navigate(createPageUrl(to))}
+              style={{
+                background: surface, border: `1px solid ${border}`, borderRadius: 16,
+                padding: "18px 16px", textAlign: "left", cursor: "pointer",
+                transition: "transform 0.15s, box-shadow 0.15s"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(255,102,0,0.12)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+            >
+              <span style={{ fontSize: 28 }}>{icon}</span>
+              <p style={{ margin: "8px 0 2px", fontWeight: 700, fontSize: 14, color: text }}>{label}</p>
+              <p style={{ margin: 0, fontSize: 11, color: subtext, lineHeight: 1.4 }}>{desc}</p>
+            </button>
+          ))}
+        </div>
+
+        {/* Obras activas recentes */}
+        {myJobs.length > 0 && (
+          <div style={{ marginTop: 24 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: text }}>Obras Activas</p>
+              <button
+                onClick={() => navigate(createPageUrl("MyJobs"))}
+                style={{ background: "none", border: "none", color: "#FF6600", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
+              >
+                Ver todas →
+              </button>
+            </div>
+            {myJobs.slice(0, 3).map(job => (
+              <div
+                key={job.id}
+                onClick={() => navigate(createPageUrl("MyJobs"))}
+                style={{
+                  background: surface, border: `1px solid ${border}`, borderRadius: 14,
+                  padding: "12px 16px", marginBottom: 8, cursor: "pointer",
+                  display: "flex", justifyContent: "space-between", alignItems: "center"
+                }}
+              >
+                <div>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: text }}>{job.title}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 12, color: subtext }}>{job.location}</p>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <p style={{ margin: 0, fontWeight: 800, color: "#FF6600", fontSize: 14 }}>€{job.price}</p>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600,
+                    color: job.status === "in_progress" ? "#3b82f6" : "#22c55e"
+                  }}>
+                    {job.status === "in_progress" ? "● Em curso" : "● Aberta"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   COMPONENTE PRINCIPAL
+───────────────────────────────────────────── */
+export default function Home() {
+  const navigate = useNavigate();
+  const { isDark } = useTheme();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    User.me().then(u => {
+      if (!u) { navigate(createPageUrl("Welcome")); return; }
+      if (!u.user_type) { navigate(createPageUrl("SetupProfile")); return; }
+      setUser(u);
+      setLoading(false);
+    }).catch(() => navigate(createPageUrl("Welcome")));
+  }, [navigate]);
+
+  if (loading) return <LoadingScreen />;
+  if (!user) return null;
+
+  if (user.user_type === "worker") return <WorkerHome user={user} isDark={isDark} />;
+  if (user.user_type === "employer") return <EmployerHome user={user} isDark={isDark} />;
+  // admin → redireciona para AdminDashboard (o Layout.jsx já faz isso)
+  return null;
 }
