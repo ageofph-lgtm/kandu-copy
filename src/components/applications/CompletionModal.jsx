@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTheme } from "@/lib/ThemeContext";
 import { Rating } from "@/entities/Rating";
 import { calcJobXP, applyXP, XP_EVENTS } from "@/lib/xp";
 import XPGainToast from "@/components/XPGainToast";
@@ -131,7 +132,7 @@ export default function CompletionModal({
           title: "Obra finalizada! Avalie o empregador.",
           message: `O trabalho "${job.title}" foi marcado como concluído. Por favor, deixe sua avaliação.`,
           related_id: job.id,
-          action_url: createPageUrl("Applications")
+          action_url: createPageUrl("MyJobs")
         });
 
       } else if (currentUser.user_type === 'worker') {
