@@ -7,6 +7,7 @@ import { Notification } from "@/entities/Notification";
 import { MapPin } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
+import LoadingScreen from "@/components/LoadingScreen";
 
 // ─── Card de candidato (para o employer aprovar/recusar) ─────────────────────
 function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, text, subtext, border }) {
@@ -222,13 +223,7 @@ export default function Applications() {
 
   const filtered = filter === "all" ? apps : apps.filter(a => a.job_id === filter);
 
-  if (loading) return (
-    <div style={{ minHeight: "100vh", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
-      <div style={{ width: 38, height: 38, border: "3px solid #FF6600", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-      <p style={{ color: subtext, fontSize: 14 }}>A carregar…</p>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-    </div>
-  );
+  if (loading) return <LoadingScreen />;
 
   return (
     <div style={{ background: bg, minHeight: "100vh", paddingBottom: 90 }}>
