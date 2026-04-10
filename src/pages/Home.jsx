@@ -1,76 +1,73 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import MapView from "@/components/dashboard/MapView";
 import JobModal from "@/components/dashboard/JobModal";
-import { Search, List, Plus, ChevronRight } from "lucide-react";
+import { Search, List, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const LISBON_COORDS = [38.7223, -9.1393];
 const CATEGORIES = ["Todos", "Pintura", "Eletricidade", "Canalização", "Alvenaria", "Ladrilhador", "Carpintaria", "Climatização", "Isolamentos", "Pavimentos", "Telhados"];
-const RADIUS_OPTIONS = [2, 5, 10, 20, 50];
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 /* ─────────────────────────
-   WORKER HOME  
-   Mapa fullscreen + geo + raio
+   WORKER HOME
+   Mapa fullscreen + geo real-time
+   Sem filtro de raio — mostra todas as obras
+   Distância calculada ao abrir cada obra
 ───────────────────────────*/
 function WorkerHome({ user, isDark }) {
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
+  const [selectedJobDistance, setSelectedJobDistance] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [showList, setShowList] = useState(false);
-  const [showRadiusPicker, setShowRadiusPicker] = useState(false);
-  const [radiusKm, setRadiusKm] = useState(10);
   const [userLocation, setUserLocation] = useState(null);
-  const [geoError, setGeoError] = useState(null);
-  const [geoLoading, setGeoLoading] = useState(true);
+  const [geoStatus, setGeoStatus] = useState("loading"); // "loading" | "ok" | "error"
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   const text = isDark ? "#FFFFFF" : "#1A1A1A";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const surface = isDark ? "#1C1C1C" : "#FFFFFF";
-  const surfaceAlpha = isDark ? "rgba(28,28,28,0.96)" : "rgba(255,255,255,0.96)";
+  const surfaceAlpha = isDark ? "rgba(28,28,28,0.95)" : "rgba(255,255,255,0.95)";
 
-  // ── Geolocalização ──
+  // ── Geolocalização contínua ──
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setGeoError("Geolocalização não disponível");
-      setGeoLoading(false);
-      return;
-    }
+    if (!navigator.geolocation) { setGeoStatus("error"); return; }
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const loc = [pos.coords.latitude, pos.coords.longitude];
         setUserLocation(loc);
-        setGeoLoading(false);
-        // Actualizar no perfil do user (silencioso)
+        setGeoStatus("ok");
         User.update(user.id, { latitude: pos.coords.latitude, longitude: pos.coords.longitude }).catch(() => {});
       },
-      (err) => {
-        console.warn("Geo error:", err.message);
-        setGeoError("Sem permissão de localização");
-        setGeoLoading(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+      () => setGeoStatus("error"),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 20000 }
     );
     return () => navigator.geolocation.clearWatch(watchId);
   }, [user.id]);
 
-  // ── Carregar obras ──
+  // ── Carregar TODAS as obras abertas ──
   useEffect(() => {
-    Job.list("-created_date").then(all => {
-      setJobs(all.filter(j => j.status === "open"));
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    Job.list("-created_date")
+      .then(all => { setJobs(all.filter(j => j.status === "open")); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
-  // ── Filtrar por pesquisa + categoria + raio ──
+  // ── Filtrar apenas por pesquisa + categoria (sem raio) ──
   useEffect(() => {
     let f = [...jobs];
     if (selectedCategory !== "Todos") f = f.filter(j => j.category === selectedCategory);
@@ -82,31 +79,22 @@ function WorkerHome({ user, isDark }) {
         j.category?.toLowerCase().includes(t)
       );
     }
-    // Filtro por raio (só se tiver localização e as obras tiverem coords)
-    if (userLocation) {
-      f = f.filter(j => {
-        if (!j.latitude || !j.longitude) return true; // sem coords: mostrar sempre
-        const dist = haversine(userLocation[0], userLocation[1], j.latitude, j.longitude);
-        return dist <= radiusKm;
-      });
-    }
     setFilteredJobs(f);
-  }, [jobs, selectedCategory, searchTerm, radiusKm, userLocation]);
-
-  function haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
+  }, [jobs, selectedCategory, searchTerm]);
 
   const handleJobClick = async (job) => {
     try { await Job.update(job.id, { views: (job.views || 0) + 1 }); } catch {}
+    // Calcular distância se tiver localização e a obra tiver coords
+    let dist = null;
+    if (userLocation && job.latitude && job.longitude) {
+      dist = haversine(userLocation[0], userLocation[1], job.latitude, job.longitude);
+    }
+    setSelectedJobDistance(dist);
     setSelectedJob({ ...job, views: (job.views || 0) + 1 });
   };
 
-  const mapCenter = userLocation || (user?.latitude && user?.longitude ? [user.latitude, user.longitude] : LISBON_COORDS);
+  const mapCenter = userLocation
+    || (user?.latitude && user?.longitude ? [user.latitude, user.longitude] : LISBON_COORDS);
 
   if (loading) return <LoadingScreen />;
 
@@ -119,25 +107,21 @@ function WorkerHome({ user, isDark }) {
           jobs={filteredJobs}
           onJobClick={handleJobClick}
           center={mapCenter}
-          radius={radiusKm * 1000}
           userLocation={userLocation}
         />
       </div>
 
-      {/* ── CONTROLES FLUTUANTES TOPO ── */}
+      {/* ── SEARCH + CATEGORIAS (topo flutuante) ── */}
       <div style={{ position: "absolute", top: 16, left: 16, right: 16, zIndex: 20, display: "flex", flexDirection: "column", gap: 8 }}>
-        {/* Search */}
         <div style={{ background: surfaceAlpha, borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}>
           <Search size={16} color="#FF6600" />
           <input
             placeholder="Pesquisar obras..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            style={{ background: "none", border: "none", outline: "none", color: text, fontSize: 14, flex: 1, caretColor: "#FF6600" }}
+            style={{ background: "none", border: "none", outline: "none", color: text, fontSize: 14, flex: 1 }}
           />
         </div>
-
-        {/* Categorias */}
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => setSelectedCategory(cat)} style={{
@@ -153,58 +137,27 @@ function WorkerHome({ user, isDark }) {
         </div>
       </div>
 
-      {/* ── GEO STATUS + RAIO (fundo esquerdo) ── */}
-      <div style={{ position: "absolute", bottom: showList ? "calc(50% + 12px)" : 80, left: 16, zIndex: 20, display: "flex", flexDirection: "column", gap: 6, transition: "bottom 0.3s ease" }}>
-        {/* Geo pill */}
+      {/* ── STATUS GEO (fundo esquerdo) ── */}
+      <div style={{
+        position: "absolute",
+        bottom: showList ? "calc(50% + 12px)" : 80,
+        left: 16, zIndex: 20, transition: "bottom 0.3s ease"
+      }}>
         <div style={{
           background: surfaceAlpha, borderRadius: 20, padding: "5px 12px",
           fontSize: 11, fontWeight: 600, boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
-          color: geoError ? "#EF4444" : userLocation ? "#16A34A" : "#F59E0B",
+          color: geoStatus === "ok" ? "#16A34A" : geoStatus === "error" ? "#EF4444" : "#F59E0B",
           display: "flex", alignItems: "center", gap: 5
         }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: geoError ? "#EF4444" : userLocation ? "#16A34A" : "#F59E0B", flexShrink: 0 }} />
-          {geoLoading ? "A localizar..." : geoError ? "Sem localização" : "📍 A localizar"}
-        </div>
-
-        {/* Raio */}
-        <div style={{ position: "relative" }}>
-          <button
-            onClick={() => setShowRadiusPicker(v => !v)}
-            style={{
-              background: surfaceAlpha, border: "none", borderRadius: 20, padding: "5px 12px",
-              fontSize: 11, fontWeight: 700, color: "#FF6600", cursor: "pointer",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", gap: 5
-            }}
-          >
-            🎯 {radiusKm} km
-          </button>
-          {showRadiusPicker && (
-            <div style={{
-              position: "absolute", bottom: "calc(100% + 8px)", left: 0,
-              background: surface, borderRadius: 14, padding: "10px 8px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", gap: 4, minWidth: 100
-            }}>
-              <p style={{ margin: "0 0 6px 4px", fontSize: 11, fontWeight: 700, color: subtext }}>Raio de acção</p>
-              {RADIUS_OPTIONS.map(km => (
-                <button
-                  key={km}
-                  onClick={() => { setRadiusKm(km); setShowRadiusPicker(false); }}
-                  style={{
-                    background: radiusKm === km ? "#FF6600" : "none",
-                    color: radiusKm === km ? "#FFF" : text,
-                    border: "none", borderRadius: 10, padding: "7px 14px",
-                    fontWeight: 700, fontSize: 13, cursor: "pointer", textAlign: "left"
-                  }}
-                >
-                  {km} km
-                </button>
-              ))}
-            </div>
-          )}
+          <span style={{
+            width: 7, height: 7, borderRadius: "50%", flexShrink: 0,
+            background: geoStatus === "ok" ? "#16A34A" : geoStatus === "error" ? "#EF4444" : "#F59E0B"
+          }} />
+          {geoStatus === "loading" ? "A localizar..." : geoStatus === "error" ? "Sem localização" : "📍 Online"}
         </div>
       </div>
 
-      {/* ── CONTADOR + TOGGLE LISTA ── */}
+      {/* ── CONTADOR + BOTÃO LISTA (fundo direito) ── */}
       <div style={{
         position: "absolute",
         bottom: showList ? "calc(50% + 12px)" : 80,
@@ -230,7 +183,7 @@ function WorkerHome({ user, isDark }) {
         </button>
       </div>
 
-      {/* ── SHEET DE LISTA (slide-up) ── */}
+      {/* ── SHEET LISTA (slide-up) ── */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 15,
         background: surface, borderRadius: "20px 20px 0 0",
@@ -245,31 +198,42 @@ function WorkerHome({ user, isDark }) {
         <div style={{ overflowY: "auto", padding: "0 16px 80px", flex: 1 }}>
           {filteredJobs.length === 0 ? (
             <p style={{ textAlign: "center", color: subtext, padding: "24px 0", fontSize: 14 }}>
-              {userLocation ? `Sem obras num raio de ${radiusKm}km.` : "Nenhuma obra encontrada."}
+              Nenhuma obra encontrada.
             </p>
-          ) : filteredJobs.map(job => (
-            <div
-              key={job.id}
-              onClick={() => { handleJobClick(job); setShowList(false); }}
-              style={{ padding: "12px 0", borderBottom: `1px solid ${isDark ? "#333" : "#F0F0F0"}`, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-            >
-              <div style={{ flex: 1, marginRight: 10 }}>
-                <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: text }}>{job.title}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 12, color: subtext }}>{job.location} · {job.category}</p>
+          ) : filteredJobs.map(job => {
+            const dist = userLocation && job.latitude && job.longitude
+              ? haversine(userLocation[0], userLocation[1], job.latitude, job.longitude)
+              : null;
+            return (
+              <div
+                key={job.id}
+                onClick={() => { handleJobClick(job); setShowList(false); }}
+                style={{ padding: "12px 0", borderBottom: `1px solid ${isDark ? "#333" : "#F0F0F0"}`, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+              >
+                <div style={{ flex: 1, marginRight: 10 }}>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: text }}>{job.title}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 12, color: subtext }}>
+                    {job.location} · {job.category}
+                    {dist !== null && <span style={{ color: "#FF6600", fontWeight: 600 }}> · {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`}</span>}
+                  </p>
+                </div>
+                <p style={{ margin: 0, fontWeight: 800, color: "#FF6600", fontSize: 15, flexShrink: 0 }}>
+                  €{job.price}{job.price_type === "hourly" ? "/h" : ""}
+                </p>
               </div>
-              <p style={{ margin: 0, fontWeight: 800, color: "#FF6600", fontSize: 15, flexShrink: 0 }}>
-                €{job.price}{job.price_type === "hourly" ? "/h" : ""}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
+      {/* ── JOB MODAL ── */}
       {selectedJob && (
         <JobModal
-          job={selectedJob} user={user}
-          onClose={() => setSelectedJob(null)}
-          onApply={() => setSelectedJob(null)}
+          job={selectedJob}
+          user={user}
+          distanceKm={selectedJobDistance}
+          onClose={() => { setSelectedJob(null); setSelectedJobDistance(null); }}
+          onApply={() => { setSelectedJob(null); setSelectedJobDistance(null); }}
           onDelete={async (jobId) => {
             if (!window.confirm("Apagar esta obra?")) return;
             try { await Job.delete(jobId); setSelectedJob(null); } catch {}
@@ -281,8 +245,7 @@ function WorkerHome({ user, isDark }) {
 }
 
 /* ─────────────────────────
-   EMPLOYER HOME  
-   Painel simples, sem obras activas (vão para MyJobs)
+   EMPLOYER HOME
 ───────────────────────────*/
 function EmployerHome({ user, isDark }) {
   const navigate = useNavigate();
@@ -295,7 +258,6 @@ function EmployerHome({ user, isDark }) {
 
   return (
     <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80 }}>
-      {/* Hero */}
       <div style={{
         background: isDark
           ? "linear-gradient(135deg, #1F1108 0%, #2A1A0A 100%)"
@@ -312,7 +274,6 @@ function EmployerHome({ user, isDark }) {
       </div>
 
       <div style={{ padding: "24px 20px" }}>
-        {/* CTA principal */}
         <button
           onClick={() => navigate(createPageUrl("NewJob"))}
           style={{
@@ -330,13 +291,12 @@ function EmployerHome({ user, isDark }) {
           <span style={{ fontSize: 36 }}>🏗️</span>
         </button>
 
-        {/* Grid acções */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {[
-            { icon: "📋", label: "Trabalho",      desc: "Obras pendentes e activas", to: "MyJobs" },
-            { icon: "👥", label: "Candidaturas",  desc: "Veja quem quer trabalhar",  to: "Applications" },
-            { icon: "💬", label: "Chat",           desc: "Fale com profissionais",    to: "Chat" },
-            { icon: "👤", label: "Perfil",         desc: "Edite os seus dados",       to: "Profile" },
+            { icon: "📋", label: "Trabalho",     desc: "Obras pendentes e activas", to: "MyJobs" },
+            { icon: "👥", label: "Candidaturas", desc: "Veja quem quer trabalhar",  to: "Applications" },
+            { icon: "💬", label: "Chat",          desc: "Fale com profissionais",   to: "Chat" },
+            { icon: "👤", label: "Perfil",        desc: "Edite os seus dados",      to: "Profile" },
           ].map(({ icon, label, desc, to }) => (
             <button
               key={to}
