@@ -19,8 +19,8 @@ import ChatWindow from "../components/chat/ChatWindow";
 
 export default function Chat() {
   const { isDark } = useTheme();
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const bg = isDark ? "#111016" : "#FFFFFF";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const headerBg = isDark ? "#111" : "#F0F0F0";
   const border = isDark ? "#222" : "#E5E5E5";
   const [conversations, setConversations] = useState([]);
