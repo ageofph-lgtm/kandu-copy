@@ -200,7 +200,12 @@ function EmployerJobCard({ job, applications, user, onReload, isDark, surface, t
       } catch(e) { alert("Erro ao finalizar: " + e.message); }
       return;
     }
-    setCompletion({ application: app, job, otherUser });
+    // Garante que otherUser está carregado antes de abrir o modal
+    let resolvedOtherUser = otherUser;
+    if (!resolvedOtherUser && job.worker_id) {
+      try { const r = await User.filter({ id: job.worker_id }); resolvedOtherUser = r[0] || null; } catch(_) {}
+    }
+    setCompletion({ application: app, job, otherUser: resolvedOtherUser });
   };
 
   const handlePublish = async () => {
@@ -232,6 +237,11 @@ function EmployerJobCard({ job, applications, user, onReload, isDark, surface, t
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ background: s.color + "22", color: s.color, borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>{s.label}</span>
+            {job.status === "completed_by_employer" && !expanded && (
+              <span style={{ background: "#A855F7", color: "#FFF", borderRadius: 10, padding: "3px 8px", fontSize: 11, fontWeight: 800, animation: "pulse 1.5s ease-in-out infinite" }}>
+                ✍️
+              </span>
+            )}
             {expanded ? <ChevronUp size={16} color={subtext} /> : <ChevronDown size={16} color={subtext} />}
           </div>
         </div>
@@ -427,6 +437,13 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
       User.filter({ id: job.employer_id }).then(r => r[0] && setEmployer(r[0])).catch(() => {});
   }, [job.employer_id]);
 
+  // Auto-expandir quando obra aguarda avaliação do worker
+  useEffect(() => {
+    if (job.status === "completed_by_employer" && application?.status === "accepted") {
+      setExpanded(true);
+    }
+  }, [job.status, application?.status]);
+
   const handleConfirmPin = async () => {
     if (pinInput === expectedPin) {
       setPinOk(true);
@@ -612,6 +629,7 @@ export default function MyJobs() {
         appList = myApps;
         const allJobsRaw = await Job.list();
         const jobMap = {}; allJobsRaw.forEach(j => jobMap[j.id] = j);
+        // Incluir jobs de TODAS as candidaturas (não só pending) para apanhar histórico
         const appJobs = [...new Set(myApps.map(a => a.job_id).filter(Boolean))].map(id => jobMap[id]).filter(Boolean);
         const asWorker = await Job.filter({ worker_id: cu.id });
         const merged = [...asWorker]; appJobs.forEach(j => { if (!merged.find(x => x.id === j.id)) merged.push(j); });
@@ -641,7 +659,7 @@ export default function MyJobs() {
     : jobs.filter(j => ["pending_employer","open"].includes(j.status) && !j.worker_id);
 
   const activeJobs = !user ? [] : isWorker
-    ? jobs.filter(j => j.status === "in_progress" && j.worker_id === user.id)
+    ? jobs.filter(j => (j.status === "in_progress" || j.status === "completed_by_employer") && j.worker_id === user.id)
     : jobs.filter(j => ["in_progress","completed_by_employer"].includes(j.status));
 
   const historyJobs = !user ? [] : jobs.filter(j => ["completed","cancelled"].includes(j.status));
@@ -658,7 +676,7 @@ export default function MyJobs() {
     <div style={{ minHeight: "100vh", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
       <div style={{ width: 40, height: 40, border: "3px solid #FF6600", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <p style={{ color: subtext, fontSize: 14 }}>A carregar…</p>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
     </div>
   );
 
