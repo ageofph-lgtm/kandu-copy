@@ -100,22 +100,16 @@ function PinKeypad({ value, onChange, isDark, surface, text, onConfirm }) {
   );
 }
 
-// ─── QR display (worker gera) ─────────────────────────────────────────────────
+// ─── QR display (worker gera) — usa Google Charts API sem dependências ──────────
 function QrDisplay({ value, isDark }) {
-  let QRCode = null;
-  try { QRCode = require("qrcode.react").default; } catch (_) {}
+  const encoded = encodeURIComponent(value);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encoded}&bgcolor=ffffff&color=000000&margin=10`;
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      {QRCode ? (
-        <div style={{ background: "#FFF", padding: 10, borderRadius: 12, boxShadow: "0 0 20px #FF660033" }}>
-          <QRCode value={value} size={140} level="H" />
-        </div>
-      ) : (
-        <div style={{ background: "#FFF", padding: 14, borderRadius: 12, fontSize: 12, color: "#333", fontFamily: "monospace", wordBreak: "break-all", maxWidth: 220, textAlign: "center" }}>
-          {value}
-        </div>
-      )}
-      <span style={{ color: "#22C55E", fontSize: 12, fontWeight: 700 }}>📷 Mostra este QR ao empregador</span>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+      <div style={{ background: "#FFF", padding: 10, borderRadius: 14, boxShadow: "0 0 24px #FF660044", display: "inline-block" }}>
+        <img src={qrUrl} alt="QR Code" width={150} height={150} style={{ display: "block", borderRadius: 6 }} />
+      </div>
+      <span style={{ color: "#22C55E", fontSize: 13, fontWeight: 700 }}>📷 Mostra este QR ao empregador</span>
     </div>
   );
 }
@@ -219,14 +213,15 @@ function EmployerJobCard({ job, applications, user, onReload, isDark, surface, t
     // Notificar worker
     if (job.worker_id) {
       try {
+        const pinCode = getDailyPin(job.id);
         await Notification.create({
           user_id: job.worker_id, type: "pin_received",
           title: "📍 PIN de presença recebido!",
-          message: `O teu empregador enviou o PIN para confirmar a tua presença na obra "${job.title}". Abre o app para confirmar.`,
+          message: `PIN para "${job.title}": ${pinCode} — Abre o app, vai a Trabalho → Em Curso e insere este código.`,
           related_id: job.id, action_url: createPageUrl("MyJobs"), is_read: false
         });
         playPing();
-        sendBrowserPush("KANDU — PIN Recebido! 📍", `Confirma a tua presença na obra "${job.title}"`);
+        sendBrowserPush("KANDU — PIN Recebido! 📍", `PIN: ${getDailyPin(job.id)} — Obra: "${job.title}". Insere no app.`);
       } catch (_) {}
     }
   };
