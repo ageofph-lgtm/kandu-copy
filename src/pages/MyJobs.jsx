@@ -124,24 +124,36 @@ function QrReader({ onRead, onClose, isDark, surface, text, subtext, border }) {
   useEffect(() => {
     if (!isMobile) return;
     let stream = null;
-    (async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        if (videoRef.current) videoRef.current.srcObject = stream;
-        // Usar BarcodeDetector se disponível
+    let scanInterval = null;
+    let active = true;
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then(s => {
+        if (!active) { s.getTracks().forEach(t => t.stop()); return; }
+        stream = s;
+        if (videoRef.current) videoRef.current.srcObject = s;
         if ("BarcodeDetector" in window) {
           const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
-          const scan = setInterval(async () => {
+          scanInterval = setInterval(async () => {
+            if (!videoRef.current || !active) return;
             try {
               const codes = await detector.detect(videoRef.current);
-              if (codes.length > 0) { clearInterval(scan); onRead(codes[0].rawValue); }
+              if (codes.length > 0 && active) {
+                active = false;
+                clearInterval(scanInterval);
+                onRead(codes[0].rawValue);
+              }
             } catch (_) {}
-          }, 500);
-          return () => { clearInterval(scan); stream?.getTracks().forEach(t => t.stop()); };
+          }, 600);
         }
-      } catch (_) { setCamErr(true); }
-    })();
-    return () => { stream?.getTracks().forEach(t => t.stop()); };
+      })
+      .catch(() => { if (active) setCamErr(true); });
+
+    return () => {
+      active = false;
+      if (scanInterval) clearInterval(scanInterval);
+      if (stream) stream.getTracks().forEach(t => t.stop());
+    };
   }, []);
 
   return (
@@ -227,13 +239,33 @@ function EmployerJobCard({ job, applications, user, onReload, isDark, surface, t
   };
 
   const handleQrRead = async (code) => {
+    const trimmed = code.trim();
     const expected = `KANDU-COMPLETE-${job.id}`;
-    if (code.trim() === expected || code.trim().includes(job.id?.slice(-8))) {
+    // Aceita: código exacto OU contém o job.id OU últimos 12 chars batem
+    const valid = trimmed === expected
+      || trimmed.includes(job.id)
+      || (job.id && trimmed.includes(job.id.slice(-12)));
+    if (valid) {
       const app = applications.find(a => a.job_id === job.id && a.status === "accepted");
-      setCompletion({ application: app, job, otherUser });
+      // Parar câmera antes de abrir modal
       setShowQr(false);
+      if (!app) {
+        // Não encontrou candidatura aceite — finalizar a obra directamente
+        try {
+          await Job.update(job.id, { status: "completed_by_employer" });
+          await Notification.create({
+            user_id: job.worker_id, type: "job_completed",
+            title: "🏁 Obra finalizada!",
+            message: `O empregador finalizou a obra "${job.title}". Avalia a experiência!`,
+            related_id: job.id, action_url: createPageUrl("MyJobs"), is_read: false
+          });
+          onReload();
+        } catch(e) { alert("Erro ao finalizar: " + e.message); }
+        return;
+      }
+      setCompletion({ application: app, job, otherUser });
     } else {
-      alert("QR inválido. Pede ao profissional para regenerar.");
+      alert("QR inválido. Pede ao profissional para mostrar o QR gerado na app.");
     }
   };
 
@@ -351,10 +383,10 @@ function EmployerJobCard({ job, applications, user, onReload, isDark, surface, t
         )}
       </div>
 
-      {completion && (
+      {completion && completion.job && (
         <CompletionModal
-          job={completion.job} application={completion.application}
-          otherUser={completion.otherUser} currentUser={user}
+          job={completion.job} application={completion.application || {}}
+          otherUser={completion.otherUser || {}} currentUser={user}
           onClose={() => setCompletion(null)}
           onComplete={() => { setCompletion(null); onReload(); }}
         />
@@ -575,10 +607,10 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
         )}
       </div>
 
-      {completion && (
+      {completion && completion.job && (
         <CompletionModal
-          job={completion.job} application={completion.application}
-          otherUser={completion.otherUser} currentUser={user}
+          job={completion.job} application={completion.application || {}}
+          otherUser={completion.otherUser || {}} currentUser={user}
           onClose={() => setCompletion(null)}
           onComplete={() => { setCompletion(null); onReload(); }}
         />
