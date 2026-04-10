@@ -4,130 +4,159 @@ import { Application } from "@/entities/Application";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Check, X, Clock, User as UserIcon, CheckCircle, Trophy, Settings, RefreshCw, MapPin, Euro } from "lucide-react";
+import { Check, X, Clock, User as UserIcon, Trophy, MapPin, Euro, Bell, ChevronRight, Briefcase, History, AlertCircle, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import CompletionModal from "../components/applications/CompletionModal";
 
-function getStatusBadge(status, jobStatus) {
-  if (jobStatus === 'completed') return <Badge className="bg-blue-500 text-white">Finalizado</Badge>;
-  if (jobStatus === 'completed_by_employer') return <Badge className="bg-orange-500 text-white">A aguardar avaliação</Badge>;
-  switch (status) {
-    case 'pending':  return <Badge className="bg-yellow-100 text-yellow-800">⏳ Pendente</Badge>;
-    case 'accepted': return <Badge className="bg-green-100 text-green-800">✅ Aceite</Badge>;
-    case 'rejected': return <Badge className="bg-red-100 text-red-700">❌ Recusada</Badge>;
-    default:         return <Badge variant="secondary">{status}</Badge>;
-  }
+// ── Status helpers ────────────────────────────────────────────────────────────
+function statusLabel(appStatus, jobStatus) {
+  if (jobStatus === "completed")             return { label: "Concluída",          color: "#22C55E", bg: "#22C55E22" };
+  if (jobStatus === "completed_by_employer") return { label: "Aguarda avaliação",  color: "#A855F7", bg: "#A855F722" };
+  if (jobStatus === "in_progress")           return { label: "Em curso",           color: "#3B82F6", bg: "#3B82F622" };
+  if (appStatus === "pending")               return { label: "Pendente",           color: "#F59E0B", bg: "#F59E0B22" };
+  if (appStatus === "accepted")              return { label: "Aceite",             color: "#22C55E", bg: "#22C55E22" };
+  if (appStatus === "rejected")              return { label: "Recusada",           color: "#EF4444", bg: "#EF444422" };
+  return                                            { label: appStatus,            color: "#888",    bg: "#88888822" };
 }
 
-function ApplicationCard({ application, job, applicant, employer, onAccept, onDecline, onComplete, userType }) {
-  const finalPrice = application.proposed_price || job?.price;
-  const displayUser = userType === 'worker' ? employer : applicant;
-
-  if (!job) return null;
+// ── Candidate card (employer view) ────────────────────────────────────────────
+function CandidateCard({ application, job, worker, onAccept, onReject, onComplete, isDark }) {
+  const surface  = isDark ? "#1C1B22" : "#FFFFFF";
+  const text     = isDark ? "#FFFFFF" : "#111016";
+  const subtext  = isDark ? "#AAAAAA" : "#666";
+  const border   = isDark ? "#2A2A2A" : "#E5E5E5";
+  const st       = statusLabel(application.status, job?.status);
+  const price    = application.proposed_price || job?.price;
+  const isActive = application.status === "accepted" && job?.status === "in_progress";
+  const needsEval= application.status === "accepted" && job?.status === "in_progress";
 
   return (
-    <Card className="mb-3 shadow-sm border border-gray-200">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start gap-2">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Avatar className="flex-shrink-0">
-              <AvatarFallback className="bg-orange-100 text-orange-700 font-bold">
-                {displayUser?.full_name?.charAt(0) || <UserIcon className="w-4 h-4" />}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="font-semibold text-sm truncate">{displayUser?.full_name || (userType === 'worker' ? "Empregador" : "Candidato")}</p>
-              <p className="text-xs text-gray-500 truncate">{job.title}</p>
-              <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                <MapPin className="w-3 h-3" />{job.location}
-              </p>
-            </div>
-          </div>
-          {getStatusBadge(application.status, job.status)}
+    <div style={{ background: surface, borderRadius: 16, border: `1px solid ${border}`, borderLeft: `4px solid ${isActive ? "#FF6600" : border}`, padding: 16, marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#FF660033", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, color: "#FF6600", flexShrink: 0 }}>
+          {worker?.full_name?.charAt(0)?.toUpperCase() || "?"}
         </div>
-      </CardHeader>
-
-      <CardContent className="space-y-3 pt-0">
-        {/* Price */}
-        <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-          <div>
-            <span className="text-xs text-gray-500">Valor</span>
-            <p className="font-bold text-[#F26522] text-lg">€{finalPrice}
-              {application.application_type === 'proposal' && (
-                <span className="text-xs text-gray-500 font-normal ml-1">(proposta)</span>
-              )}
-            </p>
-          </div>
-          {job.price !== finalPrice && (
-            <div className="text-right">
-              <span className="text-xs text-gray-400">Original</span>
-              <p className="text-sm line-through text-gray-400">€{job.price}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Message */}
-        {application.message && (
-          <p className="text-sm text-gray-600 italic bg-white border border-gray-100 rounded-lg p-2.5">
-            "{application.message.slice(0, 120)}{application.message.length > 120 ? '...' : ''}"
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{worker?.full_name || "Profissional"}</p>
+          <p style={{ fontSize: 12, color: subtext, margin: "2px 0 0" }}>
+            ⭐ {worker?.rating?.toFixed(1) || "Novo"} &nbsp;·&nbsp; {worker?.xp_level || "Novato"}
           </p>
-        )}
-
-        <div className="text-xs text-gray-400">
-          {format(new Date(application.created_date), "dd MMM yyyy 'às' HH:mm", { locale: pt })}
         </div>
+        <span style={{ background: st.bg, color: st.color, borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 700 }}>{st.label}</span>
+      </div>
 
-        {/* Employer actions */}
-        {userType === 'employer' && application.status === 'pending' && (
-          <div className="flex gap-2 pt-2 border-t">
-            <Button variant="destructive" onClick={() => onDecline(application)} className="flex-1 text-sm py-2">
-              <X className="w-4 h-4 mr-1" />Recusar
-            </Button>
-            <Button onClick={() => onAccept(application)} className="flex-1 bg-green-600 hover:bg-green-700 text-sm py-2">
-              <Check className="w-4 h-4 mr-1" />Aceitar
-            </Button>
-          </div>
-        )}
-        {userType === 'employer' && application.status === 'accepted' && job.status === 'in_progress' && (
-          <div className="pt-2 border-t">
-            <Button onClick={() => onComplete(application, job, applicant)} className="w-full bg-yellow-600 hover:bg-yellow-700 text-sm">
-              <Trophy className="w-4 h-4 mr-2" />Finalizar Obra e Avaliar
-            </Button>
-          </div>
-        )}
+      <div style={{ background: isDark ? "#111" : "#F9F9F9", borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
+        <p style={{ color: subtext, fontSize: 11, margin: "0 0 2px" }}>Obra</p>
+        <p style={{ color: text, fontWeight: 600, fontSize: 14, margin: 0 }}>{job?.title}</p>
+        <p style={{ color: subtext, fontSize: 12, margin: "4px 0 0", display: "flex", alignItems: "center", gap: 4 }}>
+          <MapPin size={11} />{job?.location}
+        </p>
+      </div>
 
-        {/* Worker actions */}
-        {userType === 'worker' && job.status === 'completed_by_employer' && application.status === 'accepted' && (
-          <div className="pt-2 border-t">
-            <Button onClick={() => onComplete(application, job, employer)} className="w-full bg-blue-600 hover:bg-blue-700 text-sm">
-              <CheckCircle className="w-4 h-4 mr-2" />Avaliar Empregador
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: application.message ? 10 : 0 }}>
+        <div>
+          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>Valor proposto</p>
+          <p style={{ color: "#FF6600", fontWeight: 800, fontSize: 18, margin: 0 }}>€{price}</p>
+        </div>
+        <p style={{ color: subtext, fontSize: 11 }}>
+          {format(new Date(application.created_date), "dd MMM, HH:mm", { locale: pt })}
+        </p>
+      </div>
+
+      {application.message && (
+        <p style={{ color: subtext, fontSize: 13, fontStyle: "italic", background: isDark ? "#111" : "#F9F9F9", borderRadius: 8, padding: "8px 12px", marginBottom: 12 }}>
+          "{application.message.slice(0, 140)}{application.message.length > 140 ? "…" : ""}"
+        </p>
+      )}
+
+      {application.status === "pending" && (
+        <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+          <button onClick={() => onReject(application)}
+            style={{ flex: 1, background: "#EF444422", color: "#EF4444", border: "1px solid #EF444444", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+            ✕ Recusar
+          </button>
+          <button onClick={() => onAccept(application)}
+            style={{ flex: 2, background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+            ✓ Aceitar e Contratar
+          </button>
+        </div>
+      )}
+      {needsEval && (
+        <button onClick={() => onComplete(application, job, worker)}
+          style={{ width: "100%", marginTop: 8, background: "#F59E0B22", color: "#F59E0B", border: "1px solid #F59E0B44", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+          🏆 Finalizar Obra e Avaliar
+        </button>
+      )}
+    </div>
   );
 }
 
+// ── Worker application card ───────────────────────────────────────────────────
+function WorkerCard({ application, job, employer, onComplete, isDark }) {
+  const surface  = isDark ? "#1C1B22" : "#FFFFFF";
+  const text     = isDark ? "#FFFFFF" : "#111016";
+  const subtext  = isDark ? "#AAAAAA" : "#666";
+  const border   = isDark ? "#2A2A2A" : "#E5E5E5";
+  const st       = statusLabel(application.status, job?.status);
+  const price    = application.proposed_price || job?.price;
+  const needsWorkerEval = application.status === "accepted" && job?.status === "completed_by_employer";
+
+  return (
+    <div style={{ background: surface, borderRadius: 16, border: `1px solid ${border}`, borderLeft: `4px solid ${st.color}`, padding: 16, marginBottom: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{job?.title || "Obra"}</p>
+          <p style={{ fontSize: 12, color: subtext, margin: "3px 0 0", display: "flex", alignItems: "center", gap: 4 }}>
+            <MapPin size={11} />{job?.location}
+          </p>
+        </div>
+        <span style={{ background: st.bg, color: st.color, borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 700, flexShrink: 0, marginLeft: 8 }}>{st.label}</span>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>Valor</p>
+          <p style={{ color: "#FF6600", fontWeight: 800, fontSize: 16, margin: 0 }}>€{price}</p>
+        </div>
+        <p style={{ color: subtext, fontSize: 11, alignSelf: "flex-end" }}>
+          {format(new Date(application.created_date), "dd MMM, HH:mm", { locale: pt })}
+        </p>
+      </div>
+      {needsWorkerEval && (
+        <button onClick={() => onComplete(application, job, employer)}
+          style={{ width: "100%", marginTop: 12, background: "#A855F722", color: "#A855F7", border: "1px solid #A855F744", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+          ✍️ Avaliar Empregador
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Applications() {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const { isDark } = useTheme();
-  const [user, setUser] = useState(null);
-  const [applications, setApplications] = useState([]);
-  const [jobs, setJobs] = useState({});        // id -> job
-  const [applicants, setApplicants] = useState({}); // worker_id -> user
-  const [employers, setEmployers] = useState({}); // employer_id -> user
-  const [loading, setLoading] = useState(true);
-  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const bg        = isDark ? "#111016" : "#FFFFFF";
+  const surface   = isDark ? "#1C1B22" : "#F5F5F5";
+  const text      = isDark ? "#FFFFFF" : "#111016";
+  const subtext   = isDark ? "#AAAAAA" : "#666";
+  const border    = isDark ? "#2A2A2A" : "#E5E5E5";
+
+  const [user,            setUser]            = useState(null);
+  const [applications,    setApplications]    = useState([]);
+  const [jobs,            setJobs]            = useState({});
+  const [applicants,      setApplicants]      = useState({});
+  const [employers,       setEmployers]       = useState({});
+  const [loading,         setLoading]         = useState(true);
+  const [activeTab,       setActiveTab]       = useState("pending");
+  const [showCompletion,  setShowCompletion]  = useState(false);
   const [selectedCompletion, setSelectedCompletion] = useState(null);
+
+  // Employer job filter
+  const [selectedJobId, setSelectedJobId] = useState("all");
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -138,247 +167,239 @@ export default function Applications() {
       // Mark related notifications as read
       try {
         const unread = await Notification.filter({ user_id: currentUser.id, is_read: false });
-        const appNotifs = unread.filter(n =>
-          ['new_application', 'new_proposal', 'job_accepted', 'job_rejected', 'job_completed', 'job_ready_for_review'].includes(n.type)
+        const toRead = unread.filter(n =>
+          ["new_application","new_proposal","job_accepted","job_rejected","job_completed","job_ready_for_review","application_rejected"].includes(n.type)
         );
-        for (const n of appNotifs) await Notification.update(n.id, { is_read: true });
+        await Promise.all(toRead.map(n => Notification.update(n.id, { is_read: true })));
       } catch (_) {}
 
-      let applicationsData = [];
-
-      if (currentUser.user_type === 'admin') {
-        applicationsData = await Application.list("-created_date");
-      } else if (currentUser.user_type === 'employer') {
-        // Get employer's jobs first, then fetch their applications
+      let appsData = [];
+      if (currentUser.user_type === "admin") {
+        appsData = await Application.list("-created_date");
+      } else if (currentUser.user_type === "employer") {
         const allJobs = await Job.list("-created_date");
         const myJobIds = allJobs.filter(j => j.employer_id === currentUser.id).map(j => j.id);
         if (myJobIds.length > 0) {
-          // Fetch all applications and filter client-side (avoids $in issues)
           const allApps = await Application.list("-created_date");
-          applicationsData = allApps.filter(a => myJobIds.includes(a.job_id));
+          appsData = allApps.filter(a => myJobIds.includes(a.job_id));
         }
-      } else if (currentUser.user_type === 'worker') {
-        applicationsData = await Application.filter({ worker_id: currentUser.id }, "-created_date");
+      } else {
+        appsData = await Application.filter({ worker_id: currentUser.id }, "-created_date");
       }
+      setApplications(appsData);
 
-      setApplications(applicationsData);
+      if (!appsData.length) { setLoading(false); return; }
 
-      if (applicationsData.length === 0) { setLoading(false); return; }
-
-      // Collect all job IDs and user IDs to fetch
-      const jobIdSet = new Set(applicationsData.map(a => a.job_id).filter(Boolean));
-      const workerIdSet = new Set(applicationsData.map(a => a.worker_id).filter(Boolean));
-
-      // Fetch all jobs (needed to get employer IDs too)
-      const allJobsList = await Job.list();
-      const jobMap = {};
-      allJobsList.forEach(j => { jobMap[j.id] = j; });
+      const allJobs   = await Job.list();
+      const jobMap    = {};
+      allJobs.forEach(j => { jobMap[j.id] = j; });
       setJobs(jobMap);
 
-      // Collect employer IDs from those jobs
-      const employerIdSet = new Set(
-        Array.from(jobIdSet).map(id => jobMap[id]?.employer_id).filter(Boolean)
-      );
-
-      // Fetch users (workers + employers)
-      const allUserIds = [...new Set([...workerIdSet, ...employerIdSet])];
-      const allUsers = await User.list();
-      const userMap = {};
+      const allUsers  = await User.list();
+      const userMap   = {};
       allUsers.forEach(u => { userMap[u.id] = u; });
 
-      const newApplicants = {}, newEmployers = {};
-      workerIdSet.forEach(id => { if (userMap[id]) newApplicants[id] = userMap[id]; });
-      employerIdSet.forEach(id => { if (userMap[id]) newEmployers[id] = userMap[id]; });
-
-      setApplicants(newApplicants);
-      setEmployers(newEmployers);
-    } catch (error) {
-      console.error("Error loading applications:", error);
-    }
+      const workerMap  = {}, employerMap = {};
+      appsData.forEach(a => {
+        if (a.worker_id   && userMap[a.worker_id])              workerMap[a.worker_id]   = userMap[a.worker_id];
+        const emp = jobMap[a.job_id]?.employer_id;
+        if (emp && userMap[emp])                                 employerMap[emp]         = userMap[emp];
+      });
+      setApplicants(workerMap);
+      setEmployers(employerMap);
+    } catch (e) { console.error(e); }
     setLoading(false);
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const handleAcceptApplication = async (app) => {
+  const handleAccept = async (app) => {
     try {
       const job = jobs[app.job_id];
       if (!job) return;
       const finalPrice = app.proposed_price || job.price;
-
-      // Aceitar esta candidatura
       await Application.update(app.id, { status: "accepted" });
-      await Job.update(app.job_id, { status: 'in_progress', worker_id: app.worker_id, price: finalPrice });
-
-      // Rejeitar automaticamente todas as outras candidaturas pendentes para esta obra
-      const otherApps = applications.filter(a => a.job_id === app.job_id && a.id !== app.id && a.status === 'pending');
+      await Job.update(app.job_id, { status: "in_progress", worker_id: app.worker_id, price: finalPrice });
+      const otherApps = applications.filter(a => a.job_id === app.job_id && a.id !== app.id && a.status === "pending");
       await Promise.all(otherApps.map(a => Application.update(a.id, { status: "rejected" })));
-
-      // Notificar o worker aceite
       await Notification.create({
-        user_id: app.worker_id,
-        type: "job_accepted",
+        user_id: app.worker_id, type: "job_accepted",
         title: "🎉 Candidatura Aceite!",
-        message: `A sua candidatura para "${job.title}" foi aceite.`,
-        related_id: app.job_id,
-        action_url: createPageUrl("Applications"),
+        message: `A tua candidatura para "${job.title}" foi aceite. Começa a obra!`,
+        related_id: app.job_id, action_url: createPageUrl("Applications"), is_read: false
       });
-
-      // Notificar workers rejeitados
-      await Promise.all(otherApps.map(a =>
-        Notification.create({
-          user_id: a.worker_id,
-          type: "application_rejected",
-          title: "Candidatura não selecionada",
-          message: `Outro profissional foi selecionado para "${job.title}". Continue a candidatar-se a outras obras!`,
-          related_id: app.job_id,
-          action_url: createPageUrl("Home"),
-        })
-      ));
-
+      await Promise.all(otherApps.map(a => Notification.create({
+        user_id: a.worker_id, type: "application_rejected",
+        title: "Candidatura não selecionada",
+        message: `Outro profissional foi selecionado para "${job.title}".`,
+        related_id: app.job_id, action_url: createPageUrl("Home"), is_read: false
+      })));
       loadData();
-    } catch (error) {
-      console.error("Erro ao aceitar:", error);
-      alert("Erro ao aceitar candidatura. Tenta novamente.");
-    }
+    } catch (e) { alert("Erro ao aceitar. Tente novamente."); }
   };
 
-  const handleDeclineApplication = async (app) => {
-    if (!window.confirm("Tem a certeza que quer recusar esta candidatura?")) return;
+  const handleReject = async (app) => {
+    if (!window.confirm("Recusar esta candidatura?")) return;
     try {
-      await Application.update(app.id, { status: "rejected" });
       const job = jobs[app.job_id];
-      if (job) {
-        await Notification.create({
-          user_id: app.worker_id,
-          type: "job_rejected",
-          title: "Candidatura não aceite",
-          message: `A sua candidatura para "${job.title}" não foi aceite desta vez.`,
-          related_id: app.job_id,
-          action_url: createPageUrl("Applications"),
-        });
-      }
+      await Application.update(app.id, { status: "rejected" });
+      await Notification.create({
+        user_id: app.worker_id, type: "job_rejected",
+        title: "Candidatura não aceite",
+        message: `A tua candidatura para "${job?.title}" não foi selecionada.`,
+        related_id: app.job_id, action_url: createPageUrl("Home"), is_read: false
+      });
       loadData();
-    } catch (error) {
-      console.error("Erro ao recusar:", error);
-    }
+    } catch (e) { alert("Erro ao recusar."); }
   };
 
-  const handleCompleteJob = (application, job, otherUser) => {
-    setSelectedCompletion({ application, job, otherUser });
-    setShowCompletionModal(true);
+  const handleComplete = (app, job, otherUser) => {
+    setSelectedCompletion({ application: app, job, otherUser });
+    setShowCompletion(true);
   };
 
-  const pendingApps    = applications.filter(a => a.status === 'pending');
-  const acceptedApps   = applications.filter(a => a.status === 'accepted');
-  const rejectedApps   = applications.filter(a => a.status === 'rejected');
+  // ── Derived data ──────────────────────────────────────────────────────────
+  const isEmployer = user?.user_type === "employer" || user?.user_type === "admin";
 
+  // My jobs (employer) — for the filter selector
+  const myJobs = isEmployer
+    ? [...new Map(
+        applications.map(a => a.job_id)
+          .filter(Boolean)
+          .map(id => [id, jobs[id]])
+          .filter(([,j]) => j)
+      ).values()]
+    : [];
+
+  const filteredApps = selectedJobId === "all"
+    ? applications
+    : applications.filter(a => a.job_id === selectedJobId);
+
+  // Tabs
+  const pendingApps  = filteredApps.filter(a => a.status === "pending");
+  const activeApps   = filteredApps.filter(a => a.status === "accepted" && ["in_progress","completed_by_employer"].includes(jobs[a.job_id]?.status));
+  const historyApps  = filteredApps.filter(a => a.status === "rejected" || jobs[a.job_id]?.status === "completed");
+
+  const TABS = [
+    { id: "pending",  label: "Pendentes",  icon: "⏳", count: pendingApps.length,  data: pendingApps  },
+    { id: "active",   label: "Ativas",     icon: "🔨", count: activeApps.length,   data: activeApps   },
+    { id: "history",  label: "Histórico",  icon: "📋", count: historyApps.length,  data: historyApps  },
+  ];
+
+  const current = TABS.find(t => t.id === activeTab);
+
+  // Loading
   if (loading) {
     return (
-      <div className="p-4 h-screen flex flex-col items-center justify-center">
-        <div style={{width:44,height:44,border:"4px solid #FF6600",borderTop:"4px solid transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto 16px"}} />
-        <p className="text-gray-500">A carregar candidaturas...</p>
+      <div style={{ minHeight: "100vh", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
+        <div style={{ width: 40, height: 40, border: "3px solid #FF6600", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+        <p style={{ color: subtext, fontSize: 14 }}>A carregar candidaturas…</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {showCompletionModal && selectedCompletion && (
+    <div style={{ background: bg, minHeight: "100vh", paddingBottom: 90 }}>
+      {/* Header */}
+      <div style={{ padding: "50px 20px 0" }}>
+        <h1 style={{ fontWeight: 800, fontSize: 28, color: text, margin: "0 0 4px" }}>
+          {isEmployer ? "Candidaturas" : "Os Meus Trabalhos"}
+        </h1>
+        <p style={{ color: subtext, fontSize: 14, margin: 0 }}>
+          {isEmployer ? "Gere as candidaturas às tuas obras" : "Acompanha as tuas candidaturas"}
+        </p>
+      </div>
+
+      {/* Employer — job filter */}
+      {isEmployer && myJobs.length > 1 && (
+        <div style={{ padding: "16px 20px 0", overflowX: "auto" }}>
+          <div style={{ display: "flex", gap: 8, paddingBottom: 4 }}>
+            <button onClick={() => setSelectedJobId("all")}
+              style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 20, border: `1px solid ${selectedJobId === "all" ? "#FF6600" : border}`, background: selectedJobId === "all" ? "#FF6600" : "transparent", color: selectedJobId === "all" ? "#FFF" : subtext, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
+              Todas as obras
+            </button>
+            {myJobs.map(j => (
+              <button key={j.id} onClick={() => setSelectedJobId(j.id)}
+                style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 20, border: `1px solid ${selectedJobId === j.id ? "#FF6600" : border}`, background: selectedJobId === j.id ? "#FF6600" : "transparent", color: selectedJobId === j.id ? "#FFF" : subtext, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
+                {j.title?.slice(0, 22)}{j.title?.length > 22 ? "…" : ""}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tab selector — big buttons */}
+      <div style={{ padding: "20px 20px 0", display: "flex", gap: 10 }}>
+        {TABS.map(tab => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              style={{ flex: 1, padding: "14px 8px", borderRadius: 16, border: `2px solid ${isActive ? "#FF6600" : border}`, background: isActive ? "#FF6600" : surface, color: isActive ? "#FFF" : subtext, cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
+              <div style={{ fontSize: 20, marginBottom: 4 }}>{tab.icon}</div>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>{tab.label}</div>
+              {tab.count > 0 && (
+                <div style={{ marginTop: 4, background: isActive ? "#FFF3" : "#FF660033", color: isActive ? "#FFF" : "#FF6600", borderRadius: 10, padding: "2px 8px", fontSize: 12, fontWeight: 800, display: "inline-block" }}>
+                  {tab.count}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: "20px 20px 0" }}>
+        {current?.data.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px 20px" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>
+              {activeTab === "pending" ? "⏳" : activeTab === "active" ? "🔨" : "📋"}
+            </div>
+            <p style={{ color: text, fontWeight: 700, fontSize: 16, margin: "0 0 6px" }}>
+              {activeTab === "pending" ? "Sem candidaturas pendentes" : activeTab === "active" ? "Nenhuma obra ativa" : "Histórico vazio"}
+            </p>
+            <p style={{ color: subtext, fontSize: 13 }}>
+              {activeTab === "pending" && isEmployer ? "Quando alguém se candidatar às tuas obras, aparece aqui." : "Nada para mostrar neste momento."}
+            </p>
+          </div>
+        ) : isEmployer ? (
+          current.data.map(app => (
+            <CandidateCard
+              key={app.id}
+              application={app}
+              job={jobs[app.job_id]}
+              worker={applicants[app.worker_id]}
+              onAccept={handleAccept}
+              onReject={handleReject}
+              onComplete={handleComplete}
+              isDark={isDark}
+            />
+          ))
+        ) : (
+          current.data.map(app => (
+            <WorkerCard
+              key={app.id}
+              application={app}
+              job={jobs[app.job_id]}
+              employer={employers[jobs[app.job_id]?.employer_id]}
+              onComplete={handleComplete}
+              isDark={isDark}
+            />
+          ))
+        )}
+      </div>
+
+      {showCompletion && selectedCompletion && (
         <CompletionModal
-          isOpen={showCompletionModal}
-          application={selectedCompletion.application}
           job={selectedCompletion.job}
+          application={selectedCompletion.application}
           otherUser={selectedCompletion.otherUser}
-          userType={user?.user_type}
           currentUser={user}
-          onClose={() => { setShowCompletionModal(false); setSelectedCompletion(null); }}
-          onComplete={() => { setShowCompletionModal(false); setSelectedCompletion(null); loadData(); }}
+          onClose={() => setShowCompletion(false)}
+          onComplete={() => { setShowCompletion(false); loadData(); }}
         />
       )}
 
-      {/* Header */}
-      <div style={{ background: isDark ? "#111016" : "#FFFFFF", borderBottom: isDark ? "1px solid #333" : "1px solid #F0F0F0", padding: "14px 20px 12px", position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
-          <img src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"} alt="KANDU" style={{ height: 24, objectFit: "contain" }} />
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 20, color: isDark ? "#FFF" : "#111016" }}>Candidaturas</h1>
-            <p style={{ margin: 0, fontSize: 11, color: isDark ? "#AAA" : "#888" }}>{applications.length} total</p>
-          </div>
-          <Button size="sm" variant="outline" onClick={loadData}>
-            <RefreshCw className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-
-      <div className="p-4">
-        {applications.length === 0 ? (
-          <div className="text-center py-16">
-            <CheckCircle className="mx-auto w-14 h-14 text-gray-300 mb-4" />
-            <h3 className="font-semibold text-gray-700 mb-2">
-              {user?.user_type === 'worker' ? "Ainda não te candidataste a nenhuma obra" : "Nenhuma candidatura recebida"}
-            </h3>
-            <p className="text-sm text-gray-400 mb-6">
-              {user?.user_type === 'worker'
-                ? "Pesquisa obras disponíveis e candidata-te."
-                : "Publica obras para começar a receber candidatos."}
-            </p>
-            <Button
-              onClick={() => navigate(createPageUrl(user?.user_type === 'worker' ? "Dashboard" : "NewJob"))}
-              className="bg-[#F26522] hover:bg-orange-600 text-white"
-            >
-              {user?.user_type === 'worker' ? "Ver obras" : "Nova obra"}
-            </Button>
-          </div>
-        ) : (
-          <Tabs defaultValue="pending">
-            <TabsList className="w-full grid grid-cols-3 mb-4">
-              <TabsTrigger value="pending">
-                Pendentes {pendingApps.length > 0 && (
-                  <span className="ml-1 text-xs bg-orange-500 text-white rounded-full px-1.5 py-0.5 font-bold">{pendingApps.length}</span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="accepted">
-                Aceites {acceptedApps.length > 0 && (
-                  <span className="ml-1 text-xs bg-green-500 text-white rounded-full px-1.5 py-0.5 font-bold">{acceptedApps.length}</span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="rejected">
-                Recusadas {rejectedApps.length > 0 && (
-                  <span className="ml-1 text-xs bg-gray-400 text-white rounded-full px-1.5 py-0.5">{rejectedApps.length}</span>
-                )}
-              </TabsTrigger>
-            </TabsList>
-
-            {[
-              { key: "pending",  list: pendingApps,  emptyMsg: "Nenhuma candidatura pendente" },
-              { key: "accepted", list: acceptedApps, emptyMsg: "Nenhuma candidatura aceite" },
-              { key: "rejected", list: rejectedApps, emptyMsg: "Nenhuma candidatura recusada" },
-            ].map(({ key, list, emptyMsg }) => (
-              <TabsContent key={key} value={key}>
-                {list.length === 0 ? (
-                  <div className="text-center py-10 text-gray-400 text-sm">{emptyMsg}</div>
-                ) : list.map(app => (
-                  <ApplicationCard
-                    key={app.id}
-                    application={app}
-                    job={jobs[app.job_id]}
-                    applicant={applicants[app.worker_id]}
-                    employer={employers[jobs[app.job_id]?.employer_id]}
-                    onAccept={handleAcceptApplication}
-                    onDecline={handleDeclineApplication}
-                    onComplete={handleCompleteJob}
-                    userType={user?.user_type}
-                    currentUser={user}
-                  />
-                ))}
-              </TabsContent>
-            ))}
-          </Tabs>
-        )}
-      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
