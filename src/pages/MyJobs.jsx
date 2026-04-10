@@ -434,9 +434,9 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
 
   useEffect(() => {
     if (!job.employer_id) return;
-    // User.filter com RLS não retorna outros utilizadores — usar backend function
     fetch('/api/functions/getUserById', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: job.employer_id })
     })
@@ -513,6 +513,7 @@ function WorkerJobCard({ job, application, user, onReload, isDark, surface, text
                   try {
                     const r = await fetch('/api/functions/getUserById', {
                       method: 'POST',
+                      credentials: 'include',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ userId: job.employer_id })
                     });
