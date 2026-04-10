@@ -11,7 +11,8 @@ import {
   Calendar,
   FileText,
   Shield,
-  QrCode
+  QrCode,
+  Bell
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { translations } from "@/components/utils/translations";
@@ -24,6 +25,7 @@ const workerNavigationItems = [
   { title: "applications", icon: FileText, url: createPageUrl("Applications") },
   { title: "calendar", icon: Calendar, url: createPageUrl("Calendar") },
   { title: "chat", icon: MessageCircle, url: createPageUrl("Chat") },
+  { title: "notifications", icon: Bell, url: createPageUrl("Notifications") },
   { title: "profile", icon: User, url: createPageUrl("Profile") }
 ];
 
@@ -33,6 +35,7 @@ const employerNavigationItems = [
   { title: "applications", icon: FileText, url: createPageUrl("Applications") },
   { title: "calendar", icon: Calendar, url: createPageUrl("Calendar") },
   { title: "chat", icon: MessageCircle, url: createPageUrl("Chat") },
+  { title: "notifications", icon: Bell, url: createPageUrl("Notifications") },
   { title: "profile", icon: User, url: createPageUrl("Profile") }
 ];
 
@@ -52,6 +55,14 @@ export default function Layout({ children }) {
   const { isDark, toggleTheme } = useTheme();
   const [user, setUser] = useState(null);
   const [unreadNotifications, setUnreadNotifications] = useState({ chat: 0, applications: 0 });
+  const prevAppCount = React.useRef(0);
+
+  // Solicitar permissão de notificações push ao montar
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
   const bg = isDark ? "#1A1A1A" : "#FFFFFF";
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#1A1A1A";
@@ -95,9 +106,35 @@ export default function Layout({ children }) {
         applicationNotificationTypes.includes(n.type)
       );
 
+      const newAppCount = applicationNotifications.length;
+      // Disparar notificação push se houver novas candidaturas
+      if (newAppCount > prevAppCount.current && prevAppCount.current !== 0) {
+        if ("Notification" in window && Notification.permission === "granted") {
+          const diff = newAppCount - prevAppCount.current;
+          const n = new window.Notification("KANDU — Nova candidatura! 📋", {
+            body: diff === 1 ? "Tens uma nova candidatura à tua obra." : `Tens ${diff} novas candidaturas às tuas obras.`,
+            icon: "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png",
+            badge: "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png",
+            tag: "kandu-application",
+          });
+          // Som de notificação via AudioContext
+          try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.start(); osc.stop(ctx.currentTime + 0.4);
+          } catch (_) {}
+        }
+      }
+      prevAppCount.current = newAppCount;
       setUnreadNotifications({
         chat: chatNotifications.length,
-        applications: applicationNotifications.length
+        applications: newAppCount
       });
 
     } catch (error) {
@@ -190,6 +227,16 @@ export default function Layout({ children }) {
                         {unreadNotifications.applications}
                       </span>
                     )}
+                    {item.title === 'chat' && unreadNotifications.chat > 0 && (
+                      <span style={{background:"#FF6600", color:"#FFF", borderRadius:"50%", minWidth:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700}}>
+                        {unreadNotifications.chat}
+                      </span>
+                    )}
+                    {item.title === 'notifications' && (unreadNotifications.applications + unreadNotifications.chat) > 0 && (
+                      <span style={{background:"#FF6600", color:"#FFF", borderRadius:"50%", minWidth:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700}}>
+                        {unreadNotifications.applications + unreadNotifications.chat}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -260,6 +307,19 @@ export default function Layout({ children }) {
           </div>
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Chat")?700:400}}>Chat</span>
           {location.pathname===createPageUrl("Chat") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
+        </Link>
+
+        <Link to={createPageUrl("Notifications")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Notifications")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0",position:"relative"}}>
+          <div style={{position:"relative"}}>
+            <Bell size={22} />
+            {(unreadNotifications.applications + unreadNotifications.chat) > 0 && (
+              <span style={{position:"absolute",top:-6,right:-8,background:"#FF6600",color:"#FFF",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
+                {(unreadNotifications.applications + unreadNotifications.chat) > 9 ? '9+' : (unreadNotifications.applications + unreadNotifications.chat)}
+              </span>
+            )}
+          </div>
+          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Notifications")?700:400}}>Alertas</span>
+          {location.pathname===createPageUrl("Notifications") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
         </Link>
 
         <Link to={createPageUrl("Profile")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Profile")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
