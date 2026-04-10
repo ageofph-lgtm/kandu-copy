@@ -136,6 +136,11 @@ export default function NewJob() {
 
   return (
     <div style={{background:bg,minHeight:"100vh",paddingBottom:100}}>
+      <style>{`
+        input::placeholder, textarea::placeholder { color: ${isDark ? "#666" : "#AAAAAA"} !important; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: ${isDark ? "invert(1)" : "none"}; }
+        select option { background: ${surface}; color: ${text}; }
+      `}</style>
 
       {/* Top Bar */}
       <div style={{padding:"14px 20px 8px"}}>
@@ -153,10 +158,10 @@ export default function NewJob() {
       <div style={{padding:"8px 20px 16px"}}>
         <div style={{display:"flex",gap:6,marginBottom:6}}>
           {STEP_LABELS.map((label,i) => (
-            <div key={i} style={{flex:1,height:4,borderRadius:4,background:i<step?"#FF6600":i===step-1?"#FF6600":"#333"}} />
+            <div key={i} style={{flex:1,height:4,borderRadius:4,background:i<step?"#FF6600":i===step-1?"#FF6600":isDark?"#333":"#DDDDDD"}} />
           ))}
         </div>
-        <p style={{color:"#AAAAAA",fontSize:12,textAlign:"center"}}>Passo {step} de {STEP_LABELS.length}: <strong style={{color:"#FF6600"}}>{STEP_LABELS[step-1]}</strong></p>
+        <p style={{color:subtext,fontSize:12,textAlign:"center"}}>Passo {step} de {STEP_LABELS.length}: <strong style={{color:"#FF6600"}}>{STEP_LABELS[step-1]}</strong></p>
       </div>
 
       {/* Step 1: O Quê */}
@@ -199,10 +204,10 @@ export default function NewJob() {
             <div style={{display:"flex",alignItems:"center",gap:10,background:surface,border:"2px solid #FF6600",borderRadius:12,padding:"0 14px"}}>
               <span style={{color:"#FF6600",fontSize:18,flexShrink:0}}>📍</span>
               <select value={formData.location} onChange={e => set("location",e.target.value)}
-                style={{flex:1,background:"transparent",border:"none",color:formData.location?"#FFF":"#888",fontSize:15,padding:"14px 0",outline:"none"}}>
-                <option value="" style={{background:"#1C1B22"}}>Selecione a localização</option>
+                style={{flex:1,background:"transparent",border:"none",color:formData.location?text:subtext,fontSize:15,padding:"14px 0",outline:"none"}}>
+                <option value="" style={{background:surface,color:text}}>Selecione a localização</option>
                 {Object.keys(LOCATION_COORDS).map(loc => (
-                  <option key={loc} value={loc} style={{background:"#1C1B22"}}>{loc}</option>
+                  <option key={loc} value={loc} style={{background:surface,color:text}}>{loc}</option>
                 ))}
               </select>
             </div>
@@ -213,11 +218,11 @@ export default function NewJob() {
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
               <div>
                 <label style={labelStyle}>Data Início</label>
-                <input type="date" value={formData.start_date} onChange={e => set("start_date",e.target.value)} style={{...inputStyle,colorScheme:"dark"}} />
+                <input type="date" value={formData.start_date} onChange={e => set("start_date",e.target.value)} style={{...inputStyle,colorScheme:isDark?"dark":"light"}} />
               </div>
               <div>
                 <label style={labelStyle}>Data Fim</label>
-                <input type="date" value={formData.end_date} onChange={e => set("end_date",e.target.value)} style={{...inputStyle,colorScheme:"dark"}} />
+                <input type="date" value={formData.end_date} onChange={e => set("end_date",e.target.value)} style={{...inputStyle,colorScheme:isDark?"dark":"light"}} />
               </div>
             </div>
           </div>
@@ -255,7 +260,7 @@ export default function NewJob() {
             <div style={{background:"#FF660011",border:"1px solid #FF660033",borderRadius:10,padding:12,display:"flex",gap:8,marginTop:10,alignItems:"flex-start"}}>
               <span style={{fontSize:16}}>&#x2139;&#xFE0F;</span>
               <div>
-                <p style={{color:"#AAAAAA",fontSize:12,margin:0}}>Preço médio para {formData.category}: €{priceSuggestion.min}–€{priceSuggestion.max}</p>
+                <p style={{color:subtext,fontSize:12,margin:0}}>Preço médio para {formData.category}: €{priceSuggestion.min}–€{priceSuggestion.max}</p>
                 <button onClick={() => set("price",String(priceSuggestion.avg))} style={{background:"none",border:"none",color:"#FF6600",fontSize:12,fontWeight:600,cursor:"pointer",padding:0,marginTop:4}}>Usar média: €{priceSuggestion.avg}</button>
               </div>
             </div>
@@ -298,7 +303,7 @@ export default function NewJob() {
       <div style={{padding:"16px 20px",position:"sticky",bottom:0,background:bg,borderTop:"1px solid #333",display:"flex",gap:12}}>
         {step > 1 && (
           <button onClick={() => setStep(s => s-1)}
-            style={{flex:1,padding:"14px 0",background:"transparent",border:"1px solid #444",borderRadius:14,color:"#AAAAAA",fontWeight:700,fontSize:15,cursor:"pointer"}}>
+            style={{flex:1,padding:"14px 0",background:"transparent",border:`1px solid ${isDark?"#444":"#CCCCCC"}`,borderRadius:14,color:subtext,fontWeight:700,fontSize:15,cursor:"pointer"}}>
             ← Anterior
           </button>
         )}
