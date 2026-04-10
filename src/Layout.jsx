@@ -285,15 +285,27 @@ export default function Layout({ children }) {
         </Link>
 
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",flex:1,paddingBottom:4}}>
-          {user?.user_type === 'worker' ? (
-            <Link to={createPageUrl("Scan")} style={{width:52,height:52,background:"#FF6600",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px #FF660066",textDecoration:"none",marginBottom:2}}>
-              <QrCode size={24} color="#FFF" />
-            </Link>
-          ) : (
-            <Link to={createPageUrl("NewJob")} style={{width:52,height:52,background:"#FF6600",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px #FF660066",textDecoration:"none",marginBottom:2}}>
-              <span style={{color:"#FFF",fontSize:28,lineHeight:1,fontWeight:300}}>+</span>
-            </Link>
-          )}
+          {/* PIN de localização estilizado — leva a Notifications */}
+          <Link to={createPageUrl("Notifications")} style={{position:"relative",textDecoration:"none",marginBottom:2,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            {/* Sombra / glow laranja */}
+            <div style={{position:"absolute",width:64,height:64,borderRadius:"50%",background:"#FF6600",filter:"blur(14px)",opacity:0.4,top:4}} />
+            {/* Corpo do PIN */}
+            <svg width="56" height="68" viewBox="0 0 56 68" fill="none" xmlns="http://www.w3.org/2000/svg" style={{filter:"drop-shadow(0 4px 12px #FF660099)"}}>
+              {/* Gota */}
+              <path d="M28 2C16.4 2 7 11.4 7 23C7 38.5 28 66 28 66C28 66 49 38.5 49 23C49 11.4 39.6 2 28 2Z" fill="#FF6600"/>
+              {/* Círculo interior */}
+              <circle cx="28" cy="23" r="10" fill="#1A1A1A"/>
+              {/* Sino minúsculo dentro */}
+              <path d="M28 14C24.7 14 22 16.7 22 20V25L20 27V28H36V27L34 25V20C34 16.7 31.3 14 28 14Z" fill="#FF6600"/>
+              <path d="M26 28C26 29.1 26.9 30 28 30C29.1 30 30 29.1 30 28H26Z" fill="#FF6600"/>
+            </svg>
+            {/* Badge de notificações */}
+            {(unreadNotifications.applications + unreadNotifications.chat) > 0 && (
+              <span style={{position:"absolute",top:-4,right:-4,background:"#EF4444",color:"#FFF",borderRadius:"50%",minWidth:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,border:"2px solid #111"}}>
+                {(unreadNotifications.applications + unreadNotifications.chat) > 9 ? "9+" : (unreadNotifications.applications + unreadNotifications.chat)}
+              </span>
+            )}
+          </Link>
         </div>
 
         <Link to={createPageUrl("Chat")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Chat")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
