@@ -22,8 +22,8 @@ import { createPageUrl } from "@/utils";
 function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const surface = isDark ? "#1C1B22" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
 
   const getNotificationIcon = (type) => {
@@ -95,9 +95,9 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
 
 export default function Notifications() {
   const { isDark } = useTheme();
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
+  const bg = isDark ? "#111016" : "#FFFFFF";
+  const surface = isDark ? "#1C1B22" : "#F5F5F5";
+  const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
