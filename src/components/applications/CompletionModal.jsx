@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import XPGainToast from "@/components/XPGainToast";
-import { XP_EVENTS } from "@/lib/xp";
+import { calcJobXP, XP_EVENTS } from "@/lib/xp";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -185,7 +185,7 @@ export default function CompletionModal({
               <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, textAlign:"center"}}>
                 <div style={{background:"#22C55E22", borderRadius:10, padding:"10px 0"}}>
                   <p style={{fontSize:11, color:subtext, margin:"0 0 4px"}}>Para {otherUser.full_name?.split(' ')[0]}</p>
-                  <p style={{fontWeight:800, fontSize:22, color:"#22C55E", margin:0}}>+{calcJobXP(rating, job.price, checkIfEarly())} XP</p>
+                  <p style={{fontWeight:800, fontSize:22, color:"#22C55E", margin:0}}>+{calcJobXP(rating, job.price || 0, false)} XP</p>
                 </div>
                 <div style={{background:"#22C55E11", borderRadius:10, padding:"10px 0"}}>
                   <p style={{fontSize:11, color:subtext, margin:"0 0 4px"}}>Para si</p>
