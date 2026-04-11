@@ -3,12 +3,7 @@ import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, ArrowRight, Check, MapPin, Info } from "lucide-react";
-
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -41,6 +36,8 @@ const LOCATION_COORDS = {
   "Aveiro": { lat: 40.64, lon: -8.65 }
 };
 
+const LOCATION_LIST = Object.keys(LOCATION_COORDS);
+
 const PRICE_SUGGESTIONS = {
   "Pintura":     { min: 300,  max: 2000, avg: 800  },
   "Eletricidade":{ min: 150,  max: 1500, avg: 500  },
@@ -56,6 +53,40 @@ const PRICE_SUGGESTIONS = {
 
 const STEP_LABELS = ["O Quê", "Onde & Quando", "Orçamento", "Revisão"];
 
+// ─── Modal de Confirmação custom (substitui window.confirm) ───────────────────
+function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }) {
+  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  return (
+    <div style={{
+      position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:9999,
+      display:"flex",alignItems:"center",justifyContent:"center",padding:20
+    }}>
+      <div style={{background:bg,borderRadius:20,padding:24,maxWidth:360,width:"100%",border:"1px solid #FF6600"}}>
+        <div style={{textAlign:"center",marginBottom:20}}>
+          <span style={{fontSize:40}}>🚀</span>
+          <h2 style={{color:text,fontWeight:700,fontSize:18,margin:"10px 0 6px"}}>Publicar Obra?</h2>
+          <p style={{color:subtext,fontSize:14,margin:0}}>A obra ficará visível para todos os profissionais na plataforma.</p>
+        </div>
+        <div style={{background:surface,borderRadius:12,padding:14,marginBottom:20}}>
+          <p style={{fontWeight:700,color:"#FF6600",margin:"0 0 4px",fontSize:15}}>{job.title}</p>
+          <p style={{color:subtext,fontSize:13,margin:0}}>📍 {job.location} · 💶 €{job.price}</p>
+        </div>
+        <div style={{display:"flex",gap:10}}>
+          <button onClick={onCancel}
+            style={{flex:1,padding:"12px 0",background:"transparent",border:"1px solid #444",borderRadius:12,color:subtext,fontWeight:600,fontSize:14,cursor:"pointer"}}>
+            Rever
+          </button>
+          <button onClick={onConfirm}
+            style={{flex:1,padding:"12px 0",background:"#FF6600",border:"none",borderRadius:12,color:"#FFF",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+            Publicar ✓
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function NewJob() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
@@ -66,6 +97,7 @@ export default function NewJob() {
   const [user, setUser] = useState(null);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
     title: "", category: "", description: "",
     location: "", start_date: "", end_date: "",
@@ -97,11 +129,9 @@ export default function NewJob() {
     return true;
   };
 
-  const handlePublish = () => {
-    handleSubmit();
-  };
-
+  // BUG FIX: status agora é "open" para aparecer na busca dos profissionais
   const handleSubmit = async () => {
+    setShowConfirm(false);
     setIsSubmitting(true);
     try {
       const coords = LOCATION_COORDS[formData.location];
@@ -112,7 +142,7 @@ export default function NewJob() {
         latitude: coords.lat + (Math.random() - 0.5) * 0.005,
         longitude: coords.lon + (Math.random() - 0.5) * 0.005,
         views: 0,
-        status: "pending_employer"
+        status: "open"  // FIX: era "pending_employer", profissionais não viam a obra
       });
       navigate(createPageUrl("MyJobs"));
     } catch (error) {
@@ -127,8 +157,7 @@ export default function NewJob() {
 
   const inputStyle = {width:"100%",padding:14,background:surface,border:"2px solid #FF6600",borderRadius:12,color:text,boxSizing:"border-box",fontSize:15,outline:"none"};
   const labelStyle = {color:subtext,fontSize:13,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:8};
-  const sectionStyle = {borderBottom:`3px solid #FF6600`,padding:"16px 20px"};
-  const FORM_CATS = ["Pintura","Eletricidade","Canalização","Alvenaria","Carpintaria","Pavimentos","Telhados","Remodeolação"];
+  const sectionStyle = {borderBottom:`1px solid ${isDark?"#222":"#EEEEEE"}`,padding:"16px 20px"};
 
   if (!user) {
     return <LoadingScreen label="A carregar..." />;
@@ -136,10 +165,18 @@ export default function NewJob() {
 
   return (
     <div style={{background:bg,minHeight:"100vh",paddingBottom:100}}>
+      {showConfirm && (
+        <ConfirmPublishModal
+          job={formData}
+          onConfirm={handleSubmit}
+          onCancel={() => setShowConfirm(false)}
+          isDark={isDark} text={text} subtext={subtext}
+        />
+      )}
+
       <style>{`
         input::placeholder, textarea::placeholder { color: ${isDark ? "#666" : "#AAAAAA"} !important; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: ${isDark ? "invert(1)" : "none"}; }
-        select option { background: ${surface}; color: ${text}; }
       `}</style>
 
       {/* Top Bar */}
@@ -148,10 +185,10 @@ export default function NewJob() {
           <img src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"} alt="KANDU" style={{height:24,objectFit:"contain"}} />
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-        <button onClick={() => navigate(-1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer",padding:0}}>←</button>
-        <h1 style={{fontWeight:700,color:text,flex:1,textAlign:"center",margin:0,fontSize:18}}>Nova Obra</h1>
-        <span style={{width:22}} />
-      </div>
+          <button onClick={() => navigate(-1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer",padding:0}}>←</button>
+          <h1 style={{fontWeight:700,color:text,flex:1,textAlign:"center",margin:0,fontSize:18}}>Nova Obra</h1>
+          <span style={{width:22}} />
+        </div>
       </div>
 
       {/* Progress Bar */}
@@ -167,13 +204,10 @@ export default function NewJob() {
       {/* Step 1: O Quê */}
       {step === 1 && (
         <>
-          {/* Título */}
           <div style={sectionStyle}>
             <label style={labelStyle}>Título da Obra</label>
             <input placeholder="Ex: Pintar apartamento T2" value={formData.title} onChange={e => set("title",e.target.value)} style={inputStyle} />
           </div>
-
-          {/* Categoria */}
           <div style={sectionStyle}>
             <label style={labelStyle}>Categoria</label>
             <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
@@ -185,8 +219,6 @@ export default function NewJob() {
               ))}
             </div>
           </div>
-
-          {/* Descrição */}
           <div style={sectionStyle}>
             <label style={labelStyle}>Descrição</label>
             <textarea placeholder="Descreva em detalhe o trabalho a realizar..." value={formData.description} onChange={e => set("description",e.target.value)}
@@ -195,25 +227,37 @@ export default function NewJob() {
         </>
       )}
 
-      {/* Step 2: Onde & Quando */}
+      {/* Step 2: Onde & Quando — FIX: botões em vez de <select> nativo */}
       {step === 2 && (
         <>
-          {/* Localização */}
           <div style={sectionStyle}>
-            <label style={labelStyle}>Localização</label>
-            <div style={{display:"flex",alignItems:"center",gap:10,background:surface,border:"2px solid #FF6600",borderRadius:12,padding:"0 14px"}}>
-              <span style={{color:"#FF6600",fontSize:18,flexShrink:0}}>📍</span>
-              <select value={formData.location} onChange={e => set("location",e.target.value)}
-                style={{flex:1,background:"transparent",border:"none",color:formData.location?text:subtext,fontSize:15,padding:"14px 0",outline:"none"}}>
-                <option value="" style={{background:surface,color:text}}>Selecione a localização</option>
-                {Object.keys(LOCATION_COORDS).map(loc => (
-                  <option key={loc} value={loc} style={{background:surface,color:text}}>{loc}</option>
-                ))}
-              </select>
+            <label style={labelStyle}>📍 Localização</label>
+            <p style={{color:subtext,fontSize:13,margin:"0 0 12px"}}>Toque para selecionar a zona da obra:</p>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {LOCATION_LIST.map(loc => (
+                <button key={loc} onClick={() => set("location", loc)}
+                  style={{
+                    padding:"14px 16px",
+                    background:formData.location===loc?"#FF6600":surface,
+                    border: formData.location===loc?"2px solid #FF6600":`2px solid ${isDark?"#333":"#DDDDDD"}`,
+                    borderRadius:12,
+                    color:formData.location===loc?"#FFF":text,
+                    fontWeight:formData.location===loc?700:400,
+                    fontSize:15,
+                    cursor:"pointer",
+                    textAlign:"left",
+                    display:"flex",
+                    alignItems:"center",
+                    gap:10
+                  }}>
+                  <span style={{fontSize:16}}>📍</span>
+                  {loc}
+                  {formData.location===loc && <span style={{marginLeft:"auto",fontSize:18}}>✓</span>}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Datas */}
           <div style={sectionStyle}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
               <div>
@@ -227,7 +271,6 @@ export default function NewJob() {
             </div>
           </div>
 
-          {/* Urgência */}
           <div style={sectionStyle}>
             <label style={labelStyle}>Urgência</label>
             <div style={{display:"flex",gap:8}}>
@@ -258,10 +301,14 @@ export default function NewJob() {
           <input type="number" inputMode="numeric" placeholder="0" value={formData.price} onChange={e => set("price",e.target.value)} style={inputStyle} />
           {priceSuggestion && (
             <div style={{background:"#FF660011",border:"1px solid #FF660033",borderRadius:10,padding:12,display:"flex",gap:8,marginTop:10,alignItems:"flex-start"}}>
-              <span style={{fontSize:16}}>&#x2139;&#xFE0F;</span>
+              <span style={{color:"#FF6600",fontSize:16,flexShrink:0}}>💡</span>
               <div>
-                <p style={{color:subtext,fontSize:12,margin:0}}>Preço médio para {formData.category}: €{priceSuggestion.min}–€{priceSuggestion.max}</p>
-                <button onClick={() => set("price",String(priceSuggestion.avg))} style={{background:"none",border:"none",color:"#FF6600",fontSize:12,fontWeight:600,cursor:"pointer",padding:0,marginTop:4}}>Usar média: €{priceSuggestion.avg}</button>
+                <p style={{color:"#FF6600",fontWeight:700,fontSize:13,margin:"0 0 4px"}}>Preço médio para {formData.category}</p>
+                <p style={{color:subtext,fontSize:12,margin:0}}>Mín: €{priceSuggestion.min} · Médio: €{priceSuggestion.avg} · Máx: €{priceSuggestion.max}</p>
+                <button onClick={() => set("price", priceSuggestion.avg.toString())}
+                  style={{marginTop:6,background:"#FF6600",color:"#FFF",border:"none",borderRadius:8,padding:"4px 10px",fontSize:12,cursor:"pointer",fontWeight:600}}>
+                  Usar €{priceSuggestion.avg}
+                </button>
               </div>
             </div>
           )}
@@ -270,37 +317,32 @@ export default function NewJob() {
 
       {/* Step 4: Revisão */}
       {step === 4 && (
-        <div style={{padding:"20px"}}>
-          <div style={{background:surface,borderRadius:16,padding:20,marginBottom:20}}>
-            <h2 style={{color:text,fontWeight:700,fontSize:18,margin:"0 0 16px"}}>Revisão da Obra</h2>
+        <div style={{padding:"16px 20px"}}>
+          <div style={{background:surface,borderRadius:16,padding:20,border:"1px solid #FF660044"}}>
+            <p style={{color:"#FF6600",fontWeight:700,fontSize:14,margin:"0 0 16px",textTransform:"uppercase",letterSpacing:1}}>Resumo da Obra</p>
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
-              <div>
-                <p style={{color:subtext,fontSize:12,margin:"0 0 4px"}}>Título</p>
-                <p style={{color:text,fontWeight:600,fontSize:15,margin:0}}>{formData.title}</p>
-              </div>
-              <div>
-                <p style={{color:subtext,fontSize:12,margin:"0 0 4px"}}>Categoria</p>
-                <p style={{color:text,fontWeight:600,fontSize:15,margin:0}}>{formData.category}</p>
-              </div>
-              <div>
-                <p style={{color:subtext,fontSize:12,margin:"0 0 4px"}}>Localização</p>
-                <p style={{color:text,fontWeight:600,fontSize:15,margin:0}}>{formData.location}</p>
-              </div>
-              <div>
-                <p style={{color:subtext,fontSize:12,margin:"0 0 4px"}}>Preço</p>
-                <p style={{color:"#FF6600",fontWeight:700,fontSize:16,margin:0}}>€{formData.price} {formData.price_type==='hourly'?'/h':''}</p>
-              </div>
-              <div>
-                <p style={{color:subtext,fontSize:12,margin:"0 0 4px"}}>Urgência</p>
-                <p style={{color:text,fontWeight:600,fontSize:15,margin:0}}>{formData.urgency==='low'?'🟢 Baixa':formData.urgency==='high'?'🔴 Alta':'🟡 Média'}</p>
-              </div>
+              {[
+                {label:"Título",value:formData.title},
+                {label:"Categoria",value:`${catIcon} ${formData.category}`},
+                {label:"Localização",value:formData.location},
+                {label:"Preço",value:`€${formData.price}${formData.price_type==='hourly'?'/h':''}`,highlight:true},
+                {label:"Urgência",value:formData.urgency==='low'?'🟢 Baixa':formData.urgency==='high'?'🔴 Alta':'🟡 Média'},
+              ].map(item => (
+                <div key={item.label} style={{borderBottom:`1px solid ${isDark?"#333":"#EEE"}`,paddingBottom:10}}>
+                  <p style={{color:subtext,fontSize:12,margin:"0 0 2px"}}>{item.label}</p>
+                  <p style={{color:item.highlight?"#FF6600":text,fontWeight:item.highlight?700:600,fontSize:15,margin:0}}>{item.value}</p>
+                </div>
+              ))}
+            </div>
+            <div style={{background:"#FF660011",borderRadius:10,padding:12,marginTop:8}}>
+              <p style={{color:subtext,fontSize:13,margin:0}}>📝 <strong style={{color:text}}>Descrição:</strong> {formData.description}</p>
             </div>
           </div>
         </div>
       )}
 
       {/* Navigation */}
-      <div style={{padding:"16px 20px",position:"sticky",bottom:0,background:bg,borderTop:"1px solid #333",display:"flex",gap:12}}>
+      <div style={{padding:"16px 20px",position:"sticky",bottom:0,background:bg,borderTop:`1px solid ${isDark?"#333":"#EEEEEE"}`,display:"flex",gap:12}}>
         {step > 1 && (
           <button onClick={() => setStep(s => s-1)}
             style={{flex:1,padding:"14px 0",background:"transparent",border:`1px solid ${isDark?"#444":"#CCCCCC"}`,borderRadius:14,color:subtext,fontWeight:700,fontSize:15,cursor:"pointer"}}>
@@ -309,11 +351,11 @@ export default function NewJob() {
         )}
         {step < 4 ? (
           <button onClick={() => canGoNext() && setStep(s => s+1)} disabled={!canGoNext()}
-            style={{flex:1,padding:"14px 0",background:canGoNext()?"#FF6600":"#333",border:"none",borderRadius:14,color:canGoNext()?"#FFF":"#555",fontWeight:700,fontSize:15,cursor:canGoNext()?"pointer":"not-allowed"}}>
+            style={{flex:1,padding:"14px 0",background:canGoNext()?"#FF6600":"#333",border:"none",borderRadius:14,color:canGoNext()?"#FFF":"#555",fontWeight:700,fontSize:15,cursor:canGoNext()?"pointer":"not-allowed",transition:"background 0.2s"}}>
             Próximo →
           </button>
         ) : (
-          <button onClick={handlePublish} disabled={isSubmitting}
+          <button onClick={() => setShowConfirm(true)} disabled={isSubmitting}
             style={{flex:1,padding:"14px 0",background:isSubmitting?"#555":"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:15,cursor:isSubmitting?"not-allowed":"pointer"}}>
             {isSubmitting ? "A publicar..." : "🚀 Publicar Obra"}
           </button>
