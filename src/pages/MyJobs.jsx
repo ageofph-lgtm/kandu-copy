@@ -110,20 +110,31 @@ function getCompletionPin(jobId) {
 }
 
 // Display hexágono verde para PIN de finalização
-function CompletionPinDisplay({ pin, countdown, isDark }) {
+function CompletionPinDisplay({ pin, countdown, isDark, employerName }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "10px 0" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "10px 0" }}>
+      {/* UX FIX: instrução clara de quem deve receber o PIN */}
       <div style={{
-        width: 140, height: 140,
+        background: "#22C55E15", border: "1px solid #22C55E44",
+        borderRadius: 12, padding: "10px 16px", width: "100%", textAlign: "center"
+      }}>
+        <p style={{ color: "#22C55E", fontWeight: 700, fontSize: 13, margin: "0 0 4px" }}>✅ PIN de Conclusão Gerado!</p>
+        <p style={{ color: isDark ? "#CCCCCC" : "#444", fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+          Mostra este código ao{" "}
+          <strong style={{ color: "#22C55E" }}>{employerName ? `cliente ${employerName}` : "cliente"}</strong>.
+          Ele vai inserir no telemóvel dele para confirmar que a obra está concluída.
+        </p>
+      </div>
+      <div style={{
+        width: 150, height: 150,
         clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",
         background: isDark ? "#050505" : "#0A1A0A",
         boxShadow: "0 0 28px #22C55E77",
         display: "flex", alignItems: "center", justifyContent: "center"
       }}>
-        <span style={{ fontSize: 26, fontWeight: 900, color: "#22C55E", letterSpacing: 2 }}>{pin}</span>
+        <span style={{ fontSize: 28, fontWeight: 900, color: "#22C55E", letterSpacing: 3 }}>{pin}</span>
       </div>
-      <span style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>⏱ {countdown}s</span>
-      <span style={{ color: "#AAAAAA", fontSize: 12 }}>Envia este PIN ao empregador</span>
+      <span style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>⏱ {countdown}s restantes</span>
     </div>
   );
 }
@@ -324,6 +335,12 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
                     </button>
                   ) : (
                     <>
+                      {/* UX FIX: instrução clara de onde vem o PIN */}
+                      <div style={{ marginBottom: 10, background: "#22C55E15", border: "1px solid #22C55E40", borderRadius: 10, padding: "8px 12px" }}>
+                        <p style={{ color: "#22C55E", fontSize: 13, margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
+                          👉 Peça ao profissional{otherUser ? ` ${otherUser.full_name}` : ""} o código de 6 dígitos que aparece no telemóvel dele.
+                        </p>
+                      </div>
                       <PinKeypad value={finishPinInput} onChange={setFinishPinInput}
                         isDark={isDark} surface={isDark ? "#1A1A1A" : "#FFF"} text={text}
                         onConfirm={handleFinishPin} />
@@ -593,7 +610,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                     </button>
                   ) : (
                     <>
-                      <CompletionPinDisplay pin={completionPin} countdown={finishCountdown} isDark={isDark} />
+                      <CompletionPinDisplay pin={completionPin} countdown={finishCountdown} isDark={isDark} employerName={employer?.full_name} />
                       <button onClick={() => setShowFinishPin(false)}
                         style={{ width: "100%", marginTop: 4, background: "transparent", color: subtext,
                           border: `1px solid ${border}`, borderRadius: 10, padding: "8px", fontSize: 12, cursor: "pointer" }}>
@@ -801,3 +818,4 @@ export default function MyJobs() {
     </div>
   );
 }
+
