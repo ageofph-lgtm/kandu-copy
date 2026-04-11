@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import XPGainToast from "@/components/XPGainToast";
 import { calcJobXP, XP_EVENTS } from "@/lib/xp";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Star,
-  Trophy,
-  Award,
-  Edit // Added for review icon
-} from "lucide-react";
+import { Star, Camera, X, CheckCircle } from "lucide-react";
 
 const WORKER_QUALITIES = [
   "Pontual", "Profissional", "Qualidade", "Comunicativo",
@@ -26,6 +19,84 @@ const EMPLOYER_QUALITIES = [
   "Pagamento Rápido", "Comunicação Clara", "Condições Justas", "Organização",
   "Flexível", "Respeitoso", "Transparente", "Acessível"
 ];
+
+// ─── Componente de upload de 1 foto ──────────────────────────────────────────
+function PhotoBox({ index, photo, onAdd, onRemove, isDark, text, subtext }) {
+  const inputRef = useRef(null);
+  const surface = isDark ? "#2A2A2A" : "#F0F0F0";
+  const border = photo ? "#22C55E" : (isDark ? "#444" : "#DDDDDD");
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => onAdd(index, ev.target.result, file);
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"   /* abre câmara diretamente em mobile */
+        onChange={handleFileChange}
+        style={{ display: "none" }}
+      />
+      <button
+        type="button"
+        onClick={() => !photo && inputRef.current?.click()}
+        style={{
+          width: "100%",
+          aspectRatio: "1",
+          background: photo ? "transparent" : surface,
+          border: `2px dashed ${border}`,
+          borderRadius: 14,
+          cursor: photo ? "default" : "pointer",
+          position: "relative",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          transition: "border-color 0.2s"
+        }}
+      >
+        {photo ? (
+          <>
+            <img src={photo.preview} alt={`Foto ${index + 1}`}
+              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
+            <div style={{
+              position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+              background: "rgba(0,0,0,0.3)", display: "flex",
+              alignItems: "center", justifyContent: "center", borderRadius: 12
+            }}>
+              <CheckCircle style={{ color: "#22C55E", width: 28, height: 28 }} />
+            </div>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onRemove(index); }}
+              style={{
+                position: "absolute", top: 4, right: 4,
+                background: "#EF4444", border: "none", borderRadius: "50%",
+                width: 22, height: 22, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center"
+              }}>
+              <X style={{ color: "#FFF", width: 12, height: 12 }} />
+            </button>
+          </>
+        ) : (
+          <>
+            <Camera style={{ color: subtext, width: 24, height: 24 }} />
+            <span style={{ color: subtext, fontSize: 11, fontWeight: 600 }}>Foto {index + 1}</span>
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
 
 export default function CompletionModal({
   job,
@@ -41,6 +112,10 @@ export default function CompletionModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [qualities, setQualities] = useState([]);
   const [xpToast, setXpToast] = useState({ show: false, gained: 0, total: 0 });
+  // UX FIX: 3 caixas de fotos para profissional (prova de trabalho)
+  const [photos, setPhotos] = useState([null, null, null]);
+
+  const isWorkerFlow = currentUser.user_type === 'worker';
 
   useEffect(() => {
     if (otherUser?.user_type === 'worker') {
@@ -50,12 +125,19 @@ export default function CompletionModal({
     }
   }, [otherUser]);
 
-  const checkIfEarly = () => {
-    if (!job.end_date) return false;
-    const today = new Date();
-    const endDate = new Date(job.end_date);
-    return today < endDate;
+  const handlePhotoAdd = (index, preview, file) => {
+    const next = [...photos];
+    next[index] = { preview, file };
+    setPhotos(next);
   };
+
+  const handlePhotoRemove = (index) => {
+    const next = [...photos];
+    next[index] = null;
+    setPhotos(next);
+  };
+
+  const photoCount = photos.filter(Boolean).length;
 
   const handleQualityToggle = (quality) => {
     setSelectedQualities(prev =>
@@ -78,7 +160,9 @@ export default function CompletionModal({
     setIsSubmitting(true);
 
     try {
-      // Chamar a backend function completeJob (usa asServiceRole para XP/rating)
+      // Calcular XP bonus por fotos (se worker)
+      const photosBonus = isWorkerFlow && photoCount >= 3 ? 5 : 1; // 5x se 3 fotos
+
       const result = await fetch('/api/functions/completeJob', {
         method: 'POST',
         credentials: 'include',
@@ -91,7 +175,8 @@ export default function CompletionModal({
           raterUserType: currentUser.user_type,
           rating,
           comment: comment.trim(),
-          qualities: selectedQualities
+          qualities: selectedQualities,
+          photoCount: isWorkerFlow ? photoCount : 0,
         })
       });
 
@@ -101,10 +186,7 @@ export default function CompletionModal({
       }
 
       const data = await result.json();
-
-      // Mostrar XP ganho
       setXpToast({ show: true, gained: data.selfXPGained || 30, total: data.newSelfXP || 30 });
-
       onComplete();
 
     } catch (error) {
@@ -114,12 +196,11 @@ export default function CompletionModal({
 
     setIsSubmitting(false);
   };
-  
+
   const isEmployerFlow = currentUser.user_type === 'employer';
   const { isDark } = useTheme();
   const bg = isDark ? "#1A1A1A" : "#FFFFFF";
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
-  const surface2 = isDark ? "#1E1E1E" : "#EBEBEB";
   const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const border = isDark ? "#333333" : "#E5E5E5";
@@ -129,7 +210,7 @@ export default function CompletionModal({
       <XPGainToast xpGained={xpToast.gained} newXP={xpToast.total} show={xpToast.show} onDone={() => { setXpToast(t => ({...t, show:false})); onClose(); }} />
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent style={{background:bg, border:"1px solid #333", borderRadius:20, maxWidth:460, maxHeight:"90vh", overflowY:"auto", padding:0}}>
-          
+
           {/* Header */}
           <div style={{padding:"20px 20px 16px", borderBottom:"1px solid #333", display:"flex", alignItems:"center", gap:10}}>
             {isEmployerFlow ? <span style={{fontSize:20}}>🏆</span> : <span style={{fontSize:20}}>✏️</span>}
@@ -145,6 +226,34 @@ export default function CompletionModal({
               <p style={{fontWeight:700, color:"#FF6600", margin:"0 0 4px", fontSize:14}}>{job.title}</p>
               <p style={{color:subtext, fontSize:13, margin:0}}>A avaliar: <strong style={{color:text}}>{otherUser.full_name}</strong></p>
             </div>
+
+            {/* UX FIX: 3 caixas de fotos para profissional (5x XP bonus) */}
+            {isWorkerFlow && (
+              <div>
+                <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10}}>
+                  <label style={{color:subtext, fontSize:12, fontWeight:600, textTransform:"uppercase", letterSpacing:1}}>
+                    Fotos de Prova ({photoCount}/3)
+                  </label>
+                  {photoCount === 3 && (
+                    <span style={{background:"#22C55E22", color:"#22C55E", fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20, border:"1px solid #22C55E44"}}>
+                      ⚡ Bónus 5× XP desbloqueado!
+                    </span>
+                  )}
+                </div>
+                <div style={{display:"flex", gap:8}}>
+                  {[0,1,2].map(i => (
+                    <PhotoBox
+                      key={i} index={i} photo={photos[i]}
+                      onAdd={handlePhotoAdd} onRemove={handlePhotoRemove}
+                      isDark={isDark} text={text} subtext={subtext}
+                    />
+                  ))}
+                </div>
+                <p style={{color:subtext, fontSize:12, margin:"8px 0 0", textAlign:"center"}}>
+                  Toque numa caixa para abrir a câmara · 3 fotos = bónus de XP 🎯
+                </p>
+              </div>
+            )}
 
             {/* Estrelas */}
             <div>
@@ -192,9 +301,19 @@ export default function CompletionModal({
                 </div>
                 <div style={{background:"#22C55E11", borderRadius:10, padding:"10px 0"}}>
                   <p style={{fontSize:11, color:subtext, margin:"0 0 4px"}}>Para si</p>
-                  <p style={{fontWeight:800, fontSize:22, color:"#22C55E", margin:0}}>+{XP_EVENTS.job_completed_self} XP</p>
+                  <p style={{fontWeight:800, fontSize:22, color:"#22C55E", margin:0}}>
+                    +{isWorkerFlow && photoCount >= 3
+                      ? XP_EVENTS.job_completed_self * 5
+                      : XP_EVENTS.job_completed_self} XP
+                    {isWorkerFlow && photoCount >= 3 && <span style={{fontSize:12}}> ×5🔥</span>}
+                  </p>
                 </div>
               </div>
+              {isWorkerFlow && photoCount > 0 && photoCount < 3 && (
+                <p style={{color:"#F59E0B", fontSize:12, textAlign:"center", margin:"10px 0 0", fontWeight:600}}>
+                  📷 Adiciona {3 - photoCount} foto{3 - photoCount > 1 ? "s" : ""} para desbloquear o bónus 5× XP!
+                </p>
+              )}
             </div>
 
             {/* Botões */}
@@ -205,7 +324,7 @@ export default function CompletionModal({
               </button>
               <button onClick={handleSubmit} disabled={isSubmitting || !comment.trim()}
                 style={{flex:1, padding:"13px 0", background:isSubmitting||!comment.trim()?"#333":"#22C55E", border:"none", borderRadius:12, color:isSubmitting||!comment.trim()?"#555":"#FFF", fontWeight:700, fontSize:14, cursor:isSubmitting||!comment.trim()?"not-allowed":"pointer"}}>
-                {isSubmitting ? "A finalizar..." : "Enviar Avaliação"}
+                {isSubmitting ? "A finalizar..." : "Enviar Avaliação ✓"}
               </button>
             </div>
 
