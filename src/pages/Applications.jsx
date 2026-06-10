@@ -67,7 +67,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
           {worker?.full_name?.charAt(0)?.toUpperCase() || "?"}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{worker?.full_name || t(lang,"worker")}</p>
+          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{worker?.full_name || "Profissional"}</p>
           <p style={{ fontSize: 12, color: subtext, margin: "2px 0 0" }}>
             ⭐ {worker?.rating?.toFixed(1) || "Novo"} · {worker?.skills?.slice(0,2).join(", ") || ""}
           </p>

@@ -190,7 +190,7 @@ export default function Notifications() {
   };
 
   if (loading) {
-    return <LoadingScreen label=t(lang,"loading") />;
+    return <LoadingScreen label={t(lang,"loading")} />;
   }
 
   return (

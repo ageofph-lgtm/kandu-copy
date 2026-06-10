@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -12,7 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const LISBON_COORDS = [38.7223, -9.1393];
-const CATEGORIES = [t(lang,"allCategories"), t(lang,"painting"), t(lang,"electricity"), t(lang,"plumbing"), t(lang,"masonry"), t(lang,"tiling"), t(lang,"carpentry"), t(lang,"hvac"), "Isolamentos", t(lang,"flooring"), t(lang,"roofing")];
+const CATEGORY_KEYS = ["allCategories", "painting", "electricity", "plumbing", "masonry", "tiling", "carpentry", "hvac", null, "flooring", "roofing"];
+const CATEGORY_FALLBACKS = [null, null, null, null, null, null, null, null, "Isolamentos", null, null];
 
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -30,12 +31,14 @@ function haversine(lat1, lon1, lat2, lon2) {
    Distância calculada ao abrir cada obra
 ───────────────────────────*/
 function WorkerHome({ user, isDark }) {
+  const { lang } = useLanguage();
+  const CATEGORIES = CATEGORY_KEYS.map((key, i) => key ? t(lang, key) : CATEGORY_FALLBACKS[i]);
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [selectedJobDistance, setSelectedJobDistance] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(t(lang,"allCategories"));
+  const [selectedCategory, setSelectedCategory] = useState(t(lang, "allCategories"));
   const [showList, setShowList] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [geoStatus, setGeoStatus] = useState("loading"); // "loading" | "ok" | "error"
@@ -80,7 +83,7 @@ function WorkerHome({ user, isDark }) {
   // ── Filtrar apenas por pesquisa + categoria (sem raio) ──
   useEffect(() => {
     let f = [...jobs];
-    if (selectedCategory !== t(lang,"allCategories")) f = f.filter(j => j.category === selectedCategory);
+    if (selectedCategory !== t(lang, "allCategories")) f = f.filter(j => j.category === selectedCategory);
     if (searchTerm) {
       const t = searchTerm.toLowerCase();
       f = f.filter(j =>
@@ -126,7 +129,7 @@ function WorkerHome({ user, isDark }) {
         <div style={{ background: surfaceAlpha, borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}>
           <Search size={16} color="#FF6600" />
           <input
-            placeholder={t(lang,"searchPlaceholder")}
+            placeholder={t(lang, "searchPlaceholder")}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             style={{ background: "none", border: "none", outline: "none", color: text, fontSize: 14, flex: 1 }}
@@ -189,7 +192,7 @@ function WorkerHome({ user, isDark }) {
             display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s"
           }}
         >
-          <List size={14} /> {t(lang,"list")}
+          <List size={14} /> {t(lang, "list")}
         </button>
       </div>
 
@@ -208,7 +211,7 @@ function WorkerHome({ user, isDark }) {
         <div style={{ overflowY: "auto", padding: "0 16px 80px", flex: 1 }}>
           {filteredJobs.length === 0 ? (
             <p style={{ textAlign: "center", color: subtext, padding: "24px 0", fontSize: 14 }}>
-              {t(lang,"noJobsFound")}
+              {t(lang, "noJobsFound")}
             </p>
           ) : filteredJobs.map(job => {
             const dist = userLocation && job.latitude && job.longitude
@@ -259,6 +262,7 @@ function WorkerHome({ user, isDark }) {
 ───────────────────────────*/
 function EmployerHome({ user, isDark }) {
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const bg = isDark ? "#111016" : "#F5F5F5";
   const surface = isDark ? "#1C1B22" : "#FFFFFF";
   const text = isDark ? "#FFFFFF" : "#111016";
@@ -314,7 +318,7 @@ function EmployerHome({ user, isDark }) {
           {[
             { icon: "📋", label: "Trabalho",     desc: "Obras pendentes e activas", to: "MyJobs" },
             { icon: "👥", label: t(lang,"applications"), desc: "Veja quem quer trabalhar",  to: "Applications" },
-            { icon: "💬", label: t(lang,"chat"),          desc: "Fale com profissionais",   to: t(lang,"chat") },
+            { icon: "💬", label: t(lang,"chat"),          desc: "Fale com profissionais",   to: "Chat" },
             { icon: "👤", label: t(lang,"profile"),        desc: "Edite os seus dados",      to: "Profile" },
           ].map(({ icon, label, desc, to }) => (
             <button

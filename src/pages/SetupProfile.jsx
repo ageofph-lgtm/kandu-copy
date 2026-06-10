@@ -156,7 +156,7 @@ export default function SetupProfile() {
   const hexBg = {position:"absolute",inset:0,backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpolygon points='30,2 58,17 58,47 30,62 2,47 2,17' fill='none' stroke='%23FF6600' stroke-width='0.5' opacity='0.3'/%3E%3C/svg%3E\")",backgroundRepeat:"repeat",opacity:0.3,pointerEvents:"none"};
 
   if (loading) {
-    return <LoadingScreen label=t(lang,"loading") />;
+    return <LoadingScreen label={t(lang,"loading")} />;
   }
 
   // Não autenticado — mostrar ecrã de login

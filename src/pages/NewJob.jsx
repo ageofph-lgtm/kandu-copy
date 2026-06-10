@@ -9,17 +9,17 @@ import { User } from "@/entities/User";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-const CATEGORIES = [
-  { name: t(lang,"painting"), icon: "🎨" },
-  { name: t(lang,"electricity"), icon: "⚡" },
-  { name: t(lang,"plumbing"), icon: "🔧" },
-  { name: t(lang,"masonry"), icon: "🧱" },
-  { name: t(lang,"tiling"), icon: "🔲" },
-  { name: t(lang,"carpentry"), icon: "🪚" },
-  { name: t(lang,"hvac"), icon: "❄️" },
-  { name: "Isolamentos", icon: "🏗️" },
-  { name: t(lang,"flooring"), icon: "🏠" },
-  { name: t(lang,"roofing"), icon: "🏘️" },
+const CATEGORY_KEYS = [
+  { key: "painting", icon: "🎨" },
+  { key: "electricity", icon: "⚡" },
+  { key: "plumbing", icon: "🔧" },
+  { key: "masonry", icon: "🧱" },
+  { key: "tiling", icon: "🔲" },
+  { key: "carpentry", icon: "🪚" },
+  { key: "hvac", icon: "❄️" },
+  { key: "isolamentos", icon: "🏗️", label: "Isolamentos" },
+  { key: "flooring", icon: "🏠" },
+  { key: "roofing", icon: "🏘️" },
 ];
 
 const LOCATION_COORDS = {
@@ -40,17 +40,17 @@ const LOCATION_COORDS = {
 
 const LOCATION_LIST = Object.keys(LOCATION_COORDS);
 
-const PRICE_SUGGESTIONS = {
-  t(lang,"painting"):     { min: 300,  max: 2000, avg: 800  },
-  t(lang,"electricity"):{ min: 150,  max: 1500, avg: 500  },
-  t(lang,"plumbing"): { min: 200,  max: 2000, avg: 600  },
-  t(lang,"masonry"):   { min: 500,  max: 5000, avg: 1500 },
-  t(lang,"tiling"): { min: 300,  max: 3000, avg: 800  },
-  t(lang,"carpentry"): { min: 200,  max: 2500, avg: 700  },
-  t(lang,"hvac"):{ min: 400,  max: 3000, avg: 1000 },
-  "Isolamentos": { min: 500,  max: 4000, avg: 1200 },
-  t(lang,"flooring"):  { min: 800,  max: 6000, avg: 2000 },
-  t(lang,"roofing"):    { min: 1000, max: 8000, avg: 3000 },
+const PRICE_SUGGESTIONS_BY_KEY = {
+  painting:     { min: 300,  max: 2000, avg: 800  },
+  electricity:  { min: 150,  max: 1500, avg: 500  },
+  plumbing:     { min: 200,  max: 2000, avg: 600  },
+  masonry:      { min: 500,  max: 5000, avg: 1500 },
+  tiling:       { min: 300,  max: 3000, avg: 800  },
+  carpentry:    { min: 200,  max: 2500, avg: 700  },
+  hvac:         { min: 400,  max: 3000, avg: 1000 },
+  isolamentos:  { min: 500,  max: 4000, avg: 1200 },
+  flooring:     { min: 800,  max: 6000, avg: 2000 },
+  roofing:      { min: 1000, max: 8000, avg: 3000 },
 };
 
 const STEP_LABELS = ["O Quê", "Onde & Quando", "Orçamento", "Revisão"];
@@ -102,7 +102,7 @@ export default function NewJob() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
-    title: "", category: "", description: "",
+    title: "", category: "", categoryKey: "", description: "",
     location: "", start_date: "", end_date: "",
     price_type: "fixed", price: "", urgency: "medium"
   });
@@ -155,7 +155,8 @@ export default function NewJob() {
     setIsSubmitting(false);
   };
 
-  const priceSuggestion = formData.category ? PRICE_SUGGESTIONS[formData.category] : null;
+  const CATEGORIES = CATEGORY_KEYS.map(c => ({ name: c.label || t(lang, c.key), icon: c.icon, key: c.key }));
+  const priceSuggestion = formData.categoryKey ? PRICE_SUGGESTIONS_BY_KEY[formData.categoryKey] : null;
   const catIcon = CATEGORIES.find(c => c.name === formData.category)?.icon || "";
 
   const inputStyle = {width:"100%",padding:14,background:surface,border:"2px solid #FF6600",borderRadius:12,color:text,boxSizing:"border-box",fontSize:15,outline:"none"};
@@ -163,7 +164,7 @@ export default function NewJob() {
   const sectionStyle = {borderBottom:`1px solid ${isDark?"#222":"#EEEEEE"}`,padding:"16px 20px"};
 
   if (!user) {
-    return <LoadingScreen label=t(lang,"loading") />;
+    return <LoadingScreen label={t(lang,"loading")} />;
   }
 
   return (
@@ -215,7 +216,7 @@ export default function NewJob() {
             <label style={labelStyle}>{t(lang,"category")}</label>
             <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
               {CATEGORIES.map(cat => (
-                <button key={cat.name} onClick={() => set("category",cat.name)}
+                <button key={cat.name} onClick={() => { set("category", cat.name); set("categoryKey", cat.key); }}
                   style={{background:formData.category===cat.name?"#FF6600":surface,color:formData.category===cat.name?"#FFF":subtext,borderRadius:20,padding:"8px 14px",border:"none",cursor:"pointer",fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
                   {cat.icon} {cat.name}
                 </button>
