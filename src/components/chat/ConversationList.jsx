@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import { Archive, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
@@ -52,6 +54,7 @@ function ConversationItem({ conversation, onSelect, selectedId }) {
 }
 
 export default function ConversationList({ conversations, archivedConversations = [], onSelect, selectedId }) {
+  const { lang } = useLanguage();
   const [showArchived, setShowArchived] = useState(false);
   if (conversations.length === 0 && archivedConversations.length === 0) {
     return (
