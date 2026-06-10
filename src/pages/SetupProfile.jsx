@@ -23,7 +23,7 @@ const profileTypes = [
     type: 'worker',
     icon: Wrench,
     title: 'Profissional',
-    description: 'Encontre trabalhos e mostre as suas habilidades',
+    description: '{t(lang,"imProfessional")} e mostre as suas habilidades',
     gradient: 'from-[#F26522] to-orange-600',
     features: ['Candidatar-se a obras', 'Criar portfólio', 'Ganhar reputação']
   },
