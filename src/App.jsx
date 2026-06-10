@@ -1,6 +1,7 @@
 import './App.css'
 import { useState, useRef } from 'react';
 import { ThemeProvider } from '@/lib/ThemeContext';
+import { LanguageProvider } from '@/lib/LanguageContext';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -60,6 +61,7 @@ function App() {
   );
 
   return (
+    <LanguageProvider>
     <ThemeProvider>
       {/* Auth provider monta SEMPRE, em background — resolve o auth enquanto a splash corre */}
       <QueryClientProvider client={queryClientInstance}>
@@ -80,6 +82,7 @@ function App() {
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
+    </LanguageProvider>
   );
 }
 
