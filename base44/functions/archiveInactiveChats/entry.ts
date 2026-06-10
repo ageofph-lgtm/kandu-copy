@@ -6,16 +6,23 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Allow scheduled automations (no user auth) or admin users
-    let isAutomation = false;
-    try {
-      const user = await base44.auth.me();
-      if (user?.role !== 'admin') {
+    // Autorização: apenas automações agendadas (via secret partilhado) ou
+    // administradores. Um erro em auth.me() NÃO pode ser interpretado como
+    // automação — isso permitiria a qualquer um correr a função sem sessão.
+    const automationSecret = Deno.env.get('AUTOMATION_SECRET');
+    const providedSecret = req.headers.get('x-automation-secret');
+    const isAutomation = !!automationSecret && providedSecret === automationSecret;
+
+    if (!isAutomation) {
+      let user;
+      try {
+        user = await base44.auth.me();
+      } catch {
+        user = null;
+      }
+      if (user?.role !== 'admin' && user?.user_type !== 'admin') {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
-    } catch {
-      // No auth header = called from automation
-      isAutomation = true;
     }
 
     const db = base44.asServiceRole;
