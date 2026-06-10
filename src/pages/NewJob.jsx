@@ -1,10 +1,9 @@
 import { toast } from "sonner";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
-import { ArrowLeft, ArrowRight, Check, MapPin, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 

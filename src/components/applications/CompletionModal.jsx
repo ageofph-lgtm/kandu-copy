@@ -1,13 +1,11 @@
 import { toast } from "sonner";
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import XPGainToast from "@/components/XPGainToast";
 import { calcJobXP, XP_EVENTS } from "@/lib/xp";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Star, Camera, X, CheckCircle } from "lucide-react";
 

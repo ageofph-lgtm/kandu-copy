@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
-import { Wrench, Briefcase, Star, Shield, ArrowRight, CheckCircle } from "lucide-react";
+import { Wrench, Briefcase, Star, Shield } from "lucide-react";
 
 const features = [
   { icon: Briefcase, label: "Publique obras", desc: "Encontre o profissional certo para cada trabalho" },

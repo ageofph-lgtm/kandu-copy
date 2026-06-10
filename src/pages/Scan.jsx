@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -8,8 +8,6 @@ import { Application } from "@/entities/Application";
 import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
 import CompletionModal from "../components/applications/CompletionModal";
-import { format } from "date-fns";
-import { pt } from "date-fns/locale";
 
 export default function ScanPage() {
   const navigate = useNavigate();

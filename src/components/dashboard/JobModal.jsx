@@ -1,15 +1,12 @@
 import { toast } from "sonner";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Application } from "@/entities/Application";
 import { Notification } from "@/entities/Notification";
 import { ChatMessage } from "@/entities/ChatMessage";
 import { User } from "@/entities/User";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin, Clock, Eye, Star, Shield, MessageCircle, X, User as UserIcon, Trash2, CheckCircle, AlertCircle } from "lucide-react";
+import { MapPin, Clock, Eye, Shield, X, Trash2, CheckCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";

@@ -1,20 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { 
-  Calendar as CalendarIcon, 
-  Clock,
-  MapPin,
-  Euro,
-  Plus,
-  ChevronLeft,
-  ChevronRight,
-  Filter
-} from "lucide-react";
+
+
 import { format, addDays, startOfWeek, isSameDay, parseISO, addWeeks, subWeeks } from "date-fns";
 import { pt } from "date-fns/locale";
 

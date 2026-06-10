@@ -11,7 +11,6 @@ import {
   Calendar,
   FileText,
   Shield,
-  QrCode,
   Bell
 } from "lucide-react";
 import { createPageUrl } from "@/utils";

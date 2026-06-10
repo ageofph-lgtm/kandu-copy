@@ -1,14 +1,13 @@
 import { toast } from "sonner";
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { User } from "@/entities/User";
 import { Job } from "@/entities/Job";
 import { Rating } from "@/entities/Rating";
-import { Application } from "@/entities/Application";
 import { Blacklist } from "@/entities/Blacklist";
 // Removed ChatMessage import as its cleanup logic is moved
 // Removed Notification import as its cleanup logic is moved
 import LoadingScreen from "@/components/LoadingScreen";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,7 +30,6 @@ import {
   Calendar,
   TrendingDown,
   Search,
-  Settings,
   Loader2, // Added Loader2 import
   PlusCircle // Added PlusCircle import for new button
 } from "lucide-react"; // Removed Trash2 import

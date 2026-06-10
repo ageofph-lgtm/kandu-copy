@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import MapView from "@/components/dashboard/MapView";
 import JobModal from "@/components/dashboard/JobModal";
-import { Search, List, Plus } from "lucide-react";
+import { Search, List } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 

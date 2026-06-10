@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { Shield, ShieldCheck, BadgeCheck, Upload, CheckCircle, Loader2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { ShieldCheck, BadgeCheck, Upload, CheckCircle, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { base44 } from "@/api/base44Client";
 
