@@ -189,7 +189,7 @@ export default function NewJob() {
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={() => navigate(-1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer",padding:0}}>←</button>
-          <h1 style={{fontWeight:700,color:text,flex:1,textAlign:"center",margin:0,fontSize:18}}>Nova Obra</h1>
+          <h1 style={{fontWeight:700,color:text,flex:1,textAlign:"center",margin:0,fontSize:18}}>{t(lang,"jobTitle")}</h1>
           <span style={{width:22}} />
         </div>
       </div>
@@ -212,7 +212,7 @@ export default function NewJob() {
             <input placeholder="Ex: Pintar apartamento T2" value={formData.title} onChange={e => set("title",e.target.value)} style={inputStyle} />
           </div>
           <div style={sectionStyle}>
-            <label style={labelStyle}>Categoria</label>
+            <label style={labelStyle}>{t(lang,"category")}</label>
             <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
               {CATEGORIES.map(cat => (
                 <button key={cat.name} onClick={() => set("category",cat.name)}
@@ -223,7 +223,7 @@ export default function NewJob() {
             </div>
           </div>
           <div style={sectionStyle}>
-            <label style={labelStyle}>Descrição</label>
+            <label style={labelStyle}>{t(lang,"description")}</label>
             <textarea placeholder="Descreva em detalhe o trabalho a realizar..." value={formData.description} onChange={e => set("description",e.target.value)}
               style={{background:surface,border:"2px solid #FF6600",borderRadius:12,padding:14,color:text,resize:"none",height:100,width:"100%",boxSizing:"border-box",fontSize:15,outline:"none"}} />
           </div>
