@@ -3,6 +3,9 @@
 
 export const translations = {
   PT: {
+    portfolio: "Portfólio",
+    documents: "Documentos",
+    contact: "Contactar",
     add: "Adicionar",
     noPortfolioImages: "Nenhuma imagem no portfólio",
     addPortfolioHint: "Adicione imagens dos seus trabalhos para mostrar a qualidade",
@@ -124,6 +127,9 @@ export const translations = {
   },
 
   EN: {
+    portfolio: "Portfolio",
+    documents: "Documents",
+    contact: "Contact",
     add: "Add",
     noPortfolioImages: "No portfolio images",
     addPortfolioHint: "Add images of your work to showcase quality",
@@ -245,6 +251,9 @@ export const translations = {
   },
 
   ES: {
+    portfolio: "Portafolio",
+    documents: "Documentos",
+    contact: "Contactar",
     add: "Añadir",
     noPortfolioImages: "Sin imágenes en el portfolio",
     addPortfolioHint: "Añade imágenes de tu trabajo para mostrar calidad",
@@ -366,6 +375,9 @@ export const translations = {
   },
 
   FR: {
+    portfolio: "Portfolio",
+    documents: "Documents",
+    contact: "Contacter",
     add: "Ajouter",
     noPortfolioImages: "Aucune image dans le portfolio",
     addPortfolioHint: "Ajoutez des images de vos travaux pour montrer la qualité",
@@ -487,6 +499,9 @@ export const translations = {
   },
 
   DE: {
+    portfolio: "Portfolio",
+    documents: "Dokumente",
+    contact: "Kontaktieren",
     add: "Hinzufügen",
     noPortfolioImages: "Keine Portfolio-Bilder",
     addPortfolioHint: "Fügen Sie Bilder Ihrer Arbeit hinzu, um Qualität zu zeigen",
@@ -608,6 +623,9 @@ export const translations = {
   },
 
   HI: {
+    portfolio: "पोर्टफोलियो",
+    documents: "दस्तावेज़",
+    contact: "संपर्क करें",
     add: "जोड़ें",
     noPortfolioImages: "पोर्टफोलियो में कोई छवि नहीं",
     addPortfolioHint: "अपने काम की तस्वीरें जोड़ें",
@@ -729,6 +747,9 @@ export const translations = {
   },
 
   UR: {
+    portfolio: "پورٹ فولیو",
+    documents: "دستاویزات",
+    contact: "رابطہ کریں",
     add: "شامل کریں",
     noPortfolioImages: "پورٹ فولیو میں کوئی تصویر نہیں",
     addPortfolioHint: "اپنے کام کی تصاویر شامل کریں",
@@ -850,6 +871,9 @@ export const translations = {
   },
 
   BN: {
+    portfolio: "পোর্টফোলিও",
+    documents: "নথিপত্র",
+    contact: "যোগাযোগ করুন",
     add: "যোগ করুন",
     noPortfolioImages: "পোর্টফোলিওতে কোনো ছবি নেই",
     addPortfolioHint: "আপনার কাজের ছবি যোগ করুন",
@@ -971,6 +995,9 @@ export const translations = {
   },
 
   NE: {
+    portfolio: "पोर्टफोलियो",
+    documents: "कागजातहरू",
+    contact: "सम्पर्क गर्नुहोस्",
     add: "थप्नुहोस्",
     noPortfolioImages: "पोर्टफोलियोमा कोई छवि छैन",
     addPortfolioHint: "आफ्नो कामका तस्विरहरू थप्नुहोस्",
@@ -1092,6 +1119,9 @@ export const translations = {
   },
 
   ZH: {
+    portfolio: "作品集",
+    documents: "文件",
+    contact: "联系",
     add: "添加",
     noPortfolioImages: "作品集中没有图片",
     addPortfolioHint: "添加您的工作图片以展示质量",
