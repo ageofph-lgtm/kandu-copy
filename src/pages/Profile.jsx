@@ -22,6 +22,7 @@ import VerificationUpgrade from "../components/profile/VerificationUpgrade";
 export default function Profile() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { lang } = useLanguage();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
