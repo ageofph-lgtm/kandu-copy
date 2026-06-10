@@ -81,7 +81,7 @@ export default function ChatWindow({
       });
     } catch (error) {
       console.error("Error uploading file:", error);
-      toast.error("Erro ao enviar arquivo");
+      toast.error(t(lang,"error"));
     }
     setIsUploading(false);
   };
