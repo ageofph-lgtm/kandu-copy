@@ -248,7 +248,7 @@ function WorkerHome({ user, isDark }) {
           onClose={() => { setSelectedJob(null); setSelectedJobDistance(null); }}
           onApply={() => { setSelectedJob(null); setSelectedJobDistance(null); }}
           onDelete={async (jobId) => {
-            if (!window.confirm("Apagar esta obra?")) return;
+            if (!window.confirm(t(lang,"confirmDeleteJob"))) return;
             try { await Job.delete(jobId); setSelectedJob(null); } catch {}
           }}
         />
@@ -280,7 +280,7 @@ function EmployerHome({ user, isDark }) {
         {/* Logo grande à direita + saudação à esquerda */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontSize: 13, color: isDark ? "#FF9944" : "#FF6600", fontWeight: 600 }}>Bem-vindo 👋</p>
+            <p style={{ margin: 0, fontSize: 13, color: isDark ? "#FF9944" : "#FF6600", fontWeight: 600 }}>{t(lang,"welcome")} 👋</p>
             <h1 style={{ margin: "4px 0 6px", fontSize: 28, fontWeight: 900, color: isDark ? "#FFFFFF" : "#111016", letterSpacing: -0.5 }}>
               {firstName}
             </h1>
@@ -309,7 +309,7 @@ function EmployerHome({ user, isDark }) {
         >
           <div style={{ textAlign: "left" }}>
             <p style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>+ {t(lang,"jobTitle")}</p>
-            <p style={{ margin: "4px 0 0", fontSize: 13, opacity: 0.85 }}>Encontra o profissional certo em minutos</p>
+            <p style={{ margin: "4px 0 0", fontSize: 13, opacity: 0.85 }}>{t(lang,"homeSubtitle")}</p>
           </div>
           <span style={{ fontSize: 36 }}>🏗️</span>
         </button>
