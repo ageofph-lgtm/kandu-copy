@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { ChatMessage } from "@/entities/ChatMessage";
@@ -6,11 +6,8 @@ import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
 import { Application } from "@/entities/Application";
 import { Job } from "@/entities/Job";
-import { Button } from "@/components/ui/button";
 import { 
-  MessageCircle,
-  ArrowLeft,
-  Settings // Add Settings icon
+  MessageCircle // Add Settings icon
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 

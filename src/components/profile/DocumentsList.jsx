@@ -1,10 +1,10 @@
-import React, { useState, useRef } from "react";
+import { toast } from "sonner";
+import { useState, useRef } from "react";
 import { UploadFile } from "@/api/integrations";
 import { User } from "@/entities/User";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
@@ -21,11 +21,6 @@ import {
   ExternalLink,
   Shield,
   Loader2,
-  GraduationCap,
-  IdCard,
-  FileCheck,
-  FileBadge,
-  Briefcase,
 } from "lucide-react";
 
 const DOCUMENT_TYPES = [
@@ -57,8 +52,8 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    if (!docName.trim()) { alert("Insira um nome para o documento"); return; }
-    if (!docType) { alert("Selecione o tipo de documento"); return; }
+    if (!docName.trim()) { toast.error("Insira um nome para o documento"); return; }
+    if (!docType) { toast.error("Selecione o tipo de documento"); return; }
 
     setIsUploading(true);
     try {
@@ -83,7 +78,7 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
       onUpdate();
     } catch (error) {
       console.error("Erro ao fazer upload:", error);
-      alert("Erro ao fazer upload do documento");
+      toast.error("Erro ao fazer upload do documento");
     }
     setIsUploading(false);
   };

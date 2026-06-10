@@ -47,5 +47,13 @@
     "rater_id",
     "rated_id",
     "rating"
-  ]
+  ],
+  "rls": {
+    // Avaliações são criadas exclusivamente pela função backend completeJob
+    // (service role). Bloquear escrita direta impede forjar avaliações ou
+    // desbloquear o blind review com um update de is_visible.
+    "create": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
 }

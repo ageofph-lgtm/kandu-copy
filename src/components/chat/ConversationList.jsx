@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Shield, User, Briefcase, Archive, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
+import { Archive, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 

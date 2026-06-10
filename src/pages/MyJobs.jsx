@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
@@ -11,6 +11,7 @@ import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import LoadingScreen from "@/components/LoadingScreen";
+import { toast } from "sonner";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function getDailyPin(jobId) {
@@ -103,10 +104,16 @@ function PinKeypad({ value, onChange, isDark, surface, text, onConfirm }) {
 
 // ─── PIN de finalização (diferente do PIN de presença) ───────────────────────
 // Usa hora do dia + job.id para ser único por sessão de trabalho
-function getCompletionPin(jobId) {
+function getCompletionPin(jobId, hourOffset = 0) {
   if (!jobId) return "------";
-  const hour = new Date().getHours();
+  const hour = (new Date().getHours() + 24 + hourOffset) % 24;
   return String(((jobId.charCodeAt(2) || 7) * 251 + (jobId.charCodeAt(4) || 3) * 97 + hour * 19) % 900000 + 100000);
+}
+
+// Aceita o PIN da hora atual ou da anterior — evita que a viragem de hora
+// entre o worker gerar o PIN e o employer o inserir invalide o código.
+function isValidCompletionPin(input, jobId) {
+  return input === getCompletionPin(jobId) || input === getCompletionPin(jobId, -1);
 }
 
 // Display hexágono verde para PIN de finalização
@@ -192,8 +199,8 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
   };
 
   const handleFinishPin = async () => {
-    if (finishPinInput !== completionPin) {
-      alert("❌ PIN incorreto. Pede ao profissional para te mostrar o PIN de finalização.");
+    if (!isValidCompletionPin(finishPinInput, job.id)) {
+      toast.error("PIN incorreto. Pede ao profissional para te mostrar o PIN de finalização.");
       setFinishPinInput("");
       return;
     }
@@ -211,7 +218,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
         });
         playPing();
         onReload();
-      } catch(e) { alert("Erro ao finalizar: " + e.message); }
+      } catch(e) { toast.error("Erro ao finalizar: " + e.message); }
       return;
     }
     // Garante que otherUser está carregado antes de abrir o modal
@@ -491,7 +498,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
         sendBrowserPush("✅ Presença confirmada!", `Obra "${job.title}" — presença registada.`);
       } catch (_) {}
     } else {
-      alert("❌ PIN incorreto. Pede ao empregador para mostrar o PIN correto.");
+      toast.error("PIN incorreto. Pede ao empregador para mostrar o PIN correto.");
       setPinInput("");
     }
   };
@@ -525,7 +532,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                 // employer é carregado pelo pai via usersById — fallback: usar employer_id como nome
                 const resolvedEmployer = employer || usersById[job.employer_id] || { id: job.employer_id, full_name: "Empregador" };
                 if (!resolvedEmployer.id) {
-                  alert("Não foi possível identificar o empregador. Tenta recarregar a página.");
+                  toast.error("Não foi possível identificar o empregador. Tenta recarregar a página.");
                   return;
                 }
                 setCompletion({ application, job, otherUser: resolvedEmployer });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 
 const LOGO_DARK  = "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png";
@@ -34,6 +34,7 @@ export default function LoadingScreen({ label }) {
     let seg = 0;
     let built = [];
     let interval;
+    let glowTimeout;
 
     const tick = () => {
       if (seg < 6) {
@@ -45,7 +46,7 @@ export default function LoadingScreen({ label }) {
         // Full hex — hold glow then restart
         setPhase("glow");
         clearInterval(interval);
-        setTimeout(() => {
+        glowTimeout = setTimeout(() => {
           seg = 0;
           built = [];
           setBuiltSegments([]);
@@ -57,7 +58,7 @@ export default function LoadingScreen({ label }) {
     };
 
     interval = setInterval(tick, 130);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); clearTimeout(glowTimeout); };
   }, []);
 
   const css = `

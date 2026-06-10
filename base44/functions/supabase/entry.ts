@@ -28,7 +28,9 @@ Deno.serve(async (req) => {
     // por isso só um administrador as pode invocar. Sem isto, qualquer
     // utilizador autenticado poderia ler/escrever/apagar qualquer tabela ou
     // escalar privilégios via upsert na tabela "users".
-    const isAdmin = user.user_type === 'admin' || user.role === 'admin';
+    // Usa-se `role` (gerido pela plataforma) e não `user_type`, que é
+    // auto-editável pelo utilizador via updateMe no onboarding.
+    const isAdmin = user.role === 'admin';
     const adminOnlyActions = new Set(["upsert", "select", "delete"]);
     if (adminOnlyActions.has(action) && !isAdmin) {
       return Response.json({ error: "Forbidden" }, { status: 403 });

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
-import { ArrowLeft, ArrowRight, Check, MapPin, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -147,7 +147,7 @@ export default function NewJob() {
       navigate(createPageUrl("MyJobs"));
     } catch (error) {
       console.error("Error:", error);
-      alert("Erro ao publicar obra.");
+      toast.error("Erro ao publicar obra.");
     }
     setIsSubmitting(false);
   };

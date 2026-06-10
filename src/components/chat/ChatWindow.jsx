@@ -1,17 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
+import React, { useState, useRef } from "react";
 import { UploadFile } from "@/api/integrations";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, 
-  Send, 
-  Paperclip,
-  FileText,
-  Shield,
-  User,
-  Briefcase
+import {
+  FileText
 } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
@@ -61,7 +52,7 @@ export default function ChatWindow({
       });
     } catch (error) {
       console.error("Error uploading file:", error);
-      alert("Erro ao enviar arquivo");
+      toast.error("Erro ao enviar arquivo");
     }
     setIsUploading(false);
   };

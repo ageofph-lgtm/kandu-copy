@@ -51,7 +51,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import Applications from './pages/Applications';
 import Calendar from './pages/Calendar';
 import Chat from './pages/Chat';
-import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import MyJobs from './pages/MyJobs';
 import NewJob from './pages/NewJob';
@@ -68,7 +67,6 @@ export const PAGES = {
     "Applications": Applications,
     "Calendar": Calendar,
     "Chat": Chat,
-    "Dashboard": Dashboard,
     "Home": Home,
     "MyJobs": MyJobs,
     "NewJob": NewJob,

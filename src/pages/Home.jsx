@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import MapView from "@/components/dashboard/MapView";
 import JobModal from "@/components/dashboard/JobModal";
-import { Search, List, Plus } from "lucide-react";
+import { Search, List } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -45,6 +45,7 @@ function WorkerHome({ user, isDark }) {
   const surfaceAlpha = isDark ? "rgba(28,28,28,0.95)" : "rgba(255,255,255,0.95)";
 
   // ── Geolocalização contínua ──
+  const lastGeoSync = React.useRef(0);
   useEffect(() => {
     if (!navigator.geolocation) { setGeoStatus("error"); return; }
     const watchId = navigator.geolocation.watchPosition(
@@ -52,10 +53,17 @@ function WorkerHome({ user, isDark }) {
         const loc = [pos.coords.latitude, pos.coords.longitude];
         setUserLocation(loc);
         setGeoStatus("ok");
-        User.update(user.id, { latitude: pos.coords.latitude, longitude: pos.coords.longitude }).catch(() => {});
+        // Gravar a posição no backend no máximo a cada 2 min — sem este
+        // throttle, cada tick do GPS gerava um write na API.
+        const now = Date.now();
+        if (now - lastGeoSync.current > 120000) {
+          lastGeoSync.current = now;
+          User.update(user.id, { latitude: pos.coords.latitude, longitude: pos.coords.longitude }).catch(() => {});
+        }
       },
       () => setGeoStatus("error"),
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 20000 }
+      // Para ver obras próximas no mapa não é precisa precisão de GPS alta
+      { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 }
     );
     return () => navigator.geolocation.clearWatch(watchId);
   }, [user.id]);

@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import XPGainToast from "@/components/XPGainToast";
 import { calcJobXP, XP_EVENTS } from "@/lib/xp";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Star, Camera, X, CheckCircle } from "lucide-react";
 
@@ -149,11 +148,11 @@ export default function CompletionModal({
 
   const handleSubmit = async () => {
     if (!comment.trim()) {
-      alert("Por favor, deixa um comentário sobre a experiência.");
+      toast.error("Por favor, deixa um comentário sobre a experiência.");
       return;
     }
     if (!otherUser?.id) {
-      alert("Erro: utilizador não identificado. Tenta novamente.");
+      toast.error("Erro: utilizador não identificado. Tenta novamente.");
       return;
     }
 
@@ -191,7 +190,7 @@ export default function CompletionModal({
 
     } catch (error) {
       console.error("Error completing job:", error);
-      alert("Erro ao finalizar trabalho: " + error.message);
+      toast.error("Erro ao finalizar trabalho: " + error.message);
     }
 
     setIsSubmitting(false);

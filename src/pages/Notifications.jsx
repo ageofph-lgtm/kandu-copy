@@ -1,23 +1,17 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Notification } from "@/entities/Notification";
 import { User } from "@/entities/User";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Bell, 
   CheckCircle,
-  X,
-  Clock,
-  Settings
+  X
 } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
 
 function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   const navigate = useNavigate();
@@ -164,7 +158,7 @@ export default function Notifications() {
       loadData();
     } catch (error) {
       console.error("Error deleting notification:", error);
-      alert("Erro ao apagar notificação.");
+      toast.error("Erro ao apagar notificação.");
     }
   };
 

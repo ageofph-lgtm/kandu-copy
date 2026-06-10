@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { User } from "@/entities/User";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   MapPin, 
-  Euro, 
   Clock, 
   Eye,
-  Building2,
   Star,
   Shield,
   AlertCircle,

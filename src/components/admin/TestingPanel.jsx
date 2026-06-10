@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { useState } from 'react';
 import { Job } from "@/entities/Job";
 import { Application } from "@/entities/Application";
 import { User } from "@/entities/User";

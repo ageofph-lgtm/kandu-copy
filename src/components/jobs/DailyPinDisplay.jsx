@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { generateDailyPin } from "@/lib/dailyPin";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 

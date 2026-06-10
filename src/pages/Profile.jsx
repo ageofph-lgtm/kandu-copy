@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { base44 } from "@/api/base44Client";
@@ -17,6 +17,7 @@ import ProfileForm from "../components/profile/ProfileForm";
 import ReviewsSection from "../components/profile/ReviewsSection";
 import PortfolioGallery from "../components/profile/PortfolioGallery";
 import DocumentsList from "../components/profile/DocumentsList";
+import VerificationUpgrade from "../components/profile/VerificationUpgrade";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -250,8 +251,8 @@ export default function Profile() {
             <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>Competências</p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {user.skills.map((skill, i) => (
-              <span key={i} style={{ background: isDark ? "#333" : "#E5E5E5", color: text, padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
+            {user.skills.map((skill) => (
+              <span key={skill} style={{ background: isDark ? "#333" : "#E5E5E5", color: text, padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
                 {skill}
               </span>
             ))}
@@ -267,8 +268,8 @@ export default function Profile() {
             <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>Áreas de Atuação</p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {user.service_areas.map((area, i) => (
-              <span key={i} style={{ background: "transparent", border: "1px solid #FF6600", color: "#FF6600", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
+            {user.service_areas.map((area) => (
+              <span key={area} style={{ background: "transparent", border: "1px solid #FF6600", color: "#FF6600", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
                 {area}
               </span>
             ))}
@@ -277,6 +278,14 @@ export default function Profile() {
       )}
 
 
+
+      {/* Upgrade de verificação — caminho para quem escolheu "Fazer mais tarde"
+          no onboarding (o componente esconde-se quando já é ultra_verified) */}
+      {isOwnProfile && user?.verified_level !== 'ultra_verified' && (
+        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
+          <VerificationUpgrade user={user} onUpdate={loadUser} />
+        </div>
+      )}
 
       {/* Avaliações */}
       <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>

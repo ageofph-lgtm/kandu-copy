@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { Application } from "@/entities/Application";
 import { Job } from "@/entities/Job";

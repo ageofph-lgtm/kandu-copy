@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -7,8 +8,6 @@ import { Application } from "@/entities/Application";
 import { User } from "@/entities/User";
 import { Notification } from "@/entities/Notification";
 import CompletionModal from "../components/applications/CompletionModal";
-import { format } from "date-fns";
-import { pt } from "date-fns/locale";
 
 export default function ScanPage() {
   const navigate = useNavigate();
@@ -106,11 +105,11 @@ export default function ScanPage() {
         message: `O trabalho "${job.title}" foi oficialmente iniciado.`,
         related_id: job.id
       });
-      alert("Trabalho iniciado com sucesso!");
+      toast.success("Trabalho iniciado com sucesso!");
       await loadData();
     } catch (e) {
       console.error("Erro ao iniciar trabalho:", e);
-      alert("Ocorreu um erro ao iniciar o trabalho.");
+      toast.error("Ocorreu um erro ao iniciar o trabalho.");
     }
   };
 

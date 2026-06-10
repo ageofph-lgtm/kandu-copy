@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
+import { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
 /* ─────────────────────────────────────────

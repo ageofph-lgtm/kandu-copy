@@ -1,6 +1,4 @@
-import React from "react";
 import { Shield, ShieldCheck, BadgeCheck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 const levels = {
   basic: {

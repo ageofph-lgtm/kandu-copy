@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useState, useEffect } from "react";
 import { Application } from "@/entities/Application";
 import { Notification } from "@/entities/Notification";
 import { ChatMessage } from "@/entities/ChatMessage";
 import { User } from "@/entities/User";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin, Clock, Eye, Star, Shield, MessageCircle, X, User as UserIcon, Trash2, CheckCircle, AlertCircle } from "lucide-react";
+import { MapPin, Clock, Eye, Shield, X, Trash2, CheckCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
@@ -56,9 +54,9 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
 
   const handleSubmit = async () => {
     if (!user || user.user_type !== "worker") return;
-    if (!message.trim()) { alert("Escreve uma mensagem de apresentação."); return; }
+    if (!message.trim()) { toast.error("Escreve uma mensagem de apresentação."); return; }
     if (applicationType === "proposal" && (!proposedPrice || isNaN(parseFloat(proposedPrice)))) {
-      alert("Insere um valor válido para a proposta."); return;
+      toast.error("Insere um valor válido para a proposta."); return;
     }
 
     setIsSubmitting(true);
@@ -70,6 +68,8 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
       const payload = {
         job_id: job.id,
         worker_id: user.id,
+        // employer_id é necessário para a RLS dar acesso ao empregador
+        employer_id: job.employer_id,
         message: message.trim(),
         application_type: applicationType,
         status: "pending",
@@ -107,7 +107,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
       if (typeof onApply === "function") onApply();
     } catch (err) {
       console.error("Erro ao enviar candidatura:", err);
-      alert("Erro ao enviar candidatura. Tenta novamente.");
+      toast.error("Erro ao enviar candidatura. Tenta novamente.");
     }
     setIsSubmitting(false);
   };
