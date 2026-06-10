@@ -347,7 +347,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
               </div>
 
               <div style={{ background: "#F8F8F8", borderRadius: 14, padding: 16, marginBottom: 14 }}>
-                <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 13 }}>Descrição</p>
+                <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 13 }}>{t(lang,"description")}</p>
                 <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "#444" }}>{job.description}</p>
               </div>
 
@@ -363,7 +363,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontWeight: 700, fontSize: 14 }}>{employer.full_name || "Empregador"}</span>
+                        <span style={{ fontWeight: 700, fontSize: 14 }}>{employer.full_name || t(lang,"employer")}</span>
                         {employer.verified && <Shield size={14} color="#22c55e" />}
                       </div>
                       <span style={{ fontSize: 12, color: "#888" }}>
