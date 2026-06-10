@@ -1,6 +1,8 @@
 import { toast } from "sonner";
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Notification } from "@/entities/Notification";
 import { User } from "@/entities/User";
@@ -16,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { lang } = useLanguage();
   const surface = isDark ? "#1C1B22" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
@@ -89,6 +92,7 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
 
 export default function Notifications() {
   const { isDark } = useTheme();
+  const { lang } = useLanguage();
   const bg = isDark ? "#111016" : "#FFFFFF";
   const surface = isDark ? "#1C1B22" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#111016";
@@ -186,7 +190,7 @@ export default function Notifications() {
   };
 
   if (loading) {
-    return <LoadingScreen label="A carregar..." />;
+    return <LoadingScreen label=t(lang,"loading") />;
   }
 
   return (
