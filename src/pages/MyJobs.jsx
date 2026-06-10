@@ -277,7 +277,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
                   {otherUser.full_name?.charAt(0) || "?"}
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: 11, color: subtext }}>Profissional</p>
+                  <p style={{ margin: 0, fontSize: 11, color: subtext }}>{t(lang,"worker")}</p>
                   <p style={{ margin: 0, fontSize: 13, color: text, fontWeight: 600 }}>{otherUser.full_name}</p>
                 </div>
               </div>
@@ -286,7 +286,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
             {/* Candidaturas pendentes inline */}
             {pendingApps.length > 0 && (
               <div style={{ background: isDark ? "#0D0D0D" : "#F9F9F9", borderRadius: 12, padding: 14, marginBottom: 12 }}>
-                <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 10px" }}>👥 Candidaturas ({pendingApps.length})</p>
+                <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 10px" }}>👥 {t(lang,"applications")} ({pendingApps.length})</p>
                 {pendingApps.map(app => (
                   <AppMiniCard key={app.id} app={app} job={job} isDark={isDark} text={text} subtext={subtext} border={border} surface={surface} onReload={onReload} />
                 ))}
@@ -556,7 +556,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                   {employer.full_name?.charAt(0) || "?"}
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: 11, color: subtext }}>Empregador</p>
+                  <p style={{ margin: 0, fontSize: 11, color: subtext }}>{t(lang,"employer")}</p>
                   <p style={{ margin: 0, fontSize: 13, color: text, fontWeight: 600 }}>{employer.full_name}</p>
                 </div>
               </div>
@@ -766,7 +766,7 @@ export default function MyJobs() {
           {isEmployer && (
             <button onClick={() => navigate(createPageUrl("NewJob"))}
               style={{ background: "#FF6600", border: "none", borderRadius: 50, padding: "10px 16px", color: "#FFF", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-              <Plus size={15} /> Publicar
+              <Plus size={15} /> {t(lang,"open")}
             </button>
           )}
         </div>
