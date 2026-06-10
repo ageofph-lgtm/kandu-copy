@@ -11,7 +11,9 @@ Deno.serve(async (req) => {
         if (userError || !user) {
             return new Response(JSON.stringify({ error: 'Acesso não autorizado.' }), { status: 401 });
         }
-        if (user.user_type !== 'admin') {
+        // Verificar `role` (gerido pela plataforma) e não `user_type`,
+        // que é auto-editável pelo utilizador via updateMe no onboarding.
+        if (user.role !== 'admin') {
             return new Response(JSON.stringify({ error: 'Acesso negado. Apenas para administradores.' }), { status: 403 });
         }
 

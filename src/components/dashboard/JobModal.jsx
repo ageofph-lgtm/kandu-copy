@@ -70,6 +70,8 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
       const payload = {
         job_id: job.id,
         worker_id: user.id,
+        // employer_id é necessário para a RLS dar acesso ao empregador
+        employer_id: job.employer_id,
         message: message.trim(),
         application_type: applicationType,
         status: "pending",

@@ -20,7 +20,9 @@ Deno.serve(async (req) => {
       } catch {
         user = null;
       }
-      if (user?.role !== 'admin' && user?.user_type !== 'admin') {
+      // `role` é gerido pela plataforma; `user_type` é auto-editável e não
+      // pode ser usado para autorização.
+      if (user?.role !== 'admin') {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
