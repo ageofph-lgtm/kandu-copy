@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
@@ -10,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const LISBON_COORDS = [38.7223, -9.1393];
-const CATEGORIES = ["Todos", "Pintura", "Eletricidade", "Canalização", "Alvenaria", "Ladrilhador", "Carpintaria", "Climatização", "Isolamentos", "Pavimentos", "Telhados"];
+const CATEGORIES = ["Todos", t(lang,"painting"), t(lang,"electricity"), t(lang,"plumbing"), t(lang,"masonry"), t(lang,"tiling"), t(lang,"carpentry"), t(lang,"hvac"), "Isolamentos", t(lang,"flooring"), t(lang,"roofing")];
 
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -311,9 +313,9 @@ function EmployerHome({ user, isDark }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {[
             { icon: "📋", label: "Trabalho",     desc: "Obras pendentes e activas", to: "MyJobs" },
-            { icon: "👥", label: "Candidaturas", desc: "Veja quem quer trabalhar",  to: "Applications" },
-            { icon: "💬", label: "Chat",          desc: "Fale com profissionais",   to: "Chat" },
-            { icon: "👤", label: "Perfil",        desc: "Edite os seus dados",      to: "Profile" },
+            { icon: "👥", label: t(lang,"applications"), desc: "Veja quem quer trabalhar",  to: "Applications" },
+            { icon: "💬", label: t(lang,"chat"),          desc: "Fale com profissionais",   to: t(lang,"chat") },
+            { icon: "👤", label: t(lang,"profile"),        desc: "Edite os seus dados",      to: "Profile" },
           ].map(({ icon, label, desc, to }) => (
             <button
               key={to}
@@ -340,6 +342,7 @@ function EmployerHome({ user, isDark }) {
 export default function Home() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { lang } = useLanguage();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
