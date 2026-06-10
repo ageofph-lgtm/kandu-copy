@@ -67,7 +67,7 @@ function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }
       <div style={{background:bg,borderRadius:20,padding:24,maxWidth:360,width:"100%",border:"1px solid #FF6600"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <span style={{fontSize:40}}>🚀</span>
-          <h2 style={{color:text,fontWeight:700,fontSize:18,margin:"10px 0 6px"}}>Publicar Obra?</h2>
+          <h2 style={{color:text,fontWeight:700,fontSize:18,margin:"10px 0 6px"}}>{t(lang,"jobTitle")}?</h2>
           <p style={{color:subtext,fontSize:14,margin:0}}>A obra ficará visível para todos os profissionais na plataforma.</p>
         </div>
         <div style={{background:surface,borderRadius:12,padding:14,marginBottom:20}}>
@@ -235,7 +235,7 @@ export default function NewJob() {
       {step === 2 && (
         <>
           <div style={sectionStyle}>
-            <label style={labelStyle}>📍 Localização</label>
+            <label style={labelStyle}>📍 {t(lang,"location")}</label>
             <p style={{color:subtext,fontSize:13,margin:"0 0 12px"}}>Toque para selecionar a zona da obra:</p>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {LOCATION_LIST.map(loc => (
@@ -265,7 +265,7 @@ export default function NewJob() {
           <div style={sectionStyle}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
               <div>
-                <label style={labelStyle}>Data Início</label>
+                <label style={labelStyle}>{t(lang,"startDate")}</label>
                 <input type="date" value={formData.start_date} onChange={e => set("start_date",e.target.value)} style={{...inputStyle,colorScheme:isDark?"dark":"light"}} />
               </div>
               <div>
@@ -339,7 +339,7 @@ export default function NewJob() {
               ))}
             </div>
             <div style={{background:"#FF660011",borderRadius:10,padding:12,marginTop:8}}>
-              <p style={{color:subtext,fontSize:13,margin:0}}>📝 <strong style={{color:text}}>Descrição:</strong> {formData.description}</p>
+              <p style={{color:subtext,fontSize:13,margin:0}}>📝 <strong style={{color:text}}>{t(lang,"description")}:</strong> {formData.description}</p>
             </div>
           </div>
         </div>
