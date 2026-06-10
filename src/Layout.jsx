@@ -14,7 +14,8 @@ import {
   Bell
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import { translations } from "@/components/utils/translations";
+import { translations, t } from "@/components/utils/translations";
+import { useLanguage } from "@/lib/LanguageContext";
 import "leaflet/dist/leaflet.css";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -51,6 +52,7 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark, toggleTheme } = useTheme();
+  const { lang } = useLanguage();
   const [user, setUser] = useState(null);
   const [unreadNotifications, setUnreadNotifications] = useState({ chat: 0, applications: 0 });
   const prevAppCount = React.useRef(0);
