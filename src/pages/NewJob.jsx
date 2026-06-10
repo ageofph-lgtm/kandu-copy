@@ -323,7 +323,7 @@ export default function NewJob() {
       {step === 4 && (
         <div style={{padding:"16px 20px"}}>
           <div style={{background:surface,borderRadius:16,padding:20,border:"1px solid #FF660044"}}>
-            <p style={{color:"#FF6600",fontWeight:700,fontSize:14,margin:"0 0 16px",textTransform:"uppercase",letterSpacing:1}}>Resumo da Obra</p>
+            <p style={{color:"#FF6600",fontWeight:700,fontSize:14,margin:"0 0 16px",textTransform:"uppercase",letterSpacing:1}}>{t(lang,"jobSummary")}</p>
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {[
                 {label:"Título",value:formData.title},
