@@ -206,7 +206,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
             <>
               {/* Tipo de empregador */}
               <div>
-                <label className="block text-sm font-medium mb-2">Tipo de Empregador *</label>
+                <label className="block text-sm font-medium mb-2">{t(lang,"employerType")} *</label>
                 <div className="flex gap-3">
                   {[{ value: 'simple', label: 'Simple Employer', desc: 'Cliente Particular' }, { value: 'cia', label: 'Cia Employer', desc: 'Empresa' }].map(opt => (
                     <button
@@ -225,9 +225,9 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Empresa</label>
+                <label className="block text-sm font-medium mb-2">{t(lang,"company")}</label>
                 <Input
-                  placeholder="Nome da empresa"
+                  placeholder={t(lang,"companyName")}
                   value={formData.company}
                   onChange={(e) => handleChange("company", e.target.value)}
                 />
@@ -260,9 +260,9 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
                     </div>
                   ))}
                   <div className="space-y-2 mt-2">
-                    <Input placeholder="Nome do cliente *" value={newClient.name} onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))} />
-                    <Input placeholder="Contacto" value={newClient.contact} onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))} />
-                    <Input placeholder="NIF do cliente" value={newClient.nif} onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))} />
+                    <Input placeholder={t(lang,"clientName")} value={newClient.name} onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))} />
+                    <Input placeholder={t(lang,"phone")} value={newClient.contact} onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))} />
+                    <Input placeholder={t(lang,"clientNIF")} value={newClient.nif} onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))} />
                     <Button type="button" variant="outline" className="w-full border-dashed border-purple-300 text-purple-600" disabled={!newClient.name}
                       onClick={() => {
                         if (!newClient.name) return;
@@ -270,7 +270,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
                         setNewClient({ name: '', contact: '', nif: '' });
                       }}
                     >
-                      <Plus className="w-4 h-4 mr-1" /> Adicionar cliente
+                      <Plus className="w-4 h-4 mr-1" /> t(lang,"addClient")
                     </Button>
                   </div>
                 </div>
@@ -282,13 +282,13 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           {formData.user_type === 'worker' && (
             <div>
               <label className="block text-sm font-medium mb-2">
-                Competências
+                {t(lang,"skills")}
               </label>
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <Select value={newSkill} onValueChange={setNewSkill}>
                     <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Adicionar competência" />
+                      <SelectValue placeholder={t(lang,"addSkill")} />
                     </SelectTrigger>
                     <SelectContent>
                       {CATEGORIES.filter(cat => !formData.skills.includes(cat)).map((category) => (
@@ -330,7 +330,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
               <div className="flex gap-2">
                 <Select value={newArea} onValueChange={setNewArea}>
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Adicionar área" />
+                    <SelectValue placeholder={t(lang,"addArea")} />
                   </SelectTrigger>
                   <SelectContent>
                     {CITIES.filter(city => !formData.service_areas.includes(city)).map((city) => (
