@@ -103,12 +103,12 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
     e.preventDefault();
     
     if (!formData.user_type) {
-      toast.error("Por favor, selecione o tipo de utilizador");
+      toast.error(t(lang,"selectAccountType"));
       return;
     }
     
     if (!formData.full_name) {
-      toast.error("Por favor, introduza o seu nome");
+      toast.error(t(lang,"fullName"));
       return;
     }
 
