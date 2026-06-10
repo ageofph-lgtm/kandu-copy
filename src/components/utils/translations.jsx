@@ -3,6 +3,14 @@
 
 export const translations = {
   PT: {
+    employerType: "Tipo de Empregador",
+    company: "Empresa",
+    addClient: "Adicionar cliente",
+    addSkill: "Adicionar competência",
+    addArea: "Adicionar área",
+    clientName: "Nome do cliente",
+    clientNIF: "NIF do cliente",
+    companyName: "Nome da empresa",
     portfolio: "Portfólio",
     documents: "Documentos",
     contact: "Contactar",
@@ -127,6 +135,14 @@ export const translations = {
   },
 
   EN: {
+    employerType: "Employer Type",
+    company: "Company",
+    addClient: "Add client",
+    addSkill: "Add skill",
+    addArea: "Add area",
+    clientName: "Client name",
+    clientNIF: "Client NIF",
+    companyName: "Company name",
     portfolio: "Portfolio",
     documents: "Documents",
     contact: "Contact",
@@ -251,6 +267,14 @@ export const translations = {
   },
 
   ES: {
+    employerType: "Tipo de Empleador",
+    company: "Empresa",
+    addClient: "Añadir cliente",
+    addSkill: "Añadir habilidad",
+    addArea: "Añadir área",
+    clientName: "Nombre del cliente",
+    clientNIF: "NIF del cliente",
+    companyName: "Nombre de la empresa",
     portfolio: "Portafolio",
     documents: "Documentos",
     contact: "Contactar",
@@ -375,6 +399,14 @@ export const translations = {
   },
 
   FR: {
+    employerType: "Type d'Employeur",
+    company: "Entreprise",
+    addClient: "Ajouter un client",
+    addSkill: "Ajouter une compétence",
+    addArea: "Ajouter une zone",
+    clientName: "Nom du client",
+    clientNIF: "NIF du client",
+    companyName: "Nom de l'entreprise",
     portfolio: "Portfolio",
     documents: "Documents",
     contact: "Contacter",
@@ -499,6 +531,14 @@ export const translations = {
   },
 
   DE: {
+    employerType: "Arbeitgebertyp",
+    company: "Unternehmen",
+    addClient: "Kunden hinzufügen",
+    addSkill: "Fähigkeit hinzufügen",
+    addArea: "Bereich hinzufügen",
+    clientName: "Kundenname",
+    clientNIF: "Kunden-NIF",
+    companyName: "Firmenname",
     portfolio: "Portfolio",
     documents: "Dokumente",
     contact: "Kontaktieren",
@@ -623,6 +663,14 @@ export const translations = {
   },
 
   HI: {
+    employerType: "नियोक्ता प्रकार",
+    company: "कंपनी",
+    addClient: "ग्राहक जोड़ें",
+    addSkill: "कौशल जोड़ें",
+    addArea: "क्षेत्र जोड़ें",
+    clientName: "ग्राहक का नाम",
+    clientNIF: "ग्राहक NIF",
+    companyName: "कंपनी का नाम",
     portfolio: "पोर्टफोलियो",
     documents: "दस्तावेज़",
     contact: "संपर्क करें",
@@ -747,6 +795,14 @@ export const translations = {
   },
 
   UR: {
+    employerType: "آجر کی قسم",
+    company: "کمپنی",
+    addClient: "کلائنٹ شامل کریں",
+    addSkill: "مہارت شامل کریں",
+    addArea: "علاقہ شامل کریں",
+    clientName: "کلائنٹ کا نام",
+    clientNIF: "کلائنٹ NIF",
+    companyName: "کمپنی کا نام",
     portfolio: "پورٹ فولیو",
     documents: "دستاویزات",
     contact: "رابطہ کریں",
@@ -871,6 +927,14 @@ export const translations = {
   },
 
   BN: {
+    employerType: "নিয়োগকর্তার ধরন",
+    company: "কোম্পানি",
+    addClient: "ক্লায়েন্ট যোগ করুন",
+    addSkill: "দক্ষতা যোগ করুন",
+    addArea: "এলাকা যোগ করুন",
+    clientName: "ক্লায়েন্টের নাম",
+    clientNIF: "ক্লায়েন্ট NIF",
+    companyName: "কোম্পানির নাম",
     portfolio: "পোর্টফোলিও",
     documents: "নথিপত্র",
     contact: "যোগাযোগ করুন",
@@ -995,6 +1059,14 @@ export const translations = {
   },
 
   NE: {
+    employerType: "रोजगारदाता प्रकार",
+    company: "कम्पनी",
+    addClient: "ग्राहक थप्नुहोस्",
+    addSkill: "सीप थप्नुहोस्",
+    addArea: "क्षेत्र थप्नुहोस्",
+    clientName: "ग्राहकको नाम",
+    clientNIF: "ग्राहक NIF",
+    companyName: "कम्पनीको नाम",
     portfolio: "पोर्टफोलियो",
     documents: "कागजातहरू",
     contact: "सम्पर्क गर्नुहोस्",
@@ -1119,6 +1191,14 @@ export const translations = {
   },
 
   ZH: {
+    employerType: "雇主类型",
+    company: "公司",
+    addClient: "添加客户",
+    addSkill: "添加技能",
+    addArea: "添加区域",
+    clientName: "客户名称",
+    clientNIF: "客户NIF",
+    companyName: "公司名称",
     portfolio: "作品集",
     documents: "文件",
     contact: "联系",
