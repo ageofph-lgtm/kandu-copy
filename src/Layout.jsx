@@ -42,7 +42,6 @@ const employerNavigationItems = [
 const adminNavigationItems = [
   { title: "admin", icon: Shield, url: createPageUrl("AdminDashboard") },
   { title: "home", icon: MapPin, url: createPageUrl("Home") },
-  { title: "dashboard", icon: MapPin, url: createPageUrl("Dashboard") },
   { title: "myJobs", icon: FileText, url: createPageUrl("MyJobs") },
   { title: "applications", icon: FileText, url: createPageUrl("Applications") },
   { title: "chat", icon: MessageCircle, url: createPageUrl("Chat") },

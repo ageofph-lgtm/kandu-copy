@@ -17,6 +17,7 @@ import ProfileForm from "../components/profile/ProfileForm";
 import ReviewsSection from "../components/profile/ReviewsSection";
 import PortfolioGallery from "../components/profile/PortfolioGallery";
 import DocumentsList from "../components/profile/DocumentsList";
+import VerificationUpgrade from "../components/profile/VerificationUpgrade";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -277,6 +278,14 @@ export default function Profile() {
       )}
 
 
+
+      {/* Upgrade de verificação — caminho para quem escolheu "Fazer mais tarde"
+          no onboarding (o componente esconde-se quando já é ultra_verified) */}
+      {isOwnProfile && user?.verified_level !== 'ultra_verified' && (
+        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
+          <VerificationUpgrade user={user} onUpdate={loadUser} />
+        </div>
+      )}
 
       {/* Avaliações */}
       <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>

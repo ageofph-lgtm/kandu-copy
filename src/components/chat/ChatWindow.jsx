@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import React, { useState, useRef, useEffect } from "react";
 import { UploadFile } from "@/api/integrations";
 import { Button } from "@/components/ui/button";
@@ -61,7 +62,7 @@ export default function ChatWindow({
       });
     } catch (error) {
       console.error("Error uploading file:", error);
-      alert("Erro ao enviar arquivo");
+      toast.error("Erro ao enviar arquivo");
     }
     setIsUploading(false);
   };

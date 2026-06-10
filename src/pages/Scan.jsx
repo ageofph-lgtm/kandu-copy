@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import React, { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -106,11 +107,11 @@ export default function ScanPage() {
         message: `O trabalho "${job.title}" foi oficialmente iniciado.`,
         related_id: job.id
       });
-      alert("Trabalho iniciado com sucesso!");
+      toast.success("Trabalho iniciado com sucesso!");
       await loadData();
     } catch (e) {
       console.error("Erro ao iniciar trabalho:", e);
-      alert("Ocorreu um erro ao iniciar o trabalho.");
+      toast.error("Ocorreu um erro ao iniciar o trabalho.");
     }
   };
 

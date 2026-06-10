@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import React, { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -164,7 +165,7 @@ export default function Notifications() {
       loadData();
     } catch (error) {
       console.error("Error deleting notification:", error);
-      alert("Erro ao apagar notificação.");
+      toast.error("Erro ao apagar notificação.");
     }
   };
 

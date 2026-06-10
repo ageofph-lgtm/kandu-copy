@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import React, { useState } from "react";
 import { UploadFile } from "@/api/integrations";
 import { User } from "@/entities/User";
@@ -20,7 +21,7 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert("Por favor, selecione apenas imagens");
+      toast.error("Por favor, selecione apenas imagens");
       return;
     }
 
@@ -31,10 +32,10 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
       
       await User.updateMyUserData({ portfolio_images: newImages });
       onUpdate();
-      alert("Imagem adicionada ao portfólio!");
+      toast.success("Imagem adicionada ao portfólio!");
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Erro ao fazer upload da imagem");
+      toast.error("Erro ao fazer upload da imagem");
     }
     setIsUploading(false);
   };
@@ -46,10 +47,10 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
       const newImages = images.filter(img => img !== imageUrl);
       await User.updateMyUserData({ portfolio_images: newImages });
       onUpdate();
-      alert("Imagem removida do portfólio!");
+      toast.success("Imagem removida do portfólio!");
     } catch (error) {
       console.error("Error removing image:", error);
-      alert("Erro ao remover imagem");
+      toast.error("Erro ao remover imagem");
     }
   };
 

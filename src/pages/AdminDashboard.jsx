@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import React, { useState, useEffect, useCallback } from "react";
 import { User } from "@/entities/User";
 import { Job } from "@/entities/Job";
@@ -335,7 +336,7 @@ export default function AdminDashboard() {
       setCurrentUser(userData);
 
       if (userData.user_type !== 'admin') {
-        alert("Acesso negado. Apenas administradores podem aceder a esta página.");
+        toast.error("Acesso negado. Apenas administradores podem aceder a esta página.");
         navigate(createPageUrl("Dashboard"));
         return;
       }
@@ -366,7 +367,7 @@ export default function AdminDashboard() {
   // New function to create example jobs
   const createExampleJobs = async () => {
     if (!currentUser || !currentUser.id) {
-      alert("Erro: Utilizador administrador não identificado para criar obras.");
+      toast.error("Erro: Utilizador administrador não identificado para criar obras.");
       return;
     }
 
@@ -380,11 +381,11 @@ export default function AdminDashboard() {
         await Job.create({ ...jobData, client_id: currentUser.id });
         createdCount++;
       }
-      alert(`✅ ${createdCount} obras de exemplo criadas com sucesso!`);
+      toast.success(`${createdCount} obras de exemplo criadas com sucesso!`);
       loadData(); // Refresh data to show new jobs
     } catch (error) {
       console.error("Erro ao criar obras de exemplo:", error);
-      alert(`❌ Erro ao criar obras de exemplo: ${error.message}`);
+      toast.error(`❌ Erro ao criar obras de exemplo: ${error.message}`);
     } finally {
       setIsCreatingExamples(false);
     }
@@ -427,13 +428,13 @@ export default function AdminDashboard() {
         banned_until: bannedUntil
       });
 
-      alert("Penalização aplicada com sucesso!");
+      toast.success("Penalização aplicada com sucesso!");
       setShowBlacklistModal(false);
       setSelectedUser(null);
       loadData();
     } catch (error) {
       console.error("Error applying blacklist:", error);
-      alert("Erro ao aplicar penalização.");
+      toast.error("Erro ao aplicar penalização.");
     }
   };
 

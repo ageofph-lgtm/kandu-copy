@@ -34,6 +34,7 @@ export default function LoadingScreen({ label }) {
     let seg = 0;
     let built = [];
     let interval;
+    let glowTimeout;
 
     const tick = () => {
       if (seg < 6) {
@@ -45,7 +46,7 @@ export default function LoadingScreen({ label }) {
         // Full hex — hold glow then restart
         setPhase("glow");
         clearInterval(interval);
-        setTimeout(() => {
+        glowTimeout = setTimeout(() => {
           seg = 0;
           built = [];
           setBuiltSegments([]);
@@ -57,7 +58,7 @@ export default function LoadingScreen({ label }) {
     };
 
     interval = setInterval(tick, 130);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); clearTimeout(glowTimeout); };
   }, []);
 
   const css = `

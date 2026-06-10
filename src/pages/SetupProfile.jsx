@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import React, { useState, useEffect, useRef } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { base44 } from "@/api/base44Client";
@@ -144,7 +145,7 @@ export default function SetupProfile() {
       }
       await doCreateProfile(idDocUrl);
     } catch {
-      alert("Erro ao criar perfil. Tente novamente.");
+      toast.error("Erro ao criar perfil. Tente novamente.");
       setIsCreating(false);
       setIsUploading(false);
     }
@@ -176,6 +177,11 @@ export default function SetupProfile() {
     await base44.auth.updateMe({ gdpr_accepted: true, gdpr_accepted_at: new Date().toISOString() });
     setUser(prev => ({ ...prev, gdpr_accepted: true }));
     setShowGdpr(false);
+    // Retomar o fluxo no ponto certo consoante o tipo escolhido —
+    // empregadores ainda têm de escolher o subtipo (step 1.5).
+    const selectedType = visibleProfiles[activeIndex]?.type;
+    if (selectedType === 'admin') { handleFinish(true); return; }
+    if (selectedType === 'employer') { setStep(1.5); return; }
     setStep(2);
   };
 

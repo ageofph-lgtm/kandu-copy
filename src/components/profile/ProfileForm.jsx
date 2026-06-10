@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,12 +103,12 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
     e.preventDefault();
     
     if (!formData.user_type) {
-      alert("Por favor, selecione o tipo de utilizador");
+      toast.error("Por favor, selecione o tipo de utilizador");
       return;
     }
     
     if (!formData.full_name) {
-      alert("Por favor, introduza o seu nome");
+      toast.error("Por favor, introduza o seu nome");
       return;
     }
 

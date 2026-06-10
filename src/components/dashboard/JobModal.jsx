@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import React, { useState, useEffect } from "react";
 import { Application } from "@/entities/Application";
 import { Notification } from "@/entities/Notification";
@@ -56,9 +57,9 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
 
   const handleSubmit = async () => {
     if (!user || user.user_type !== "worker") return;
-    if (!message.trim()) { alert("Escreve uma mensagem de apresentação."); return; }
+    if (!message.trim()) { toast.error("Escreve uma mensagem de apresentação."); return; }
     if (applicationType === "proposal" && (!proposedPrice || isNaN(parseFloat(proposedPrice)))) {
-      alert("Insere um valor válido para a proposta."); return;
+      toast.error("Insere um valor válido para a proposta."); return;
     }
 
     setIsSubmitting(true);
@@ -109,7 +110,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
       if (typeof onApply === "function") onApply();
     } catch (err) {
       console.error("Erro ao enviar candidatura:", err);
-      alert("Erro ao enviar candidatura. Tenta novamente.");
+      toast.error("Erro ao enviar candidatura. Tenta novamente.");
     }
     setIsSubmitting(false);
   };

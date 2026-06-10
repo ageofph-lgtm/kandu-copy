@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import React, { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -147,7 +148,7 @@ export default function NewJob() {
       navigate(createPageUrl("MyJobs"));
     } catch (error) {
       console.error("Error:", error);
-      alert("Erro ao publicar obra.");
+      toast.error("Erro ao publicar obra.");
     }
     setIsSubmitting(false);
   };
