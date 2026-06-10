@@ -216,7 +216,7 @@ export default function Layout({ children }) {
               <img src={logoH} style={{height:36, maxWidth:160, objectFit:"contain"}} alt="KANDU" />
             </div>
             <div style={{padding:"8px",marginBottom:4}}>
-              <button onClick={toggleTheme} title="Alternar tema" style={{background:"none",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",cursor:"pointer",fontSize:13,color:"#FF6600",fontWeight:600,whiteSpace:"nowrap",width:"100%"}}>
+              <button onClick={toggleTheme} title={t(lang,"toggleTheme")} style={{background:"none",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",cursor:"pointer",fontSize:13,color:"#FF6600",fontWeight:600,whiteSpace:"nowrap",width:"100%"}}>
                 {isDark ? "☀️ Light" : "🌙 Dark"}
               </button>
             </div>
