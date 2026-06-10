@@ -241,7 +241,7 @@ export default function Chat() {
             <img src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"} alt="KANDU" style={{height:24,objectFit:"contain"}} />
           </div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <h2 style={{fontSize:18,fontWeight:700,color:text,margin:0}}>Mensagens</h2>
+            <h2 style={{fontSize:18,fontWeight:700,color:text,margin:0}}>{t(lang,"messages")}</h2>
             <span style={{background:"#FF6600",color:"#FFF",borderRadius:20,padding:"3px 10px",fontSize:12,fontWeight:700}}>{conversations.length}</span>
           </div>
         </div>
