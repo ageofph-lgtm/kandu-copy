@@ -198,7 +198,7 @@ export default function SetupProfile() {
         <div style={{flex:1,padding:"50px 20px 20px",position:"relative",zIndex:1}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,maxWidth:420,margin:"0 auto 24px"}}>
             <button onClick={() => setStep(1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer"}}>←</button>
-            <span style={{fontWeight:700,color:"#FFF",fontSize:17}}>Tipo de Empregador</span>
+            <span style={{fontWeight:700,color:"#FFF",fontSize:17}}>{t(lang,"employer")}</span>
             <span style={{color:"#AAAAAA",fontSize:13}}>2/3</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16,maxWidth:420,margin:"0 auto 16px"}}>
