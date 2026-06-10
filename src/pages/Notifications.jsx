@@ -202,7 +202,7 @@ export default function Notifications() {
 
       {/* Título + badge */}
       <div style={{padding:"12px 20px",display:"flex",alignItems:"center",gap:12}}>
-        <h1 style={{fontWeight:800,fontSize:32,color:text,margin:0,flex:1}}>Notificações</h1>
+        <h1 style={{fontWeight:800,fontSize:32,color:text,margin:0,flex:1}}>{t(lang,"notifications")}</h1>
         {unreadNotifications.length > 0 && (
           <div style={{width:28,height:28,borderRadius:"50%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontWeight:700,fontSize:14}}>
             {unreadNotifications.length}
