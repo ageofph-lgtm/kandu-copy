@@ -38,7 +38,7 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           <ImageIcon size={16} style={{ color:"#F26522" }} />
-          <span style={{ fontWeight:700, fontSize:14 }}>Portfolio</span>
+          <span style={{ fontWeight:700, fontSize:14 }}>{t(lang,"portfolio")}</span>
         </div>
         {canEdit && (
           <>
