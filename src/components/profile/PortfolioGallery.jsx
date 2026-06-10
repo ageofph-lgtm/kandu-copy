@@ -2,148 +2,90 @@ import { toast } from "sonner";
 import React, { useState } from "react";
 import { UploadFile } from "@/api/integrations";
 import { User } from "@/entities/User";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Plus, 
-  X, 
-  Upload, 
-  Image as ImageIcon,
-  ExternalLink
-} from "lucide-react";
+import { Plus, X, Upload, Image as ImageIcon, ExternalLink } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 
 export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
+  const { lang } = useLanguage();
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = React.useRef(null);
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error("Por favor, selecione apenas imagens");
-      return;
-    }
-
+    if (!file.type.startsWith("image/")) { toast.error(t(lang,"error")); return; }
     setIsUploading(true);
     try {
       const { file_url } = await UploadFile({ file });
-      const newImages = [...images, file_url];
-      
-      await User.updateMyUserData({ portfolio_images: newImages });
+      await User.updateMyUserData({ portfolio_images: [...images, file_url] });
       onUpdate();
-      toast.success("Imagem adicionada ao portfólio!");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Erro ao fazer upload da imagem");
-    }
+      toast.success(t(lang,"success"));
+    } catch (e) { toast.error(t(lang,"error")); }
     setIsUploading(false);
   };
 
   const handleRemoveImage = async (imageUrl) => {
-    if (!confirm("Tem a certeza que quer remover esta imagem?")) return;
-    
+    if (!confirm(t(lang,"delete") + "?")) return;
     try {
-      const newImages = images.filter(img => img !== imageUrl);
-      await User.updateMyUserData({ portfolio_images: newImages });
+      await User.updateMyUserData({ portfolio_images: images.filter(i => i !== imageUrl) });
       onUpdate();
-      toast.success("Imagem removida do portfólio!");
-    } catch (error) {
-      console.error("Error removing image:", error);
-      toast.error("Erro ao remover imagem");
-    }
+    } catch (e) { console.error(e); }
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <ImageIcon className="w-5 h-5" />
-          Portfólio
-        </CardTitle>
-        
+    <div>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <ImageIcon size={16} style={{ color:"#F26522" }} />
+          <span style={{ fontWeight:700, fontSize:14 }}>Portfolio</span>
+        </div>
         {canEdit && (
-          <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <Button
+          <>
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+            <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              size="sm"
+              style={{ display:"flex", alignItems:"center", gap:6, background:"#111", color:"#fff",
+                border:"none", borderRadius:8, padding:"6px 12px", fontSize:12, fontWeight:700, cursor:"pointer" }}
             >
-              {isUploading ? (
-                <>
-                  <Upload className="w-4 h-4 mr-2 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Adicionar
-                </>
+              {isUploading ? <Upload size={13} className="animate-spin" /> : <Plus size={13} />}
+              {isUploading ? t(lang,"loading") : t(lang,"add")}
+            </button>
+          </>
+        )}
+      </div>
+
+      {images.length === 0 ? (
+        <div style={{ textAlign:"center", padding:"32px 0", color:"#aaa" }}>
+          <ImageIcon size={40} style={{ margin:"0 auto 8px", opacity:0.3 }} />
+          <p style={{ margin:0, fontSize:13 }}>{t(lang,"noPortfolioImages")}</p>
+          {canEdit && <p style={{ margin:"4px 0 0", fontSize:11 }}>{t(lang,"addPortfolioHint")}</p>}
+        </div>
+      ) : (
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
+          {images.map((url, i) => (
+            <div key={i} style={{ position:"relative", aspectRatio:"1", borderRadius:10, overflow:"hidden", background:"#f0f0f0" }}>
+              <img src={url} alt={"p"+i} style={{ width:"100%", height:"100%", objectFit:"cover", cursor:"pointer" }}
+                onClick={() => window.open(url,"_blank")} />
+              {canEdit && (
+                <button onClick={() => handleRemoveImage(url)}
+                  style={{ position:"absolute", top:4, right:4, background:"#ef4444", border:"none",
+                    borderRadius:"50%", width:20, height:20, display:"flex", alignItems:"center",
+                    justifyContent:"center", cursor:"pointer", color:"#fff" }}>
+                  <X size={11} />
+                </button>
               )}
-            </Button>
-          </div>
-        )}
-      </CardHeader>
-      
-      <CardContent>
-        {images.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>Nenhuma imagem no portfólio</p>
-            {canEdit && (
-              <p className="text-sm mt-1">
-                Adicione imagens dos seus trabalhos para mostrar a qualidade
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {images.map((imageUrl, index) => (
-              <div key={index} className="relative group">
-                <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
-                  <img
-                    src={imageUrl}
-                    alt={`Portfólio ${index + 1}`}
-                    className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
-                    onClick={() => window.open(imageUrl, '_blank')}
-                  />
-                </div>
-                
-                {canEdit && (
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      className="w-6 h-6"
-                      onClick={() => handleRemoveImage(imageUrl)}
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
-                )}
-                
-                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="w-6 h-6"
-                    onClick={() => window.open(imageUrl, '_blank')}
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              <button onClick={() => window.open(url,"_blank")}
+                style={{ position:"absolute", bottom:4, right:4, background:"rgba(0,0,0,0.5)", border:"none",
+                  borderRadius:"50%", width:20, height:20, display:"flex", alignItems:"center",
+                  justifyContent:"center", cursor:"pointer", color:"#fff" }}>
+                <ExternalLink size={11} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
