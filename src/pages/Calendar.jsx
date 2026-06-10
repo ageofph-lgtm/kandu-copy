@@ -143,7 +143,7 @@ export default function Calendar() {
         {selectedDayJobs.length === 0 ? (
           <div style={{textAlign:"center",paddingTop:40}}>
             <div style={{fontSize:48,marginBottom:12}}>📅</div>
-            <p style={{color:subtext}}>Sem eventos para este dia</p>
+            <p style={{color:subtext}}>{t(lang,"noEventsToday")}</p>
           </div>
         ) : selectedDayJobs.map(job => (
           <div key={job.id} style={{background:surface,borderRadius:14,padding:14,borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start"}}>
@@ -161,15 +161,15 @@ export default function Calendar() {
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,padding:"20px 20px 0"}}>
         <div style={{background:surface,borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
           <p style={{fontWeight:800,fontSize:18,color:"#FF6600",margin:0}}>{jobs.filter(j=>j.status==="open").length}</p>
-          <p style={{color:subtext,fontSize:11,margin:0}}>Abertas</p>
+          <p style={{color:subtext,fontSize:11,margin:0}}>{t(lang,"open")}</p>
         </div>
         <div style={{background:surface,borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
           <p style={{fontWeight:800,fontSize:18,color:"#FF6600",margin:0}}>{jobs.filter(j=>j.status==="in_progress").length}</p>
-          <p style={{color:subtext,fontSize:11,margin:0}}>Em Curso</p>
+          <p style={{color:subtext,fontSize:11,margin:0}}>{t(lang,"inProgress")}</p>
         </div>
         <div style={{background:surface,borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
           <p style={{fontWeight:800,fontSize:18,color:"#22C55E",margin:0}}>{jobs.filter(j=>j.status==="completed").length}</p>
-          <p style={{color:subtext,fontSize:11,margin:0}}>Concluídas</p>
+          <p style={{color:subtext,fontSize:11,margin:0}}>{t(lang,"completed")}</p>
         </div>
       </div>
     </div>
