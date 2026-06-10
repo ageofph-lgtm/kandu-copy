@@ -257,7 +257,7 @@ export default function Applications() {
               background: filter === "all" ? "#FF6600" : "transparent",
               color: filter === "all" ? "#FFF" : subtext,
               fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap"
-            }}>Todas</button>
+            }}>{t(lang,"all")}</button>
             {myJobsWithApps.map(j => (
               <button key={j.id} onClick={() => setFilter(j.id)} style={{
                 flexShrink: 0, padding: "8px 16px", borderRadius: 20,
