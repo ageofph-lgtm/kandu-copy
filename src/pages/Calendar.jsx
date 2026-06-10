@@ -105,7 +105,7 @@ export default function Calendar() {
 
       {/* Top Bar */}
       <div style={{padding:"50px 20px 12px"}}>
-        <h1 style={{fontWeight:800,fontSize:22,color:text,margin:0}}>Calendário</h1>
+        <h1 style={{fontWeight:800,fontSize:22,color:text,margin:0}}>{t(lang,"calendar")}</h1>
         <p style={{color:subtext,fontSize:14,margin:"4px 0 0"}}>{format(currentWeek, "MMMM yyyy", {locale:pt})}</p>
       </div>
 
