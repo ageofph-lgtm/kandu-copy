@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -12,8 +13,8 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const LISBON_COORDS = [38.7223, -9.1393];
-const CATEGORY_KEYS = ["allCategories", "painting", "electricity", "plumbing", "masonry", "tiling", "carpentry", "hvac", null, "flooring", "roofing"];
-const CATEGORY_FALLBACKS = [null, null, null, null, null, null, null, null, "Isolamentos", null, null];
+const CATEGORY_KEYS = ["allCategories","painting","electricity","plumbing","masonry","tiling","carpentry","hvac","flooring","roofing"];
+const CATEGORY_LABELS = { isolamentos: "Isolamentos" };
 
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -32,13 +33,13 @@ function haversine(lat1, lon1, lat2, lon2) {
 ───────────────────────────*/
 function WorkerHome({ user, isDark }) {
   const { lang } = useLanguage();
-  const CATEGORIES = CATEGORY_KEYS.map((key, i) => key ? t(lang, key) : CATEGORY_FALLBACKS[i]);
+  const CATEGORIES = [...CATEGORY_KEYS.map(k => t(lang, k)), "Isolamentos"];
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [selectedJobDistance, setSelectedJobDistance] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(t(lang, "allCategories"));
+  const [selectedCategory, setSelectedCategory] = useState(t(lang,"allCategories"));
   const [showList, setShowList] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [geoStatus, setGeoStatus] = useState("loading"); // "loading" | "ok" | "error"
@@ -50,7 +51,7 @@ function WorkerHome({ user, isDark }) {
   const surfaceAlpha = isDark ? "rgba(28,28,28,0.95)" : "rgba(255,255,255,0.95)";
 
   // ── Geolocalização contínua ──
-  const lastGeoSync = React.useRef(0);
+  const lastGeoSync = useRef(0);
   useEffect(() => {
     if (!navigator.geolocation) { setGeoStatus("error"); return; }
     const watchId = navigator.geolocation.watchPosition(
@@ -129,7 +130,7 @@ function WorkerHome({ user, isDark }) {
         <div style={{ background: surfaceAlpha, borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}>
           <Search size={16} color="#FF6600" />
           <input
-            placeholder={t(lang, "searchPlaceholder")}
+            placeholder={t(lang,"searchPlaceholder")}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             style={{ background: "none", border: "none", outline: "none", color: text, fontSize: 14, flex: 1 }}
@@ -261,8 +262,8 @@ function WorkerHome({ user, isDark }) {
    EMPLOYER HOME
 ───────────────────────────*/
 function EmployerHome({ user, isDark }) {
-  const navigate = useNavigate();
   const { lang } = useLanguage();
+  const navigate = useNavigate();
   const bg = isDark ? "#111016" : "#F5F5F5";
   const surface = isDark ? "#1C1B22" : "#FFFFFF";
   const text = isDark ? "#FFFFFF" : "#111016";
@@ -346,7 +347,6 @@ function EmployerHome({ user, isDark }) {
 export default function Home() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const { lang } = useLanguage();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
