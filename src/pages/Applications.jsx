@@ -154,7 +154,7 @@ function WorkerAppCard({ app, job, isDark, surface, text, subtext, border }) {
 
       {app.status === "accepted" && (
         <p style={{ color: subtext, fontSize: 12, margin: "10px 0 0" }}>
-          A obra está em curso. Acede a <strong style={{ color: "#FF6600" }}>Trabalhos → Em Curso</strong> para confirmar presença e finalizar.
+          {t(lang,"inProgress")}.  <strong style={{ color: "#FF6600" }}>{t(lang,"myJobs")}</strong> para confirmar presença e finalizar.
         </p>
       )}
     </div>
