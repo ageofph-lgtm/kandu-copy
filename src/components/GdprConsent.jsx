@@ -5,8 +5,8 @@ import { Shield, CheckCircle } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 
-export default function GdprConsent({
-  const { lang } = useLanguage(); open, onAccept }) {
+export default function GdprConsent({ open, onAccept }) {
+  const { lang } = useLanguage();
   const [checked, setChecked] = useState(false);
 
   return (
@@ -15,20 +15,18 @@ export default function GdprConsent({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Shield className="w-5 h-5 text-blue-600" />
-            Privacidade & RGPD
+            {t(lang,"privacyGdpr")}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 text-sm text-gray-600">
-          <p>
-            A <strong>KANDU</strong> recolhe e trata os seus dados pessoais (nome, email, localização e documentos de identidade) para:
-          </p>
+          <p>{t(lang,"gdprIntro")}</p>
           <ul className="space-y-1 pl-2">
             {[
-              "Criar e gerir o seu perfil profissional",
-              "Facilitar a ligação entre empregadores e profissionais",
-              "Verificar a sua identidade (KYC opcional)",
-              "Enviar notificações relevantes sobre obras"
+              t(lang,"gdprPoint1"),
+              t(lang,"gdprPoint2"),
+              t(lang,"gdprPoint3"),
+              t(lang,"gdprPoint4"),
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
@@ -36,9 +34,7 @@ export default function GdprConsent({
               </li>
             ))}
           </ul>
-          <p className="text-xs text-gray-400">
-            Os seus dados são tratados em conformidade com o Regulamento Geral sobre a Proteção de Dados (RGPD — Regulamento (UE) 2016/679). Pode exercer os seus direitos (acesso, retificação, eliminação) em qualquer momento através do seu perfil ou contactando-nos.
-          </p>
+          <p className="text-xs text-gray-400">{t(lang,"gdprLegal")}</p>
 
           <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl border border-gray-200 hover:border-[#F26522] transition-colors">
             <input
@@ -50,9 +46,8 @@ export default function GdprConsent({
             <span className="text-xs text-gray-600">
               {t(lang,"gdprAccept")}{" "}
               <span className="text-[#F26522] font-medium">{t(lang,"privacyPolicy")}</span>{" "}
-              e os{" "}
-              <span className="text-[#F26522] font-medium">{t(lang,"termsOfUse")}</span>{" "}
-              da plataforma KANDU, incluindo o tratamento dos meus dados pessoais.
+              {t(lang,"gdprAnd")}{" "}
+              <span className="text-[#F26522] font-medium">{t(lang,"termsOfUse")}</span>.
             </span>
           </label>
         </div>
@@ -62,7 +57,7 @@ export default function GdprConsent({
           onClick={onAccept}
           className="w-full h-12 bg-[#F26522] hover:bg-orange-600 rounded-xl font-bold disabled:opacity-40"
         >
-          Aceitar e {t(lang,"continue")}
+          {t(lang,"acceptAndContinue")}
         </Button>
       </DialogContent>
     </Dialog>
