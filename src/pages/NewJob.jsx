@@ -53,7 +53,7 @@ const PRICE_SUGGESTIONS_BY_KEY = {
   roofing:      { min: 1000, max: 8000, avg: 3000 },
 };
 
-const STEP_LABELS = ["O Quê", "Onde & Quando", "Orçamento", "Revisão"];
+const STEP_LABELS = ["O Quê", "Onde & Quando", t(lang,"budget"), "Revisão"];
 
 // ─── Modal de Confirmação custom (substitui window.confirm) ───────────────────
 function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }) {
@@ -210,7 +210,7 @@ export default function NewJob() {
         <>
           <div style={sectionStyle}>
             <label style={labelStyle}>Título da Obra</label>
-            <input placeholder="Ex: Pintar apartamento T2" value={formData.title} onChange={e => set("title",e.target.value)} style={inputStyle} />
+            <input placeholder={t(lang,"jobTitleExample")} value={formData.title} onChange={e => set("title",e.target.value)} style={inputStyle} />
           </div>
           <div style={sectionStyle}>
             <label style={labelStyle}>{t(lang,"category")}</label>
@@ -225,7 +225,7 @@ export default function NewJob() {
           </div>
           <div style={sectionStyle}>
             <label style={labelStyle}>{t(lang,"description")}</label>
-            <textarea placeholder="Descreva em detalhe o trabalho a realizar..." value={formData.description} onChange={e => set("description",e.target.value)}
+            <textarea placeholder={t(lang,"descriptionPlaceholder")} value={formData.description} onChange={e => set("description",e.target.value)}
               style={{background:surface,border:"2px solid #FF6600",borderRadius:12,padding:14,color:text,resize:"none",height:100,width:"100%",boxSizing:"border-box",fontSize:15,outline:"none"}} />
           </div>
         </>
@@ -236,7 +236,7 @@ export default function NewJob() {
         <>
           <div style={sectionStyle}>
             <label style={labelStyle}>📍 {t(lang,"location")}</label>
-            <p style={{color:subtext,fontSize:13,margin:"0 0 12px"}}>Toque para selecionar a zona da obra:</p>
+            <p style={{color:subtext,fontSize:13,margin:"0 0 12px"}}>{t(lang,"tapToSelectZone")}</p>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {LOCATION_LIST.map(loc => (
                 <button key={loc} onClick={() => set("location", loc)}
@@ -269,7 +269,7 @@ export default function NewJob() {
                 <input type="date" value={formData.start_date} onChange={e => set("start_date",e.target.value)} style={{...inputStyle,colorScheme:isDark?"dark":"light"}} />
               </div>
               <div>
-                <label style={labelStyle}>Data Fim</label>
+                <label style={labelStyle}>{t(lang,"endDate")}</label>
                 <input type="date" value={formData.end_date} onChange={e => set("end_date",e.target.value)} style={{...inputStyle,colorScheme:isDark?"dark":"light"}} />
               </div>
             </div>
