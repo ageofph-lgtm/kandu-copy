@@ -1,6 +1,8 @@
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
@@ -8,16 +10,16 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const CATEGORIES = [
-  { name: "Pintura", icon: "🎨" },
-  { name: "Eletricidade", icon: "⚡" },
-  { name: "Canalização", icon: "🔧" },
-  { name: "Alvenaria", icon: "🧱" },
-  { name: "Ladrilhador", icon: "🔲" },
-  { name: "Carpintaria", icon: "🪚" },
-  { name: "Climatização", icon: "❄️" },
+  { name: t(lang,"painting"), icon: "🎨" },
+  { name: t(lang,"electricity"), icon: "⚡" },
+  { name: t(lang,"plumbing"), icon: "🔧" },
+  { name: t(lang,"masonry"), icon: "🧱" },
+  { name: t(lang,"tiling"), icon: "🔲" },
+  { name: t(lang,"carpentry"), icon: "🪚" },
+  { name: t(lang,"hvac"), icon: "❄️" },
   { name: "Isolamentos", icon: "🏗️" },
-  { name: "Pavimentos", icon: "🏠" },
-  { name: "Telhados", icon: "🏘️" },
+  { name: t(lang,"flooring"), icon: "🏠" },
+  { name: t(lang,"roofing"), icon: "🏘️" },
 ];
 
 const LOCATION_COORDS = {
@@ -39,16 +41,16 @@ const LOCATION_COORDS = {
 const LOCATION_LIST = Object.keys(LOCATION_COORDS);
 
 const PRICE_SUGGESTIONS = {
-  "Pintura":     { min: 300,  max: 2000, avg: 800  },
-  "Eletricidade":{ min: 150,  max: 1500, avg: 500  },
-  "Canalização": { min: 200,  max: 2000, avg: 600  },
-  "Alvenaria":   { min: 500,  max: 5000, avg: 1500 },
-  "Ladrilhador": { min: 300,  max: 3000, avg: 800  },
-  "Carpintaria": { min: 200,  max: 2500, avg: 700  },
-  "Climatização":{ min: 400,  max: 3000, avg: 1000 },
+  t(lang,"painting"):     { min: 300,  max: 2000, avg: 800  },
+  t(lang,"electricity"):{ min: 150,  max: 1500, avg: 500  },
+  t(lang,"plumbing"): { min: 200,  max: 2000, avg: 600  },
+  t(lang,"masonry"):   { min: 500,  max: 5000, avg: 1500 },
+  t(lang,"tiling"): { min: 300,  max: 3000, avg: 800  },
+  t(lang,"carpentry"): { min: 200,  max: 2500, avg: 700  },
+  t(lang,"hvac"):{ min: 400,  max: 3000, avg: 1000 },
   "Isolamentos": { min: 500,  max: 4000, avg: 1200 },
-  "Pavimentos":  { min: 800,  max: 6000, avg: 2000 },
-  "Telhados":    { min: 1000, max: 8000, avg: 3000 },
+  t(lang,"flooring"):  { min: 800,  max: 6000, avg: 2000 },
+  t(lang,"roofing"):    { min: 1000, max: 8000, avg: 3000 },
 };
 
 const STEP_LABELS = ["O Quê", "Onde & Quando", "Orçamento", "Revisão"];
@@ -90,6 +92,7 @@ function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }
 export default function NewJob() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { lang } = useLanguage();
   const bg = isDark ? "#111016" : "#FFFFFF";
   const surface = isDark ? "#1C1B22" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#111016";
@@ -160,7 +163,7 @@ export default function NewJob() {
   const sectionStyle = {borderBottom:`1px solid ${isDark?"#222":"#EEEEEE"}`,padding:"16px 20px"};
 
   if (!user) {
-    return <LoadingScreen label="A carregar..." />;
+    return <LoadingScreen label=t(lang,"loading") />;
   }
 
   return (
@@ -323,9 +326,9 @@ export default function NewJob() {
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {[
                 {label:"Título",value:formData.title},
-                {label:"Categoria",value:`${catIcon} ${formData.category}`},
-                {label:"Localização",value:formData.location},
-                {label:"Preço",value:`€${formData.price}${formData.price_type==='hourly'?'/h':''}`,highlight:true},
+                {label:t(lang,"category"),value:`${catIcon} ${formData.category}`},
+                {label:t(lang,"location"),value:formData.location},
+                {label:t(lang,"price"),value:`€${formData.price}${formData.price_type==='hourly'?'/h':''}`,highlight:true},
                 {label:"Urgência",value:formData.urgency==='low'?'🟢 Baixa':formData.urgency==='high'?'🔴 Alta':'🟡 Média'},
               ].map(item => (
                 <div key={item.label} style={{borderBottom:`1px solid ${isDark?"#333":"#EEE"}`,paddingBottom:10}}>
