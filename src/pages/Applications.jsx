@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import { Application } from "@/entities/Application";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
@@ -65,7 +67,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
           {worker?.full_name?.charAt(0)?.toUpperCase() || "?"}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{worker?.full_name || "Profissional"}</p>
+          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{worker?.full_name || t(lang,"worker")}</p>
           <p style={{ fontSize: 12, color: subtext, margin: "2px 0 0" }}>
             ⭐ {worker?.rating?.toFixed(1) || "Novo"} · {worker?.skills?.slice(0,2).join(", ") || ""}
           </p>
@@ -162,6 +164,7 @@ function WorkerAppCard({ app, job, isDark, surface, text, subtext, border }) {
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function Applications() {
   const { isDark } = useTheme();
+  const { lang } = useLanguage();
   const navigate   = useNavigate();
   const bg      = isDark ? "#111016" : "#F5F5F5";
   const surface = isDark ? "#1C1B22" : "#FFFFFF";
