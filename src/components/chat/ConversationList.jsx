@@ -61,7 +61,7 @@ export default function ConversationList({ conversations, archivedConversations 
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:200}}>
         <div style={{textAlign:"center"}}>
           <p style={{color:"#555"}}>{t(lang,"noConversations")}</p>
-          <p style={{fontSize:12,color:"#444",marginTop:4}}>As conversas aparecem aqui quando te candidatares</p>
+          <p style={{fontSize:12,color:"#444",marginTop:4}}>{t(lang,"noConversations")}</p>
         </div>
       </div>
     );
