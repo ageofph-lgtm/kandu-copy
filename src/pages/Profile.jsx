@@ -168,7 +168,7 @@ export default function Profile() {
           </DropdownMenu>
         ) : (
           <button style={{ background: "#FF6600", border: "none", borderRadius: 8, padding: "8px 16px", color: "#FFF", fontWeight: 600, cursor: "pointer", fontSize: 13 }} onClick={() => navigate(createPageUrl("Chat") + `?userId=${user.id}`)}>
-            💬 Contactar
+            💬 {t(lang,"contact")}
           </button>
         )}
       </div>
@@ -239,7 +239,7 @@ export default function Profile() {
       <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
           <span style={{ fontWeight: 800, fontSize: 20, color: "#FF6600" }}>{xp} XP</span>
-          <span style={{ color: "#AAAAAA", fontSize: 13, marginLeft: "auto" }}>Nível: {getNivelFromXP(xp)}</span>
+          <span style={{ color: "#AAAAAA", fontSize: 13, marginLeft: "auto" }}>{t(lang,"level")}: {getNivelFromXP(xp)}</span>
         </div>
         <div style={{ background: border, height: 8, borderRadius: 8, overflow: "hidden" }}>
           <div style={{ background: "#FF6600", height: "100%", borderRadius: 8, width: "50%", transition: "width 0.5s" }} />
