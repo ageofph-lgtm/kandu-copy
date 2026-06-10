@@ -162,7 +162,7 @@ export default function Notifications() {
       loadData();
     } catch (error) {
       console.error("Error deleting notification:", error);
-      toast.error("Erro ao apagar notificação.");
+      toast.error(t(lang,"error"));
     }
   };
 
