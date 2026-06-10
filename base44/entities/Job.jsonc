@@ -115,23 +115,5 @@
     "location",
     "price_type",
     "price"
-  ],
-  "rls": {
-    // Leitura aberta (os profissionais navegam obras públicas). Alterar ou
-    // apagar uma obra fica reservado ao empregador, ao profissional contratado
-    // (datas de início/fim) e a admins.
-    "update": {
-      "$or": [
-        { "data.employer_id": "{{user.id}}" },
-        { "data.worker_id": "{{user.id}}" },
-        { "user_condition": { "role": "admin" } }
-      ]
-    },
-    "delete": {
-      "$or": [
-        { "data.employer_id": "{{user.id}}" },
-        { "user_condition": { "role": "admin" } }
-      ]
-    }
-  }
+  ]
 }

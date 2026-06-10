@@ -4,58 +4,48 @@
   "properties": {
     "user_id": {
       "type": "string",
-      "description": "ID do utilizador destinatário"
+      "description": "ID do utilizador que recebe a notifica\u00e7\u00e3o"
     },
     "type": {
       "type": "string",
-      "description": "Tipo de notificação"
+      "enum": [
+        "new_application",
+        "new_proposal",
+        "job_accepted",
+        "job_rejected",
+        "new_message",
+        "job_started",
+        "job_completed",
+        "job_ready_for_review"
+      ],
+      "description": "Tipo de notifica\u00e7\u00e3o"
     },
     "title": {
-      "type": "string"
+      "type": "string",
+      "description": "T\u00edtulo da notifica\u00e7\u00e3o"
     },
     "message": {
-      "type": "string"
+      "type": "string",
+      "description": "Mensagem da notifica\u00e7\u00e3o"
     },
     "related_id": {
       "type": "string",
-      "description": "ID do recurso relacionado"
-    },
-    "action_url": {
-      "type": "string",
-      "description": "URL de destino ao clicar"
+      "description": "ID do objeto relacionado (obra, candidatura, etc.)"
     },
     "is_read": {
       "type": "boolean",
-      "default": false
+      "default": false,
+      "description": "Notifica\u00e7\u00e3o lida"
+    },
+    "action_url": {
+      "type": "string",
+      "description": "URL para a\u00e7\u00e3o relacionada"
     }
   },
   "required": [
     "user_id",
+    "type",
     "title",
     "message"
-  ],
-  "rls": {
-    // O destinatário só vê e gere as suas próprias notificações.
-    // "create" fica aberto porque o frontend cria notificações para a
-    // contraparte (candidatura, aceitação, chat) — mover essa criação para
-    // funções backend é o passo seguinte para fechar spam.
-    "read": {
-      "$or": [
-        { "data.user_id": "{{user.id}}" },
-        { "user_condition": { "role": "admin" } }
-      ]
-    },
-    "update": {
-      "$or": [
-        { "data.user_id": "{{user.id}}" },
-        { "user_condition": { "role": "admin" } }
-      ]
-    },
-    "delete": {
-      "$or": [
-        { "data.user_id": "{{user.id}}" },
-        { "user_condition": { "role": "admin" } }
-      ]
-    }
-  }
+  ]
 }

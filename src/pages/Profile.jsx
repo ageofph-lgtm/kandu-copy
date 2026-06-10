@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import { useLanguage } from "@/lib/LanguageContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";

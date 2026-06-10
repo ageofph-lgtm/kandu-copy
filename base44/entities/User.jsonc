@@ -6,5 +6,8 @@
       "type": "string",
       "description": "URL da foto de perfil do utilizador"
     }
-  }
+  },
+  "required": [
+    "profile_picture_url"
+  ]
 }
