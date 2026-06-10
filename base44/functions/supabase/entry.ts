@@ -24,6 +24,16 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action, table, data, query, file_url, file_name, bucket } = body;
 
+    // As operações genéricas de tabela usam a service role key (bypass de RLS),
+    // por isso só um administrador as pode invocar. Sem isto, qualquer
+    // utilizador autenticado poderia ler/escrever/apagar qualquer tabela ou
+    // escalar privilégios via upsert na tabela "users".
+    const isAdmin = user.user_type === 'admin' || user.role === 'admin';
+    const adminOnlyActions = new Set(["upsert", "select", "delete"]);
+    if (adminOnlyActions.has(action) && !isAdmin) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const supabase = getSupabase();
 
     // ─────────────────────────────────────────
@@ -118,8 +128,9 @@ Deno.serve(async (req) => {
         rating: user.rating || null,
         verified: user.verified || false,
         synced_at: new Date().toISOString(),
-        ...( data || {} )
       };
+      // NOTA: não fazemos spread de `data` do cliente aqui — permitiria
+      // sobrescrever `role`/`user_type` e escalar para admin.
 
       const { data: result, error } = await supabase
         .from("users")
