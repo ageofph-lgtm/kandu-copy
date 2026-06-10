@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { ChatMessage } from "@/entities/ChatMessage";
 import { User } from "@/entities/User";
@@ -16,6 +18,7 @@ import ChatWindow from "../components/chat/ChatWindow";
 
 export default function Chat() {
   const { isDark } = useTheme();
+  const { lang } = useLanguage();
   const bg = isDark ? "#111016" : "#FFFFFF";
   const text = isDark ? "#FFFFFF" : "#111016";
   const headerBg = isDark ? "#111" : "#F0F0F0";
@@ -226,7 +229,7 @@ export default function Chat() {
   };
 
   if (loading) {
-    return <LoadingScreen label="A carregar..." />;
+    return <LoadingScreen label={t(lang, "loading", "A carregar...")} />;
   }
 
   return (
@@ -264,7 +267,7 @@ export default function Chat() {
           <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%"}}>
             <div style={{textAlign:"center"}}>
               <MessageCircle style={{width:48,height:48,color:"#444",margin:"0 auto 12px"}} />
-              <p style={{color:"#555"}}>Selecione uma conversa para começar</p>
+              <p style={{color:"#555"}}>{t(lang, "selectConversation", "Selecione uma conversa para começar")}</p>
             </div>
           </div>
         )}
