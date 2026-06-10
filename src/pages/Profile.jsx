@@ -120,7 +120,7 @@ export default function Profile() {
     return (
       <div style={{ minHeight: "100vh", background: bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <div style={{ textAlign: "center" }}>
-          <p style={{ color: text, fontSize: 16, marginBottom: 16 }}>Não autenticado</p>
+          <p style={{ color: text, fontSize: 16, marginBottom: 16 }}>{t(lang,"error")}</p>
           <Button 
             style={{ background: "#F26522" }}
             onClick={() => base44.auth.redirectToLogin(window.location.href)}
