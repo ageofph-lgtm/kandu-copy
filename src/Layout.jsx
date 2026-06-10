@@ -281,7 +281,7 @@ export default function Layout({ children }) {
         </button>
         <Link to={createPageUrl("Home")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Home")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
           <MapPin size={22} />
-          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Home")?700:400}}>Início</span>
+          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Home")?700:400}}>{t(lang,"home")}</span>
           {location.pathname===createPageUrl("Home") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
         </Link>
 
@@ -294,7 +294,7 @@ export default function Layout({ children }) {
               </span>
             )}
           </div>
-          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("MyJobs")?700:400}}>Trabalhos</span>
+          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("MyJobs")?700:400}}>{t(lang,"myJobs")}</span>
           {location.pathname===createPageUrl("MyJobs") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
         </Link>
 
@@ -331,14 +331,14 @@ export default function Layout({ children }) {
               </span>
             )}
           </div>
-          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Chat")?700:400}}>Chat</span>
+          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Chat")?700:400}}>{t(lang,"chat")}</span>
           {location.pathname===createPageUrl("Chat") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
         </Link>
 
 
         <Link to={createPageUrl("Profile")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Profile")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
           <User size={22} />
-          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Profile")?700:400}}>Perfil</span>
+          <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Profile")?700:400}}>{t(lang,"profile")}</span>
           {location.pathname===createPageUrl("Profile") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
         </Link>
       </nav>
