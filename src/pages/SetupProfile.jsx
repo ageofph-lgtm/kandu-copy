@@ -1,4 +1,6 @@
 import { toast } from "sonner";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import { useState, useEffect, useRef } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { base44 } from "@/api/base44Client";
@@ -38,6 +40,7 @@ const profileTypes = [
 
 export default function SetupProfile() {
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [user, setUser] = useState(null);
@@ -153,7 +156,7 @@ export default function SetupProfile() {
   const hexBg = {position:"absolute",inset:0,backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpolygon points='30,2 58,17 58,47 30,62 2,47 2,17' fill='none' stroke='%23FF6600' stroke-width='0.5' opacity='0.3'/%3E%3C/svg%3E\")",backgroundRepeat:"repeat",opacity:0.3,pointerEvents:"none"};
 
   if (loading) {
-    return <LoadingScreen label="A carregar..." />;
+    return <LoadingScreen label=t(lang,"loading") />;
   }
 
   // Não autenticado — mostrar ecrã de login
@@ -282,7 +285,7 @@ export default function SetupProfile() {
           <p style={{fontSize:11,color:"#555",textAlign:"center"}}>De acordo com RGPD, os teus dados estão protegidos.</p>
           <button onClick={() => handleFinish(false)} disabled={isCreating || !idDocFile}
             style={{width:"100%",maxWidth:420,padding:16,background:idDocFile?"#FF6600":"#333",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:idDocFile?"pointer":"default"}}>
-            {isUploading ? "A carregar..." : isCreating ? "A criar perfil..." : "Submeter Documentos"}
+            {isUploading ? t(lang,"loading") : isCreating ? "A criar perfil..." : "Submeter Documentos"}
           </button>
           <button onClick={() => handleFinish(true)} disabled={isCreating} style={{background:"none",border:"none",color:"#666",cursor:"pointer",fontSize:14}}>Fazer mais tarde</button>
         </div>
