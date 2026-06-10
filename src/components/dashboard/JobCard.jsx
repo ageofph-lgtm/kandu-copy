@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { User } from "@/entities/User";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,6 @@ import {
   User as UserIcon
 } from "lucide-react";
 import { format } from "date-fns";
-import { pt } from "date-fns/locale";
 
 export default function JobCard({ job, onClick, userType }) {
   const { lang } = useLanguage();
@@ -38,7 +37,7 @@ export default function JobCard({ job, onClick, userType }) {
 
   const formatPrice = (price, type) => {
     if (type === "hourly") {
-      return `€${price}/hora`;
+      return `€${price}${t(lang, "perHourSuffix", "/hora")}`;
     }
     return `€${price}`;
   };
@@ -67,7 +66,7 @@ export default function JobCard({ job, onClick, userType }) {
                 {job.urgency === "high" && (
                   <Badge className={getUrgencyColor(job.urgency)}>
                     <AlertCircle className="w-3 h-3 mr-1" />
-                    Urgente
+                    {t(lang, "urgent", "Urgente")}
                   </Badge>
                 )}
               </div>
@@ -94,7 +93,7 @@ export default function JobCard({ job, onClick, userType }) {
             </div>
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              {format(new Date(job.created_date), "dd MMM", { locale: pt })}
+              {format(new Date(job.created_date), "dd MMM", { locale: getDateLocale(lang) })}
             </div>
           </div>
 
@@ -104,7 +103,7 @@ export default function JobCard({ job, onClick, userType }) {
               <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center">
                 <UserIcon className="w-4 h-4 text-purple-700" />
               </div>
-              <span className="text-sm text-gray-600">{employer.full_name || t(lang,"employer")}</span>
+              <span className="text-sm text-gray-600">{employer.full_name || t(lang, "employer", "Empregador")}</span>
               {employer.verified && <Shield className="w-4 h-4 text-green-500" />}
               <div className="flex items-center gap-1 ml-auto">
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />

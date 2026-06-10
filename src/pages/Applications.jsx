@@ -13,6 +13,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 
 // ─── Card de candidato (para o employer aprovar/recusar) ─────────────────────
 function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, text, subtext, border }) {
+  const { lang } = useLanguage();
   const [acting, setActing] = useState(false);
 
   const handleAccept = async () => {
@@ -67,13 +68,13 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
           {worker?.full_name?.charAt(0)?.toUpperCase() || "?"}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{worker?.full_name || "Profissional"}</p>
+          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{worker?.full_name || t(lang, "worker", "Profissional")}</p>
           <p style={{ fontSize: 12, color: subtext, margin: "2px 0 0" }}>
-            ⭐ {worker?.rating?.toFixed(1) || "Novo"} · {worker?.skills?.slice(0,2).join(", ") || ""}
+            ⭐ {worker?.rating?.toFixed(1) || t(lang, "newLabel", "Novo")} · {worker?.skills?.slice(0,2).join(", ") || ""}
           </p>
         </div>
         <div style={{ textAlign: "right" }}>
-          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>Proposta</p>
+          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>{t(lang, "proposal", "Proposta")}</p>
           <p style={{ color: "#FF6600", fontWeight: 800, fontSize: 18, margin: 0 }}>
             €{app.proposed_price || job?.price}
           </p>
@@ -110,12 +111,12 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
           flex: 1, background: "#EF444422", color: "#EF4444",
           border: "1px solid #EF444444", borderRadius: 12,
           padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
-        }}>✕ Recusar</button>
+        }}>✕ {t(lang, "reject", "Recusar")}</button>
         <button onClick={handleAccept} disabled={acting} style={{
           flex: 2, background: "#FF6600", color: "#FFF",
           border: "none", borderRadius: 12,
           padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
-        }}>✓ Aceitar e Contratar</button>
+        }}>✓ {t(lang, "acceptAndHire", "Aceitar e Contratar")}</button>
       </div>
     </div>
   );
@@ -123,10 +124,11 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
 
 // ─── Card de candidatura do worker (só o status, sem PIN/QR) ─────────────────
 function WorkerAppCard({ app, job, isDark, surface, text, subtext, border }) {
+  const { lang } = useLanguage();
   const statusMap = {
-    pending:  { color: "#F59E0B", label: "⏳ Pendente" },
-    accepted: { color: "#22C55E", label: "✅ Aceite — vai a Trabalhos" },
-    rejected: { color: "#EF4444", label: "✕ Não selecionado" },
+    pending:  { color: "#F59E0B", label: `⏳ ${t(lang, "pendingStatus", "Pendente")}` },
+    accepted: { color: "#22C55E", label: `✅ ${t(lang, "acceptedGoToJobs", "Aceite — vai a Trabalhos")}` },
+    rejected: { color: "#EF4444", label: `✕ ${t(lang, "notSelected", "Não selecionado")}` },
   };
   const s = statusMap[app.status] || { color: "#888", label: app.status };
 
@@ -138,7 +140,7 @@ function WorkerAppCard({ app, job, isDark, surface, text, subtext, border }) {
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
         <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{job?.title || "Obra"}</p>
+          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{job?.title || t(lang, "job", "Obra")}</p>
           <p style={{ fontSize: 12, color: subtext, margin: "3px 0 0", display: "flex", alignItems: "center", gap: 4 }}>
             <MapPin size={11} />{job?.location}
           </p>
@@ -154,7 +156,7 @@ function WorkerAppCard({ app, job, isDark, surface, text, subtext, border }) {
 
       {app.status === "accepted" && (
         <p style={{ color: subtext, fontSize: 12, margin: "10px 0 0" }}>
-          {t(lang,"inProgress")}.  <strong style={{ color: "#FF6600" }}>{t(lang,"myJobs")}</strong> para confirmar presença e finalizar.
+          {t(lang, "inProgress", "Em andamento")}.  <strong style={{ color: "#FF6600" }}>{t(lang, "myJobs", "Os Meus Trabalhos")}</strong> {t(lang, "toConfirmPresenceAndFinish", "para confirmar presença e finalizar.")}
         </p>
       )}
     </div>
@@ -240,10 +242,10 @@ export default function Applications() {
             alt="KANDU" style={{ height: 24, objectFit: "contain" }} />
         </div>
         <p style={{ margin: 0, fontSize: 12, color: subtext }}>
-          {isWorker ? "O teu histórico" : "Candidatos às tuas obras"}
+          {isWorker ? t(lang, "yourHistory", "O teu histórico") : t(lang, "candidatesForYourJobs", "Candidatos às tuas obras")}
         </p>
         <h1 style={{ margin: "2px 0 0", fontWeight: 800, fontSize: 22, color: text }}>
-          Candidaturas
+          {t(lang, "applications", "Candidaturas")}
         </h1>
       </div>
 
@@ -257,7 +259,7 @@ export default function Applications() {
               background: filter === "all" ? "#FF6600" : "transparent",
               color: filter === "all" ? "#FFF" : subtext,
               fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap"
-            }}>{t(lang,"all")}</button>
+            }}>{t(lang, "all", "Todas")}</button>
             {myJobsWithApps.map(j => (
               <button key={j.id} onClick={() => setFilter(j.id)} style={{
                 flexShrink: 0, padding: "8px 16px", borderRadius: 20,
@@ -279,17 +281,17 @@ export default function Applications() {
           <div style={{ background: surface, borderRadius: 16, padding: "48px 24px", textAlign: "center" }}>
             <div style={{ fontSize: 44, marginBottom: 12 }}>📋</div>
             <p style={{ color: text, fontWeight: 700, fontSize: 16, margin: "0 0 6px" }}>
-              {isWorker ? "Ainda não te candidataste a nenhuma obra" : "Sem candidatos pendentes"}
+              {isWorker ? t(lang, "noApplicationsYet", "Ainda não te candidataste a nenhuma obra") : t(lang, "noPendingCandidates", "Sem candidatos pendentes")}
             </p>
             <p style={{ color: subtext, fontSize: 13, margin: 0 }}>
               {isWorker
-                ? "Explora obras no mapa e candidata-te!"
-                : "Quando um profissional se candidatar, aparece aqui."}
+                ? t(lang, "exploreJobsHint", "Explora obras no mapa e candidata-te!")
+                : t(lang, "candidatesAppearHere", "Quando um profissional se candidatar, aparece aqui.")}
             </p>
             {isWorker && (
               <button onClick={() => navigate(createPageUrl("Home"))}
                 style={{ marginTop: 16, background: "#FF6600", border: "none", borderRadius: 12, padding: "12px 24px", color: "#FFF", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                🗺️ Explorar Obras
+                🗺️ {t(lang, "exploreJobs", "Explorar Obras")}
               </button>
             )}
           </div>

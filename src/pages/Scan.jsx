@@ -1,6 +1,8 @@
 import { toast } from "sonner";
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Job } from "@/entities/Job";
@@ -13,6 +15,7 @@ export default function ScanPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark } = useTheme();
+  const { lang } = useLanguage();
   const bg = isDark ? "#111016" : "#FFFFFF";
   const surface = isDark ? "#1C1B22" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#111016";
@@ -39,20 +42,20 @@ export default function ScanPage() {
       const applicationId = params.get("applicationId");
 
       if (!jobId || !applicationId) {
-        throw new Error("Informações inválidas no QR Code.");
+        throw new Error(t(lang, "invalidQrInfo", "Informações inválidas no QR Code."));
       }
 
       const user = await User.me();
       setCurrentUser(user);
 
       const [jobData] = await Job.filter({ id: jobId });
-      if (!jobData) throw new Error("Obra não encontrada.");
+      if (!jobData) throw new Error(t(lang, "jobNotFound", "Obra não encontrada."));
 
       const [appData] = await Application.filter({ id: applicationId });
-      if (!appData) throw new Error("Candidatura não encontrada.");
+      if (!appData) throw new Error(t(lang, "applicationNotFound", "Candidatura não encontrada."));
 
       if (jobData.employer_id !== user.id) {
-        throw new Error("Apenas o empregador desta obra pode aceder a esta página.");
+        throw new Error(t(lang, "onlyEmployerCanAccess", "Apenas o empregador desta obra pode aceder a esta página."));
       }
 
       setJob(jobData);
@@ -65,7 +68,7 @@ export default function ScanPage() {
     } finally {
       setLoading(false);
     }
-  }, [location.search]);
+  }, [location.search, lang]);
 
   useEffect(() => {
     loadData();
@@ -105,11 +108,11 @@ export default function ScanPage() {
         message: `O trabalho "${job.title}" foi oficialmente iniciado.`,
         related_id: job.id
       });
-      toast.success("Trabalho iniciado com sucesso!");
+      toast.success(t(lang, "jobStartedSuccess", "Trabalho iniciado com sucesso!"));
       await loadData();
     } catch (e) {
       console.error("Erro ao iniciar trabalho:", e);
-      toast.error("Ocorreu um erro ao iniciar o trabalho.");
+      toast.error(t(lang, "jobStartError", "Ocorreu um erro ao iniciar o trabalho."));
     }
   };
 
@@ -118,7 +121,7 @@ export default function ScanPage() {
   };
 
   if (loading) {
-    return <LoadingScreen label="A verificar..." />;
+    return <LoadingScreen label={t(lang, "verifying", "A verificar...")} />;
   }
 
   if (error) {
@@ -126,7 +129,7 @@ export default function ScanPage() {
       <div style={{ minHeight: "100vh", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, padding: 20 }}>
         <span style={{ fontSize: 40 }}>⚠️</span>
         <p style={{ color: "#EF4444", textAlign: "center", fontWeight: 600 }}>{error}</p>
-        <button onClick={() => navigate(-1)} style={{ background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, cursor: "pointer" }}>Voltar</button>
+        <button onClick={() => navigate(-1)} style={{ background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, cursor: "pointer" }}>{t(lang, "back", "Voltar")}</button>
       </div>
     );
   }
@@ -137,19 +140,19 @@ export default function ScanPage() {
       {/* Top Bar */}
       <div style={{ display: "flex", alignItems: "center", padding: "50px 20px 16px", gap: 12 }}>
         <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", color: "#FF6600", fontSize: 22, fontWeight: 700, lineHeight: 1 }}>←</button>
-        <span style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: 18, color: text }}>Validar Presença</span>
+        <span style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: 18, color: text }}>{t(lang, "validatePresence", "Validar Presença")}</span>
         <div style={{ width: 22 }} />
       </div>
 
       {/* Toggle */}
       <div style={{ display: "flex", gap: 8, margin: "0 20px 24px" }}>
-        <button onClick={() => { setActiveView("employer"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "employer" ? "#FF6600" : surface, color: activeView === "employer" ? "#FFF" : subtext }}>👷 Empregador</button>
-        <button onClick={() => { setActiveView("professional"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "professional" ? "#FF6600" : surface, color: activeView === "professional" ? "#FFF" : subtext }}>🔧 Profissional</button>
+        <button onClick={() => { setActiveView("employer"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "employer" ? "#FF6600" : surface, color: activeView === "employer" ? "#FFF" : subtext }}>👷 {t(lang, "employer", "Empregador")}</button>
+        <button onClick={() => { setActiveView("professional"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "professional" ? "#FF6600" : surface, color: activeView === "professional" ? "#FFF" : subtext }}>🔧 {t(lang, "worker", "Profissional")}</button>
       </div>
 
       {activeView === "employer" ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0 20px", flex: 1 }}>
-          <p style={{ color: subtext, fontSize: 14, marginBottom: 24, textAlign: "center" }}>Mostra este código ao profissional</p>
+          <p style={{ color: subtext, fontSize: 14, marginBottom: 24, textAlign: "center" }}>{t(lang, "showCodeToWorker", "Mostra este código ao profissional")}</p>
           <div style={{ width: 200, height: 200, clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)", background: "#111016", border: "4px solid #FF6600", boxShadow: "0 0 40px #FF660088", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 42, fontWeight: 900, color: "#FF6600", letterSpacing: 6 }}>{dailyPin}</span>
           </div>
@@ -157,13 +160,13 @@ export default function ScanPage() {
           <p style={{ color: "#AAAAAA", fontSize: 13, marginTop: 8 }}>{job?.title}</p>
           {job?.actual_start_date && job?.status !== "completed" && (
             <button onClick={handleCompleteJob} style={{ marginTop: 24, background: "#FF6600", color: "#FFF", border: "none", borderRadius: 14, padding: "14px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
-              🏆 Finalizar Trabalho
+              🏆 {t(lang, "finalizeJob", "Finalizar Trabalho")}
             </button>
           )}
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", padding: "0 20px", flex: 1 }}>
-          <p style={{ color: subtext, fontSize: 14, textAlign: "center", marginBottom: 20 }}>Introduz o código fornecido pelo empregador</p>
+          <p style={{ color: subtext, fontSize: 14, textAlign: "center", marginBottom: 20 }}>{t(lang, "enterEmployerCode", "Introduz o código fornecido pelo empregador")}</p>
 
           {/* PIN Boxes */}
           <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24 }}>
@@ -193,7 +196,7 @@ export default function ScanPage() {
           onClick={handleStartJob}
           disabled={pinInput.length < 6}
           style={{ background: pinInput.length === 6 ? "#FF6600" : "#333", color: "#FFF", border: "none", borderRadius: 14, padding: 16, fontWeight: 700, fontSize: 16, margin: "0 20px 32px", cursor: pinInput.length === 6 ? "pointer" : "default", transition: "background 0.2s" }}>
-          Confirmar e Iniciar ✓
+          {t(lang, "confirmAndStart", "Confirmar e Iniciar")} ✓
         </button>
       )}
 

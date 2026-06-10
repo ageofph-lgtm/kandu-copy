@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { generateDailyPin } from "@/lib/dailyPin";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 
 export default function DailyPinDisplay({ jobId }) {
+  const { lang } = useLanguage();
   const [visible, setVisible] = useState(false);
   const pin = generateDailyPin(jobId);
 
@@ -10,10 +13,10 @@ export default function DailyPinDisplay({ jobId }) {
     <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 mt-3">
       <div className="flex items-center gap-2 mb-2">
         <ShieldCheck className="w-4 h-4 text-amber-600" />
-        <p className="text-xs font-bold text-amber-800">PIN Diário de Validação</p>
+        <p className="text-xs font-bold text-amber-800">{t(lang, "dailyValidationPin", "PIN Diário de Validação")}</p>
       </div>
       <p className="text-xs text-amber-600 mb-3">
-        Mostre este PIN ao profissional para confirmar a conclusão do trabalho.
+        {t(lang, "showPinToWorker", "Mostre este PIN ao profissional para confirmar a conclusão do trabalho.")}
       </p>
       <div className="flex items-center gap-3">
         <div className="flex gap-2">
@@ -35,7 +38,7 @@ export default function DailyPinDisplay({ jobId }) {
           {visible ? <EyeOff className="w-5 h-5 text-amber-700" /> : <Eye className="w-5 h-5 text-amber-700" />}
         </button>
       </div>
-      <p className="text-[10px] text-amber-500 mt-2">Renova automaticamente à meia-noite.</p>
+      <p className="text-[10px] text-amber-500 mt-2">{t(lang, "renewsAtMidnight", "Renova automaticamente à meia-noite.")}</p>
     </div>
   );
 }

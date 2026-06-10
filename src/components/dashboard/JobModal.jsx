@@ -8,11 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { MapPin, Clock, Eye, Shield, X, Trash2, CheckCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 
 export default function JobModal({ job, user, onClose, onApply, onDelete, distanceKm }) {
+  const { lang } = useLanguage();
   const navigate = useNavigate();
   const [step, setStep] = useState("detail"); // "detail" | "apply" | "success"
   const [applicationType, setApplicationType] = useState("application");
@@ -54,9 +56,9 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
 
   const handleSubmit = async () => {
     if (!user || user.user_type !== "worker") return;
-    if (!message.trim()) { toast.error("Escreve uma mensagem de apresentação."); return; }
+    if (!message.trim()) { toast.error(t(lang, "writeIntroMessage", "Escreve uma mensagem de apresentação.")); return; }
     if (applicationType === "proposal" && (!proposedPrice || isNaN(parseFloat(proposedPrice)))) {
-      toast.error("Insere um valor válido para a proposta."); return;
+      toast.error(t(lang, "enterValidProposalValue", "Insere um valor válido para a proposta.")); return;
     }
 
     setIsSubmitting(true);
@@ -107,12 +109,12 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
       if (typeof onApply === "function") onApply();
     } catch (err) {
       console.error("Erro ao enviar candidatura:", err);
-      toast.error("Erro ao enviar candidatura. Tenta novamente.");
+      toast.error(t(lang, "applicationSendError", "Erro ao enviar candidatura. Tenta novamente."));
     }
     setIsSubmitting(false);
   };
 
-  const formatPrice = (price, type) => type === "hourly" ? `€${price}/hora` : `€${price}`;
+  const formatPrice = (price, type) => type === "hourly" ? `€${price}${t(lang, "perHourSuffix", "/hora")}` : `€${price}`;
 
   const isOwner = (user?.user_type === "employer" && job.employer_id === user?.id) || user?.user_type === "admin";
   const isWorker = user?.user_type === "worker";
@@ -158,12 +160,12 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
               onClick={() => setStep("detail")}
               style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 8 }}
             >
-              ← Voltar
+              ← {t(lang, "back", "Voltar")}
             </button>
           ) : <div style={{ width: 64 }} />}
 
           <h2 style={{ margin: 0, fontWeight: 800, fontSize: 16, textAlign: "center", flex: 1, padding: "0 8px" }}>
-            {step === "apply" ? "Candidatura" : step === "success" ? "✅ Enviado!" : job.title}
+            {step === "apply" ? t(lang, "application", "Candidatura") : step === "success" ? `✅ ${t(lang, "sent", "Enviado!")}` : job.title}
           </h2>
 
           <button
@@ -181,9 +183,9 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
           {step === "success" && (
             <div style={{ textAlign: "center", padding: "32px 0" }}>
               <div style={{ fontSize: 60, marginBottom: 12 }}>🎉</div>
-              <h3 style={{ margin: "0 0 8px", fontWeight: 800, fontSize: 20 }}>Candidatura enviada!</h3>
+              <h3 style={{ margin: "0 0 8px", fontWeight: 800, fontSize: 20 }}>{t(lang, "applicationSent", "Candidatura enviada!")}</h3>
               <p style={{ color: "#666", fontSize: 14, margin: "0 0 24px" }}>
-                O empregador foi notificado. Aguarda a resposta — podes acompanhar em Candidaturas.
+                {t(lang, "applicationSentDesc", "O empregador foi notificado. Aguarda a resposta — podes acompanhar em Candidaturas.")}
               </p>
               <button
                 onClick={() => { onClose(); navigate(createPageUrl("Chat")); }}
@@ -193,7 +195,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                   fontSize: 15, cursor: "pointer", width: "100%"
                 }}
               >
-                💬 Ir para o Chat
+                💬 {t(lang, "goToChat", "Ir para o Chat")}
               </button>
               <button
                 onClick={onClose}
@@ -202,7 +204,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                   marginTop: 12, cursor: "pointer", fontSize: 14
                 }}
               >
-                Fechar
+                {t(lang, "close", "Fechar")}
               </button>
             </div>
           )}
@@ -225,11 +227,11 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
               </div>
 
               {/* Tipo */}
-              <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 14, color: "#111016" }}>Tipo de candidatura</p>
+              <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 14, color: "#111016" }}>{t(lang, "applicationTypeLabel", "Tipo de candidatura")}</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
                 {[
-                  { type: "application", icon: "✅", label: "Aceito o preço", sub: formatPrice(job.price, job.price_type) },
-                  { type: "proposal", icon: "💰", label: "Fazer proposta", sub: "Valor diferente" }
+                  { type: "application", icon: "✅", label: t(lang, "acceptPrice", "Aceito o preço"), sub: formatPrice(job.price, job.price_type) },
+                  { type: "proposal", icon: "💰", label: t(lang, "makeProposal", "Fazer proposta"), sub: t(lang, "differentValue", "Valor diferente") }
                 ].map(opt => (
                   <button
                     key={opt.type}
@@ -253,11 +255,11 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
               {applicationType === "proposal" && (
                 <div style={{ marginBottom: 16 }}>
                   <label style={{ display: "block", fontWeight: 700, fontSize: 14, color: "#111016", marginBottom: 6 }}>
-                    O teu valor (€) *
+                    {t(lang, "yourValue", "O teu valor (€)")} *
                   </label>
                   <Input
                     type="number"
-                    placeholder={`Ex: ${job.price}`}
+                    placeholder={t(lang, "examplePrice", "Ex: {price}").replace("{price}", job.price)}
                     value={proposedPrice}
                     onChange={e => setProposedPrice(e.target.value)}
                     style={{ fontSize: 18, fontWeight: 700, borderRadius: 12 }}
@@ -267,10 +269,10 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
 
               <div style={{ marginBottom: 20 }}>
                 <label style={{ display: "block", fontWeight: 700, fontSize: 14, color: "#111016", marginBottom: 6 }}>
-                  Apresenta-te ao empregador *
+                  {t(lang, "introduceYourself", "Apresenta-te ao empregador")} *
                 </label>
                 <Textarea
-                  placeholder="Ex: Tenho 5 anos de experiência nesta área..."
+                  placeholder={t(lang, "introPlaceholder", "Ex: Tenho 5 anos de experiência nesta área...")}
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   rows={4}
@@ -289,7 +291,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                   transition: "background 0.15s"
                 }}
               >
-                {isSubmitting ? "A enviar..." : "Enviar Candidatura →"}
+                {isSubmitting ? t(lang, "sending", "A enviar...") : `${t(lang, "sendApplication", "Enviar Candidatura")} →`}
               </button>
             </div>
           )}
@@ -308,11 +310,11 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                     background: job.status === "open" ? "#D1FAE5" : "#E5E7EB",
                     color: job.status === "open" ? "#065F46" : "#4B5563"
                   }}>
-                    {job.status === "open" ? "🟢 Disponível" : job.status === "in_progress" ? "🔵 Em Curso" : "✅ Concluído"}
+                    {job.status === "open" ? `🟢 ${t(lang, "available", "Disponível")}` : job.status === "in_progress" ? `🔵 ${t(lang, "inProgress", "Em Curso")}` : `✅ ${t(lang, "completed", "Concluído")}`}
                   </span>
                   {job.urgency === "high" && (
                     <span style={{ background: "#FEE2E2", color: "#991B1B", borderRadius: 20, padding: "3px 10px", fontSize: 12, fontWeight: 600 }}>
-                      🔥 Urgente
+                      🔥 {t(lang, "urgent", "Urgente")}
                     </span>
                   )}
                 </div>
@@ -331,23 +333,23 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                     border: "1px solid #FFD0AA", flexShrink: 0
                   }}>
                     📍 {distanceKm < 1
-                      ? `${Math.round(distanceKm * 1000)}m de si`
-                      : `${distanceKm.toFixed(1)}km de si`}
+                      ? t(lang, "metersFromYou", "{meters}m de si").replace("{meters}", Math.round(distanceKm * 1000))
+                      : t(lang, "kmFromYou", "{km}km de si").replace("{km}", distanceKm.toFixed(1))}
                   </span>
                 )}
               </div>
 
               <div style={{ display: "flex", gap: 16, fontSize: 12, color: "#AAA", marginBottom: 14 }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <Eye size={13} /> {job.views || 0} views
+                  <Eye size={13} /> {job.views || 0} {t(lang, "views", "views")}
                 </span>
                 <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <Clock size={13} /> {format(new Date(job.created_date), "dd MMM, HH:mm", { locale: pt })}
+                  <Clock size={13} /> {format(new Date(job.created_date), "dd MMM, HH:mm", { locale: getDateLocale(lang) })}
                 </span>
               </div>
 
               <div style={{ background: "#F8F8F8", borderRadius: 14, padding: 16, marginBottom: 14 }}>
-                <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 13 }}>{t(lang,"description")}</p>
+                <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 13 }}>{t(lang, "description", "Descrição")}</p>
                 <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "#444" }}>{job.description}</p>
               </div>
 
@@ -363,7 +365,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontWeight: 700, fontSize: 14 }}>{employer.full_name || t(lang,"employer")}</span>
+                        <span style={{ fontWeight: 700, fontSize: 14 }}>{employer.full_name || t(lang, "employer", "Empregador")}</span>
                         {employer.verified && <Shield size={14} color="#22c55e" />}
                       </div>
                       <span style={{ fontSize: 12, color: "#888" }}>
@@ -378,7 +380,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                         fontSize: 12, fontWeight: 600, color: "#FF6600", flexShrink: 0
                       }}
                     >
-                      💬 Chat
+                      💬 {t(lang, "chat", "Chat")}
                     </button>
                   </div>
                 </div>
@@ -388,7 +390,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
               {isWorker && job.status === "open" && (
                 <div style={{ marginTop: 8 }}>
                   {checkingApplication ? (
-                    <p style={{ textAlign: "center", color: "#AAA", fontSize: 13 }}>A verificar...</p>
+                    <p style={{ textAlign: "center", color: "#AAA", fontSize: 13 }}>{t(lang, "verifying", "A verificar...")}</p>
                   ) : alreadyApplied ? (
                     <div style={{
                       background: "#F0FDF4", border: "1px solid #86EFAC",
@@ -397,8 +399,8 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                     }}>
                       <CheckCircle size={20} color="#22c55e" />
                       <div>
-                        <p style={{ margin: 0, fontWeight: 700, color: "#15803D", fontSize: 14 }}>Candidatura enviada</p>
-                        <p style={{ margin: 0, fontSize: 12, color: "#166534" }}>Aguarda resposta do empregador</p>
+                        <p style={{ margin: 0, fontWeight: 700, color: "#15803D", fontSize: 14 }}>{t(lang, "applicationSent", "Candidatura enviada")}</p>
+                        <p style={{ margin: 0, fontSize: 12, color: "#166534" }}>{t(lang, "awaitingEmployerResponse", "Aguarda resposta do empregador")}</p>
                       </div>
                     </div>
                   ) : (
@@ -413,7 +415,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                       onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
                       onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
                     >
-                      Candidatar-me →
+                      {t(lang, "applyMe", "Candidatar-me")} →
                     </button>
                   )}
                 </div>
@@ -426,7 +428,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                   display: "flex", alignItems: "center", gap: 10
                 }}>
                   <AlertCircle size={18} color="#9CA3AF" />
-                  <p style={{ margin: 0, color: "#6B7280", fontSize: 14 }}>Esta obra já não está disponível.</p>
+                  <p style={{ margin: 0, color: "#6B7280", fontSize: 14 }}>{t(lang, "jobNoLongerAvailable", "Esta obra já não está disponível.")}</p>
                 </div>
               )}
 
@@ -440,7 +442,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                       borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
                     }}
                   >
-                    Ver Candidaturas
+                    {t(lang, "viewApplications", "Ver Candidaturas")}
                   </button>
                   <button
                     onClick={() => { if (typeof onDelete === "function") onDelete(job.id); }}
