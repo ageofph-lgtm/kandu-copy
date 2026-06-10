@@ -58,7 +58,7 @@ export default function Welcome() {
     return (
       <div style={{minHeight:"100vh",background:"#111016",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",textAlign:"center"}}>
         <div style={{width:72,height:72,borderRadius:"50%",background:"#F4621F",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,fontWeight:900,color:"#fff",marginBottom:28,boxShadow:"0 0 32px rgba(244,98,31,0.4)"}}>K</div>
-        <h1 style={{fontSize:26,fontWeight:800,color:"#fff",marginBottom:8}}>Choose your language</h1>
+        <h1 style={{fontSize:26,fontWeight:800,color:"#fff",marginBottom:8}}>{t(lang,"chooseLanguage")}</h1>
         <p style={{fontSize:13,color:"#666",marginBottom:36,maxWidth:280}}>Escolha · Select · Seleccione · Choisissez · Wählen Sie · भाषा चुनें · زبان چنیں</p>
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,width:"100%",maxWidth:360}}>
           {SUPPORTED_LANGUAGES.map((l) => (
@@ -93,8 +93,8 @@ export default function Welcome() {
 
       {/* Headline */}
       <div style={{textAlign:"center", position:"relative", zIndex:1}}>
-        <h1 style={{fontSize:28, fontWeight:800, color:text, margin:"0 0 8px"}}>Find work. Find workers.</h1>
-        <p style={{fontSize:15, color:subtext, margin:0}}>Lisboa e arredores</p>
+        <h1 style={{fontSize:28, fontWeight:800, color:text, margin:"0 0 8px"}}>{t(lang,"welcomeTagline")}</h1>
+        <p style={{fontSize:15, color:subtext, margin:0}}>{t(lang,"lisboaArea")}</p>
       </div>
 
       {/* Botões */}
