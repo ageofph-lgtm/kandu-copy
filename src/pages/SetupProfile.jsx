@@ -147,7 +147,7 @@ export default function SetupProfile() {
       }
       await doCreateProfile(idDocUrl);
     } catch {
-      toast.error("Erro ao criar perfil. Tente novamente.");
+      toast.error(t(lang,"error") || "Erro ao criar perfil. Tente novamente.");
       setIsCreating(false);
       setIsUploading(false);
     }
@@ -282,12 +282,12 @@ export default function SetupProfile() {
               ))}
             </div>
           )}
-          <p style={{fontSize:11,color:"#555",textAlign:"center"}}>De acordo com RGPD, os teus dados estão protegidos.</p>
+          <p style={{fontSize:11,color:"#555",textAlign:"center"}}>{t(lang,"gdprShort")}</p>
           <button onClick={() => handleFinish(false)} disabled={isCreating || !idDocFile}
             style={{width:"100%",maxWidth:420,padding:16,background:idDocFile?"#FF6600":"#333",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:idDocFile?"pointer":"default"}}>
             {isUploading ? t(lang,"loading") : isCreating ? "A criar perfil..." : "Submeter Documentos"}
           </button>
-          <button onClick={() => handleFinish(true)} disabled={isCreating} style={{background:"none",border:"none",color:"#666",cursor:"pointer",fontSize:14}}>Fazer mais tarde</button>
+          <button onClick={() => handleFinish(true)} disabled={isCreating} style={{background:"none",border:"none",color:"#666",cursor:"pointer",fontSize:14}}>{t(lang,"doLater")}</button>
         </div>
       </div>
     );
@@ -300,7 +300,7 @@ export default function SetupProfile() {
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"60px 20px 100px",gap:24,position:"relative",zIndex:1}}>
         <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:64, objectFit:"contain", maxWidth:220}} alt="KANDU" />
         <div style={{textAlign:"center"}}>
-          <h2 style={{fontSize:22,fontWeight:800,color:"#FFF",margin:"0 0 6px"}}>Como vais usar o KANDU?</h2>
+          <h2 style={{fontSize:22,fontWeight:800,color:"#FFF",margin:"0 0 6px"}}>{t(lang,"chooseType")}</h2>
           {user && <p style={{fontSize:12,color:"#AAAAAA",margin:0}}>{user.email}</p>}
         </div>
         <div style={{width:"100%",maxWidth:420,display:"flex",flexDirection:"column",gap:14}}>
