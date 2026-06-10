@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { pt, enUS, es, fr, de, hi, bn, zhCN } from "date-fns/locale";
 
 export const SUPPORTED_LANGUAGES = [
   { code: "PT", label: "Português", flag: "🇵🇹", dir: "ltr", font: null },
@@ -48,6 +49,15 @@ export async function translateText(text, targetLang, sourceLang = "PT") {
 }
 
 const LanguageContext = createContext();
+
+// Locale de datas (date-fns) por idioma — UR e NE não existem no date-fns,
+// caem para inglês.
+const DATE_LOCALES = { PT: pt, EN: enUS, ES: es, FR: fr, DE: de, HI: hi, UR: enUS, BN: bn, NE: enUS, ZH: zhCN };
+
+export function getDateLocale(lang) {
+  return DATE_LOCALES[lang] || pt;
+}
+
 
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState(() => {

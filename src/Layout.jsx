@@ -14,7 +14,7 @@ import {
   Bell
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import { translations, t } from "@/components/utils/translations";
+import { t } from "@/components/utils/translations";
 import { useLanguage } from "@/lib/LanguageContext";
 import "leaflet/dist/leaflet.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -76,8 +76,6 @@ export default function Layout({ children }) {
     : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png";
   const sidebarBg = isDark ? "#111111" : "#F8F8F8";
   const bottomNavBg = isDark ? "#111111" : "#FFFFFF";
-
-  const t = (key) => translations?.pt?.[key] || translations?.en?.[key] || key;
 
   const navItems = user?.user_type === 'admin'
     ? adminNavigationItems

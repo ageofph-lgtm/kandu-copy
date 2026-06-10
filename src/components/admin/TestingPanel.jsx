@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, Play, Users, Briefcase, CheckCircle } from 'lucide-react';
+import { t } from '@/components/utils/translations';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function TestingPanel() {
+  const { lang } = useLanguage();
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateTestScenario = async () => {
@@ -19,7 +22,7 @@ export default function TestingPanel() {
       const workers = allUsers.filter(u => u.user_type === 'worker');
 
       if (employers.length === 0 || workers.length === 0) {
-        toast.error('É necessário ter pelo menos 1 empregador e 1 profissional cadastrados. Use o formulário de convite acima.');
+        toast.error(t(lang, "adminTestNeedUsers", "É necessário ter pelo menos 1 empregador e 1 profissional cadastrados. Use o formulário de convite acima."));
         setIsGenerating(false);
         return;
       }
@@ -118,13 +121,13 @@ export default function TestingPanel() {
         status: 'pending'
       });
 
-      toast.success('✅ Cenário de teste criado com sucesso!', {
-        description: `3 obras criadas com candidaturas de ${workers.length} profissional(is)`
+      toast.success(`✅ ${t(lang, "adminTestScenarioCreated", "Cenário de teste criado com sucesso!")}`, {
+        description: `${t(lang, "adminTestScenarioCreatedDesc", "3 obras criadas com candidaturas de")} ${workers.length} ${t(lang, "adminProfessionalsCount", "profissional(is)")}`
       });
 
     } catch (error) {
       console.error('Error generating test scenario:', error);
-      toast.error('Erro ao criar cenário de teste: ' + error.message);
+      toast.error(t(lang, "adminTestScenarioError", "Erro ao criar cenário de teste") + ': ' + error.message);
     } finally {
       setIsGenerating(false);
     }
@@ -135,40 +138,39 @@ export default function TestingPanel() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Play className="w-5 h-5 text-blue-600" />
-          Cenário de Teste Completo
+          {t(lang, "adminTestScenarioTitle", "Cenário de Teste Completo")}
         </CardTitle>
         <CardDescription>
-          Gera automaticamente um cenário completo de interação entre empregadores e profissionais para testes.
+          {t(lang, "adminTestScenarioDescription", "Gera automaticamente um cenário completo de interação entre empregadores e profissionais para testes.")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="bg-white rounded-lg p-4 space-y-3">
-          <h4 className="font-semibold text-sm">O que será criado:</h4>
+          <h4 className="font-semibold text-sm">{t(lang, "adminWhatWillBeCreated", "O que será criado:")}</h4>
           <div className="space-y-2 text-sm">
             <div className="flex items-start gap-2">
               <Briefcase className="w-4 h-4 text-blue-600 mt-0.5" />
               <div>
-                <strong>3 Obras:</strong> Uma para pintura, uma urgente de elétrica, e uma de piso laminado
+                <strong>{t(lang, "adminTestJobsLabel", "3 Obras")}:</strong> {t(lang, "adminTestJobsDetail", "Uma para pintura, uma urgente de elétrica, e uma de piso laminado")}
               </div>
             </div>
             <div className="flex items-start gap-2">
               <Users className="w-4 h-4 text-green-600 mt-0.5" />
               <div>
-                <strong>5 Candidaturas:</strong> Distribuídas entre os profissionais cadastrados
+                <strong>{t(lang, "adminTestApplicationsLabel", "5 Candidaturas")}:</strong> {t(lang, "adminTestApplicationsDetail", "Distribuídas entre os profissionais cadastrados")}
               </div>
             </div>
             <div className="flex items-start gap-2">
               <CheckCircle className="w-4 h-4 text-purple-600 mt-0.5" />
               <div>
-                <strong>Diferentes Status:</strong> Candidaturas pendentes, aceitas e propostas com preços alternativos
+                <strong>{t(lang, "adminTestStatusLabel", "Diferentes Status")}:</strong> {t(lang, "adminTestStatusDetail", "Candidaturas pendentes, aceitas e propostas com preços alternativos")}
               </div>
             </div>
           </div>
         </div>
 
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm">
-          <strong>⚠️ Pré-requisito:</strong> É necessário ter pelo menos 1 empregador e 1 profissional cadastrados. 
-          Use o formulário de convite acima para criar usuários de teste.
+          <strong>⚠️ {t(lang, "adminPrerequisite", "Pré-requisito")}:</strong> {t(lang, "adminPrerequisiteText", "É necessário ter pelo menos 1 empregador e 1 profissional cadastrados. Use o formulário de convite acima para criar usuários de teste.")}
         </div>
 
         <Button 
@@ -177,9 +179,9 @@ export default function TestingPanel() {
           className="w-full bg-blue-600 hover:bg-blue-700"
         >
           {isGenerating ? (
-            <><Loader2 className="animate-spin mr-2" /> Gerando cenário...</>
+            <><Loader2 className="animate-spin mr-2" /> {t(lang, "adminGeneratingScenario", "Gerando cenário...")}</>
           ) : (
-            <><Play className="mr-2" /> Gerar Cenário Completo</>
+            <><Play className="mr-2" /> {t(lang, "adminGenerateFullScenario", "Gerar Cenário Completo")}</>
           )}
         </Button>
       </CardContent>

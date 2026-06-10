@@ -34,8 +34,9 @@ import {
   PlusCircle // Added PlusCircle import for new button
 } from "lucide-react"; // Removed Trash2 import
 import { format } from "date-fns";
-import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom"; // Added useNavigate import
+import { t } from "@/components/utils/translations";
+import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import InviteUserForm from '../components/admin/InviteUserForm';
 import TestingPanel from '../components/admin/TestingPanel';
 
@@ -54,6 +55,7 @@ const createPageUrl = (pageName) => {
 };
 
 function UserManagementCard({ user, onAction }) {
+  const { lang } = useLanguage();
   const getStatusColor = (status) => {
     switch(status) {
       case 'active': return 'bg-green-100 text-green-800';
@@ -77,20 +79,20 @@ function UserManagementCard({ user, onAction }) {
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-          <span><strong>Tipo:</strong> {user.user_type}</span>
-          <span><strong>Cidade:</strong> {user.city || 'N/A'}</span>
-          <span><strong>Rating:</strong> {user.rating || 0}/5 ⭐</span>
+          <span><strong>{t(lang, "adminUserType", "Tipo")}:</strong> {user.user_type}</span>
+          <span><strong>{t(lang, "city", "Cidade")}:</strong> {user.city || 'N/A'}</span>
+          <span><strong>{t(lang, "rating", "Avaliação")}:</strong> {user.rating || 0}/5 ⭐</span>
           <span><strong>XP:</strong> {user.xp || 0}</span>
         </div>
 
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => onAction('view', user)}>
             <Eye className="w-4 h-4 mr-1" />
-            Ver
+            {t(lang, "view", "Ver")}
           </Button>
           <Button size="sm" variant="destructive" onClick={() => onAction('blacklist', user)}>
             <Ban className="w-4 h-4 mr-1" />
-            Blacklist
+            {t(lang, "adminBlacklist", "Blacklist")}
           </Button>
         </div>
       </CardContent>
@@ -99,6 +101,7 @@ function UserManagementCard({ user, onAction }) {
 }
 
 function LowRatingAlert({ rating, onAction }) {
+  const { lang } = useLanguage();
   const [ratedUser, setRatedUser] = useState(null);
   const [raterUser, setRaterUser] = useState(null);
   const [job, setJob] = useState(null);
@@ -125,23 +128,23 @@ function LowRatingAlert({ rating, onAction }) {
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <AlertTriangle className="w-5 h-5 text-red-600" />
-          <h4 className="font-semibold text-red-800">Avaliação Muito Baixa Detectada</h4>
+          <h4 className="font-semibold text-red-800">{t(lang, "adminLowRatingDetected", "Avaliação Muito Baixa Detectada")}</h4>
         </div>
 
         <div className="space-y-1 text-sm mb-3">
-          <p><strong>Avaliado:</strong> {ratedUser?.full_name || 'N/A'}</p>
-          <p><strong>Avaliador:</strong> {raterUser?.full_name || 'N/A'}</p>
-          <p><strong>Obra:</strong> {job?.title || 'N/A'}</p>
-          <p><strong>Rating:</strong> {rating.rating}/5 ⭐</p>
-          <p><strong>Comentário:</strong> {rating.comment}</p>
+          <p><strong>{t(lang, "adminRatedUser", "Avaliado")}:</strong> {ratedUser?.full_name || 'N/A'}</p>
+          <p><strong>{t(lang, "adminRaterUser", "Avaliador")}:</strong> {raterUser?.full_name || 'N/A'}</p>
+          <p><strong>{t(lang, "adminJob", "Obra")}:</strong> {job?.title || 'N/A'}</p>
+          <p><strong>{t(lang, "rating", "Avaliação")}:</strong> {rating.rating}/5 ⭐</p>
+          <p><strong>{t(lang, "adminComment", "Comentário")}:</strong> {rating.comment}</p>
         </div>
 
         <div className="flex gap-2">
           <Button size="sm" onClick={() => onAction('investigate', { rating, ratedUser, raterUser, job })}>
-            Investigar
+            {t(lang, "adminInvestigate", "Investigar")}
           </Button>
           <Button size="sm" variant="outline" onClick={() => onAction('ignore', rating)}>
-            Ignorar
+            {t(lang, "adminIgnore", "Ignorar")}
           </Button>
         </div>
       </CardContent>
@@ -150,6 +153,7 @@ function LowRatingAlert({ rating, onAction }) {
 }
 
 function BlacklistModal({ user, onClose, onSubmit }) {
+  const { lang } = useLanguage();
   const [reason, setReason] = useState("");
   const [severity, setSeverity] = useState("warning");
   const [evidence, setEvidence] = useState("");
@@ -169,28 +173,28 @@ function BlacklistModal({ user, onClose, onSubmit }) {
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-sm mx-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg">Adicionar à Blacklist: {user.full_name}</DialogTitle>
+          <DialogTitle className="text-lg">{t(lang, "adminAddToBlacklist", "Adicionar à Blacklist")}: {user.full_name}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Severidade</label>
+            <label className="block text-sm font-medium mb-2">{t(lang, "adminSeverity", "Severidade")}</label>
             <Select value={severity} onValueChange={setSeverity}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="warning">Aviso</SelectItem>
-                <SelectItem value="suspension">Suspensão</SelectItem>
-                <SelectItem value="ban">Banimento</SelectItem>
+                <SelectItem value="warning">{t(lang, "adminSeverityWarning", "Aviso")}</SelectItem>
+                <SelectItem value="suspension">{t(lang, "adminSeveritySuspension", "Suspensão")}</SelectItem>
+                <SelectItem value="ban">{t(lang, "adminSeverityBan", "Banimento")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Motivo *</label>
+            <label className="block text-sm font-medium mb-2">{t(lang, "adminReason", "Motivo")} *</label>
             <Textarea
-              placeholder="Descreva o motivo da penalização..."
+              placeholder={t(lang, "adminReasonPlaceholder", "Descreva o motivo da penalização...")}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
@@ -198,9 +202,9 @@ function BlacklistModal({ user, onClose, onSubmit }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Evidências</label>
+            <label className="block text-sm font-medium mb-2">{t(lang, "adminEvidence", "Evidências")}</label>
             <Textarea
-              placeholder="URLs de screenshots, IDs de conversas, etc..."
+              placeholder={t(lang, "adminEvidencePlaceholder", "URLs de screenshots, IDs de conversas, etc...")}
               value={evidence}
               onChange={(e) => setEvidence(e.target.value)}
               rows={2}
@@ -210,7 +214,7 @@ function BlacklistModal({ user, onClose, onSubmit }) {
           {severity !== "warning" && (
             <div>
               <label className="block text-sm font-medium mb-2">
-                Data de Expiração {severity === "ban" ? "(opcional para banimento permanente)" : "*"}
+                {t(lang, "adminExpirationDate", "Data de Expiração")} {severity === "ban" ? t(lang, "adminOptionalForPermanentBan", "(opcional para banimento permanente)") : "*"}
               </label>
               <Input
                 type="datetime-local"
@@ -222,10 +226,10 @@ function BlacklistModal({ user, onClose, onSubmit }) {
 
           <div className="flex gap-3">
             <Button variant="outline" onClick={onClose} className="flex-1">
-              Cancelar
+              {t(lang, "cancel", "Cancelar")}
             </Button>
             <Button onClick={handleSubmit} disabled={!reason} className="flex-1 bg-red-600 hover:bg-red-700">
-              Aplicar Penalização
+              {t(lang, "adminApplyPenalty", "Aplicar Penalização")}
             </Button>
           </div>
         </div>
@@ -311,6 +315,7 @@ const EXAMPLE_JOBS = [
 ];
 
 export default function AdminDashboard() {
+  const { lang } = useLanguage();
   const [currentUser, setCurrentUser] = useState(null);
   const [users, setUsers] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -334,7 +339,7 @@ export default function AdminDashboard() {
       setCurrentUser(userData);
 
       if (userData.user_type !== 'admin') {
-        toast.error("Acesso negado. Apenas administradores podem aceder a esta página.");
+        toast.error(t(lang, "adminAccessDenied", "Acesso negado. Apenas administradores podem aceder a esta página."));
         navigate(createPageUrl("Dashboard"));
         return;
       }
@@ -360,16 +365,16 @@ export default function AdminDashboard() {
       // REMOVIDO: redirecionamento automático
     }
     setLoading(false);
-  }, [navigate]);
+  }, [navigate, lang]);
 
   // New function to create example jobs
   const createExampleJobs = async () => {
     if (!currentUser || !currentUser.id) {
-      toast.error("Erro: Utilizador administrador não identificado para criar obras.");
+      toast.error(t(lang, "adminUserNotIdentified", "Erro: Utilizador administrador não identificado para criar obras."));
       return;
     }
 
-    const confirmCreate = window.confirm("Tem certeza que deseja criar obras de exemplo? Isso adicionará múltiplos registos de obras à base de dados.");
+    const confirmCreate = window.confirm(t(lang, "adminConfirmCreateExampleJobs", "Tem certeza que deseja criar obras de exemplo? Isso adicionará múltiplos registos de obras à base de dados."));
     if (!confirmCreate) return;
 
     setIsCreatingExamples(true);
@@ -379,11 +384,11 @@ export default function AdminDashboard() {
         await Job.create({ ...jobData, client_id: currentUser.id });
         createdCount++;
       }
-      toast.success(`${createdCount} obras de exemplo criadas com sucesso!`);
+      toast.success(`${createdCount} ${t(lang, "adminExampleJobsCreated", "obras de exemplo criadas com sucesso!")}`);
       loadData(); // Refresh data to show new jobs
     } catch (error) {
       console.error("Erro ao criar obras de exemplo:", error);
-      toast.error(`❌ Erro ao criar obras de exemplo: ${error.message}`);
+      toast.error(`❌ ${t(lang, "adminExampleJobsError", "Erro ao criar obras de exemplo")}: ${error.message}`);
     } finally {
       setIsCreatingExamples(false);
     }
@@ -426,13 +431,13 @@ export default function AdminDashboard() {
         banned_until: bannedUntil
       });
 
-      toast.success("Penalização aplicada com sucesso!");
+      toast.success(t(lang, "adminPenaltyApplied", "Penalização aplicada com sucesso!"));
       setShowBlacklistModal(false);
       setSelectedUser(null);
       loadData();
     } catch (error) {
       console.error("Error applying blacklist:", error);
-      toast.error("Erro ao aplicar penalização.");
+      toast.error(t(lang, "adminPenaltyError", "Erro ao aplicar penalização."));
     }
   };
 
@@ -456,7 +461,7 @@ export default function AdminDashboard() {
     blacklistCount: blacklistEntries.length
   };
 
-  if (loading) return <LoadingScreen label="Painel de Administração" />;
+  if (loading) return <LoadingScreen label={t(lang, "adminPanelTitle", "Painel de Administração")} />;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
@@ -464,7 +469,7 @@ export default function AdminDashboard() {
         <div className="flex flex-col md:flex-row items-center justify-between mb-4 md:mb-6 gap-2">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Shield className="w-5 h-5 md:w-6 md:h-6" />
-            Painel de Administração
+            {t(lang, "adminPanelTitle", "Painel de Administração")}
           </h1>
 
           <div className="flex gap-2">
@@ -479,7 +484,7 @@ export default function AdminDashboard() {
               ) : (
                 <PlusCircle className="w-4 h-4 mr-2" />
               )}
-              Obras de Exemplo
+              {t(lang, "adminExampleJobs", "Obras de Exemplo")}
             </Button>
             {/* Removed the "Limpar Dados" button from the AdminDashboard */}
           </div>
@@ -491,7 +496,7 @@ export default function AdminDashboard() {
             <CardContent className="p-3 md:p-4 text-center">
               <Users className="w-4 h-4 md:w-6 md:h-6 mx-auto mb-1 md:mb-2 text-blue-600" />
               <div className="text-lg md:text-2xl font-bold">{stats.totalUsers}</div>
-              <div className="text-xs md:text-sm text-gray-600">Utilizadores</div>
+              <div className="text-xs md:text-sm text-gray-600">{t(lang, "adminUsers", "Utilizadores")}</div>
             </CardContent>
           </Card>
 
@@ -499,7 +504,7 @@ export default function AdminDashboard() {
             <CardContent className="p-3 md:p-4 text-center">
               <Calendar className="w-4 h-4 md:w-6 md:h-6 mx-auto mb-1 md:mb-2 text-green-600" />
               <div className="text-lg md:text-2xl font-bold">{stats.activeJobs}</div>
-              <div className="text-xs md:text-sm text-gray-600">Obras Ativas</div>
+              <div className="text-xs md:text-sm text-gray-600">{t(lang, "adminActiveJobs", "Obras Ativas")}</div>
             </CardContent>
           </Card>
 
@@ -507,7 +512,7 @@ export default function AdminDashboard() {
             <CardContent className="p-3 md:p-4 text-center">
               <Star className="w-4 h-4 md:w-6 md:h-6 mx-auto mb-1 md:mb-2 text-yellow-600" />
               <div className="text-lg md:text-2xl font-bold">{stats.completedJobs}</div>
-              <div className="text-xs md:text-sm text-gray-600">Concluídas</div>
+              <div className="text-xs md:text-sm text-gray-600">{t(lang, "adminCompletedJobs", "Concluídas")}</div>
             </CardContent>
           </Card>
 
@@ -515,7 +520,7 @@ export default function AdminDashboard() {
             <CardContent className="p-3 md:p-4 text-center">
               <TrendingDown className="w-4 h-4 md:w-6 md:h-6 mx-auto mb-1 md:mb-2 text-red-600" />
               <div className="text-lg md:text-2xl font-bold">{stats.lowRatingsCount}</div>
-              <div className="text-xs md:text-sm text-gray-600">Avaliações Baixas</div>
+              <div className="text-xs md:text-sm text-gray-600">{t(lang, "adminLowRatings", "Avaliações Baixas")}</div>
             </CardContent>
           </Card>
 
@@ -523,17 +528,17 @@ export default function AdminDashboard() {
             <CardContent className="p-3 md:p-4 text-center">
               <Ban className="w-4 h-4 md:w-6 md:h-6 mx-auto mb-1 md:mb-2 text-gray-600" />
               <div className="text-lg md:text-2xl font-bold">{stats.blacklistCount}</div>
-              <div className="text-xs md:text-sm text-gray-600">Blacklist</div>
+              <div className="text-xs md:text-sm text-gray-600">{t(lang, "adminBlacklist", "Blacklist")}</div>
             </CardContent>
           </Card>
         </div>
 
         <Tabs defaultValue="users" className="w-full">
           <TabsList className="grid w-full grid-cols-4 h-auto">
-            <TabsTrigger value="users" className="text-xs md:text-sm p-2 md:p-3">Utilizadores</TabsTrigger>
-            <TabsTrigger value="ratings" className="text-xs md:text-sm p-2 md:p-3">Avaliações</TabsTrigger>
-            <TabsTrigger value="blacklist" className="text-xs md:text-sm p-2 md:p-3">Blacklist</TabsTrigger>
-            <TabsTrigger value="jobs" className="text-xs md:text-sm p-2 md:p-3">Obras</TabsTrigger>
+            <TabsTrigger value="users" className="text-xs md:text-sm p-2 md:p-3">{t(lang, "adminUsers", "Utilizadores")}</TabsTrigger>
+            <TabsTrigger value="ratings" className="text-xs md:text-sm p-2 md:p-3">{t(lang, "reviews", "Avaliações")}</TabsTrigger>
+            <TabsTrigger value="blacklist" className="text-xs md:text-sm p-2 md:p-3">{t(lang, "adminBlacklist", "Blacklist")}</TabsTrigger>
+            <TabsTrigger value="jobs" className="text-xs md:text-sm p-2 md:p-3">{t(lang, "adminJobs", "Obras")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="mt-4 space-y-6">
@@ -545,7 +550,7 @@ export default function AdminDashboard() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="Pesquisar utilizadores..."
+                  placeholder={t(lang, "adminSearchUsers", "Pesquisar utilizadores...")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -578,7 +583,7 @@ export default function AdminDashboard() {
                 <Card>
                   <CardContent className="p-6 md:p-8 text-center">
                     <Star className="w-8 h-8 md:w-12 md:h-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-500">Nenhuma avaliação baixa detectada</p>
+                    <p className="text-gray-500">{t(lang, "adminNoLowRatings", "Nenhuma avaliação baixa detectada")}</p>
                   </CardContent>
                 </Card>
               )}
@@ -591,7 +596,7 @@ export default function AdminDashboard() {
                 <Card key={entry.id}>
                   <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-2 gap-2">
-                      <h4 className="font-semibold">Utilizador ID: {entry.user_id}</h4>
+                      <h4 className="font-semibold">{t(lang, "adminUserId", "Utilizador ID")}: {entry.user_id}</h4>
                       <Badge className={
                         entry.severity === 'ban' ? 'bg-red-500' :
                         entry.severity === 'suspension' ? 'bg-yellow-500' : 'bg-gray-500'
@@ -601,7 +606,7 @@ export default function AdminDashboard() {
                     </div>
                     <p className="text-sm text-gray-600 mb-2">{entry.reason}</p>
                     <div className="text-xs text-gray-500">
-                      {entry.expires_at && `Expira em: ${format(new Date(entry.expires_at), "dd/MM/yyyy HH:mm", { locale: pt })}`}
+                      {entry.expires_at && `${t(lang, "adminExpiresOn", "Expira em")}: ${format(new Date(entry.expires_at), "dd/MM/yyyy HH:mm", { locale: getDateLocale(lang) })}`}
                     </div>
                   </CardContent>
                 </Card>
@@ -622,7 +627,7 @@ export default function AdminDashboard() {
                     <div className="text-sm flex flex-wrap gap-2">
                       <span className="font-medium">€{job.price}</span>
                       <span className="text-gray-500">
-                        {format(new Date(job.created_date), "dd/MM/yyyy", { locale: pt })}
+                        {format(new Date(job.created_date), "dd/MM/yyyy", { locale: getDateLocale(lang) })}
                       </span>
                     </div>
                   </CardContent>

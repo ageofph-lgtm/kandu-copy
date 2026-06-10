@@ -67,6 +67,7 @@ function useCountdown(active) {
 
 // ─── PIN keypad inline ────────────────────────────────────────────────────────
 function PinKeypad({ value, onChange, isDark, surface, text, onConfirm }) {
+  const { lang } = useLanguage();
   const handleKey = k => {
     if (k === "del") { onChange(value.slice(0, -1)); return; }
     if (value.length < 6) onChange(value + k);
@@ -98,7 +99,7 @@ function PinKeypad({ value, onChange, isDark, surface, text, onConfirm }) {
         style={{ width: "100%", marginTop: 10, background: value.length === 6 ? "#FF6600" : "#333",
           color: "#FFF", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14,
           cursor: value.length === 6 ? "pointer" : "default", transition: "background 0.2s" }}>
-        Confirmar Presença ✓
+        {t(lang, "confirmPresence", "Confirmar Presença")} ✓
       </button>
     </div>
   );
@@ -120,6 +121,7 @@ function isValidCompletionPin(input, jobId) {
 
 // Display hexágono verde para PIN de finalização
 function CompletionPinDisplay({ pin, countdown, isDark, employerName }) {
+  const { lang } = useLanguage();
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "10px 0" }}>
       {/* UX FIX: instrução clara de quem deve receber o PIN */}
@@ -127,11 +129,10 @@ function CompletionPinDisplay({ pin, countdown, isDark, employerName }) {
         background: "#22C55E15", border: "1px solid #22C55E44",
         borderRadius: 12, padding: "10px 16px", width: "100%", textAlign: "center"
       }}>
-        <p style={{ color: "#22C55E", fontWeight: 700, fontSize: 13, margin: "0 0 4px" }}>✅ PIN de Conclusão Gerado!</p>
+        <p style={{ color: "#22C55E", fontWeight: 700, fontSize: 13, margin: "0 0 4px" }}>✅ {t(lang, "completionPinGenerated", "PIN de Conclusão Gerado!")}</p>
         <p style={{ color: isDark ? "#CCCCCC" : "#444", fontSize: 13, margin: 0, lineHeight: 1.5 }}>
-          Mostra este código ao{" "}
-          <strong style={{ color: "#22C55E" }}>{employerName ? `cliente ${employerName}` : "cliente"}</strong>.
-          Ele vai inserir no telemóvel dele para confirmar que a obra está concluída.
+          {t(lang, "showCodeToClient", "Mostra este código a {name}. Ele vai inseri-lo no telemóvel dele para confirmar que a obra está concluída.")
+            .replace("{name}", employerName || t(lang, "employer", "Empregador"))}
         </p>
       </div>
       <div style={{
@@ -143,23 +144,26 @@ function CompletionPinDisplay({ pin, countdown, isDark, employerName }) {
       }}>
         <span style={{ fontSize: 28, fontWeight: 900, color: "#22C55E", letterSpacing: 3 }}>{pin}</span>
       </div>
-      <span style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>⏱ {countdown}s restantes</span>
+      <span style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>⏱ {countdown}s {t(lang, "remaining", "restantes")}</span>
     </div>
   );
 }
 
 // ─── STATUS pill ──────────────────────────────────────────────────────────────
+// labels guardados como chave i18n + fallback PT, traduzidos no render
 const STATUS_MAP = {
-  pending_employer:      { color: "#F59E0B", label: "A publicar" },
-  open:                  { color: "#3B82F6", label: "Publicada" },
-  in_progress:           { color: "#FF6600", label: "Em Curso" },
-  completed_by_employer: { color: "#A855F7", label: "Aguarda Avaliação" },
-  completed:             { color: "#22C55E", label: "Concluída" },
-  cancelled:             { color: "#888",    label: "Cancelada" },
+  pending_employer:      { color: "#F59E0B", key: "statusToPublish", pt: "A publicar" },
+  open:                  { color: "#3B82F6", key: "statusPublished", pt: "Publicada" },
+  in_progress:           { color: "#FF6600", key: "statusInProgress", pt: "Em Curso" },
+  completed_by_employer: { color: "#A855F7", key: "awaitingReview", pt: "Aguarda Avaliação" },
+  completed:             { color: "#22C55E", key: "completed", pt: "Concluída" },
+  cancelled:             { color: "#888",    key: "cancelled", pt: "Cancelada" },
 };
+const statusLabel = (lang, s) => t(lang, s.key, s.pt);
 
 // ─── EMPLOYER JOB CARD ────────────────────────────────────────────────────────
 function EmployerJobCard({ job, applications, user, usersById = {}, onReload, isDark, surface, text, subtext, border }) {
+  const { lang } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const [showPin,        setShowPin]        = useState(false);
   const [showFinishPin,  setShowFinishPin]  = useState(false);  // employer digita PIN
@@ -202,7 +206,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
 
   const handleFinishPin = async () => {
     if (!isValidCompletionPin(finishPinInput, job.id)) {
-      toast.error("PIN incorreto. Pede ao profissional para te mostrar o PIN de finalização.");
+      toast.error(t(lang, "pinIncorrectFromWorker", "PIN incorreto. Pede ao profissional para te mostrar o PIN de finalização."));
       setFinishPinInput("");
       return;
     }
@@ -220,7 +224,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
         });
         playPing();
         onReload();
-      } catch(e) { toast.error("Erro ao finalizar: " + e.message); }
+      } catch(e) { toast.error(t(lang, "errorFinishing", "Erro ao finalizar") + ": " + e.message); }
       return;
     }
     // Garante que otherUser está carregado antes de abrir o modal
@@ -232,7 +236,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
   };
 
   const handlePublish = async () => {
-    if (!window.confirm("Publicar esta obra?")) return;
+    if (!window.confirm(t(lang, "publishJobQuestion", "Publicar esta obra?"))) return;
     await Job.update(job.id, { status: "open" });
     onReload();
   };
@@ -247,7 +251,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
               <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{job.title}</p>
               {pendingApps.length > 0 && (
                 <span style={{ background: "#FF6600", color: "#FFF", borderRadius: 10, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>
-                  {pendingApps.length} nova{pendingApps.length > 1 ? "s" : ""}
+                  {pendingApps.length} {t(lang, "newBadge", "nova(s)")}
                 </span>
               )}
             </div>
@@ -259,7 +263,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ background: s.color + "22", color: s.color, borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>{s.label}</span>
+            <span style={{ background: s.color + "22", color: s.color, borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>{statusLabel(lang, s)}</span>
             {job.status === "completed_by_employer" && !expanded && (
               <span style={{ background: "#A855F7", color: "#FFF", borderRadius: 10, padding: "3px 8px", fontSize: 11, fontWeight: 800, animation: "pulse 1.5s ease-in-out infinite" }}>
                 ✍️
@@ -297,7 +301,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
             {job.status === "pending_employer" && (
               <button onClick={handlePublish}
                 style={{ width: "100%", background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 8 }}>
-                🚀 Publicar Obra
+                🚀 {t(lang, "publishJob", "Publicar Obra")}
               </button>
             )}
 
@@ -305,11 +309,11 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
               <>
                 {/* PIN section */}
                 <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14, marginBottom: 10 }}>
-                  <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>📍 Presença Diária</p>
+                  <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>📍 {t(lang, "dailyPresence", "Presença Diária")}</p>
                   {!showPin ? (
                     <button onClick={handleSendPin}
                       style={{ width: "100%", background: "#3B82F6", color: "#FFF", border: "none", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                      Gerar PIN e Notificar Profissional
+                      {t(lang, "generatePinNotifyWorker", "Gerar PIN e Notificar Profissional")}
                     </button>
                   ) : (
                     <>
@@ -328,7 +332,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
                       </div>
                       <button onClick={() => setShowPin(false)}
                         style={{ width: "100%", background: "transparent", color: subtext, border: `1px solid ${border}`, borderRadius: 10, padding: "8px", fontSize: 12, cursor: "pointer" }}>
-                        Fechar PIN
+                        {t(lang, "closePin", "Fechar PIN")}
                       </button>
                     </>
                   )}
@@ -336,18 +340,19 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
 
                 {/* PIN Finalizar (employer digita o PIN que o worker enviou) */}
                 <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14 }}>
-                  <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>🏁 Finalizar Obra</p>
+                  <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>🏁 {t(lang, "finishJob", "Finalizar Obra")}</p>
                   {!showFinishPin ? (
                     <button onClick={() => setShowFinishPin(true)}
                       style={{ width: "100%", background: "#22C55E22", color: "#22C55E", border: "1px solid #22C55E44", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                      Inserir PIN de Conclusão do Profissional
+                      {t(lang, "enterCompletionPin", "Inserir PIN de Conclusão do Profissional")}
                     </button>
                   ) : (
                     <>
                       {/* UX FIX: instrução clara de onde vem o PIN */}
                       <div style={{ marginBottom: 10, background: "#22C55E15", border: "1px solid #22C55E40", borderRadius: 10, padding: "8px 12px" }}>
                         <p style={{ color: "#22C55E", fontSize: 13, margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
-                          👉 Peça ao profissional{otherUser ? ` ${otherUser.full_name}` : ""} o código de 6 dígitos que aparece no telemóvel dele.
+                          👉 {t(lang, "askWorkerForCode", "Pede ao profissional {name} o código de 6 dígitos que aparece no telemóvel dele.")
+                            .replace("{name}", otherUser?.full_name || t(lang, "worker", "Profissional"))}
                         </p>
                       </div>
                       <PinKeypad value={finishPinInput} onChange={setFinishPinInput}
@@ -356,7 +361,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
                       <button onClick={() => { setShowFinishPin(false); setFinishPinInput(""); }}
                         style={{ width: "100%", marginTop: 6, background: "transparent", color: subtext,
                           border: `1px solid ${border}`, borderRadius: 10, padding: "8px", fontSize: 12, cursor: "pointer" }}>
-                        Cancelar
+                        {t(lang, "cancel", "Cancelar")}
                       </button>
                     </>
                   )}
@@ -381,6 +386,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
 
 // ─── Mini card de candidatura (dentro do card employer) ───────────────────────
 function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReload }) {
+  const { lang } = useLanguage();
   const [worker, setWorker] = useState(null);
   const [acting, setActing] = useState(false);
   useEffect(() => {
@@ -417,8 +423,8 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
           {worker?.full_name?.charAt(0) || "?"}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontWeight: 700, fontSize: 13, color: text, margin: 0 }}>{worker?.full_name || "Profissional"}</p>
-          <p style={{ fontSize: 11, color: subtext, margin: 0 }}>⭐ {worker?.rating?.toFixed(1) || "Novo"}</p>
+          <p style={{ fontWeight: 700, fontSize: 13, color: text, margin: 0 }}>{worker?.full_name || t(lang, "worker", "Profissional")}</p>
+          <p style={{ fontSize: 11, color: subtext, margin: 0 }}>⭐ {worker?.rating?.toFixed(1) || t(lang, "newLabel", "Novo")}</p>
         </div>
         <p style={{ color: "#FF6600", fontWeight: 800, fontSize: 15, margin: 0 }}>€{app.proposed_price || job.price}</p>
       </div>
@@ -430,11 +436,11 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
       <div style={{ display: "flex", gap: 8 }}>
         <button onClick={handleReject} disabled={acting}
           style={{ flex: 1, background: "#EF444422", color: "#EF4444", border: "1px solid #EF444444", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-          ✕ Recusar
+          ✕ {t(lang, "reject", "Recusar")}
         </button>
         <button onClick={handleAccept} disabled={acting}
           style={{ flex: 2, background: "#FF6600", color: "#FFF", border: "none", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-          ✓ Aceitar
+          ✓ {t(lang, "accept", "Aceitar")}
         </button>
       </div>
     </div>
@@ -443,6 +449,7 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
 
 // ─── WORKER JOB CARD ──────────────────────────────────────────────────────────
 function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDark, surface, text, subtext, border }) {
+  const { lang } = useLanguage();
   const [expanded, setExpanded]     = useState(false);
   const [showKeypad,     setShowKeypad]     = useState(false);
   const [pinInput,       setPinInput]       = useState("");
@@ -500,7 +507,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
         sendBrowserPush("✅ Presença confirmada!", `Obra "${job.title}" — presença registada.`);
       } catch (_) {}
     } else {
-      toast.error("PIN incorreto. Pede ao empregador para mostrar o PIN correto.");
+      toast.error(t(lang, "pinIncorrectFromEmployer", "PIN incorreto. Pede ao empregador para mostrar o PIN correto."));
       setPinInput("");
     }
   };
@@ -521,7 +528,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ background: s.color + "22", color: s.color, borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>{s.label}</span>
+            <span style={{ background: s.color + "22", color: s.color, borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>{statusLabel(lang, s)}</span>
             {expanded ? <ChevronUp size={16} color={subtext} /> : <ChevronDown size={16} color={subtext} />}
           </div>
         </div>
@@ -532,9 +539,9 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
             <button
               onClick={() => {
                 // employer é carregado pelo pai via usersById — fallback: usar employer_id como nome
-                const resolvedEmployer = employer || usersById[job.employer_id] || { id: job.employer_id, full_name: "Empregador" };
+                const resolvedEmployer = employer || usersById[job.employer_id] || { id: job.employer_id, full_name: t(lang, "employer", "Empregador") };
                 if (!resolvedEmployer.id) {
-                  toast.error("Não foi possível identificar o empregador. Tenta recarregar a página.");
+                  toast.error(t(lang, "employerNotIdentified", "Não foi possível identificar o empregador. Tenta recarregar a página."));
                   return;
                 }
                 setCompletion({ application, job, otherUser: resolvedEmployer });
@@ -543,7 +550,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                 border: "none", borderRadius: 14, padding: "15px", fontWeight: 800, fontSize: 15,
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 boxShadow: "0 4px 20px #A855F744" }}>
-              ✍️ Avaliar Empregador para concluir obra
+              ✍️ {t(lang, "evaluateEmployerToComplete", "Avaliar Empregador para concluir obra")}
             </button>
           </div>
         )}
@@ -566,7 +573,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
             {application?.status === "pending" && job.status === "open" && (
               <div style={{ background: "#F59E0B22", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 18 }}>⏳</span>
-                <p style={{ color: "#F59E0B", fontWeight: 600, fontSize: 13, margin: 0 }}>Candidatura pendente — aguarda resposta</p>
+                <p style={{ color: "#F59E0B", fontWeight: 600, fontSize: 13, margin: 0 }}>{t(lang, "pendingApplicationWaiting", "Candidatura pendente — aguarda resposta")}</p>
               </div>
             )}
 
@@ -575,23 +582,23 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
               <>
                 {/* Confirmar presença */}
                 <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14, marginBottom: 10 }}>
-                  <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>📍 Confirmar Presença</p>
+                  <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>📍 {t(lang, "confirmPresence", "Confirmar Presença")}</p>
                   {pinOk ? (
                     <div style={{ background: "#22C55E22", borderRadius: 10, padding: "12px", textAlign: "center" }}>
-                      <p style={{ color: "#22C55E", fontWeight: 700, fontSize: 14, margin: "0 0 2px" }}>✅ Presença confirmada hoje!</p>
-                      <p style={{ color: subtext, fontSize: 12, margin: 0 }}>Registado às {format(new Date(), "HH:mm")}</p>
+                      <p style={{ color: "#22C55E", fontWeight: 700, fontSize: 14, margin: "0 0 2px" }}>✅ {t(lang, "presenceConfirmedToday", "Presença confirmada hoje!")}</p>
+                      <p style={{ color: subtext, fontSize: 12, margin: 0 }}>{t(lang, "registeredAt", "Registado às")} {format(new Date(), "HH:mm")}</p>
                     </div>
                   ) : !showKeypad ? (
                     <button onClick={() => setShowKeypad(true)}
                       style={{ width: "100%", background: "#3B82F622", color: "#3B82F6", border: "1px solid #3B82F644", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                      Inserir PIN do Empregador
+                      {t(lang, "enterEmployerPin", "Inserir PIN do Empregador")}
                     </button>
                   ) : (
                     <>
                       <PinKeypad value={pinInput} onChange={setPinInput} isDark={isDark} surface={isDark?"#1A1A1A":"#FFF"} text={text} onConfirm={handleConfirmPin} />
                       <button onClick={() => { setShowKeypad(false); setPinInput(""); }}
                         style={{ width: "100%", marginTop: 6, background: "transparent", color: subtext, border: `1px solid ${border}`, borderRadius: 10, padding: "8px", fontSize: 12, cursor: "pointer" }}>
-                        Cancelar
+                        {t(lang, "cancel", "Cancelar")}
                       </button>
                     </>
                   )}
@@ -599,7 +606,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
 
                 {/* PIN de finalização (worker gera e envia ao employer) */}
                 <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14 }}>
-                  <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>🏁 Finalizar Obra</p>
+                  <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>🏁 {t(lang, "finishJob", "Finalizar Obra")}</p>
                   {!showFinishPin ? (
                     <button onClick={async () => {
                       setShowFinishPin(true);
@@ -615,7 +622,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                       } catch(_) {}
                     }}
                       style={{ width: "100%", background: "#22C55E22", color: "#22C55E", border: "1px solid #22C55E44", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                      Gerar PIN de Conclusão e Notificar Empregador
+                      {t(lang, "generatePinNotifyEmployer", "Gerar PIN de Conclusão e Notificar Empregador")}
                     </button>
                   ) : (
                     <>
@@ -623,7 +630,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                       <button onClick={() => setShowFinishPin(false)}
                         style={{ width: "100%", marginTop: 4, background: "transparent", color: subtext,
                           border: `1px solid ${border}`, borderRadius: 10, padding: "8px", fontSize: 12, cursor: "pointer" }}>
-                        Fechar PIN
+                        {t(lang, "closePin", "Fechar PIN")}
                       </button>
                     </>
                   )}
@@ -739,9 +746,9 @@ export default function MyJobs() {
   const historyJobs = !user ? [] : jobs.filter(j => ["completed","cancelled"].includes(j.status));
 
   const TABS = [
-    { id: "pending", label: isWorker ? t(lang,"applications") : "Publicadas", icon: isWorker ? "📋" : "📢", count: pendingJobs.length },
-    { id: "active",  label: "Em Curso",   icon: "🔨", count: activeJobs.length  },
-    { id: "history", label: "Histórico",  icon: "🏆", count: historyJobs.length },
+    { id: "pending", label: isWorker ? t(lang,"applications") : t(lang,"published","Publicadas"), icon: isWorker ? "📋" : "📢", count: pendingJobs.length },
+    { id: "active",  label: t(lang,"statusInProgress","Em Curso"), icon: "🔨", count: activeJobs.length  },
+    { id: "history", label: t(lang,"history","Histórico"), icon: "🏆", count: historyJobs.length },
   ];
 
   const currentData = tab === "pending" ? pendingJobs : tab === "active" ? activeJobs : historyJobs;
@@ -760,13 +767,13 @@ export default function MyJobs() {
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <p style={{ margin: 0, fontSize: 12, color: subtext }}>Gestão</p>
-            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 22, color: text }}>Trabalho</h1>
+            <p style={{ margin: 0, fontSize: 12, color: subtext }}>{t(lang, "management", "Gestão")}</p>
+            <h1 style={{ margin: 0, fontWeight: 800, fontSize: 22, color: text }}>{t(lang, "workTitle", "Trabalho")}</h1>
           </div>
           {isEmployer && (
             <button onClick={() => navigate(createPageUrl("NewJob"))}
               style={{ background: "#FF6600", border: "none", borderRadius: 50, padding: "10px 16px", color: "#FFF", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-              <Plus size={15} /> {t(lang,"open")}
+              <Plus size={15} /> {t(lang, "publishJob", "Publicar Obra")}
             </button>
           )}
         </div>
@@ -774,17 +781,17 @@ export default function MyJobs() {
 
       {/* Tab buttons grandes */}
       <div style={{ padding: "16px 16px 0", display: "flex", gap: 10 }}>
-        {TABS.map(t => {
-          const active = tab === t.id;
+        {TABS.map(tabItem => {
+          const active = tab === tabItem.id;
           return (
-            <button key={t.id} onClick={() => setTab(t.id)}
+            <button key={tabItem.id} onClick={() => setTab(tabItem.id)}
               style={{ flex: 1, padding: "14px 6px", borderRadius: 16, border: `2px solid ${active ? "#FF6600" : border}`,
                 background: active ? "#FF6600" : surface, color: active ? "#FFF" : subtext, cursor: "pointer", textAlign: "center" }}>
-              <div style={{ fontSize: 20, marginBottom: 3 }}>{t.icon}</div>
-              <div style={{ fontWeight: 700, fontSize: 12 }}>{t.label}</div>
-              {t.count > 0 && (
+              <div style={{ fontSize: 20, marginBottom: 3 }}>{tabItem.icon}</div>
+              <div style={{ fontWeight: 700, fontSize: 12 }}>{tabItem.label}</div>
+              {tabItem.count > 0 && (
                 <div style={{ marginTop: 3, background: active ? "#FFF3" : "#FF660033", color: active ? "#FFF" : "#FF6600",
-                  borderRadius: 10, padding: "2px 8px", fontSize: 11, fontWeight: 800, display: "inline-block" }}>{t.count}</div>
+                  borderRadius: 10, padding: "2px 8px", fontSize: 11, fontWeight: 800, display: "inline-block" }}>{tabItem.count}</div>
               )}
             </button>
           );
@@ -795,20 +802,22 @@ export default function MyJobs() {
       <div style={{ padding: "16px 16px 0" }}>
         {currentData.length === 0 ? (
           <div style={{ background: surface, borderRadius: 16, padding: "40px 24px", textAlign: "center" }}>
-            <div style={{ fontSize: 44, marginBottom: 10 }}>{TABS.find(t=>t.id===tab)?.icon}</div>
+            <div style={{ fontSize: 44, marginBottom: 10 }}>{TABS.find(tabItem=>tabItem.id===tab)?.icon}</div>
             <p style={{ color: subtext, fontWeight: 700, fontSize: 15, margin: "0 0 6px" }}>
-              {tab === "pending" ? (isWorker ? "Nenhuma candidatura pendente" : "Nenhuma obra publicada") : tab === "active" ? "Nenhum trabalho em curso" : "Histórico vazio"}
+              {tab === "pending"
+                ? (isWorker ? t(lang, "noPendingApplications", "Nenhuma candidatura pendente") : t(lang, "noPublishedJobs", "Nenhuma obra publicada"))
+                : tab === "active" ? t(lang, "noActiveJobs", "Nenhum trabalho em curso") : t(lang, "emptyHistory", "Histórico vazio")}
             </p>
             {tab === "pending" && isWorker && (
               <button onClick={() => navigate(createPageUrl("Home"))}
                 style={{ background: "#FF6600", border: "none", borderRadius: 12, padding: "12px 24px", color: "#FFF", fontWeight: 700, fontSize: 14, cursor: "pointer", marginTop: 10 }}>
-                🗺️ Explorar Obras
+                🗺️ {t(lang, "exploreJobs", "Explorar Obras")}
               </button>
             )}
             {tab === "pending" && isEmployer && (
               <button onClick={() => navigate(createPageUrl("NewJob"))}
                 style={{ background: "#FF6600", border: "none", borderRadius: 12, padding: "12px 24px", color: "#FFF", fontWeight: 700, fontSize: 14, cursor: "pointer", marginTop: 10 }}>
-                + Publicar Obra
+                + {t(lang, "publishJob", "Publicar Obra")}
               </button>
             )}
           </div>

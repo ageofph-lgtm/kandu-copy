@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { getXPLevel } from "@/lib/xp";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 
 /**
  * Animated XP gain popup com animação de hexágono KANDU.
  * Props: xpGained (number), newXP (number), show (bool), onDone (fn)
  */
 export default function XPGainToast({ xpGained, newXP, show, onDone }) {
+  const { lang } = useLanguage();
   const [visible, setVisible] = useState(false);
   const [animPhase, setAnimPhase] = useState(0); // 0=entrada, 1=steady, 2=saída
   const level = getXPLevel(newXP);
@@ -76,7 +79,7 @@ export default function XPGainToast({ xpGained, newXP, show, onDone }) {
         </div>
 
         <div>
-          <p style={{fontSize:11, color:"#AAAAAA", margin:"0 0 2px", textTransform:"uppercase", letterSpacing:1, fontWeight:600}}>XP Ganho!</p>
+          <p style={{fontSize:11, color:"#AAAAAA", margin:"0 0 2px", textTransform:"uppercase", letterSpacing:1, fontWeight:600}}>{t(lang, "xpGainedLabel", "XP Ganho!")}</p>
           <p style={{
             fontSize:28,
             fontWeight:900,
@@ -86,7 +89,7 @@ export default function XPGainToast({ xpGained, newXP, show, onDone }) {
             textShadow:"0 0 12px rgba(255,102,0,0.5)"
           }}>+{xpGained}</p>
           <p style={{fontSize:11, color:"#AAAAAA", margin:0}}>
-            {level.emoji} {level.name} · {newXP.toLocaleString("pt-PT")} XP total
+            {level.emoji} {level.name} · {newXP.toLocaleString()} XP total
           </p>
         </div>
       </div>
