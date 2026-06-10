@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage, SUPPORTED_LANGUAGES } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +24,7 @@ import VerificationUpgrade from "../components/profile/VerificationUpgrade";
 export default function Profile() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const { lang } = useLanguage();
+  const { lang, setLang } = useLanguage();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -326,6 +327,66 @@ export default function Profile() {
           </Tabs>
         </div>
       )}
+
+      {/* ── Idioma / Language (só para o próprio perfil) ── */}
+      {isOwnProfile && (
+        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
+          {/* Header */}
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+            <span style={{ fontSize:18 }}>🌐</span>
+            <p style={{ fontWeight:700, fontSize:15, color:text, margin:0 }}>
+              {t(lang, "selectLanguage")}
+            </p>
+            {/* Badge idioma activo */}
+            <span style={{
+              marginLeft:"auto", background:"rgba(244,98,31,0.12)",
+              border:"1px solid rgba(244,98,31,0.3)", color:"#F4621F",
+              fontSize:11, fontWeight:800, padding:"2px 10px", borderRadius:50,
+              letterSpacing:"0.06em"
+            }}>
+              {SUPPORTED_LANGUAGES.find(l => l.code === lang)?.flag} {lang}
+            </span>
+          </div>
+
+          {/* Grid de botões — 2 colunas */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+            {SUPPORTED_LANGUAGES.map((l) => {
+              const isActive = lang === l.code;
+              return (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  style={{
+                    display:"flex", alignItems:"center", gap:10,
+                    padding:"11px 12px", borderRadius:12, cursor:"pointer",
+                    border: isActive ? "2px solid #F4621F" : `1px solid ${isDark ? "#2a2a2a" : "#E5E5E5"}`,
+                    background: isActive
+                      ? "rgba(244,98,31,0.10)"
+                      : (isDark ? "#1a1a1a" : "#F9F9F9"),
+                    transition:"all 0.16s", fontFamily:"inherit", textAlign:"left",
+                  }}
+                >
+                  <span style={{ fontSize:20, flexShrink:0 }}>{l.flag}</span>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{
+                      fontWeight: isActive ? 700 : 500,
+                      fontSize:13,
+                      color: isActive ? "#F4621F" : text,
+                      lineHeight:1.2,
+                      overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"
+                    }}>{l.label}</div>
+                    <div style={{ fontSize:10, color:isDark?"#555":"#bbb", marginTop:1 }}>{l.code}</div>
+                  </div>
+                  {isActive && (
+                    <span style={{ color:"#F4621F", fontSize:14, flexShrink:0 }}>✓</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
