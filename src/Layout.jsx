@@ -234,7 +234,7 @@ export default function Layout({ children }) {
                       fontWeight: isActive ? 600 : 400, fontSize:14, transition:"all 0.15s"}}>
                     <div style={{display:"flex", alignItems:"center", gap:12}}>
                       <item.icon size={18} />
-                      {item.title === 'admin' ? 'Administração' : t(item.title)}
+                      {t(lang, item.title)}
                     </div>
                     {item.title === 'applications' && unreadNotifications.applications > 0 && (
                       <span style={{background:"#FF6600", color:"#FFF", borderRadius:"50%", minWidth:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700}}>
