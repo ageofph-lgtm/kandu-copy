@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const LISBON_COORDS = [38.7223, -9.1393];
-const CATEGORIES = ["Todos", t(lang,"painting"), t(lang,"electricity"), t(lang,"plumbing"), t(lang,"masonry"), t(lang,"tiling"), t(lang,"carpentry"), t(lang,"hvac"), "Isolamentos", t(lang,"flooring"), t(lang,"roofing")];
+const CATEGORIES = [t(lang,"allCategories"), t(lang,"painting"), t(lang,"electricity"), t(lang,"plumbing"), t(lang,"masonry"), t(lang,"tiling"), t(lang,"carpentry"), t(lang,"hvac"), "Isolamentos", t(lang,"flooring"), t(lang,"roofing")];
 
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -35,7 +35,7 @@ function WorkerHome({ user, isDark }) {
   const [selectedJob, setSelectedJob] = useState(null);
   const [selectedJobDistance, setSelectedJobDistance] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [selectedCategory, setSelectedCategory] = useState(t(lang,"allCategories"));
   const [showList, setShowList] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [geoStatus, setGeoStatus] = useState("loading"); // "loading" | "ok" | "error"
@@ -80,7 +80,7 @@ function WorkerHome({ user, isDark }) {
   // ── Filtrar apenas por pesquisa + categoria (sem raio) ──
   useEffect(() => {
     let f = [...jobs];
-    if (selectedCategory !== "Todos") f = f.filter(j => j.category === selectedCategory);
+    if (selectedCategory !== t(lang,"allCategories")) f = f.filter(j => j.category === selectedCategory);
     if (searchTerm) {
       const t = searchTerm.toLowerCase();
       f = f.filter(j =>
@@ -126,7 +126,7 @@ function WorkerHome({ user, isDark }) {
         <div style={{ background: surfaceAlpha, borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}>
           <Search size={16} color="#FF6600" />
           <input
-            placeholder="Pesquisar obras..."
+            placeholder={t(lang,"searchPlaceholder")}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             style={{ background: "none", border: "none", outline: "none", color: text, fontSize: 14, flex: 1 }}
@@ -189,7 +189,7 @@ function WorkerHome({ user, isDark }) {
             display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s"
           }}
         >
-          <List size={14} /> Lista
+          <List size={14} /> {t(lang,"list")}
         </button>
       </div>
 
@@ -208,7 +208,7 @@ function WorkerHome({ user, isDark }) {
         <div style={{ overflowY: "auto", padding: "0 16px 80px", flex: 1 }}>
           {filteredJobs.length === 0 ? (
             <p style={{ textAlign: "center", color: subtext, padding: "24px 0", fontSize: 14 }}>
-              Nenhuma obra encontrada.
+              {t(lang,"noJobsFound")}
             </p>
           ) : filteredJobs.map(job => {
             const dist = userLocation && job.latitude && job.longitude
