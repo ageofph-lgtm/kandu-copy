@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 
@@ -9,6 +11,7 @@ import { pt } from "date-fns/locale";
 
 export default function Calendar() {
   const { isDark } = useTheme();
+  const { lang } = useLanguage();
   const bg = isDark ? "#111016" : "#FFFFFF";
   const surface = isDark ? "#1C1B22" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#111016";
