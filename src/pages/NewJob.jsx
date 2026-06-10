@@ -150,7 +150,7 @@ export default function NewJob() {
       navigate(createPageUrl("MyJobs"));
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Erro ao publicar obra.");
+      toast.error(t(lang,"error"));
     }
     setIsSubmitting(false);
   };
@@ -209,7 +209,7 @@ export default function NewJob() {
       {step === 1 && (
         <>
           <div style={sectionStyle}>
-            <label style={labelStyle}>Título da Obra</label>
+            <label style={labelStyle}>{t(lang,"jobTitle")}</label>
             <input placeholder={t(lang,"jobTitleExample")} value={formData.title} onChange={e => set("title",e.target.value)} style={inputStyle} />
           </div>
           <div style={sectionStyle}>
@@ -276,9 +276,9 @@ export default function NewJob() {
           </div>
 
           <div style={sectionStyle}>
-            <label style={labelStyle}>Urgência</label>
+            <label style={labelStyle}>{t(lang,"urgency")}</label>
             <div style={{display:"flex",gap:8}}>
-              {[{value:'low',label:'🟢 Baixa'},{value:'medium',label:'🟡 Média'},{value:'high',label:'🔴 Alta'}].map(u => (
+              {[{value:'low',label:t(lang,'urgencyLow')},{value:'medium',label:t(lang,'urgencyMed')},{value:'high',label:t(lang,'urgencyHigh')}].map(u => (
                 <button key={u.value} onClick={() => set("urgency",u.value)}
                   style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.urgency===u.value?"#FF6600":surface,color:formData.urgency===u.value?"#FFF":subtext}}>
                   {u.label}
@@ -292,7 +292,7 @@ export default function NewJob() {
       {/* Step 3: Orçamento */}
       {step === 3 && (
         <div style={sectionStyle}>
-          <label style={labelStyle}>Tipo de Preço</label>
+          <label style={labelStyle}>{t(lang,"priceType")}</label>
           <div style={{display:"flex",gap:8,marginBottom:12}}>
             {[{value:'fixed',label:'Projeto'},{value:'hourly',label:'Hora'},{value:'negotiable',label:'Negociável'}].map(pt => (
               <button key={pt.value} onClick={() => set("price_type",pt.value)}
@@ -330,7 +330,7 @@ export default function NewJob() {
                 {label:t(lang,"category"),value:`${catIcon} ${formData.category}`},
                 {label:t(lang,"location"),value:formData.location},
                 {label:t(lang,"price"),value:`€${formData.price}${formData.price_type==='hourly'?'/h':''}`,highlight:true},
-                {label:"Urgência",value:formData.urgency==='low'?'🟢 Baixa':formData.urgency==='high'?'🔴 Alta':'🟡 Média'},
+                {label:t(lang,"urgency"),value:formData.urgency==='low'?t(lang,'urgencyLow'):formData.urgency==='high'?t(lang,'urgencyHigh'):t(lang,'urgencyMed')},
               ].map(item => (
                 <div key={item.label} style={{borderBottom:`1px solid ${isDark?"#333":"#EEE"}`,paddingBottom:10}}>
                   <p style={{color:subtext,fontSize:12,margin:"0 0 2px"}}>{item.label}</p>
