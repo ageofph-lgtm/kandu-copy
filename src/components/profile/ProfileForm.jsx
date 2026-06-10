@@ -136,7 +136,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
               onValueChange={(value) => handleChange("user_type", value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo de conta" />
+                <SelectValue placeholder={t(lang,"selectAccountType")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="worker">
@@ -161,7 +161,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
               Nome completo *
             </label>
             <Input
-              placeholder="O seu nome completo"
+              placeholder={t(lang,"fullName")}
               value={formData.full_name}
               onChange={(e) => handleChange("full_name", e.target.value)}
             />
@@ -186,7 +186,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
             </label>
             <Select value={formData.city} onValueChange={(value) => handleChange("city", value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione a sua cidade" />
+                <SelectValue placeholder={t(lang,"city")} />
               </SelectTrigger>
               <SelectContent>
                 {CITIES.map((city) => (
@@ -208,7 +208,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
               <div>
                 <label className="block text-sm font-medium mb-2">{t(lang,"employerType")} *</label>
                 <div className="flex gap-3">
-                  {[{ value: 'simple', label: 'Simple Employer', desc: 'Cliente Particular' }, { value: 'cia', label: 'Cia Employer', desc: 'Empresa' }].map(opt => (
+                  {[{ value: 'simple', label: 'Simple Employer', desc: t(lang,'individualClient') }, { value: 'cia', label: 'Cia Employer', desc: 'Empresa' }].map(opt => (
                     <button
                       key={opt.value}
                       type="button"
@@ -372,7 +372,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
               Sobre mim
             </label>
             <Textarea
-              placeholder="Conte um pouco sobre si, experiência, especialidades..."
+              placeholder={t(lang,"bioPlaceholder")}
               value={formData.bio}
               onChange={(e) => handleChange("bio", e.target.value)}
               rows={3}
