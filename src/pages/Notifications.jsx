@@ -153,7 +153,7 @@ export default function Notifications() {
   };
 
   const handleDelete = async (notification) => {
-    if (!window.confirm("Tem certeza que deseja apagar esta notificação?")) {
+    if (!window.confirm("t(lang,"confirmDeleteNotification")")) {
       return;
     }
 
@@ -209,7 +209,7 @@ export default function Notifications() {
           </div>
         )}
         {unreadNotifications.length > 0 && (
-          <button onClick={handleMarkAllAsRead} style={{background:"none",border:"1px solid #FF660066",borderRadius:20,padding:"4px 12px",color:"#FF6600",fontSize:12,cursor:"pointer",fontWeight:600}}>Lidas</button>
+          <button onClick={handleMarkAllAsRead} style={{background:"none",border:"1px solid #FF660066",borderRadius:20,padding:"4px 12px",color:"#FF6600",fontSize:12,cursor:"pointer",fontWeight:600}}>{t(lang,"read")}</button>
         )}
       </div>
 
@@ -218,8 +218,8 @@ export default function Notifications() {
         {notifications.length === 0 ? (
           <div style={{textAlign:"center",padding:"60px 20px"}}>
             <div style={{fontSize:48,marginBottom:12}}>🔔</div>
-            <p style={{color:subtext,fontSize:15,fontWeight:600,margin:"0 0 6px"}}>Sem notificações</p>
-            <p style={{color:"#555",fontSize:13,margin:0}}>Quando houver novidades, aparecem aqui</p>
+            <p style={{color:subtext,fontSize:15,fontWeight:600,margin:"0 0 6px"}}>{t(lang,"noNotifications")}</p>
+            <p style={{color:"#555",fontSize:13,margin:0}}>{t(lang,"noNotificationsDesc")}</p>
           </div>
         ) : notifications.map(notif => {
           const {icon, bg} = getIcon(notif.type);
