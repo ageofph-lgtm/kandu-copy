@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
+import LanguageSelector from "@/components/utils/LanguageSelector";
+import { SUPPORTED_LANGUAGES } from "@/lib/LanguageContext";
 import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
@@ -15,6 +19,8 @@ const features = [
 export default function Welcome() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { lang, setLang } = useLanguage();
+  const [showLangPicker, setShowLangPicker] = useState(() => !localStorage.getItem("kandu_lang"));
   const bg = isDark ? "#111016" : "#FFFFFF";
   const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
@@ -46,7 +52,31 @@ export default function Welcome() {
   }, [navigate]);
 
   if (checking) {
+  
+  // Mostrar selector de idioma se o utilizador ainda não escolheu
+  if (showLangPicker) {
     return (
+      <div style={{minHeight:"100vh",background:"#111016",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",textAlign:"center"}}>
+        <div style={{width:72,height:72,borderRadius:"50%",background:"#F4621F",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,fontWeight:900,color:"#fff",marginBottom:28,boxShadow:"0 0 32px rgba(244,98,31,0.4)"}}>K</div>
+        <h1 style={{fontSize:26,fontWeight:800,color:"#fff",marginBottom:8}}>Choose your language</h1>
+        <p style={{fontSize:13,color:"#666",marginBottom:36,maxWidth:280}}>Escolha · Select · Seleccione · Choisissez · Wählen Sie · भाषा चुनें · زبان چنیں</p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,width:"100%",maxWidth:360}}>
+          {SUPPORTED_LANGUAGES.map((l) => (
+            <button key={l.code} onClick={() => { setLang(l.code); setShowLangPicker(false); }}
+              style={{display:"flex",alignItems:"center",gap:10,padding:"13px 14px",borderRadius:14,border:"1px solid #222",background:"#1a1a1a",color:"#ccc",fontSize:14,cursor:"pointer",textAlign:"left",fontFamily:"inherit",transition:"all 0.18s"}}
+              onMouseOver={e=>{e.currentTarget.style.borderColor="#F4621F";e.currentTarget.style.color="#F4621F";}}
+              onMouseOut={e=>{e.currentTarget.style.borderColor="#222";e.currentTarget.style.color="#ccc";}}
+            >
+              <span style={{fontSize:22,flexShrink:0}}>{l.flag}</span>
+              <div><div style={{fontWeight:700,fontSize:13,lineHeight:1.2}}>{l.label}</div></div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
       <div style={{minHeight:"100vh", background:bg, display:"flex", alignItems:"center", justifyContent:"center"}}>
         <img src={logoIcon} style={{width:80, height:80, objectFit:"contain", borderRadius:12, animation:"spin 2s linear infinite"}} alt="KANDU" />
       </div>
