@@ -113,7 +113,7 @@ export default function Profile() {
   };
 
   if (loading) {
-    return <LoadingScreen label="A carregar..." />;
+    return <LoadingScreen label={t(lang,"loading")} />;
   }
 
   if (!user) {
@@ -161,9 +161,9 @@ export default function Profile() {
               <button style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 6px", borderRadius: 8, display:"flex", alignItems:"center", justifyContent:"center", color: text }}><svg width="18" height="18" viewBox="0 0 24 24" fill={text}><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setIsEditing(true)}><Edit2 className="w-4 h-4 mr-2" /> Editar Perfil</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleChangeProfile}><RefreshCw className="w-4 h-4 mr-2" /> Trocar Perfil</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="text-red-600"><LogOut className="w-4 h-4 mr-2" /> Sair</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsEditing(true)}><Edit2 className="w-4 h-4 mr-2" /> {t(lang,"editProfile")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleChangeProfile}><RefreshCw className="w-4 h-4 mr-2" /> {t(lang,"setupProfile")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600"><LogOut className="w-4 h-4 mr-2" /> {t(lang,"logout")}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
@@ -223,15 +223,15 @@ export default function Profile() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 16 }}>
         <div style={{ background: surface, borderRadius: 14, padding: "14px 8px", textAlign: "center" }}>
           <p style={{ fontWeight: 800, fontSize: 18, color: text, margin: 0 }}>{user?.completed_jobs || 0}</p>
-          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>Trabalhos</p>
+          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>{t(lang,"myJobs")}</p>
         </div>
         <div style={{ background: surface, borderRadius: 14, padding: "14px 8px", textAlign: "center" }}>
           <p style={{ fontWeight: 800, fontSize: 18, color: "#FF6600", margin: 0 }}>{user?.rating?.toFixed(1) || "N/A"} ⭐</p>
-          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>Avaliação</p>
+          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>{t(lang,"rating")}</p>
         </div>
         <div style={{ background: surface, borderRadius: 14, padding: "14px 8px", textAlign: "center" }}>
           <p style={{ fontWeight: 800, fontSize: 18, color: "#22C55E", margin: 0 }}>{user?.attendance_rate || "—"}%</p>
-          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>Presença</p>
+          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>{t(lang,"rating")}</p>
         </div>
       </div>
 
@@ -251,7 +251,7 @@ export default function Profile() {
         <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <Award style={{ width: 16, height: 16, color: "#FF6600" }} />
-            <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>Competências</p>
+            <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{t(lang,"skills")}</p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {user.skills.map((skill) => (
@@ -268,7 +268,7 @@ export default function Profile() {
         <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <MapPinIcon style={{ width: 16, height: 16, color: "#FF6600" }} />
-            <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>Áreas de Atuação</p>
+            <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{t(lang,"location")}</p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {user.service_areas.map((area) => (
@@ -292,7 +292,7 @@ export default function Profile() {
 
       {/* Avaliações */}
       <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-        <p style={{ fontWeight: 700, fontSize: 15, color: text, marginBottom: 12 }}>Avaliações</p>
+        <p style={{ fontWeight: 700, fontSize: 15, color: text, marginBottom: 12 }}>{t(lang,"rating")}</p>
         <ReviewsSection userId={user?.id} />
       </div>
 
