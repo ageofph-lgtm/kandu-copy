@@ -2,8 +2,11 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Shield, CheckCircle } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 
-export default function GdprConsent({ open, onAccept }) {
+export default function GdprConsent({
+  const { lang } = useLanguage(); open, onAccept }) {
   const [checked, setChecked] = useState(false);
 
   return (
@@ -45,10 +48,10 @@ export default function GdprConsent({ open, onAccept }) {
               onChange={e => setChecked(e.target.checked)}
             />
             <span className="text-xs text-gray-600">
-              Li e aceito a{" "}
-              <span className="text-[#F26522] font-medium">Política de Privacidade</span>{" "}
+              {t(lang,"gdprAccept")}{" "}
+              <span className="text-[#F26522] font-medium">{t(lang,"privacyPolicy")}</span>{" "}
               e os{" "}
-              <span className="text-[#F26522] font-medium">Termos de Utilização</span>{" "}
+              <span className="text-[#F26522] font-medium">{t(lang,"termsOfUse")}</span>{" "}
               da plataforma KANDU, incluindo o tratamento dos meus dados pessoais.
             </span>
           </label>
@@ -59,7 +62,7 @@ export default function GdprConsent({ open, onAccept }) {
           onClick={onAccept}
           className="w-full h-12 bg-[#F26522] hover:bg-orange-600 rounded-xl font-bold disabled:opacity-40"
         >
-          Aceitar e Continuar
+          Aceitar e {t(lang,"continue")}
         </Button>
       </DialogContent>
     </Dialog>
