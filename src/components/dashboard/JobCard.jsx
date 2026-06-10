@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import { User } from "@/entities/User";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +17,7 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 
 export default function JobCard({ job, onClick, userType }) {
+  const { lang } = useLanguage();
   const [employer, setEmployer] = useState(null);
 
   useEffect(() => {
@@ -101,7 +104,7 @@ export default function JobCard({ job, onClick, userType }) {
               <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center">
                 <UserIcon className="w-4 h-4 text-purple-700" />
               </div>
-              <span className="text-sm text-gray-600">{employer.full_name || "Empregador"}</span>
+              <span className="text-sm text-gray-600">{employer.full_name || t(lang,"employer")}</span>
               {employer.verified && <Shield className="w-4 h-4 text-green-500" />}
               <div className="flex items-center gap-1 ml-auto">
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />
