@@ -3,6 +3,13 @@
 
 export const translations = {
   PT: {
+    urgency: "Urgência",
+    priceType: "Tipo de Preço",
+    urgencyLow: "🟢 Baixa",
+    urgencyHigh: "🔴 Alta",
+    urgencyMed: "🟡 Média",
+    gdprShort: "De acordo com o RGPD, os seus dados estão protegidos.",
+    doLater: "Fazer mais tarde",
     toggleTheme: "Alternar tema",
     noEventsToday: "Sem eventos para este dia",
     read: "Lidas",
@@ -183,6 +190,13 @@ export const translations = {
   },
 
   EN: {
+    urgency: "Urgency",
+    priceType: "Price Type",
+    urgencyLow: "🟢 Low",
+    urgencyHigh: "🔴 High",
+    urgencyMed: "🟡 Medium",
+    gdprShort: "In accordance with GDPR, your data is protected.",
+    doLater: "Do later",
     toggleTheme: "Toggle theme",
     noEventsToday: "No events for this day",
     read: "Read",
@@ -363,6 +377,13 @@ export const translations = {
   },
 
   ES: {
+    urgency: "Urgencia",
+    priceType: "Tipo de Precio",
+    urgencyLow: "🟢 Baja",
+    urgencyHigh: "🔴 Alta",
+    urgencyMed: "🟡 Media",
+    gdprShort: "De acuerdo con el RGPD, sus datos están protegidos.",
+    doLater: "Hacer más tarde",
     toggleTheme: "Cambiar tema",
     noEventsToday: "Sin eventos para este día",
     read: "Leídas",
@@ -543,6 +564,13 @@ export const translations = {
   },
 
   FR: {
+    urgency: "Urgence",
+    priceType: "Type de Prix",
+    urgencyLow: "🟢 Faible",
+    urgencyHigh: "🔴 Haute",
+    urgencyMed: "🟡 Moyenne",
+    gdprShort: "Conformément au RGPD, vos données sont protégées.",
+    doLater: "Faire plus tard",
     toggleTheme: "Changer le thème",
     noEventsToday: "Aucun événement pour ce jour",
     read: "Lus",
@@ -723,6 +751,13 @@ export const translations = {
   },
 
   DE: {
+    urgency: "Dringlichkeit",
+    priceType: "Preistyp",
+    urgencyLow: "🟢 Niedrig",
+    urgencyHigh: "🔴 Hoch",
+    urgencyMed: "🟡 Mittel",
+    gdprShort: "Gemäß DSGVO sind Ihre Daten geschützt.",
+    doLater: "Später erledigen",
     toggleTheme: "Thema wechseln",
     noEventsToday: "Keine Ereignisse für diesen Tag",
     read: "Gelesen",
@@ -903,6 +938,13 @@ export const translations = {
   },
 
   HI: {
+    urgency: "तात्कालिकता",
+    priceType: "मूल्य प्रकार",
+    urgencyLow: "🟢 कम",
+    urgencyHigh: "🔴 उच्च",
+    urgencyMed: "🟡 मध्यम",
+    gdprShort: "GDPR के अनुसार, आपका डेटा सुरक्षित है।",
+    doLater: "बाद में करें",
     toggleTheme: "थीम बदलें",
     noEventsToday: "इस दिन के लिए कोई इवेंट नहीं",
     read: "पढ़ी गई",
@@ -1083,6 +1125,13 @@ export const translations = {
   },
 
   UR: {
+    urgency: "فوری",
+    priceType: "قیمت کی قسم",
+    urgencyLow: "🟢 کم",
+    urgencyHigh: "🔴 زیادہ",
+    urgencyMed: "🟡 درمیانہ",
+    gdprShort: "GDPR کے مطابق آپ کا ڈیٹا محفوظ ہے۔",
+    doLater: "بعد میں کریں",
     toggleTheme: "تھیم تبدیل کریں",
     noEventsToday: "اس دن کے لیے کوئی واقعہ نہیں",
     read: "پڑھی گئیں",
@@ -1263,6 +1312,13 @@ export const translations = {
   },
 
   BN: {
+    urgency: "জরুরিতা",
+    priceType: "মূল্য ধরন",
+    urgencyLow: "🟢 কম",
+    urgencyHigh: "🔴 বেশি",
+    urgencyMed: "🟡 মাঝারি",
+    gdprShort: "GDPR অনুযায়ী আপনার ডেটা সুরক্ষিত।",
+    doLater: "পরে করুন",
     toggleTheme: "থিম পরিবর্তন",
     noEventsToday: "এই দিনের জন্য কোনো ইভেন্ট নেই",
     read: "পড়া হয়েছে",
@@ -1443,6 +1499,13 @@ export const translations = {
   },
 
   NE: {
+    urgency: "अत्यावश्यकता",
+    priceType: "मूल्य प्रकार",
+    urgencyLow: "🟢 कम",
+    urgencyHigh: "🔴 उच्च",
+    urgencyMed: "🟡 मध्यम",
+    gdprShort: "GDPR अनुसार तपाईंको डेटा सुरक्षित छ।",
+    doLater: "पछि गर्नुहोस्",
     toggleTheme: "थिम बदल्नुहोस्",
     noEventsToday: "यस दिनको लागि कुनै कार्यक्रम छैन",
     read: "पढिएका",
@@ -1623,6 +1686,13 @@ export const translations = {
   },
 
   ZH: {
+    urgency: "紧迫性",
+    priceType: "价格类型",
+    urgencyLow: "🟢 低",
+    urgencyHigh: "🔴 高",
+    urgencyMed: "🟡 中",
+    gdprShort: "根据GDPR，您的数据受到保护。",
+    doLater: "稍后完成",
     toggleTheme: "切换主题",
     noEventsToday: "今天没有活动",
     read: "已读",
