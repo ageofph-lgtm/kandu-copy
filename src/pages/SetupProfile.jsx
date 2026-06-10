@@ -165,8 +165,8 @@ export default function SetupProfile() {
       <div style={{minHeight:"100vh",background:"#111016",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,position:"relative",overflow:"hidden"}}>
         <div style={hexBg} />
         <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:64, objectFit:"contain", maxWidth:220}} alt="KANDU" />
-        <h2 style={{color:"#FFF",fontWeight:800,fontSize:22,marginBottom:8,position:"relative",zIndex:1}}>Entrar na plataforma</h2>
-        <p style={{color:"#AAAAAA",fontSize:14,marginBottom:24,position:"relative",zIndex:1}}>Faz login para continuares</p>
+        <h2 style={{color:"#FFF",fontWeight:800,fontSize:22,marginBottom:8,position:"relative",zIndex:1}}>{t(lang,"loginTitle")}</h2>
+        <p style={{color:"#AAAAAA",fontSize:14,marginBottom:24,position:"relative",zIndex:1}}>{t(lang,"loginSubtitle")}</p>
         <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
           style={{padding:"16px 40px",background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:"pointer",position:"relative",zIndex:1}}>
           Entrar / Criar Conta
@@ -255,14 +255,14 @@ export default function SetupProfile() {
         <div style={{flex:1,padding:"50px 20px 20px",display:"flex",flexDirection:"column",alignItems:"center",gap:20,position:"relative",zIndex:1}}>
           <div style={{display:"flex",alignItems:"center",width:"100%",maxWidth:420,justifyContent:"space-between"}}>
             <button onClick={() => setStep(visibleProfiles[activeIndex]?.type==="employer" ? 1.5 : 1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer"}}>←</button>
-            <span style={{fontWeight:700,color:"#FFF",fontSize:17}}>Verificação de Identidade</span>
+            <span style={{fontWeight:700,color:"#FFF",fontSize:17}}>{t(lang,"identityVerification")}</span>
             <span style={{width:22}} />
           </div>
           <span style={{background:"#22C55E",color:"#FFF",padding:"8px 20px",borderRadius:20,fontWeight:700,fontSize:14}}>✓ Verified</span>
           <div style={{width:160,height:160,clipPath:"polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",background:"#111016",border:"4px solid #FF6600",boxShadow:"0 0 30px #FF660066",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
             <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:64, objectFit:"contain", maxWidth:220}} alt="" />
-            <span style={{fontWeight:900,color:"#FFF",fontSize:15,marginTop:4}}>Ultra</span>
-            <span style={{fontWeight:900,color:"#FFF",fontSize:15}}>Verified</span>
+            <span style={{fontWeight:900,color:"#FFF",fontSize:15,marginTop:4}}>{t(lang,"ultra")}</span>
+            <span style={{fontWeight:900,color:"#FFF",fontSize:15}}>{t(lang,"verified")}</span>
           </div>
           <p style={{color:"#AAAAAA",fontSize:14,textAlign:"center",maxWidth:300}}>Submete o teu documento de identidade para ganhar o badge máximo de confiança</p>
           <input ref={fileInputRef} type="file" accept="image/*,application/pdf" style={{display:"none"}} onChange={handleFileSelect} />
