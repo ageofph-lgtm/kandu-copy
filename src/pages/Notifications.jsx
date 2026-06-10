@@ -153,7 +153,7 @@ export default function Notifications() {
   };
 
   const handleDelete = async (notification) => {
-    if (!window.confirm("t(lang,"confirmDeleteNotification")")) {
+    if (!window.confirm(t(lang,"confirmDeleteNotification"))) {
       return;
     }
 

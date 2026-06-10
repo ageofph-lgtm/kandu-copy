@@ -51,8 +51,6 @@ export default function Welcome() {
     check();
   }, [navigate]);
 
-  if (checking) {
-  
   // Mostrar selector de idioma se o utilizador ainda não escolheu
   if (showLangPicker) {
     return (
@@ -76,7 +74,8 @@ export default function Welcome() {
     );
   }
 
-  return (
+  if (checking) {
+    return (
       <div style={{minHeight:"100vh", background:bg, display:"flex", alignItems:"center", justifyContent:"center"}}>
         <img src={logoIcon} style={{width:80, height:80, objectFit:"contain", borderRadius:12, animation:"spin 2s linear infinite"}} alt="KANDU" />
       </div>

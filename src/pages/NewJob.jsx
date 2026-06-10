@@ -53,7 +53,7 @@ const PRICE_SUGGESTIONS_BY_KEY = {
   roofing:      { min: 1000, max: 8000, avg: 3000 },
 };
 
-const STEP_LABELS = ["O Quê", "Onde & Quando", t(lang,"budget"), "Revisão"];
+const STEP_LABELS = ["O Quê", "Onde & Quando", "Orçamento", "Revisão"];
 
 // ─── Modal de Confirmação custom (substitui window.confirm) ───────────────────
 function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }) {

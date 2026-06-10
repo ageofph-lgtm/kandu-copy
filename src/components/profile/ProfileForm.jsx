@@ -1,5 +1,7 @@
 import { toast } from "sonner";
 import { useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +45,7 @@ const CITIES = [
 ];
 
 export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
+  const { lang } = useLanguage();
   const [formData, setFormData] = useState({
     user_type: user?.user_type || "",
     employer_type: user?.employer_type || "",
@@ -270,7 +273,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
                         setNewClient({ name: '', contact: '', nif: '' });
                       }}
                     >
-                      <Plus className="w-4 h-4 mr-1" /> t(lang,"addClient")
+                      <Plus className="w-4 h-4 mr-1" /> {t(lang,"addClient")}
                     </Button>
                   </div>
                 </div>
