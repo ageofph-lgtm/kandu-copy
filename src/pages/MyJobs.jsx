@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 import { Application } from "@/entities/Application";
@@ -648,6 +650,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
 export default function MyJobs() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { lang } = useLanguage();
   const bg      = isDark ? "#111016" : "#F5F5F5";
   const surface = isDark ? "#1C1B22" : "#FFFFFF";
   const text    = isDark ? "#FFFFFF" : "#111016";
@@ -736,7 +739,7 @@ export default function MyJobs() {
   const historyJobs = !user ? [] : jobs.filter(j => ["completed","cancelled"].includes(j.status));
 
   const TABS = [
-    { id: "pending", label: isWorker ? "Candidaturas" : "Publicadas", icon: isWorker ? "📋" : "📢", count: pendingJobs.length },
+    { id: "pending", label: isWorker ? t(lang,"applications") : "Publicadas", icon: isWorker ? "📋" : "📢", count: pendingJobs.length },
     { id: "active",  label: "Em Curso",   icon: "🔨", count: activeJobs.length  },
     { id: "history", label: "Histórico",  icon: "🏆", count: historyJobs.length },
   ];
