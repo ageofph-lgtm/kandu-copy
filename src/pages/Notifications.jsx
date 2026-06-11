@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { useState, useEffect, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -15,21 +15,11 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
 function NotificationCard({ notification, onMarkAsRead, onDelete }) {
-  const [translatedTitle, setTranslatedTitle] = useState(notification.title);
-  const [translatedMessage, setTranslatedMessage] = useState(notification.message);
-
-  useEffect(() => {
-    if (lang && lang !== "PT") {
-      translateText(notification.title, lang).then(setTranslatedTitle).catch(() => {});
-      translateText(notification.message, lang).then(setTranslatedMessage).catch(() => {});
-    } else {
-      setTranslatedTitle(notification.title);
-      setTranslatedMessage(notification.message);
-    }
-  }, [lang, notification.title, notification.message]);
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const { lang } = useLanguage();
+  const translatedTitle = notification.title;
+  const translatedMessage = notification.message;
   const surface = isDark ? "#1C1B22" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
