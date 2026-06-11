@@ -1,140 +1,220 @@
-import { useState } from "react";
-import { User } from "@/entities/User";
-import { UploadFile } from "@/api/integrations";
-import { FileText, X, Upload, Plus, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
+import { useState, useRef } from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
+import { UploadFile } from "@/api/integrations";
+import { User } from "@/entities/User";
+import { base44 } from "@/api/base44Client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Plus,
+  X,
+  Upload,
+  FileText,
+  ExternalLink,
+  Shield,
+  Loader2,
+} from "lucide-react";
 
-const DOC_TYPES_KEY = ["id_card","passport","work_permit","trade_license","insurance","certificate","other"];
+// `value` é o que fica guardado em doc.type (canónico);
+// `key` é a chave i18n usada apenas para exibição do label.
+const DOCUMENT_TYPES = [
+  { value: "diploma", key: "docTypeDiploma", pt: "Diploma / Certificado", icon: "🎓" },
+  { value: "bi", key: "docTypeId", pt: "Cartão de Cidadão / BI", icon: "🪪" },
+  { value: "nif", key: "docTypeNif", pt: "NIF / Comprovativo Fiscal", icon: "📋" },
+  { value: "seguro", key: "docTypeInsurance", pt: "Seguro Profissional", icon: "🛡️" },
+  { value: "cnh", key: "docTypeDrivingLicense", pt: "Carta de Condução", icon: "🚗" },
+  { value: "certificado", key: "docTypeCertificate", pt: "Certificado Profissional", icon: "📜" },
+  { value: "portfolio", key: "docTypePortfolio", pt: "Portfólio / Obra", icon: "🏗️" },
+  { value: "contrato", key: "docTypeContract", pt: "Contrato / Recibo", icon: "📄" },
+  { value: "outro", key: "docTypeOther", pt: "Outro", icon: "📎" },
+];
+
+function getDocIcon(type) {
+  return DOCUMENT_TYPES.find(d => d.value === type)?.icon || "📎";
+}
+function getDocLabel(lang, type) {
+  const dt = DOCUMENT_TYPES.find(d => d.value === type);
+  return dt ? t(lang, dt.key, dt.pt) : type;
+}
 
 export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
   const { lang } = useLanguage();
-  const [uploading, setUploading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [docType, setDocType] = useState("id_card");
-  const [docLabel, setDocLabel] = useState("");
-  const fileRef = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+  const [docName, setDocName] = useState("");
+  const [docType, setDocType] = useState("");
+  const fileInputRef = useRef(null);
 
-  const DOC_TYPE_LABELS = {
-    id_card: t(lang,"docIdCard"),
-    passport: t(lang,"docPassport"),
-    work_permit: t(lang,"docWorkPermit"),
-    trade_license: t(lang,"docTradeLicense"),
-    insurance: t(lang,"docInsurance"),
-    certificate: t(lang,"docCertificate"),
-    other: t(lang,"docOther"),
-  };
-
-  const handleUpload = async (e) => {
-    const file = e.target.files[0];
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
     if (!file) return;
-    setUploading(true);
+    if (!docName.trim()) { toast.error(t(lang, "docNameRequired", "Insira um nome para o documento")); return; }
+    if (!docType) { toast.error(t(lang, "docTypeRequired", "Selecione o tipo de documento")); return; }
+
+    setIsUploading(true);
     try {
       const { file_url } = await UploadFile({ file });
-      const newDoc = { type: docType, label: docLabel || DOC_TYPE_LABELS[docType], url: file_url, uploaded_at: new Date().toISOString() };
-      await User.updateMyUserData({ documents: [...documents, newDoc] });
+
+      const newDoc = {
+        name: docName.trim(),
+        url: file_url,
+        type: docType,
+        uploaded_at: new Date().toISOString(),
+      };
+
+      const updated = [...documents, newDoc];
+      await User.updateMyUserData({ documents: updated });
+
+      // Sync to Supabase
+      try { await base44.functions.invoke('syncCurrentUserToSupabase', {}); } catch(e) {}
+
+      setShowDialog(false);
+      setDocName("");
+      setDocType("");
       onUpdate();
-      setShowForm(false);
-      setDocLabel("");
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      toast.error(t(lang, "docUploadError", "Erro ao fazer upload do documento"));
     }
-    setUploading(false);
+    setIsUploading(false);
   };
 
   const handleRemove = async (idx) => {
-    if (!confirm(t(lang,"confirmRemoveDoc"))) return;
-    try {
-      const newDocs = documents.filter((_, i) => i !== idx);
-      await User.updateMyUserData({ documents: newDocs });
-      onUpdate();
-    } catch (err) { console.error(err); }
+    if (!confirm(t(lang, "removeDocQuestion", "Remover este documento?"))) return;
+    const updated = documents.filter((_, i) => i !== idx);
+    await User.updateMyUserData({ documents: updated });
+    try { await base44.functions.invoke('syncCurrentUserToSupabase', {}); } catch(e) {}
+    onUpdate();
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <FileText size={16} style={{ color:"#F26522" }} />
-          <span style={{ fontWeight:700, fontSize:14 }}>{t(lang,"documents")}</span>
-        </div>
-        {canEdit && !showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            style={{ display:"flex", alignItems:"center", gap:6, background:"#111", color:"#fff",
-              border:"none", borderRadius:8, padding:"6px 12px", fontSize:12, fontWeight:700, cursor:"pointer" }}
-          >
-            <Plus size={13} /> {t(lang,"addDocument")}
-          </button>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <FileText className="w-5 h-5 text-[#F26522]" />
+          {t(lang, "documents", "Documentos")}
+        </h2>
+        {canEdit && (
+          <Dialog open={showDialog} onOpenChange={setShowDialog}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-[#F26522] hover:bg-orange-600 rounded-xl">
+                <Plus className="w-4 h-4 mr-1" /> {t(lang, "add", "Adicionar")}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>{t(lang, "addDocument", "Adicionar Documento")}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 text-gray-700">{t(lang, "documentType", "Tipo de documento")}</label>
+                  <Select value={docType} onValueChange={setDocType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t(lang, "selectType", "Selecione o tipo")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DOCUMENT_TYPES.map(dt => (
+                        <SelectItem key={dt.value} value={dt.value}>
+                          <span className="flex items-center gap-2">
+                            <span>{dt.icon}</span> {t(lang, dt.key, dt.pt)}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 text-gray-700">{t(lang, "nameDescription", "Nome / Descrição")}</label>
+                  <Input
+                    placeholder={t(lang, "docNamePlaceholder", "Ex: Diploma Elétrica, Seguro 2024...")}
+                    value={docName}
+                    onChange={(e) => setDocName(e.target.value)}
+                  />
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading || !docName.trim() || !docType}
+                  className="w-full bg-[#F26522] hover:bg-orange-600"
+                >
+                  {isUploading ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t(lang, "sending", "A enviar...")}</>
+                  ) : (
+                    <><Upload className="w-4 h-4 mr-2" /> {t(lang, "selectFile", "Selecionar ficheiro")}</>
+                  )}
+                </Button>
+                <p className="text-xs text-gray-400 text-center">
+                  PDF, DOC, JPG, PNG — máx. 10MB
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 
-      {/* Form upload */}
-      {showForm && canEdit && (
-        <div style={{ background:"#f9f9f9", borderRadius:10, padding:12, marginBottom:12 }}>
-          <select
-            value={docType}
-            onChange={e => setDocType(e.target.value)}
-            style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid #ddd", marginBottom:8, fontSize:13 }}
-          >
-            {DOC_TYPES_KEY.map(k => (
-              <option key={k} value={k}>{DOC_TYPE_LABELS[k]}</option>
-            ))}
-          </select>
-          <input
-            type="text"
-            placeholder={t(lang,"docLabelPlaceholder")}
-            value={docLabel}
-            onChange={e => setDocLabel(e.target.value)}
-            style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid #ddd", marginBottom:8, fontSize:13, boxSizing:"border-box" }}
-          />
-          <label style={{ display:"block", cursor:"pointer" }}>
-            <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleUpload} disabled={uploading} />
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"10px",
-              border:"2px dashed #ddd", borderRadius:8, color:"#888", fontSize:13 }}>
-              <Upload size={15} />
-              {uploading ? t(lang,"loading") : t(lang,"uploadDoc")}
-            </div>
-          </label>
-          <button onClick={() => setShowForm(false)}
-            style={{ marginTop:8, width:"100%", background:"transparent", border:"1px solid #ddd",
-              borderRadius:8, padding:"6px", fontSize:12, cursor:"pointer", color:"#666" }}>
-            {t(lang,"cancel")}
-          </button>
-        </div>
-      )}
-
-      {/* Lista de documentos */}
       {documents.length === 0 ? (
-        <div style={{ textAlign:"center", padding:"24px 0", color:"#aaa" }}>
-          <FileText size={36} style={{ margin:"0 auto 8px", opacity:0.3 }} />
-          <p style={{ margin:0, fontSize:13 }}>{t(lang,"noDocuments")}</p>
+        <div className="text-center py-10 text-gray-400">
+          <FileText className="w-10 h-10 mx-auto mb-2 opacity-40" />
+          <p className="text-sm">{t(lang, "noDocuments", "Nenhum documento adicionado")}</p>
+          {canEdit && (
+            <p className="text-xs mt-1 text-gray-400">{t(lang, "addDocumentsHint", "Adicione diplomas, seguros ou documentos pessoais")}</p>
+          )}
         </div>
       ) : (
-        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+        <div className="space-y-2">
           {documents.map((doc, idx) => (
-            <div key={idx} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px",
-              background:"#f9f9f9", borderRadius:10, border:"1px solid #eee" }}>
-              <FileText size={18} style={{ color:"#F26522", flexShrink:0 }} />
-              <div style={{ flex:1, minWidth:0 }}>
-                <p style={{ margin:0, fontWeight:600, fontSize:13, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                  {doc.label || DOC_TYPE_LABELS[doc.type] || doc.type}
-                </p>
-                <p style={{ margin:0, fontSize:11, color:"#888" }}>
-                  {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : ""}
-                </p>
+            <div
+              key={idx}
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="text-2xl shrink-0">{getDocIcon(doc.type)}</span>
+                <div className="min-w-0">
+                  <p className="font-medium text-sm text-gray-900 truncate">{doc.name}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-gray-400">{getDocLabel(lang, doc.type)}</span>
+                    <Shield className="w-3 h-3 text-green-500 shrink-0" />
+                  </div>
+                </div>
               </div>
-              <button onClick={() => window.open(doc.url,"_blank")}
-                style={{ background:"none", border:"none", cursor:"pointer", color:"#888", padding:4 }}>
-                <ExternalLink size={15} />
-              </button>
-              {canEdit && (
-                <button onClick={() => handleRemove(idx)}
-                  style={{ background:"none", border:"none", cursor:"pointer", color:"#ef4444", padding:4 }}>
-                  <X size={15} />
-                </button>
-              )}
+              <div className="flex items-center gap-1 shrink-0 ml-2">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8"
+                  onClick={() => window.open(doc.url, '_blank')}
+                >
+                  <ExternalLink className="w-4 h-4 text-gray-500" />
+                </Button>
+                {canEdit && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-red-400 hover:text-red-600"
+                    onClick={() => handleRemove(idx)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>
