@@ -1,18 +1,17 @@
 import { toast } from "sonner";
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Notification } from "@/entities/Notification";
 import { User } from "@/entities/User";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   CheckCircle,
   X
 } from "lucide-react";
 import { format } from "date-fns";
-import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 
 function NotificationCard({ notification, onMarkAsRead, onDelete }) {
@@ -70,7 +69,7 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
               </div>
               <p style={{fontSize:14,color:subtext,marginBottom:8}}>{notification.message}</p>
               <p style={{fontSize:12,color:subtext}}>
-                {format(new Date(notification.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: pt })}
+                {format(new Date(notification.created_date), t(lang,"dateTimeFormat","dd/MM/yyyy 'às' HH:mm"), { locale: getDateLocale(lang) })}
               </p>
             </div>
           </div>
@@ -153,7 +152,7 @@ export default function Notifications() {
   };
 
   const handleDelete = async (notification) => {
-    if (!window.confirm(t(lang,"confirmDeleteNotification"))) {
+    if (!window.confirm(t(lang,"confirmDeleteNotification","Tem certeza que deseja apagar esta notificação?"))) {
       return;
     }
 
@@ -162,7 +161,7 @@ export default function Notifications() {
       loadData();
     } catch (error) {
       console.error("Error deleting notification:", error);
-      toast.error(t(lang,"error"));
+      toast.error(t(lang,"errorDeletingNotification","Erro ao apagar notificação."));
     }
   };
 
@@ -182,7 +181,7 @@ export default function Notifications() {
   const getRelativeTime = (date) => {
     const diff = Date.now() - new Date(date).getTime();
     const m = Math.floor(diff/60000);
-    if (m < 1) return 'agora';
+    if (m < 1) return t(lang,"now","agora");
     if (m < 60) return `${m}m`;
     const h = Math.floor(m/60);
     if (h < 24) return `${h}h`;
@@ -209,7 +208,7 @@ export default function Notifications() {
           </div>
         )}
         {unreadNotifications.length > 0 && (
-          <button onClick={handleMarkAllAsRead} style={{background:"none",border:"1px solid #FF660066",borderRadius:20,padding:"4px 12px",color:"#FF6600",fontSize:12,cursor:"pointer",fontWeight:600}}>{t(lang,"read")}</button>
+          <button onClick={handleMarkAllAsRead} style={{background:"none",border:"1px solid #FF660066",borderRadius:20,padding:"4px 12px",color:"#FF6600",fontSize:12,cursor:"pointer",fontWeight:600}}>{t(lang,"markReadShort","Lidas")}</button>
         )}
       </div>
 
@@ -218,8 +217,8 @@ export default function Notifications() {
         {notifications.length === 0 ? (
           <div style={{textAlign:"center",padding:"60px 20px"}}>
             <div style={{fontSize:48,marginBottom:12}}>🔔</div>
-            <p style={{color:subtext,fontSize:15,fontWeight:600,margin:"0 0 6px"}}>{t(lang,"noNotifications")}</p>
-            <p style={{color:"#555",fontSize:13,margin:0}}>{t(lang,"noNotificationsDesc")}</p>
+            <p style={{color:subtext,fontSize:15,fontWeight:600,margin:"0 0 6px"}}>{t(lang,"noNotifications","Sem notificações")}</p>
+            <p style={{color:"#555",fontSize:13,margin:0}}>{t(lang,"noNotificationsHint","Quando houver novidades, aparecem aqui")}</p>
           </div>
         ) : notifications.map(notif => {
           const {icon, bg} = getIcon(notif.type);
