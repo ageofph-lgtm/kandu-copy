@@ -1,5 +1,7 @@
 import { toast } from "sonner";
 import { useState, useRef } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import { UploadFile } from "@/api/integrations";
 import { User } from "@/entities/User";
 import { base44 } from "@/api/base44Client";
@@ -23,26 +25,30 @@ import {
   Loader2,
 } from "lucide-react";
 
+// `value` é o que fica guardado em doc.type (canónico);
+// `key` é a chave i18n usada apenas para exibição do label.
 const DOCUMENT_TYPES = [
-  { value: "diploma", label: "Diploma / Certificado", icon: "🎓" },
-  { value: "bi", label: "Cartão de Cidadão / BI", icon: "🪪" },
-  { value: "nif", label: "NIF / Comprovativo Fiscal", icon: "📋" },
-  { value: "seguro", label: "Seguro Profissional", icon: "🛡️" },
-  { value: "cnh", label: "Carta de Condução", icon: "🚗" },
-  { value: "certificado", label: "Certificado Profissional", icon: "📜" },
-  { value: "portfolio", label: "Portfólio / Obra", icon: "🏗️" },
-  { value: "contrato", label: "Contrato / Recibo", icon: "📄" },
-  { value: "outro", label: "Outro", icon: "📎" },
+  { value: "diploma", key: "docTypeDiploma", pt: "Diploma / Certificado", icon: "🎓" },
+  { value: "bi", key: "docTypeId", pt: "Cartão de Cidadão / BI", icon: "🪪" },
+  { value: "nif", key: "docTypeNif", pt: "NIF / Comprovativo Fiscal", icon: "📋" },
+  { value: "seguro", key: "docTypeInsurance", pt: "Seguro Profissional", icon: "🛡️" },
+  { value: "cnh", key: "docTypeDrivingLicense", pt: "Carta de Condução", icon: "🚗" },
+  { value: "certificado", key: "docTypeCertificate", pt: "Certificado Profissional", icon: "📜" },
+  { value: "portfolio", key: "docTypePortfolio", pt: "Portfólio / Obra", icon: "🏗️" },
+  { value: "contrato", key: "docTypeContract", pt: "Contrato / Recibo", icon: "📄" },
+  { value: "outro", key: "docTypeOther", pt: "Outro", icon: "📎" },
 ];
 
 function getDocIcon(type) {
   return DOCUMENT_TYPES.find(d => d.value === type)?.icon || "📎";
 }
-function getDocLabel(type) {
-  return DOCUMENT_TYPES.find(d => d.value === type)?.label || type;
+function getDocLabel(lang, type) {
+  const dt = DOCUMENT_TYPES.find(d => d.value === type);
+  return dt ? t(lang, dt.key, dt.pt) : type;
 }
 
 export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
+  const { lang } = useLanguage();
   const [isUploading, setIsUploading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [docName, setDocName] = useState("");
@@ -52,8 +58,8 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    if (!docName.trim()) { toast.error("Insira um nome para o documento"); return; }
-    if (!docType) { toast.error("Selecione o tipo de documento"); return; }
+    if (!docName.trim()) { toast.error(t(lang, "docNameRequired", "Insira um nome para o documento")); return; }
+    if (!docType) { toast.error(t(lang, "docTypeRequired", "Selecione o tipo de documento")); return; }
 
     setIsUploading(true);
     try {
@@ -78,13 +84,13 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
       onUpdate();
     } catch (error) {
       console.error("Erro ao fazer upload:", error);
-      toast.error("Erro ao fazer upload do documento");
+      toast.error(t(lang, "docUploadError", "Erro ao fazer upload do documento"));
     }
     setIsUploading(false);
   };
 
   const handleRemove = async (idx) => {
-    if (!confirm("Remover este documento?")) return;
+    if (!confirm(t(lang, "removeDocQuestion", "Remover este documento?"))) return;
     const updated = documents.filter((_, i) => i !== idx);
     await User.updateMyUserData({ documents: updated });
     try { await base44.functions.invoke('syncCurrentUserToSupabase', {}); } catch(e) {}
@@ -96,31 +102,31 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
           <FileText className="w-5 h-5 text-[#F26522]" />
-          Documentos
+          {t(lang, "documents", "Documentos")}
         </h2>
         {canEdit && (
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogTrigger asChild>
               <Button size="sm" className="bg-[#F26522] hover:bg-orange-600 rounded-xl">
-                <Plus className="w-4 h-4 mr-1" /> Adicionar
+                <Plus className="w-4 h-4 mr-1" /> {t(lang, "add", "Adicionar")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-sm">
               <DialogHeader>
-                <DialogTitle>Adicionar Documento</DialogTitle>
+                <DialogTitle>{t(lang, "addDocument", "Adicionar Documento")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-2">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5 text-gray-700">Tipo de documento</label>
+                  <label className="block text-sm font-medium mb-1.5 text-gray-700">{t(lang, "documentType", "Tipo de documento")}</label>
                   <Select value={docType} onValueChange={setDocType}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
+                      <SelectValue placeholder={t(lang, "selectType", "Selecione o tipo")} />
                     </SelectTrigger>
                     <SelectContent>
                       {DOCUMENT_TYPES.map(dt => (
                         <SelectItem key={dt.value} value={dt.value}>
                           <span className="flex items-center gap-2">
-                            <span>{dt.icon}</span> {dt.label}
+                            <span>{dt.icon}</span> {t(lang, dt.key, dt.pt)}
                           </span>
                         </SelectItem>
                       ))}
@@ -129,9 +135,9 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5 text-gray-700">Nome / Descrição</label>
+                  <label className="block text-sm font-medium mb-1.5 text-gray-700">{t(lang, "nameDescription", "Nome / Descrição")}</label>
                   <Input
-                    placeholder="Ex: Diploma Elétrica, Seguro 2024..."
+                    placeholder={t(lang, "docNamePlaceholder", "Ex: Diploma Elétrica, Seguro 2024...")}
                     value={docName}
                     onChange={(e) => setDocName(e.target.value)}
                   />
@@ -150,9 +156,9 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
                   className="w-full bg-[#F26522] hover:bg-orange-600"
                 >
                   {isUploading ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> A enviar...</>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t(lang, "sending", "A enviar...")}</>
                   ) : (
-                    <><Upload className="w-4 h-4 mr-2" /> Selecionar ficheiro</>
+                    <><Upload className="w-4 h-4 mr-2" /> {t(lang, "selectFile", "Selecionar ficheiro")}</>
                   )}
                 </Button>
                 <p className="text-xs text-gray-400 text-center">
@@ -167,9 +173,9 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
       {documents.length === 0 ? (
         <div className="text-center py-10 text-gray-400">
           <FileText className="w-10 h-10 mx-auto mb-2 opacity-40" />
-          <p className="text-sm">Nenhum documento adicionado</p>
+          <p className="text-sm">{t(lang, "noDocuments", "Nenhum documento adicionado")}</p>
           {canEdit && (
-            <p className="text-xs mt-1 text-gray-400">Adicione diplomas, seguros ou documentos pessoais</p>
+            <p className="text-xs mt-1 text-gray-400">{t(lang, "addDocumentsHint", "Adicione diplomas, seguros ou documentos pessoais")}</p>
           )}
         </div>
       ) : (
@@ -184,7 +190,7 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
                 <div className="min-w-0">
                   <p className="font-medium text-sm text-gray-900 truncate">{doc.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-gray-400">{getDocLabel(doc.type)}</span>
+                    <span className="text-xs text-gray-400">{getDocLabel(lang, doc.type)}</span>
                     <Shield className="w-3 h-3 text-green-500 shrink-0" />
                   </div>
                 </div>

@@ -9,17 +9,18 @@ import { User } from "@/entities/User";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
+// pt = valor canónico do enum Job.category na entidade (a DB está em PT);
+// key = chave i18n usada apenas para exibição.
 const CATEGORY_KEYS = [
-  { key: "painting", icon: "🎨" },
-  { key: "electricity", icon: "⚡" },
-  { key: "plumbing", icon: "🔧" },
-  { key: "masonry", icon: "🧱" },
-  { key: "tiling", icon: "🔲" },
-  { key: "carpentry", icon: "🪚" },
-  { key: "hvac", icon: "❄️" },
-  { key: "isolamentos", icon: "🏗️", label: "Isolamentos" },
-  { key: "flooring", icon: "🏠" },
-  { key: "roofing", icon: "🏘️" },
+  { key: "painting", pt: "Pintura", icon: "🎨" },
+  { key: "electricity", pt: "Eletricidade", icon: "⚡" },
+  { key: "plumbing", pt: "Canalização", icon: "🔧" },
+  { key: "masonry", pt: "Alvenaria", icon: "🧱" },
+  { key: "tiling", pt: "Ladrilhador", icon: "🔲" },
+  { key: "carpentry", pt: "Carpintaria", icon: "🪚" },
+  { key: "insulation", pt: "Isolamentos", icon: "🏗️" },
+  { key: "flooring", pt: "Pavimentos", icon: "🏠" },
+  { key: "roofing", pt: "Telhados", icon: "🏘️" },
 ];
 
 const LOCATION_COORDS = {
@@ -48,15 +49,21 @@ const PRICE_SUGGESTIONS_BY_KEY = {
   tiling:       { min: 300,  max: 3000, avg: 800  },
   carpentry:    { min: 200,  max: 2500, avg: 700  },
   hvac:         { min: 400,  max: 3000, avg: 1000 },
-  isolamentos:  { min: 500,  max: 4000, avg: 1200 },
+  insulation:   { min: 500,  max: 4000, avg: 1200 },
   flooring:     { min: 800,  max: 6000, avg: 2000 },
   roofing:      { min: 1000, max: 8000, avg: 3000 },
 };
 
-const STEP_LABELS = ["O Quê", "Onde & Quando", "Orçamento", "Revisão"];
+const STEP_LABELS = [
+  { key: "stepWhat", pt: "O Quê" },
+  { key: "stepWhereWhen", pt: "Onde & Quando" },
+  { key: "stepBudget", pt: "Orçamento" },
+  { key: "stepReview", pt: "Revisão" },
+];
 
 // ─── Modal de Confirmação custom (substitui window.confirm) ───────────────────
 function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }) {
+  const { lang } = useLanguage();
   const bg = isDark ? "#1A1A1A" : "#FFFFFF";
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
   return (
@@ -68,7 +75,7 @@ function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }
         <div style={{textAlign:"center",marginBottom:20}}>
           <span style={{fontSize:40}}>🚀</span>
           <h2 style={{color:text,fontWeight:700,fontSize:18,margin:"10px 0 6px"}}>{t(lang,"jobTitle")}?</h2>
-          <p style={{color:subtext,fontSize:14,margin:0}}>A obra ficará visível para todos os profissionais na plataforma.</p>
+          <p style={{color:subtext,fontSize:14,margin:0}}>{t(lang,"jobVisibleToAll","A obra ficará visível para todos os profissionais na plataforma.")}</p>
         </div>
         <div style={{background:surface,borderRadius:12,padding:14,marginBottom:20}}>
           <p style={{fontWeight:700,color:"#FF6600",margin:"0 0 4px",fontSize:15}}>{job.title}</p>
@@ -77,11 +84,11 @@ function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }
         <div style={{display:"flex",gap:10}}>
           <button onClick={onCancel}
             style={{flex:1,padding:"12px 0",background:"transparent",border:"1px solid #444",borderRadius:12,color:subtext,fontWeight:600,fontSize:14,cursor:"pointer"}}>
-            Rever
+            {t(lang,"review","Rever")}
           </button>
           <button onClick={onConfirm}
             style={{flex:1,padding:"12px 0",background:"#FF6600",border:"none",borderRadius:12,color:"#FFF",fontWeight:700,fontSize:14,cursor:"pointer"}}>
-            Publicar ✓
+            {t(lang,"publish","Publicar")} ✓
           </button>
         </div>
       </div>
@@ -138,8 +145,10 @@ export default function NewJob() {
     setIsSubmitting(true);
     try {
       const coords = LOCATION_COORDS[formData.location];
+      // categoryKey é só estado de UI — não pertence à entidade Job
+      const { categoryKey: _categoryKey, ...jobData } = formData;
       await Job.create({
-        ...formData,
+        ...jobData,
         price: parseFloat(formData.price),
         employer_id: user.id,
         latitude: coords.lat + (Math.random() - 0.5) * 0.005,
@@ -150,14 +159,15 @@ export default function NewJob() {
       navigate(createPageUrl("MyJobs"));
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Erro ao publicar obra.");
+      toast.error(t(lang,"errorPublishingJob","Erro ao publicar obra."));
     }
     setIsSubmitting(false);
   };
 
-  const CATEGORIES = CATEGORY_KEYS.map(c => ({ name: c.label || t(lang, c.key), icon: c.icon, key: c.key }));
+  const CATEGORIES = CATEGORY_KEYS.map(c => ({ name: t(lang, c.key, c.pt), pt: c.pt, icon: c.icon, key: c.key }));
   const priceSuggestion = formData.categoryKey ? PRICE_SUGGESTIONS_BY_KEY[formData.categoryKey] : null;
-  const catIcon = CATEGORIES.find(c => c.name === formData.category)?.icon || "";
+  const selectedCat = CATEGORIES.find(c => c.pt === formData.category);
+  const catIcon = selectedCat?.icon || "";
 
   const inputStyle = {width:"100%",padding:14,background:surface,border:"2px solid #FF6600",borderRadius:12,color:text,boxSizing:"border-box",fontSize:15,outline:"none"};
   const labelStyle = {color:subtext,fontSize:13,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:8};
@@ -202,22 +212,22 @@ export default function NewJob() {
             <div key={i} style={{flex:1,height:4,borderRadius:4,background:i<step?"#FF6600":i===step-1?"#FF6600":isDark?"#333":"#DDDDDD"}} />
           ))}
         </div>
-        <p style={{color:subtext,fontSize:12,textAlign:"center"}}>Passo {step} de {STEP_LABELS.length}: <strong style={{color:"#FF6600"}}>{STEP_LABELS[step-1]}</strong></p>
+        <p style={{color:subtext,fontSize:12,textAlign:"center"}}>{t(lang,"stepXofY","Passo {step} de {total}").replace("{step}", step).replace("{total}", STEP_LABELS.length)}: <strong style={{color:"#FF6600"}}>{t(lang, STEP_LABELS[step-1].key, STEP_LABELS[step-1].pt)}</strong></p>
       </div>
 
       {/* Step 1: O Quê */}
       {step === 1 && (
         <>
           <div style={sectionStyle}>
-            <label style={labelStyle}>Título da Obra</label>
-            <input placeholder="Ex: Pintar apartamento T2" value={formData.title} onChange={e => set("title",e.target.value)} style={inputStyle} />
+            <label style={labelStyle}>{t(lang,"jobTitle","Título da Obra")}</label>
+            <input placeholder={t(lang,"jobTitlePlaceholder","Ex: Pintar apartamento T2")} value={formData.title} onChange={e => set("title",e.target.value)} style={inputStyle} />
           </div>
           <div style={sectionStyle}>
             <label style={labelStyle}>{t(lang,"category")}</label>
             <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
               {CATEGORIES.map(cat => (
-                <button key={cat.name} onClick={() => { set("category", cat.name); set("categoryKey", cat.key); }}
-                  style={{background:formData.category===cat.name?"#FF6600":surface,color:formData.category===cat.name?"#FFF":subtext,borderRadius:20,padding:"8px 14px",border:"none",cursor:"pointer",fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
+                <button key={cat.pt} onClick={() => { set("category", cat.pt); set("categoryKey", cat.key); }}
+                  style={{background:formData.category===cat.pt?"#FF6600":surface,color:formData.category===cat.pt?"#FFF":subtext,borderRadius:20,padding:"8px 14px",border:"none",cursor:"pointer",fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
                   {cat.icon} {cat.name}
                 </button>
               ))}
@@ -225,7 +235,7 @@ export default function NewJob() {
           </div>
           <div style={sectionStyle}>
             <label style={labelStyle}>{t(lang,"description")}</label>
-            <textarea placeholder="Descreva em detalhe o trabalho a realizar..." value={formData.description} onChange={e => set("description",e.target.value)}
+            <textarea placeholder={t(lang,"jobDescriptionPlaceholder","Descreva em detalhe o trabalho a realizar...")} value={formData.description} onChange={e => set("description",e.target.value)}
               style={{background:surface,border:"2px solid #FF6600",borderRadius:12,padding:14,color:text,resize:"none",height:100,width:"100%",boxSizing:"border-box",fontSize:15,outline:"none"}} />
           </div>
         </>
@@ -236,7 +246,7 @@ export default function NewJob() {
         <>
           <div style={sectionStyle}>
             <label style={labelStyle}>📍 {t(lang,"location")}</label>
-            <p style={{color:subtext,fontSize:13,margin:"0 0 12px"}}>Toque para selecionar a zona da obra:</p>
+            <p style={{color:subtext,fontSize:13,margin:"0 0 12px"}}>{t(lang,"tapToSelectZone","Toque para selecionar a zona da obra:")}</p>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {LOCATION_LIST.map(loc => (
                 <button key={loc} onClick={() => set("location", loc)}
@@ -269,16 +279,16 @@ export default function NewJob() {
                 <input type="date" value={formData.start_date} onChange={e => set("start_date",e.target.value)} style={{...inputStyle,colorScheme:isDark?"dark":"light"}} />
               </div>
               <div>
-                <label style={labelStyle}>Data Fim</label>
+                <label style={labelStyle}>{t(lang,"endDate","Data Fim")}</label>
                 <input type="date" value={formData.end_date} onChange={e => set("end_date",e.target.value)} style={{...inputStyle,colorScheme:isDark?"dark":"light"}} />
               </div>
             </div>
           </div>
 
           <div style={sectionStyle}>
-            <label style={labelStyle}>Urgência</label>
+            <label style={labelStyle}>{t(lang,"urgency","Urgência")}</label>
             <div style={{display:"flex",gap:8}}>
-              {[{value:'low',label:'🟢 Baixa'},{value:'medium',label:'🟡 Média'},{value:'high',label:'🔴 Alta'}].map(u => (
+              {[{value:'low',label:`🟢 ${t(lang,"urgencyLow","Baixa")}`},{value:'medium',label:`🟡 ${t(lang,"urgencyMedium","Média")}`},{value:'high',label:`🔴 ${t(lang,"urgencyHigh","Alta")}`}].map(u => (
                 <button key={u.value} onClick={() => set("urgency",u.value)}
                   style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.urgency===u.value?"#FF6600":surface,color:formData.urgency===u.value?"#FFF":subtext}}>
                   {u.label}
@@ -292,26 +302,26 @@ export default function NewJob() {
       {/* Step 3: Orçamento */}
       {step === 3 && (
         <div style={sectionStyle}>
-          <label style={labelStyle}>Tipo de Preço</label>
+          <label style={labelStyle}>{t(lang,"priceType","Tipo de Preço")}</label>
           <div style={{display:"flex",gap:8,marginBottom:12}}>
-            {[{value:'fixed',label:'Projeto'},{value:'hourly',label:'Hora'},{value:'negotiable',label:'Negociável'}].map(pt => (
+            {[{value:'fixed',label:t(lang,"priceProject","Projeto")},{value:'hourly',label:t(lang,"priceHour","Hora")},{value:'negotiable',label:t(lang,"priceNegotiable","Negociável")}].map(pt => (
               <button key={pt.value} onClick={() => set("price_type",pt.value)}
                 style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.price_type===pt.value?"#FF6600":surface,color:formData.price_type===pt.value?"#FFF":subtext}}>
                 {pt.label}
               </button>
             ))}
           </div>
-          <label style={labelStyle}>Valor (€){formData.price_type==='hourly'?' / hora':''}</label>
+          <label style={labelStyle}>{t(lang,"priceValue","Valor (€)")}{formData.price_type==='hourly'?` ${t(lang,"perHour","/ hora")}`:''}</label>
           <input type="number" inputMode="numeric" placeholder="0" value={formData.price} onChange={e => set("price",e.target.value)} style={inputStyle} />
           {priceSuggestion && (
             <div style={{background:"#FF660011",border:"1px solid #FF660033",borderRadius:10,padding:12,display:"flex",gap:8,marginTop:10,alignItems:"flex-start"}}>
               <span style={{color:"#FF6600",fontSize:16,flexShrink:0}}>💡</span>
               <div>
-                <p style={{color:"#FF6600",fontWeight:700,fontSize:13,margin:"0 0 4px"}}>Preço médio para {formData.category}</p>
-                <p style={{color:subtext,fontSize:12,margin:0}}>Mín: €{priceSuggestion.min} · Médio: €{priceSuggestion.avg} · Máx: €{priceSuggestion.max}</p>
+                <p style={{color:"#FF6600",fontWeight:700,fontSize:13,margin:"0 0 4px"}}>{t(lang,"avgPriceFor","Preço médio para {category}").replace("{category}", selectedCat?.name || formData.category)}</p>
+                <p style={{color:subtext,fontSize:12,margin:0}}>{t(lang,"priceRangeHint","Mín: €{min} · Médio: €{avg} · Máx: €{max}").replace("{min}", priceSuggestion.min).replace("{avg}", priceSuggestion.avg).replace("{max}", priceSuggestion.max)}</p>
                 <button onClick={() => set("price", priceSuggestion.avg.toString())}
                   style={{marginTop:6,background:"#FF6600",color:"#FFF",border:"none",borderRadius:8,padding:"4px 10px",fontSize:12,cursor:"pointer",fontWeight:600}}>
-                  Usar €{priceSuggestion.avg}
+                  {t(lang,"usePriceSuggestion","Usar €{price}").replace("{price}", priceSuggestion.avg)}
                 </button>
               </div>
             </div>
@@ -323,14 +333,14 @@ export default function NewJob() {
       {step === 4 && (
         <div style={{padding:"16px 20px"}}>
           <div style={{background:surface,borderRadius:16,padding:20,border:"1px solid #FF660044"}}>
-            <p style={{color:"#FF6600",fontWeight:700,fontSize:14,margin:"0 0 16px",textTransform:"uppercase",letterSpacing:1}}>Resumo da Obra</p>
+            <p style={{color:"#FF6600",fontWeight:700,fontSize:14,margin:"0 0 16px",textTransform:"uppercase",letterSpacing:1}}>{t(lang,"jobSummary","Resumo da Obra")}</p>
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {[
-                {label:"Título",value:formData.title},
-                {label:t(lang,"category"),value:`${catIcon} ${formData.category}`},
+                {label:t(lang,"title","Título"),value:formData.title},
+                {label:t(lang,"category"),value:`${catIcon} ${selectedCat?.name || formData.category}`},
                 {label:t(lang,"location"),value:formData.location},
                 {label:t(lang,"price"),value:`€${formData.price}${formData.price_type==='hourly'?'/h':''}`,highlight:true},
-                {label:"Urgência",value:formData.urgency==='low'?'🟢 Baixa':formData.urgency==='high'?'🔴 Alta':'🟡 Média'},
+                {label:t(lang,"urgency","Urgência"),value:formData.urgency==='low'?`🟢 ${t(lang,"urgencyLow","Baixa")}`:formData.urgency==='high'?`🔴 ${t(lang,"urgencyHigh","Alta")}`:`🟡 ${t(lang,"urgencyMedium","Média")}`},
               ].map(item => (
                 <div key={item.label} style={{borderBottom:`1px solid ${isDark?"#333":"#EEE"}`,paddingBottom:10}}>
                   <p style={{color:subtext,fontSize:12,margin:"0 0 2px"}}>{item.label}</p>
@@ -350,18 +360,18 @@ export default function NewJob() {
         {step > 1 && (
           <button onClick={() => setStep(s => s-1)}
             style={{flex:1,padding:"14px 0",background:"transparent",border:`1px solid ${isDark?"#444":"#CCCCCC"}`,borderRadius:14,color:subtext,fontWeight:700,fontSize:15,cursor:"pointer"}}>
-            ← Anterior
+            ← {t(lang,"previousStep","Anterior")}
           </button>
         )}
         {step < 4 ? (
           <button onClick={() => canGoNext() && setStep(s => s+1)} disabled={!canGoNext()}
             style={{flex:1,padding:"14px 0",background:canGoNext()?"#FF6600":"#333",border:"none",borderRadius:14,color:canGoNext()?"#FFF":"#555",fontWeight:700,fontSize:15,cursor:canGoNext()?"pointer":"not-allowed",transition:"background 0.2s"}}>
-            Próximo →
+            {t(lang,"nextStep","Próximo")} →
           </button>
         ) : (
           <button onClick={() => setShowConfirm(true)} disabled={isSubmitting}
             style={{flex:1,padding:"14px 0",background:isSubmitting?"#555":"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:15,cursor:isSubmitting?"not-allowed":"pointer"}}>
-            {isSubmitting ? "A publicar..." : "🚀 Publicar Obra"}
+            {isSubmitting ? t(lang,"publishing","A publicar...") : `🚀 ${t(lang,"publishJob","Publicar Obra")}`}
           </button>
         )}
       </div>

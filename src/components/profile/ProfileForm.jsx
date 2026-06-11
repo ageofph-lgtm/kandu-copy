@@ -1,5 +1,7 @@
 import { toast } from "sonner";
 import { useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +33,7 @@ const CATEGORIES = [
 
 const CITIES = [
   "Lisboa",
-  "Porto", 
+  "Porto",
   "Braga",
   "Coimbra",
   "Aveiro",
@@ -42,7 +44,25 @@ const CITIES = [
   "Évora"
 ];
 
+// Os valores de CATEGORIES são canónicos (guardados na DB em PT);
+// este mapa dá a chave i18n usada só para exibição.
+const CATEGORY_I18N = {
+  "Mão de Obra": "labor",
+  "Pintura": "painting",
+  "Eletricidade": "electricity",
+  "Canalização": "plumbing",
+  "Alvenaria": "masonry",
+  "Ladrilhador": "tiling",
+  "Carpintaria": "carpentry",
+  "Climatização": "hvac",
+  "Isolamentos": "insulation",
+  "Pavimentos": "flooring",
+  "Telhados": "roofing",
+};
+const categoryLabel = (lang, pt) => t(lang, CATEGORY_I18N[pt] || pt, pt);
+
 export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
+  const { lang } = useLanguage();
   const [formData, setFormData] = useState({
     user_type: user?.user_type || "",
     employer_type: user?.employer_type || "",
@@ -103,12 +123,12 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
     e.preventDefault();
     
     if (!formData.user_type) {
-      toast.error("Por favor, selecione o tipo de utilizador");
+      toast.error(t(lang, "selectUserTypeError", "Por favor, selecione o tipo de utilizador"));
       return;
     }
-    
+
     if (!formData.full_name) {
-      toast.error("Por favor, introduza o seu nome");
+      toast.error(t(lang, "enterNameError", "Por favor, introduza o seu nome"));
       return;
     }
 
@@ -120,7 +140,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {isFirstTime ? <User className="w-5 h-5" /> : <Save className="w-5 h-5" />}
-          {isFirstTime ? "Configurar Perfil" : "Editar Perfil"}
+          {isFirstTime ? t(lang, "setupProfile", "Configurar Perfil") : t(lang, "editProfile", "Editar Perfil")}
         </CardTitle>
       </CardHeader>
       
@@ -129,26 +149,26 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           {/* Tipo de utilizador */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Tipo de conta *
+              {t(lang, "accountType", "Tipo de conta")} *
             </label>
-            <Select 
-              value={formData.user_type} 
+            <Select
+              value={formData.user_type}
               onValueChange={(value) => handleChange("user_type", value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo de conta" />
+                <SelectValue placeholder={t(lang, "selectAccountType", "Selecione o tipo de conta")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="worker">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    Profissional
+                    {t(lang, "worker", "Profissional")}
                   </div>
                 </SelectItem>
                 <SelectItem value="employer">
                   <div className="flex items-center gap-2">
                     <Building2 className="w-4 h-4" />
-                    Empregador
+                    {t(lang, "employer", "Empregador")}
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -158,10 +178,10 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           {/* Nome */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Nome completo *
+              {t(lang, "fullName", "Nome completo")} *
             </label>
             <Input
-              placeholder="O seu nome completo"
+              placeholder={t(lang, "fullNamePlaceholder", "O seu nome completo")}
               value={formData.full_name}
               onChange={(e) => handleChange("full_name", e.target.value)}
             />
@@ -170,7 +190,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           {/* Telefone */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Telefone
+              {t(lang, "phone", "Telefone")}
             </label>
             <Input
               placeholder="912 345 678"
@@ -182,11 +202,11 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           {/* Cidade */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Cidade
+              {t(lang, "city", "Cidade")}
             </label>
             <Select value={formData.city} onValueChange={(value) => handleChange("city", value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione a sua cidade" />
+                <SelectValue placeholder={t(lang, "selectYourCity", "Selecione a sua cidade")} />
               </SelectTrigger>
               <SelectContent>
                 {CITIES.map((city) => (
@@ -206,9 +226,9 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
             <>
               {/* Tipo de empregador */}
               <div>
-                <label className="block text-sm font-medium mb-2">Tipo de Empregador *</label>
+                <label className="block text-sm font-medium mb-2">{t(lang, "employerTypeLabel", "Tipo de Empregador")} *</label>
                 <div className="flex gap-3">
-                  {[{ value: 'simple', label: 'Simple Employer', desc: 'Cliente Particular' }, { value: 'cia', label: 'Cia Employer', desc: 'Empresa' }].map(opt => (
+                  {[{ value: 'simple', label: 'Simple Employer', desc: t(lang, "privateClient", "Cliente Particular") }, { value: 'cia', label: 'Cia Employer', desc: t(lang, "companyLabel", "Empresa") }].map(opt => (
                     <button
                       key={opt.value}
                       type="button"
@@ -225,9 +245,9 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Empresa</label>
+                <label className="block text-sm font-medium mb-2">{t(lang, "companyLabel", "Empresa")}</label>
                 <Input
-                  placeholder="Nome da empresa"
+                  placeholder={t(lang, "companyNamePlaceholder", "Nome da empresa")}
                   value={formData.company}
                   onChange={(e) => handleChange("company", e.target.value)}
                 />
@@ -260,9 +280,9 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
                     </div>
                   ))}
                   <div className="space-y-2 mt-2">
-                    <Input placeholder="Nome do cliente *" value={newClient.name} onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))} />
-                    <Input placeholder="Contacto" value={newClient.contact} onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))} />
-                    <Input placeholder="NIF do cliente" value={newClient.nif} onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))} />
+                    <Input placeholder={t(lang, "clientNamePlaceholder", "Nome do cliente") + " *"} value={newClient.name} onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))} />
+                    <Input placeholder={t(lang, "contactLabel", "Contacto")} value={newClient.contact} onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))} />
+                    <Input placeholder={t(lang, "clientNifPlaceholder", "NIF do cliente")} value={newClient.nif} onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))} />
                     <Button type="button" variant="outline" className="w-full border-dashed border-purple-300 text-purple-600" disabled={!newClient.name}
                       onClick={() => {
                         if (!newClient.name) return;
@@ -270,7 +290,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
                         setNewClient({ name: '', contact: '', nif: '' });
                       }}
                     >
-                      <Plus className="w-4 h-4 mr-1" /> Adicionar cliente
+                      <Plus className="w-4 h-4 mr-1" /> {t(lang, "addClient", "Adicionar cliente")}
                     </Button>
                   </div>
                 </div>
@@ -282,18 +302,18 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           {formData.user_type === 'worker' && (
             <div>
               <label className="block text-sm font-medium mb-2">
-                Competências
+                {t(lang, "skills", "Competências")}
               </label>
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <Select value={newSkill} onValueChange={setNewSkill}>
                     <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Adicionar competência" />
+                      <SelectValue placeholder={t(lang, "addSkill", "Adicionar competência")} />
                     </SelectTrigger>
                     <SelectContent>
                       {CATEGORIES.filter(cat => !formData.skills.includes(cat)).map((category) => (
                         <SelectItem key={category} value={category}>
-                          {category}
+                          {categoryLabel(lang, category)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -306,7 +326,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
                 <div className="flex flex-wrap gap-2">
                   {formData.skills.map((skill) => (
                     <Badge key={skill} variant="secondary" className="flex items-center gap-1">
-                      {skill}
+                      {categoryLabel(lang, skill)}
                       <button
                         type="button"
                         onClick={() => removeSkill(skill)}
@@ -324,13 +344,13 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           {/* Áreas de atuação */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Áreas de atuação
+              {t(lang, "serviceAreas", "Áreas de atuação")}
             </label>
             <div className="space-y-2">
               <div className="flex gap-2">
                 <Select value={newArea} onValueChange={setNewArea}>
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Adicionar área" />
+                    <SelectValue placeholder={t(lang, "addArea", "Adicionar área")} />
                   </SelectTrigger>
                   <SelectContent>
                     {CITIES.filter(city => !formData.service_areas.includes(city)).map((city) => (
@@ -369,10 +389,10 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           {/* Bio */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Sobre mim
+              {t(lang, "bio", "Sobre mim")}
             </label>
             <Textarea
-              placeholder="Conte um pouco sobre si, experiência, especialidades..."
+              placeholder={t(lang, "bioPlaceholder", "Conte um pouco sobre si, experiência, especialidades...")}
               value={formData.bio}
               onChange={(e) => handleChange("bio", e.target.value)}
               rows={3}
@@ -383,12 +403,12 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           <div className="flex gap-3 pt-4">
             {!isFirstTime && (
               <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-                Cancelar
+                {t(lang, "cancel", "Cancelar")}
               </Button>
             )}
             <Button type="submit" className={`${isFirstTime ? 'w-full' : 'flex-1'} bg-blue-600 hover:bg-blue-700`}>
               <Save className="w-4 h-4 mr-2" />
-              {isFirstTime ? "Criar Perfil" : "Guardar Alterações"}
+              {isFirstTime ? t(lang, "createProfile", "Criar Perfil") : t(lang, "saveChanges", "Guardar Alterações")}
             </Button>
           </div>
         </form>

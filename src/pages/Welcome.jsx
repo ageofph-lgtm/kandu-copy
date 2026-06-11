@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
-import LanguageSelector from "@/components/utils/LanguageSelector";
 import { SUPPORTED_LANGUAGES } from "@/lib/LanguageContext";
 import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
@@ -10,10 +9,10 @@ import { useNavigate } from "react-router-dom";
 import { Wrench, Briefcase, Star, Shield } from "lucide-react";
 
 const features = [
-  { icon: Briefcase, label: "Publique obras", desc: "Encontre o profissional certo para cada trabalho" },
-  { icon: Wrench, label: "Seja contratado", desc: "Candidate-se a obras e mostre o seu talento" },
-  { icon: Star, label: "Avaliações reais", desc: "Transparência e confiança em cada projeto" },
-  { icon: Shield, label: "Plataforma segura", desc: "Pagamentos e dados protegidos" },
+  { icon: Briefcase, labelKey: "featurePublishJobs", label: "Publique obras", descKey: "featurePublishJobsDesc", desc: "Encontre o profissional certo para cada trabalho" },
+  { icon: Wrench, labelKey: "featureGetHired", label: "Seja contratado", descKey: "featureGetHiredDesc", desc: "Candidate-se a obras e mostre o seu talento" },
+  { icon: Star, labelKey: "featureRealReviews", label: "Avaliações reais", descKey: "featureRealReviewsDesc", desc: "Transparência e confiança em cada projeto" },
+  { icon: Shield, labelKey: "featureSecurePlatform", label: "Plataforma segura", descKey: "featureSecurePlatformDesc", desc: "Pagamentos e dados protegidos" },
 ];
 
 export default function Welcome() {
@@ -93,8 +92,8 @@ export default function Welcome() {
 
       {/* Headline */}
       <div style={{textAlign:"center", position:"relative", zIndex:1}}>
-        <h1 style={{fontSize:28, fontWeight:800, color:text, margin:"0 0 8px"}}>Find work. Find workers.</h1>
-        <p style={{fontSize:15, color:subtext, margin:0}}>Lisboa e arredores</p>
+        <h1 style={{fontSize:28, fontWeight:800, color:text, margin:"0 0 8px"}}>{t(lang,"findWorkTagline","Find work. Find workers.")}</h1>
+        <p style={{fontSize:15, color:subtext, margin:0}}>{t(lang,"lisbonAndSurroundings","Lisboa e arredores")}</p>
       </div>
 
       {/* Botões */}
@@ -103,19 +102,19 @@ export default function Welcome() {
           onClick={() => base44.auth.redirectToLogin(createPageUrl("SetupProfile"))}
           style={{width:"100%", padding:16, background:"#FF6600", border:"none", borderRadius:14, color:"#FFF", fontWeight:700, fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:10}}
         >
-          🔧 Sou Profissional
+          🔧 {t(lang,"imProfessional","Sou Profissional")}
         </button>
         <button
           onClick={() => base44.auth.redirectToLogin(createPageUrl("SetupProfile"))}
           style={{width:"100%", padding:16, background:"transparent", border:"2px solid #FF6600", borderRadius:14, color:"#FFF", fontWeight:700, fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:10}}
         >
-          💼 Preciso de Profissional
+          💼 {t(lang,"iNeedProfessional","Preciso de Profissional")}
         </button>
       </div>
 
       {/* RGPD */}
       <p style={{fontSize:11, color:"#555", textAlign:"center", position:"relative", zIndex:1, maxWidth:300}}>
-        Ao continuar, aceitas os Termos e Política de Privacidade (RGPD)
+        {t(lang,"acceptTermsNote","Ao continuar, aceitas os Termos e Política de Privacidade (RGPD)")}
       </p>
     </div>
   );

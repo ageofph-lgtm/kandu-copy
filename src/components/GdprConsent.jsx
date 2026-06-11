@@ -2,8 +2,11 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Shield, CheckCircle } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
+import { t } from "@/components/utils/translations";
 
 export default function GdprConsent({ open, onAccept }) {
+  const { lang } = useLanguage();
   const [checked, setChecked] = useState(false);
 
   return (
@@ -12,20 +15,20 @@ export default function GdprConsent({ open, onAccept }) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Shield className="w-5 h-5 text-blue-600" />
-            Privacidade & RGPD
+            {t(lang,"gdprTitle","Privacidade & RGPD")}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 text-sm text-gray-600">
           <p>
-            A <strong>KANDU</strong> recolhe e trata os seus dados pessoais (nome, email, localização e documentos de identidade) para:
+            {t(lang,"gdprIntroPrefix","A")} <strong>KANDU</strong> {t(lang,"gdprIntroSuffix","recolhe e trata os seus dados pessoais (nome, email, localização e documentos de identidade) para:")}
           </p>
           <ul className="space-y-1 pl-2">
             {[
-              "Criar e gerir o seu perfil profissional",
-              "Facilitar a ligação entre empregadores e profissionais",
-              "Verificar a sua identidade (KYC opcional)",
-              "Enviar notificações relevantes sobre obras"
+              t(lang,"gdprBullet1","Criar e gerir o seu perfil profissional"),
+              t(lang,"gdprBullet2","Facilitar a ligação entre empregadores e profissionais"),
+              t(lang,"gdprBullet3","Verificar a sua identidade (KYC opcional)"),
+              t(lang,"gdprBullet4","Enviar notificações relevantes sobre obras")
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
@@ -34,7 +37,7 @@ export default function GdprConsent({ open, onAccept }) {
             ))}
           </ul>
           <p className="text-xs text-gray-400">
-            Os seus dados são tratados em conformidade com o Regulamento Geral sobre a Proteção de Dados (RGPD — Regulamento (UE) 2016/679). Pode exercer os seus direitos (acesso, retificação, eliminação) em qualquer momento através do seu perfil ou contactando-nos.
+            {t(lang,"gdprLegalNote","Os seus dados são tratados em conformidade com o Regulamento Geral sobre a Proteção de Dados (RGPD — Regulamento (UE) 2016/679). Pode exercer os seus direitos (acesso, retificação, eliminação) em qualquer momento através do seu perfil ou contactando-nos.")}
           </p>
 
           <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl border border-gray-200 hover:border-[#F26522] transition-colors">
@@ -45,11 +48,11 @@ export default function GdprConsent({ open, onAccept }) {
               onChange={e => setChecked(e.target.checked)}
             />
             <span className="text-xs text-gray-600">
-              Li e aceito a{" "}
-              <span className="text-[#F26522] font-medium">Política de Privacidade</span>{" "}
-              e os{" "}
-              <span className="text-[#F26522] font-medium">Termos de Utilização</span>{" "}
-              da plataforma KANDU, incluindo o tratamento dos meus dados pessoais.
+              {t(lang,"gdprAcceptPrefix","Li e aceito a")}{" "}
+              <span className="text-[#F26522] font-medium">{t(lang,"privacyPolicy","Política de Privacidade")}</span>{" "}
+              {t(lang,"gdprAcceptMiddle","e os")}{" "}
+              <span className="text-[#F26522] font-medium">{t(lang,"termsOfUse","Termos de Utilização")}</span>{" "}
+              {t(lang,"gdprAcceptSuffix","da plataforma KANDU, incluindo o tratamento dos meus dados pessoais.")}
             </span>
           </label>
         </div>
@@ -59,7 +62,7 @@ export default function GdprConsent({ open, onAccept }) {
           onClick={onAccept}
           className="w-full h-12 bg-[#F26522] hover:bg-orange-600 rounded-xl font-bold disabled:opacity-40"
         >
-          Aceitar e Continuar
+          {t(lang,"acceptAndContinue","Aceitar e Continuar")}
         </Button>
       </DialogContent>
     </Dialog>

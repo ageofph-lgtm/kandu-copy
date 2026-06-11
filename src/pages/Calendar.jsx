@@ -1,17 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { Job } from "@/entities/Job";
 import { User } from "@/entities/User";
 
 
 import { format, addDays, startOfWeek, isSameDay, parseISO, addWeeks, subWeeks } from "date-fns";
-import { pt } from "date-fns/locale";
 
 export default function Calendar() {
   const { isDark } = useTheme();
   const { lang } = useLanguage();
+  const dateLocale = getDateLocale(lang);
   const bg = isDark ? "#111016" : "#FFFFFF";
   const surface = isDark ? "#1C1B22" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#111016";
@@ -106,13 +106,13 @@ export default function Calendar() {
       {/* Top Bar */}
       <div style={{padding:"50px 20px 12px"}}>
         <h1 style={{fontWeight:800,fontSize:22,color:text,margin:0}}>{t(lang,"calendar")}</h1>
-        <p style={{color:subtext,fontSize:14,margin:"4px 0 0"}}>{format(currentWeek, "MMMM yyyy", {locale:pt})}</p>
+        <p style={{color:subtext,fontSize:14,margin:"4px 0 0"}}>{format(currentWeek, "MMMM yyyy", {locale:dateLocale})}</p>
       </div>
 
       {/* Week Nav */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 20px",marginBottom:12}}>
         <button onClick={() => setCurrentWeek(subWeeks(currentWeek,1))} style={{background:surface,border:"none",borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#FF6600",fontSize:18}}>‹</button>
-        <span style={{color:subtext,fontSize:13}}>{format(weekDays[0],"d MMM",{locale:pt})} — {format(weekDays[6],"d MMM",{locale:pt})}</span>
+        <span style={{color:subtext,fontSize:13}}>{format(weekDays[0],"d MMM",{locale:dateLocale})} — {format(weekDays[6],"d MMM",{locale:dateLocale})}</span>
         <button onClick={() => setCurrentWeek(addWeeks(currentWeek,1))} style={{background:surface,border:"none",borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#FF6600",fontSize:18}}>›</button>
       </div>
 
@@ -124,7 +124,7 @@ export default function Calendar() {
           const hasDots = getJobsForDay(day).length > 0;
           return (
             <div key={idx} onClick={() => setSelectedDay(day)} style={{display:"flex",flexDirection:"column",alignItems:"center",cursor:"pointer",gap:4}}>
-              <span style={{fontSize:11,color:subtext,fontWeight:600}}>{format(day,"EEE",{locale:pt}).toUpperCase()}</span>
+              <span style={{fontSize:11,color:subtext,fontWeight:600}}>{format(day,"EEE",{locale:dateLocale}).toUpperCase()}</span>
               <div style={{width:34,height:34,borderRadius:"50%",background:isToday||isSelected?"#FF6600":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:isToday||isSelected?700:400,color:isToday||isSelected?"#FFF":text,fontSize:14}}>
                 {format(day,"d")}
               </div>
@@ -138,12 +138,12 @@ export default function Calendar() {
       {/* Events for selected day */}
       <div style={{padding:"0 20px",display:"flex",flexDirection:"column",gap:10}}>
         <p style={{fontWeight:700,fontSize:15,color:text,marginBottom:4}}>
-          {format(selectedDay,"EEEE, d MMMM",{locale:pt})}
+          {format(selectedDay,"EEEE, d MMMM",{locale:dateLocale})}
         </p>
         {selectedDayJobs.length === 0 ? (
           <div style={{textAlign:"center",paddingTop:40}}>
             <div style={{fontSize:48,marginBottom:12}}>📅</div>
-            <p style={{color:subtext}}>Sem eventos para este dia</p>
+            <p style={{color:subtext}}>{t(lang,"noEventsForDay","Sem eventos para este dia")}</p>
           </div>
         ) : selectedDayJobs.map(job => (
           <div key={job.id} style={{background:surface,borderRadius:14,padding:14,borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start"}}>
@@ -151,7 +151,7 @@ export default function Calendar() {
             <div style={{flex:1}}>
               <p style={{fontWeight:700,color:text,margin:"0 0 4px",fontSize:15}}>{job.title}</p>
               <p style={{color:subtext,fontSize:13,margin:0}}>{job.location} · €{job.price}{job.price_type==="hourly"?"/h":""}</p>
-              <p style={{color:"#AAAAAA",fontSize:12,margin:"4px 0 0"}}>{format(parseISO(job.start_date),"dd/MM/yyyy",{locale:pt})}</p>
+              <p style={{color:"#AAAAAA",fontSize:12,margin:"4px 0 0"}}>{format(parseISO(job.start_date),"dd/MM/yyyy",{locale:dateLocale})}</p>
             </div>
           </div>
         ))}
@@ -161,15 +161,15 @@ export default function Calendar() {
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,padding:"20px 20px 0"}}>
         <div style={{background:surface,borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
           <p style={{fontWeight:800,fontSize:18,color:"#FF6600",margin:0}}>{jobs.filter(j=>j.status==="open").length}</p>
-          <p style={{color:subtext,fontSize:11,margin:0}}>Abertas</p>
+          <p style={{color:subtext,fontSize:11,margin:0}}>{t(lang,"statsOpen","Abertas")}</p>
         </div>
         <div style={{background:surface,borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
           <p style={{fontWeight:800,fontSize:18,color:"#FF6600",margin:0}}>{jobs.filter(j=>j.status==="in_progress").length}</p>
-          <p style={{color:subtext,fontSize:11,margin:0}}>Em Curso</p>
+          <p style={{color:subtext,fontSize:11,margin:0}}>{t(lang,"statsInProgress","Em Curso")}</p>
         </div>
         <div style={{background:surface,borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
           <p style={{fontWeight:800,fontSize:18,color:"#22C55E",margin:0}}>{jobs.filter(j=>j.status==="completed").length}</p>
-          <p style={{color:subtext,fontSize:11,margin:0}}>Concluídas</p>
+          <p style={{color:subtext,fontSize:11,margin:0}}>{t(lang,"statsCompleted","Concluídas")}</p>
         </div>
       </div>
     </div>

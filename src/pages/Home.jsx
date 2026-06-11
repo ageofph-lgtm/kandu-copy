@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -12,8 +12,21 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const LISBON_COORDS = [38.7223, -9.1393];
-const CATEGORY_KEYS = ["allCategories","painting","electricity","plumbing","masonry","tiling","carpentry","hvac","flooring","roofing"];
-const CATEGORY_LABELS = { isolamentos: "Isolamentos" };
+// pt = valor canónico guardado em Job.category (a DB está em PT);
+// key = chave i18n usada só para exibição. "ALL" é sentinela do filtro.
+const CATEGORIES = [
+  { key: "allCategories", pt: "ALL" },
+  { key: "painting", pt: "Pintura" },
+  { key: "electricity", pt: "Eletricidade" },
+  { key: "plumbing", pt: "Canalização" },
+  { key: "masonry", pt: "Alvenaria" },
+  { key: "tiling", pt: "Ladrilhador" },
+  { key: "carpentry", pt: "Carpintaria" },
+  { key: "hvac", pt: "Climatização" },
+  { key: "insulation", pt: "Isolamentos" },
+  { key: "flooring", pt: "Pavimentos" },
+  { key: "roofing", pt: "Telhados" },
+];
 
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -32,13 +45,13 @@ function haversine(lat1, lon1, lat2, lon2) {
 ───────────────────────────*/
 function WorkerHome({ user, isDark }) {
   const { lang } = useLanguage();
-  const CATEGORIES = [...CATEGORY_KEYS.map(k => t(lang, k)), "Isolamentos"];
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [selectedJobDistance, setSelectedJobDistance] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(t(lang,"allCategories"));
+  // guarda o valor canónico PT (o que está em Job.category), não o traduzido
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [showList, setShowList] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [geoStatus, setGeoStatus] = useState("loading"); // "loading" | "ok" | "error"
@@ -83,13 +96,13 @@ function WorkerHome({ user, isDark }) {
   // ── Filtrar apenas por pesquisa + categoria (sem raio) ──
   useEffect(() => {
     let f = [...jobs];
-    if (selectedCategory !== t(lang, "allCategories")) f = f.filter(j => j.category === selectedCategory);
+    if (selectedCategory !== "ALL") f = f.filter(j => j.category === selectedCategory);
     if (searchTerm) {
-      const t = searchTerm.toLowerCase();
+      const term = searchTerm.toLowerCase();
       f = f.filter(j =>
-        j.title?.toLowerCase().includes(t) ||
-        j.location?.toLowerCase().includes(t) ||
-        j.category?.toLowerCase().includes(t)
+        j.title?.toLowerCase().includes(term) ||
+        j.location?.toLowerCase().includes(term) ||
+        j.category?.toLowerCase().includes(term)
       );
     }
     setFilteredJobs(f);
@@ -137,14 +150,14 @@ function WorkerHome({ user, isDark }) {
         </div>
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
           {CATEGORIES.map(cat => (
-            <button key={cat} onClick={() => setSelectedCategory(cat)} style={{
+            <button key={cat.pt} onClick={() => setSelectedCategory(cat.pt)} style={{
               flexShrink: 0, padding: "5px 12px", borderRadius: 20, border: "none", cursor: "pointer",
-              background: selectedCategory === cat ? "#FF6600" : surfaceAlpha,
-              color: selectedCategory === cat ? "#FFF" : subtext,
-              fontWeight: selectedCategory === cat ? 700 : 500, fontSize: 12,
+              background: selectedCategory === cat.pt ? "#FF6600" : surfaceAlpha,
+              color: selectedCategory === cat.pt ? "#FFF" : subtext,
+              fontWeight: selectedCategory === cat.pt ? 700 : 500, fontSize: 12,
               boxShadow: "0 2px 8px rgba(0,0,0,0.12)", transition: "all 0.15s"
             }}>
-              {cat}
+              {t(lang, cat.key, cat.pt === "ALL" ? "Todas" : cat.pt)}
             </button>
           ))}
         </div>
@@ -166,7 +179,7 @@ function WorkerHome({ user, isDark }) {
             width: 7, height: 7, borderRadius: "50%", flexShrink: 0,
             background: geoStatus === "ok" ? "#16A34A" : geoStatus === "error" ? "#EF4444" : "#F59E0B"
           }} />
-          {geoStatus === "loading" ? "A localizar..." : geoStatus === "error" ? "Sem localização" : "📍 Online"}
+          {geoStatus === "loading" ? t(lang,"locating","A localizar...") : geoStatus === "error" ? t(lang,"noLocation","Sem localização") : `📍 ${t(lang,"online","Online")}`}
         </div>
       </div>
 
@@ -179,7 +192,7 @@ function WorkerHome({ user, isDark }) {
         transition: "bottom 0.3s ease"
       }}>
         <div style={{ background: surfaceAlpha, borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#FF6600", boxShadow: "0 2px 10px rgba(0,0,0,0.15)" }}>
-          {filteredJobs.length} obra{filteredJobs.length !== 1 ? "s" : ""}
+          {(filteredJobs.length !== 1 ? t(lang,"jobsCount","{count} obras") : t(lang,"jobCount","{count} obra")).replace("{count}", filteredJobs.length)}
         </div>
         <button
           onClick={() => setShowList(v => !v)}
@@ -248,7 +261,7 @@ function WorkerHome({ user, isDark }) {
           onClose={() => { setSelectedJob(null); setSelectedJobDistance(null); }}
           onApply={() => { setSelectedJob(null); setSelectedJobDistance(null); }}
           onDelete={async (jobId) => {
-            if (!window.confirm("Apagar esta obra?")) return;
+            if (!window.confirm(t(lang,"confirmDeleteJob","Apagar esta obra?"))) return;
             try { await Job.delete(jobId); setSelectedJob(null); } catch {}
           }}
         />
@@ -268,7 +281,7 @@ function EmployerHome({ user, isDark }) {
   const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
   const border = isDark ? "#333" : "#E5E5E5";
-  const firstName = user.full_name?.split(" ")[0] || "Utilizador";
+  const firstName = user.full_name?.split(" ")[0] || t(lang,"userGeneric","Utilizador");
 
   return (
     <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80 }}>
@@ -280,12 +293,12 @@ function EmployerHome({ user, isDark }) {
         {/* Logo grande à direita + saudação à esquerda */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontSize: 13, color: isDark ? "#FF9944" : "#FF6600", fontWeight: 600 }}>Bem-vindo 👋</p>
+            <p style={{ margin: 0, fontSize: 13, color: isDark ? "#FF9944" : "#FF6600", fontWeight: 600 }}>{t(lang,"welcome","Bem-vindo")} 👋</p>
             <h1 style={{ margin: "4px 0 6px", fontSize: 28, fontWeight: 900, color: isDark ? "#FFFFFF" : "#111016", letterSpacing: -0.5 }}>
               {firstName}
             </h1>
             <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: isDark ? "#AAAAAA" : "#444444" }}>
-              O que precisa?
+              {t(lang,"whatDoYouNeed","O que precisa?")}
             </p>
           </div>
           <img
@@ -309,17 +322,17 @@ function EmployerHome({ user, isDark }) {
         >
           <div style={{ textAlign: "left" }}>
             <p style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>+ {t(lang,"jobTitle")}</p>
-            <p style={{ margin: "4px 0 0", fontSize: 13, opacity: 0.85 }}>Encontra o profissional certo em minutos</p>
+            <p style={{ margin: "4px 0 0", fontSize: 13, opacity: 0.85 }}>{t(lang,"findProInMinutes","Encontra o profissional certo em minutos")}</p>
           </div>
           <span style={{ fontSize: 36 }}>🏗️</span>
         </button>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {[
-            { icon: "📋", label: "Trabalho",     desc: "Obras pendentes e activas", to: "MyJobs" },
-            { icon: "👥", label: t(lang,"applications"), desc: "Veja quem quer trabalhar",  to: "Applications" },
-            { icon: "💬", label: t(lang,"chat"),          desc: "Fale com profissionais",   to: "Chat" },
-            { icon: "👤", label: t(lang,"profile"),        desc: "Edite os seus dados",      to: "Profile" },
+            { icon: "📋", label: t(lang,"work","Trabalho"),     desc: t(lang,"pendingActiveJobs","Obras pendentes e activas"), to: "MyJobs" },
+            { icon: "👥", label: t(lang,"applications"), desc: t(lang,"seeWhoWantsToWork","Veja quem quer trabalhar"),  to: "Applications" },
+            { icon: "💬", label: t(lang,"chat"),          desc: t(lang,"talkToPros","Fale com profissionais"),   to: "Chat" },
+            { icon: "👤", label: t(lang,"profile"),        desc: t(lang,"editYourData","Edite os seus dados"),      to: "Profile" },
           ].map(({ icon, label, desc, to }) => (
             <button
               key={to}

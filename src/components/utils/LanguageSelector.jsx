@@ -1,4 +1,3 @@
-import React from "react";
 import { useLanguage, SUPPORTED_LANGUAGES } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { toast } from "sonner";
