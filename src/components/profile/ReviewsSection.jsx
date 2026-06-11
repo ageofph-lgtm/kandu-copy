@@ -49,6 +49,22 @@ export default function ReviewsSection({ userId }) {
   return (
     <div className="space-y-3">
       {ratings.map((r) => (
+        <RatingCard key={r.id} rating={r} lang={lang} />
+      ))}
+    </div>
+  );
+}
+
+function RatingCard({ rating: r, lang }) {
+  const [comment, setComment] = useState(r.comment || "");
+  useEffect(() => {
+    if (r.comment && lang && lang !== "PT") {
+      translateText(r.comment, lang).then(setComment).catch(() => setComment(r.comment));
+    } else {
+      setComment(r.comment || "");
+    }
+  }, [lang, r.comment]);
+  return (
         <div key={r.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-2">
             <div className="flex text-yellow-400">
@@ -58,7 +74,7 @@ export default function ReviewsSection({ userId }) {
             </div>
             <span className="text-xs text-gray-400">{new Date(r.created_date).toLocaleDateString()}</span>
           </div>
-          {r.comment && <p className="text-sm text-gray-700">{r.comment}</p>}
+          {r.comment && <p className="text-sm text-gray-700">{comment}</p>}
           {r.qualities?.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {r.qualities.map(q => (
@@ -67,7 +83,5 @@ export default function ReviewsSection({ userId }) {
             </div>
           )}
         </div>
-      ))}
-    </div>
   );
 }
