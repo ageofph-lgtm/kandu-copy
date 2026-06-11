@@ -14,26 +14,44 @@ const profileTypes = [
   {
     type: 'employer',
     icon: Briefcase,
+    titleKey: 'employer',
     title: 'Empregador',
+    descriptionKey: 'employerProfileDesc',
     description: 'Publique trabalhos e encontre profissionais qualificados',
     gradient: 'from-blue-500 to-blue-600',
-    features: ['Publicar obras', 'Receber propostas', 'Avaliar profissionais']
+    features: [
+      { key: 'featurePublishJobs', pt: 'Publicar obras' },
+      { key: 'featureReceiveProposals', pt: 'Receber propostas' },
+      { key: 'featureRateProfessionals', pt: 'Avaliar profissionais' }
+    ]
   },
   {
     type: 'worker',
     icon: Wrench,
+    titleKey: 'worker',
     title: 'Profissional',
-    description: '{t(lang,"imProfessional")} e mostre as suas habilidades',
+    descriptionKey: 'workerProfileDesc',
+    description: 'Candidate-se a obras e mostre as suas habilidades',
     gradient: 'from-[#F26522] to-orange-600',
-    features: ['Candidatar-se a obras', 'Criar portfólio', 'Ganhar reputação']
+    features: [
+      { key: 'featureApplyToJobs', pt: 'Candidatar-se a obras' },
+      { key: 'featureCreatePortfolio', pt: 'Criar portfólio' },
+      { key: 'featureEarnReputation', pt: 'Ganhar reputação' }
+    ]
   },
   {
     type: 'admin',
     icon: Shield,
+    titleKey: 'administrator',
     title: 'Administrador',
+    descriptionKey: 'adminProfileDesc',
     description: 'Gerir plataforma, utilizadores e conteúdos',
     gradient: 'from-purple-500 to-purple-700',
-    features: ['Gestão de utilizadores', 'Moderação de conteúdo', 'Estatísticas da plataforma'],
+    features: [
+      { key: 'featureUserManagement', pt: 'Gestão de utilizadores' },
+      { key: 'featureContentModeration', pt: 'Moderação de conteúdo' },
+      { key: 'featurePlatformStats', pt: 'Estatísticas da plataforma' }
+    ],
     adminOnly: true
   }
 ];
@@ -147,7 +165,7 @@ export default function SetupProfile() {
       }
       await doCreateProfile(idDocUrl);
     } catch {
-      toast.error(t(lang,"error") || "Erro ao criar perfil. Tente novamente.");
+      toast.error(t(lang,"errorCreatingProfile","Erro ao criar perfil. Tente novamente."));
       setIsCreating(false);
       setIsUploading(false);
     }
@@ -165,11 +183,11 @@ export default function SetupProfile() {
       <div style={{minHeight:"100vh",background:"#111016",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,position:"relative",overflow:"hidden"}}>
         <div style={hexBg} />
         <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:64, objectFit:"contain", maxWidth:220}} alt="KANDU" />
-        <h2 style={{color:"#FFF",fontWeight:800,fontSize:22,marginBottom:8,position:"relative",zIndex:1}}>{t(lang,"loginTitle")}</h2>
-        <p style={{color:"#AAAAAA",fontSize:14,marginBottom:24,position:"relative",zIndex:1}}>{t(lang,"loginSubtitle")}</p>
+        <h2 style={{color:"#FFF",fontWeight:800,fontSize:22,marginBottom:8,position:"relative",zIndex:1}}>{t(lang,"enterPlatform","Entrar na plataforma")}</h2>
+        <p style={{color:"#AAAAAA",fontSize:14,marginBottom:24,position:"relative",zIndex:1}}>{t(lang,"loginToContinue","Faz login para continuares")}</p>
         <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
           style={{padding:"16px 40px",background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:"pointer",position:"relative",zIndex:1}}>
-          Entrar / Criar Conta
+          {t(lang,"loginOrSignup","Entrar / Criar Conta")}
         </button>
       </div>
     );
@@ -206,14 +224,14 @@ export default function SetupProfile() {
               <div key={type} onClick={() => setEmployerType(type)}
                 style={{background:"#1C1B22",borderRadius:16,padding:20,textAlign:"center",border:employerType===type?"2px solid #FF6600":"2px solid transparent",cursor:"pointer"}}>
                 <div style={{fontSize:36,marginBottom:8}}>{type==="cia" ? "🏢" : "👤"}</div>
-                <div style={{fontWeight:700,color:"#FFF",fontSize:14}}>{type==="cia" ? "Cia Employer" : "Simple Employer"}</div>
-                <div style={{color:"#AAAAAA",fontSize:12,marginTop:4}}>{type==="cia" ? "Empresa ou Organização" : "Cliente Particular"}</div>
+                <div style={{fontWeight:700,color:"#FFF",fontSize:14}}>{type==="cia" ? t(lang,"ciaEmployer","Cia Employer") : t(lang,"simpleEmployer","Simple Employer")}</div>
+                <div style={{color:"#AAAAAA",fontSize:12,marginTop:4}}>{type==="cia" ? t(lang,"companyOrOrganization","Empresa ou Organização") : t(lang,"privateClient","Cliente Particular")}</div>
               </div>
             ))}
           </div>
           {employerType === "cia" && (
             <div style={{background:"#1E1E1E",borderTop:"3px solid #FF6600",borderRadius:"0 0 16px 16px",padding:16,display:"flex",flexDirection:"column",gap:12,maxWidth:420,margin:"0 auto 16px"}}>
-              {[{label:"Nome da Empresa",key:"name"},{label:"Contacto",key:"contact"},{label:"NIF",key:"nif"}].map(({label,key}) => (
+              {[{label:t(lang,"companyName","Nome da Empresa"),key:"name"},{label:t(lang,"contactInfo","Contacto"),key:"contact"},{label:t(lang,"nif","NIF"),key:"nif"}].map(({label,key}) => (
                 <div key={key}>
                   <label style={{color:"#AAAAAA",fontSize:13,display:"block",marginBottom:6}}>{label}</label>
                   <input placeholder={label} value={newClient[key]} onChange={e => setNewClient(p => ({...p,[key]:e.target.value}))}
@@ -222,7 +240,7 @@ export default function SetupProfile() {
               ))}
               <button onClick={addClient} disabled={!newClient.name}
                 style={{padding:10,background:newClient.name?"#FF6600":"#333",border:"none",borderRadius:10,color:"#FFF",fontWeight:600,cursor:newClient.name?"pointer":"default"}}>
-                + Adicionar cliente
+                + {t(lang,"addClient","Adicionar cliente")}
               </button>
               {companyClients.map((c,i) => (
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#1C1B22",borderRadius:10,padding:"8px 12px"}}>
@@ -238,7 +256,7 @@ export default function SetupProfile() {
           <div style={{maxWidth:420,margin:"0 auto"}}>
             <button onClick={handleEmployerContinue} disabled={!employerType}
               style={{width:"100%",padding:16,background:employerType?"#FF6600":"#333",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:employerType?"pointer":"default"}}>
-              Continuar
+              {t(lang,"continue","Continuar")}
             </button>
           </div>
         </div>
@@ -255,25 +273,25 @@ export default function SetupProfile() {
         <div style={{flex:1,padding:"50px 20px 20px",display:"flex",flexDirection:"column",alignItems:"center",gap:20,position:"relative",zIndex:1}}>
           <div style={{display:"flex",alignItems:"center",width:"100%",maxWidth:420,justifyContent:"space-between"}}>
             <button onClick={() => setStep(visibleProfiles[activeIndex]?.type==="employer" ? 1.5 : 1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer"}}>←</button>
-            <span style={{fontWeight:700,color:"#FFF",fontSize:17}}>{t(lang,"identityVerification")}</span>
+            <span style={{fontWeight:700,color:"#FFF",fontSize:17}}>{t(lang,"identityVerification","Verificação de Identidade")}</span>
             <span style={{width:22}} />
           </div>
           <span style={{background:"#22C55E",color:"#FFF",padding:"8px 20px",borderRadius:20,fontWeight:700,fontSize:14}}>✓ Verified</span>
           <div style={{width:160,height:160,clipPath:"polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",background:"#111016",border:"4px solid #FF6600",boxShadow:"0 0 30px #FF660066",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
             <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:64, objectFit:"contain", maxWidth:220}} alt="" />
-            <span style={{fontWeight:900,color:"#FFF",fontSize:15,marginTop:4}}>{t(lang,"ultra")}</span>
-            <span style={{fontWeight:900,color:"#FFF",fontSize:15}}>{t(lang,"verified")}</span>
+            <span style={{fontWeight:900,color:"#FFF",fontSize:15,marginTop:4}}>Ultra</span>
+            <span style={{fontWeight:900,color:"#FFF",fontSize:15}}>Verified</span>
           </div>
-          <p style={{color:"#AAAAAA",fontSize:14,textAlign:"center",maxWidth:300}}>Submete o teu documento de identidade para ganhar o badge máximo de confiança</p>
+          <p style={{color:"#AAAAAA",fontSize:14,textAlign:"center",maxWidth:300}}>{t(lang,"submitIdDocHint","Submete o teu documento de identidade para ganhar o badge máximo de confiança")}</p>
           <input ref={fileInputRef} type="file" accept="image/*,application/pdf" style={{display:"none"}} onChange={handleFileSelect} />
           {idDocPreview ? (
             <div style={{position:"relative",width:"100%",maxWidth:420,borderRadius:12,overflow:"hidden",border:"2px solid #FF6600"}}>
-              <img src={idDocPreview} alt="Documento" style={{width:"100%",height:140,objectFit:"cover"}} />
+              <img src={idDocPreview} alt={t(lang,"document","Documento")} style={{width:"100%",height:140,objectFit:"cover"}} />
               <button onClick={() => { setIdDocFile(null); setIdDocPreview(null); }} style={{position:"absolute",top:8,right:8,background:"#EF4444",border:"none",borderRadius:"50%",width:28,height:28,color:"#FFF",cursor:"pointer",fontWeight:700}}>×</button>
             </div>
           ) : (
             <div style={{display:"flex",gap:12,width:"100%",maxWidth:420}}>
-              {["Frente do BI/CC","Verso do BI/CC"].map(label => (
+              {[t(lang,"idFront","Frente do BI/CC"),t(lang,"idBack","Verso do BI/CC")].map(label => (
                 <div key={label} onClick={() => fileInputRef.current?.click()}
                   style={{flex:1,height:100,background:"#1C1B22",border:"2px dashed #FF6600",borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",gap:6}}>
                   <span style={{fontSize:28,color:"#FF6600"}}>📷</span>
@@ -282,12 +300,12 @@ export default function SetupProfile() {
               ))}
             </div>
           )}
-          <p style={{fontSize:11,color:"#555",textAlign:"center"}}>{t(lang,"gdprShort")}</p>
+          <p style={{fontSize:11,color:"#555",textAlign:"center"}}>{t(lang,"gdprProtectedNote","De acordo com RGPD, os teus dados estão protegidos.")}</p>
           <button onClick={() => handleFinish(false)} disabled={isCreating || !idDocFile}
             style={{width:"100%",maxWidth:420,padding:16,background:idDocFile?"#FF6600":"#333",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:idDocFile?"pointer":"default"}}>
-            {isUploading ? t(lang,"loading") : isCreating ? "A criar perfil..." : "Submeter Documentos"}
+            {isUploading ? t(lang,"loading") : isCreating ? t(lang,"creatingProfile","A criar perfil...") : t(lang,"submitDocuments","Submeter Documentos")}
           </button>
-          <button onClick={() => handleFinish(true)} disabled={isCreating} style={{background:"none",border:"none",color:"#666",cursor:"pointer",fontSize:14}}>{t(lang,"doLater")}</button>
+          <button onClick={() => handleFinish(true)} disabled={isCreating} style={{background:"none",border:"none",color:"#666",cursor:"pointer",fontSize:14}}>{t(lang,"doLater","Fazer mais tarde")}</button>
         </div>
       </div>
     );
@@ -300,7 +318,7 @@ export default function SetupProfile() {
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"60px 20px 100px",gap:24,position:"relative",zIndex:1}}>
         <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:64, objectFit:"contain", maxWidth:220}} alt="KANDU" />
         <div style={{textAlign:"center"}}>
-          <h2 style={{fontSize:22,fontWeight:800,color:"#FFF",margin:"0 0 6px"}}>{t(lang,"chooseType")}</h2>
+          <h2 style={{fontSize:22,fontWeight:800,color:"#FFF",margin:"0 0 6px"}}>{t(lang,"howWillYouUseKandu","Como vais usar o KANDU?")}</h2>
           {user && <p style={{fontSize:12,color:"#AAAAAA",margin:0}}>{user.email}</p>}
         </div>
         <div style={{width:"100%",maxWidth:420,display:"flex",flexDirection:"column",gap:14}}>
@@ -309,8 +327,8 @@ export default function SetupProfile() {
               style={{background:"#1C1B22",borderRadius:16,padding:20,borderLeft:"4px solid #FF6600",border:activeIndex===idx?"2px solid #FF6600":"2px solid transparent",borderLeft:"4px solid #FF6600",cursor:"pointer",display:"flex",alignItems:"center",gap:16}}>
               <span style={{fontSize:38}}>{profile.type==="worker" ? "⛑️" : profile.type==="employer" ? "💼" : "🛡️"}</span>
               <div style={{flex:1}}>
-                <div style={{fontWeight:700,fontSize:17,color:"#FFF"}}>{profile.title}</div>
-                <div style={{fontSize:13,color:"#AAAAAA",marginTop:4}}>{profile.description}</div>
+                <div style={{fontWeight:700,fontSize:17,color:"#FFF"}}>{t(lang, profile.titleKey, profile.title)}</div>
+                <div style={{fontSize:13,color:"#AAAAAA",marginTop:4}}>{t(lang, profile.descriptionKey, profile.description)}</div>
               </div>
               <span style={{color:activeIndex===idx?"#FF6600":"#555",fontSize:22}}>›</span>
             </div>
@@ -320,7 +338,7 @@ export default function SetupProfile() {
       <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px 20px 28px",background:"linear-gradient(to top, #111016 70%, transparent)",zIndex:10}}>
         <button onClick={handleContinueToVerify} disabled={isCreating}
           style={{width:"100%",maxWidth:420,display:"block",margin:"0 auto",padding:16,background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:"pointer"}}>
-          {user ? `Continuar como ${visibleProfiles[activeIndex]?.title}` : 'Fazer Login'}
+          {user ? t(lang,"continueAs","Continuar como {type}").replace("{type}", t(lang, visibleProfiles[activeIndex]?.titleKey, visibleProfiles[activeIndex]?.title)) : t(lang,"doLogin","Fazer Login")}
         </button>
       </div>
     </div>
