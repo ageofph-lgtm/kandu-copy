@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { UploadFile } from "@/api/integrations";
 import { FileText, Languages } from "lucide-react";
 import { format } from "date-fns";
@@ -81,7 +81,7 @@ export default function ChatWindow({
       });
     } catch (error) {
       console.error("Error uploading file:", error);
-      toast.error(t(lang,"error"));
+      toast.error(t(lang, "fileSendError", "Erro ao enviar arquivo"));
     }
     setIsUploading(false);
   };
@@ -99,7 +99,7 @@ export default function ChatWindow({
           {conversation.other_user.full_name?.charAt(0) || "?"}
         </div>
         <div style={{flex:1}}>
-          <p style={{fontWeight:700,fontSize:14,color:"#FFF",margin:0}}>{conversation.other_user.full_name || "Utilizador"}</p>
+          <p style={{fontWeight:700,fontSize:14,color:"#FFF",margin:0}}>{conversation.other_user.full_name || t(lang, "userLabel", "Utilizador")}</p>
           <p style={{fontSize:11,color:"#22C55E",margin:0}}>● online</p>
         </div>
         {/* Botão de auto-tradução */}
@@ -125,7 +125,7 @@ export default function ChatWindow({
         <div style={{background:"#F4621F",padding:"8px 16px",display:"flex",gap:8,alignItems:"center"}}>
           <span style={{fontSize:16}}>💼</span>
           <span style={{fontWeight:700,color:"#FFF",fontSize:13,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{conversation.job_context.job.title}</span>
-          <span style={{color:"#FFF",fontSize:12,opacity:0.8}}>· Ativo</span>
+          <span style={{color:"#FFF",fontSize:12,opacity:0.8}}>{`· `}{t(lang, "active", "Ativo")}</span>
         </div>
       )}
 
@@ -155,7 +155,7 @@ export default function ChatWindow({
                     ) : (
                       <a href={message.attachment.url} target="_blank" rel="noopener noreferrer"
                         style={{color:isOwn?"#fff":"#F4621F",display:"flex",alignItems:"center",gap:6}}>
-                        <FileText size={14}/> Documento
+                        <FileText size={14}/> {t(lang, "documentLabel", "Documento")}
                       </a>
                     )
                   ) : (
