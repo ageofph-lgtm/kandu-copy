@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { Archive, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
-import { pt } from "date-fns/locale";
 
 function ConversationItem({ conversation, onSelect, selectedId }) {
+  const { lang } = useLanguage();
   const isSelected = selectedId === conversation.conversation_id;
   const hasJobContext = !!conversation.job_context;
 
@@ -13,8 +13,8 @@ function ConversationItem({ conversation, onSelect, selectedId }) {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = (now - date) / (1000 * 60 * 60);
-    if (diffInHours < 24) return format(date, "HH:mm", { locale: pt });
-    return format(date, "dd/MM", { locale: pt });
+    if (diffInHours < 24) return format(date, "HH:mm", { locale: getDateLocale(lang) });
+    return format(date, "dd/MM", { locale: getDateLocale(lang) });
   };
 
   const truncateMessage = (message, maxLength = 50) => {
@@ -40,12 +40,12 @@ function ConversationItem({ conversation, onSelect, selectedId }) {
         </div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
-            <p style={{fontWeight:600,fontSize:14,color:"#FFF",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{conversation.other_user.full_name || "Utilizador"}</p>
+            <p style={{fontWeight:600,fontSize:14,color:"#FFF",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{conversation.other_user.full_name || t(lang, "userLabel", "Utilizador")}</p>
             <span style={{fontSize:11,color:"#555",flexShrink:0,marginLeft:8}}>{formatLastMessageTime(conversation.last_message.created_date)}</span>
           </div>
           {hasJobContext && <p style={{fontSize:11,color:"#FF6600",margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>📋 {conversation.job_context.job.title}</p>}
           <p style={{fontSize:13,color:"#666",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-            {conversation.last_message.attachment_url ? "📎 Anexo" : truncateMessage(conversation.last_message.message)}
+            {conversation.last_message.attachment_url ? `📎 ${t(lang, "attachment", "Anexo")}` : truncateMessage(conversation.last_message.message)}
           </p>
         </div>
       </div>
