@@ -1,8 +1,20 @@
 import { useState, useEffect } from "react";
 import { Rating } from "@/entities/Rating";
 import { Star, Clock } from "lucide-react";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage, translateText } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
+
+function QualityBadge({ quality, lang }) {
+  const [label, setLabel] = useState(quality);
+  useEffect(() => {
+    if (lang && lang !== "PT") {
+      translateText(quality, lang).then(setLabel).catch(() => setLabel(quality));
+    } else {
+      setLabel(quality);
+    }
+  }, [lang, quality]);
+  return <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{label}</span>;
+}
 
 export default function ReviewsSection({ userId }) {
   const { lang } = useLanguage();
@@ -50,7 +62,7 @@ export default function ReviewsSection({ userId }) {
           {r.qualities?.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {r.qualities.map(q => (
-                <span key={q} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{q}</span>
+                <QualityBadge key={q} quality={q} lang={lang} />
               ))}
             </div>
           )}
