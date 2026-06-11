@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -15,6 +15,18 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
 function NotificationCard({ notification, onMarkAsRead, onDelete }) {
+  const [translatedTitle, setTranslatedTitle] = useState(notification.title);
+  const [translatedMessage, setTranslatedMessage] = useState(notification.message);
+
+  useEffect(() => {
+    if (lang && lang !== "PT") {
+      translateText(notification.title, lang).then(setTranslatedTitle).catch(() => {});
+      translateText(notification.message, lang).then(setTranslatedMessage).catch(() => {});
+    } else {
+      setTranslatedTitle(notification.title);
+      setTranslatedMessage(notification.message);
+    }
+  }, [lang, notification.title, notification.message]);
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const { lang } = useLanguage();
@@ -62,12 +74,12 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
             <div className="text-2xl">{getNotificationIcon(notification.type)}</div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h4 style={{fontWeight:600,fontSize:14,color:text,margin:"0 0 2px"}}>{notification.title}</h4>
+                <h4 style={{fontWeight:600,fontSize:14,color:text,margin:"0 0 2px"}}>{translatedTitle}</h4>
                 {!notification.is_read && (
                   <span style={{width:8,height:8,borderRadius:"50%",background:"#FF6600",display:"inline-block",marginLeft:6,flexShrink:0}}></span>
                 )}
               </div>
-              <p style={{fontSize:14,color:subtext,marginBottom:8}}>{notification.message}</p>
+              <p style={{fontSize:14,color:subtext,marginBottom:8}}>{translatedMessage}</p>
               <p style={{fontSize:12,color:subtext}}>
                 {format(new Date(notification.created_date), t(lang,"dateTimeFormat","dd/MM/yyyy 'às' HH:mm"), { locale: getDateLocale(lang) })}
               </p>
