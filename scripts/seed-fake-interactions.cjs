@@ -73,7 +73,7 @@ if (!jobs.length) throw new Error('fakejobs.json vazio');
 const applications = [];
 const jobApplicants = {};
 for (const job of jobs){
-  const n = ri(2,4); const chosen = new Set();
+  const n = ri(1,2); const chosen = new Set();
   for (let k=0;k<n;k++){ let w=pick(workers),g=0; while(chosen.has(w.id)&&g++<10) w=pick(workers); chosen.add(w.id);
     const prop = Math.random()<0.5;
     applications.push({ job_id:job.id, worker_id:w.id, message:pick(APP_MESSAGES),
@@ -89,21 +89,21 @@ function convo(empId, wId, n){ let s=wId,r=empId; const c=cid(empId,wId);
   for(let m=0;m<n;m++){ messages.push({ conversation_id:c, sender_id:s, receiver_id:r,
     message: m===0?pick(CHAT_OPENERS):(m%2?pick(CHAT_REPLIES):pick(CHAT_OPENERS)),
     is_read: Math.random()<0.7, fake_test:true }); [s,r]=[r,s]; } }
-for (const job of jobs){ for (const wId of (jobApplicants[job.id]||[]).slice(0, ri(1,2))) convo(job.employer_id, wId, ri(2,4)); }
-for (let i=0;i<120;i++) convo(pick(employers).id, pick(workers).id, ri(2,3));
+for (const job of jobs.slice(0, 55)){ const w=(jobApplicants[job.id]||[])[0]; if (w) convo(job.employer_id, w, ri(2,3)); }
+for (let i=0;i<15;i++) convo(pick(employers).id, pick(workers).id, ri(2,3));
 
 const ratings = [];
-for (const job of jobs.filter(j=>j.status==='completed')){
+for (const job of jobs.filter(j=>j.status==='completed').slice(0, 35)){
   const wId = pick(jobApplicants[job.id]&&jobApplicants[job.id].length?jobApplicants[job.id]:[pick(workers).id]);
   ratings.push({ job_id:job.id, rater_id:job.employer_id, rated_id:wId, rating:ri(3,5), comment:pick(RATING_COMMENTS), qualities:[pick(QUALITIES),pick(QUALITIES)], is_visible:true, fake_test:true });
   ratings.push({ job_id:job.id, rater_id:wId, rated_id:job.employer_id, rating:ri(3,5), comment:pick(RATING_COMMENTS), qualities:[pick(QUALITIES)], is_visible:true, fake_test:true });
 }
 
 const notifications = [];
-for (const app of applications.slice(0,150)){
+for (const app of applications.slice(0,80)){
   const job = jobs.find(j=>j.id===app.job_id);
   notifications.push({ user_id:job.employer_id, type: app.application_type==='proposal'?'new_proposal':'new_application',
-    title:'Nova candidatura', message:`Recebeu uma ${app.application_type==='proposal'?'proposta':'candidatura'} para "${job.title}".`,
+    title:'Nova candidatura', message:`Recebeu uma ${app.application_type==='proposal'?'proposta':'candidatura'} para uma das suas obras.`,
     related_id:job.id, is_read:Math.random()<0.5, fake_test:true });
 }
 
