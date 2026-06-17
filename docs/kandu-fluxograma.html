@@ -6,42 +6,47 @@
 <title>KANDU — Fluxograma do app (estado atual)</title>
 <style>
   :root{
-    --bg:#0f1419; --panel:#161c24; --ink:#e6edf3; --muted:#9fb0c0; --line:#2a3540;
-    --worker:#2f81f7; --employer:#f26522; --admin:#a371f7; --state:#3fb950; --backend:#d29922; --data:#db61a2;
+    --brand:#F26522; --brand-2:#ff8a4c; --brand-d:#c44e16;
+    --bg:#ffffff; --soft:#f7f8fa; --ink:#1f2933; --muted:#64727f; --line:#e6e8ec;
+    --worker:#1E66F5; --employer:#F26522; --admin:#7C3AED; --state:#16A34A; --backend:#d97706; --data:#DB2777;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  header{padding:22px 26px 12px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#11161d,#0f1419)}
-  h1{margin:0 0 4px;font-size:22px;letter-spacing:.2px}
-  .sub{color:var(--muted);font-size:13px}
-  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12.5px;color:var(--muted)}
-  .legend b{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-  nav{display:flex;flex-wrap:wrap;gap:6px;padding:14px 26px;position:sticky;top:0;background:rgba(15,20,25,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:5}
-  nav button{cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:8px 12px;border-radius:8px;font-size:13px;transition:.15s}
-  nav button:hover{color:var(--ink);border-color:#3a4a59}
-  nav button.active{background:#1f6feb22;border-color:#1f6feb;color:#cfe2ff}
-  main{padding:22px 26px 60px;max-width:1200px;margin:0 auto}
+  body{margin:0;background:var(--soft);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header{padding:22px 26px 16px;background:linear-gradient(120deg,var(--brand-d),var(--brand) 55%,var(--brand-2));color:#fff}
+  h1{margin:0 0 4px;font-size:22px;letter-spacing:.2px;display:flex;align-items:center;gap:10px}
+  .pill{font-size:12px;font-weight:600;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.45);padding:2px 10px;border-radius:999px}
+  .sub{color:#fff;opacity:.95;font-size:13px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12.5px;color:#fff;opacity:.96}
+  .legend b{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.15)}
+  nav{display:flex;flex-wrap:wrap;gap:6px;padding:12px 26px;position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:5}
+  nav button{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--muted);padding:8px 12px;border-radius:9px;font-size:13px;transition:.15s}
+  nav button:hover{color:var(--ink);border-color:#cfd6dd}
+  nav button.active{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 2px 8px rgba(242,101,34,.35)}
+  main{padding:22px 26px 60px;max-width:1180px;margin:0 auto}
   section{display:none;animation:f .2s ease}
   section.active{display:block}
   @keyframes f{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-  h2{font-size:18px;margin:6px 0 4px}
-  .desc{color:var(--muted);font-size:13.5px;margin:0 0 16px;max-width:80ch}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;overflow:auto}
-  .mermaid{background:transparent}
-  table{border-collapse:collapse;width:100%;margin-top:8px;font-size:13.5px}
+  h2{font-size:19px;margin:6px 0 4px;color:#15202b}
+  h3{font-size:14px;margin:16px 0 4px;color:var(--brand-d);text-transform:uppercase;letter-spacing:.4px}
+  .desc{color:var(--muted);font-size:13.5px;margin:0 0 16px;max-width:82ch}
+  .muted{color:var(--muted);font-size:13px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;overflow:auto;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .diagram{display:flex;justify-content:center;min-height:60px}
+  .diagram svg{max-width:100%;height:auto}
+  .err{white-space:pre-wrap;color:#b42318;background:#fef3f2;border:1px solid #fecdca;border-radius:8px;padding:10px;font-size:12.5px}
+  code{background:#f1f3f5;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12.5px}
+  table{border-collapse:collapse;width:100%;margin-top:8px;font-size:13.5px;background:#fff}
   th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
-  th{background:#1b232c;color:#cfe2ff}
-  td code,p code{background:#0b0f14;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12.5px}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  th{background:#fff4ee;color:var(--brand-d)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
   @media(max-width:820px){.grid2{grid-template-columns:1fr}}
-  footer{color:var(--muted);font-size:12px;padding:18px 26px;border-top:1px solid var(--line)}
-  .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-left:6px}
+  footer{color:var(--muted);font-size:12px;padding:18px 26px;border-top:1px solid var(--line);background:#fff}
 </style>
 </head>
 <body>
 <header>
-  <h1>KANDU — Fluxograma do app <span class="tag">estado atual</span></h1>
-  <div class="sub">Marketplace de construção (Base44 + React/Vite, espelhado em Supabase). Profissionais <b style="color:var(--worker)">worker</b> ↔ empregadores <b style="color:var(--employer)">employer</b>, com painel <b style="color:var(--admin)">admin</b>.</div>
+  <h1>KANDU — Fluxograma do app <span class="pill">estado atual</span></h1>
+  <div class="sub">Marketplace de construção (Base44 + React/Vite, espelhado em Supabase). Profissionais <b>worker</b> ↔ empregadores <b>employer</b>, com painel <b>admin</b>.</div>
   <div class="legend">
     <span><b style="background:var(--worker)"></b>Worker</span>
     <span><b style="background:var(--employer)"></b>Employer</span>
@@ -53,375 +58,154 @@
 </header>
 
 <nav id="tabs">
-  <button data-tab="overview" class="active">1 · Visão geral & navegação</button>
-  <button data-tab="onboarding">2 · Onboarding</button>
-  <button data-tab="joblife">3 · Ciclo da obra</button>
-  <button data-tab="journey">4 · Jornada ponta a ponta</button>
-  <button data-tab="data">5 · Modelo de dados</button>
-  <button data-tab="arch">6 · Arquitetura & backend</button>
-  <button data-tab="admin">7 · Admin & moderação</button>
-  <button data-tab="appendix">Apêndices (XP · páginas)</button>
+    <button data-tab="overview" class="active">1 · Visão geral & navegação</button>
+    <button data-tab="onboarding">2 · Onboarding</button>
+    <button data-tab="joblife">3 · Ciclo da obra</button>
+    <button data-tab="journey">4 · Jornada ponta a ponta</button>
+    <button data-tab="data">5 · Modelo de dados</button>
+    <button data-tab="arch">6 · Arquitetura & backend</button>
+    <button data-tab="admin">7 · Admin & moderação</button>
+    <button data-tab="appendix">Apêndices (XP · páginas)</button>
 </nav>
 
 <main>
-  <!-- 1 -->
   <section id="overview" class="active">
     <h2>Visão geral & mapa de navegação</h2>
     <p class="desc">Entrada por <code>Welcome</code> → login Base44 → <code>SetupProfile</code> → <code>Home</code>. O <em>gating</em> é feito no <code>AuthContext</code>/<code>Layout</code>. Worker e employer partilham o menu — a diferenciação acontece dentro das páginas. Admin é redirecionado de Home para o AdminDashboard.</p>
-    <div class="card">
-      <pre class="mermaid">
-flowchart TD
-    V["Welcome<br/><i>landing, sem layout</i>"] -->|login / signup Base44| AUTH{"Autenticado?"}
-    AUTH -->|"não"| V
-    AUTH -->|"sim, sem user_type"| SP["SetupProfile<br/><i>onboarding, sem layout</i>"]
-    AUTH -->|"sim, com user_type"| HOME["Home"]
-    SP --> HOME
-
-    HOME --> ROLE{"user_type / role"}
-    ROLE -->|admin| AD["AdminDashboard"]
-    ROLE -->|worker| WH["Home (mapa de obras)"]
-    ROLE -->|employer| EH["Home (quick-links)"]
-
-    subgraph NAV["Páginas com layout (sidebar / bottom-nav)"]
-      MJ["MyJobs<br/>obras + PINs"]
-      NJ["NewJob<br/><i>só employer</i>"]
-      AP["Applications<br/>candidaturas"]
-      CH["Chat"]
-      CA["Calendar"]
-      NO["Notifications"]
-      SC["Scan (QR/PIN)"]
-      PR["Profile"]
-    end
-
-    WH --> MJ & AP & CH & CA & NO & PR
-    EH --> NJ & MJ & AP & CH & CA & NO & PR
-    AD --> MJ & AP & CH & PR
-    EH -. "publicar obra" .-> NJ
-    MJ -. "validar conclusão" .-> SC
-
-    classDef worker fill:#10243f,stroke:#2f81f7,color:#cfe2ff;
-    classDef employer fill:#3a1f10,stroke:#f26522,color:#ffd9c2;
-    classDef admin fill:#2a1b3f,stroke:#a371f7,color:#e8d9ff;
-    classDef entry fill:#11202a,stroke:#3fb950,color:#caface;
-    class WH worker; class EH,NJ employer; class AD admin; class V,SP,HOME entry;
-      </pre>
-    </div>
+    <div class="card"><div class="diagram" id="box_overview"></div></div>
   </section>
 
-  <!-- 2 -->
   <section id="onboarding">
     <h2>Onboarding (Welcome → SetupProfile → Home)</h2>
     <p class="desc">Escolha de perfil, consentimento GDPR e verificação de identidade opcional. Employer tem passo extra de subtipo (simple/cia). Documento de ID dá <code>verified_level: ultra_verified</code> e +100 XP; sem documento fica <code>verified</code>. Admin salta a verificação.</p>
-    <div class="card">
-      <pre class="mermaid">
-flowchart TD
-    W["Welcome"] --> C{"Escolhe perfil"}
-    C -->|"Sou Profissional"| LW["login / signup"]
-    C -->|"Preciso de Profissional"| LE["login / signup"]
-
-    LW --> GW["GDPR aceite"]
-    GW --> IDW["Verificação de ID<br/><i>(opcional, +100 XP)</i>"]
-    IDW --> CW["Cria perfil<br/>user_type = worker"]
-    CW --> HW["Home (worker)"]
-
-    LE --> ST{"Subtipo employer"}
-    ST -->|simple| GE["GDPR aceite"]
-    ST -->|"cia (+ clientes/NIF)"| GE
-    GE --> IDE["Verificação de ID<br/><i>(opcional)</i>"]
-    IDE --> CE["Cria perfil<br/>user_type = employer<br/>employer_type = simple/cia"]
-    CE --> HE["Home (employer)"]
-
-    A0["role = admin"] --> AS["SetupProfile (perfil Admin visível)"]
-    AS --> GA["GDPR"] --> CA2["Finaliza"] --> HA["Home → AdminDashboard"]
-
-    classDef worker fill:#10243f,stroke:#2f81f7,color:#cfe2ff;
-    classDef employer fill:#3a1f10,stroke:#f26522,color:#ffd9c2;
-    classDef admin fill:#2a1b3f,stroke:#a371f7,color:#e8d9ff;
-    class LW,GW,IDW,CW,HW worker; class LE,ST,GE,IDE,CE,HE employer; class A0,AS,GA,CA2,HA admin;
-      </pre>
-    </div>
+    <div class="card"><div class="diagram" id="box_onboarding"></div></div>
   </section>
 
-  <!-- 3 -->
   <section id="joblife">
     <h2>Ciclo de vida da obra (Job.status)</h2>
-    <p class="desc">Estados em <code>base44/entities/Job.jsonc</code>. Transições disparadas por employer/worker nas páginas, com PINs (presença diária e conclusão) durante <code>in_progress</code>. A conclusão final passa pela função <code>completeJob</code> após ambas as avaliações.</p>
-    <div class="card">
-      <pre class="mermaid">
-stateDiagram-v2
-    [*] --> pending_employer: Employer rascunha (NewJob)
-    pending_employer --> open: Publica
-    [*] --> open: Cria já publicada
-    open --> in_progress: Employer ACEITA candidatura<br/>(define worker_id + preço; rejeita as demais)
-    open --> cancelled: Cancelada
-    in_progress --> in_progress: PIN presença diária<br/>(não muda status)
-    in_progress --> completed_by_employer: Employer valida PIN de conclusão do worker
-    in_progress --> cancelled: Cancelada
-    completed_by_employer --> completed: Ambas as partes avaliam<br/>(completeJob) ou prazo 7 dias
-    completed --> [*]
-    cancelled --> [*]
-      </pre>
-    </div>
+    <p class="desc">Estados em <code>base44/entities/Job.jsonc</code>. Transições disparadas por employer/worker nas páginas, com PINs (presença diária e conclusão) durante <code>in_progress</code>. A conclusão final passa por <code>completeJob</code> após ambas as avaliações.</p>
+    <div class="card"><div class="diagram" id="box_joblife"></div></div>
   </section>
 
-  <!-- 4 -->
   <section id="journey">
     <h2>Jornada ponta a ponta (worker ↔ employer)</h2>
     <p class="desc">Sequência completa: criação do anúncio, descoberta no mapa, candidatura/proposta (gera chat + notificação + XP), aceitação, PINs, conclusão e avaliação cega (visível quando ambos avaliam ou após 7 dias).</p>
-    <div class="card">
-      <pre class="mermaid">
-sequenceDiagram
-    autonumber
-    actor E as Employer
-    actor W as Worker
-    participant B as Base44 (entities/functions)
-    participant N as Notifications
-
-    E->>B: Cria Job (status=open)
-    W->>B: Vê obra no mapa (views++)
-    W->>B: Application (candidatura/proposta)
-    B->>B: cria ChatMessage inicial automática
-    B->>N: new_application / new_proposal → Employer
-    Note over W: +10 XP (application_sent)
-    E->>B: Aceita candidatura
-    B->>B: Application=accepted · Job=in_progress (worker_id, preço) · rejeita restantes
-    B->>N: job_accepted → Worker
-    Note over W: +25 XP (application_accepted)
-    E-->>W: Chat (mensagens)
-    E->>W: PIN presença diária (notifica)
-    W->>E: Mostra PIN de conclusão
-    E->>B: Valida PIN → Job=completed_by_employer
-    W->>B: completeJob (rating, fotos, comentário)
-    E->>B: completeJob (rating, comentário)
-    B->>B: cria Rating(s) · aplica XP · Job=completed
-    B->>N: job_completed → ambos
-    Note over B: Rating visível quando ambos avaliam ou +7 dias
-      </pre>
-    </div>
+    <div class="card"><div class="diagram" id="box_journey"></div></div>
   </section>
 
-  <!-- 5 -->
   <section id="data">
     <h2>Modelo de dados (entidades & relações)</h2>
     <p class="desc">Entidades Base44 em <code>base44/entities/*.jsonc</code>. <code>User</code> é gerido pela autenticação (não criável em massa pela API de dados) e espelhado para a tabela <code>users</code> do Supabase.</p>
-    <div class="card">
-      <pre class="mermaid">
-erDiagram
-    USER ||--o{ JOB : "employer_id (cria)"
-    USER ||--o{ JOB : "worker_id (contratado)"
-    USER ||--o{ APPLICATION : "worker_id"
-    JOB  ||--o{ APPLICATION : "job_id"
-    JOB  ||--o{ RATING : "job_id"
-    USER ||--o{ RATING : "rater_id / rated_id"
-    USER ||--o{ CHATMESSAGE : "sender_id / receiver_id"
-    USER ||--o{ NOTIFICATION : "user_id"
-    USER ||--o{ BLACKLIST : "user_id / admin_id"
-    JOB  ||--o{ BLACKLIST : "related_job_id"
-    RATING ||--o{ BLACKLIST : "related_rating_id"
-
-    USER {
-      string id PK
-      string user_type "worker | employer | admin"
-      string status "active | suspended | banned"
-      number rating
-      number xp
-      string xp_level
-    }
-    JOB {
-      string id PK
-      string category
-      string status "open|in_progress|completed_by_employer|completed|cancelled"
-      string price_type "hourly|fixed|negotiable"
-      string employer_id FK
-      string worker_id FK
-    }
-    APPLICATION {
-      string id PK
-      string job_id FK
-      string worker_id FK
-      string application_type "application | proposal"
-      string status "pending | accepted | rejected"
-      number proposed_price
-    }
-    RATING {
-      string id PK
-      string job_id FK
-      string rater_id FK
-      string rated_id FK
-      number rating "1..5"
-      bool is_visible
-    }
-    CHATMESSAGE {
-      string id PK
-      string conversation_id
-      string sender_id FK
-      string receiver_id FK
-      bool is_read
-      bool is_archived
-    }
-    NOTIFICATION {
-      string id PK
-      string user_id FK
-      string type
-      string related_id
-      bool is_read
-    }
-    BLACKLIST {
-      string id PK
-      string user_id FK
-      string admin_id FK
-      string severity "warning | suspension | ban"
-    }
-      </pre>
-    </div>
+    <div class="card"><div class="diagram" id="box_data"></div></div>
   </section>
 
-  <!-- 6 -->
   <section id="arch">
     <h2>Arquitetura & backend (Base44 ↔ Supabase)</h2>
-    <p class="desc">O cliente React fala com o Base44 (entities + funções Deno). Lógica sensível (avaliações, XP, estados) vive nas funções. Dados são espelhados para o Supabase (tabelas <code>users</code>/<code>jobs</code> + bucket de ficheiros) via funções de sync acionadas por webhook/automação. Autorização usa <code>role</code> — nunca <code>user_type</code>; os PINs são apenas UX (gerados no cliente).</p>
-    <div class="card">
-      <pre class="mermaid">
-flowchart LR
-    subgraph CLIENT["Cliente — React/Vite"]
-      API["src/api/base44Client.js<br/>entities.js · app-params.js"]
-    end
-    subgraph B44["Base44 (Deno)"]
-      ENT["Entities + RLS<br/>(User, Job, Application,<br/>ChatMessage, Rating,<br/>Notification, Blacklist)"]
-      FN["Functions"]
-      CJ["completeJob<br/><i>auth + participante</i>"]
-      AW["adminWipeAllData<br/><i>admin</i>"]
-      GU["getUserById<br/><i>auth</i>"]
-      AC["archiveInactiveChats<br/><i>secret/automação</i>"]
-      GW["supabase (gateway)<br/><i>upsert/select/delete = admin</i>"]
-      DEV["seedFakeUsers · wipeFakeData<br/><i>DEV / admin</i>"]
-    end
-    subgraph SUP["Supabase (Postgres + Storage)"]
-      TU["tabela users"]
-      TJ["tabela jobs"]
-      ST["bucket kandu-files"]
-    end
-
-    API -->|"SDK: list/filter/create/update"| ENT
-    API -->|"invoke functions"| FN
-    FN --- CJ & AW & GU & AC & GW & DEV
-    ENT -. "webhook create/update" .-> SUSER["syncUserToSupabase<br/><i>secret</i>"]
-    ENT -. "webhook create/update/delete" .-> SJOB["syncJobToSupabase<br/><i>secret</i>"]
-    API -->|"após editar perfil"| SCU["syncCurrentUserToSupabase<br/><i>auth</i>"]
-    SUSER --> TU
-    SCU --> TU
-    SJOB --> TJ
-    GW --> TU & TJ & ST
-
-    classDef backend fill:#3a3110,stroke:#d29922,color:#ffe8b0;
-    classDef data fill:#3a1730,stroke:#db61a2,color:#ffd0ec;
-    class CJ,AW,GU,AC,GW,DEV,SUSER,SJOB,SCU,FN,ENT backend;
-    class TU,TJ,ST data;
-      </pre>
-    </div>
+    <p class="desc">O cliente React fala com o Base44 (entities + funções Deno). Lógica sensível (avaliações, XP, estados) vive nas funções. Dados são espelhados para o Supabase via funções de sync (webhook/automação). Autorização usa <code>role</code> — nunca <code>user_type</code>; os PINs são apenas UX (gerados no cliente).</p>
+    <div class="card"><div class="diagram" id="box_arch"></div></div>
   </section>
 
-  <!-- 7 -->
   <section id="admin">
     <h2>Admin & moderação</h2>
     <p class="desc">O AdminDashboard tem visão agregada e ferramentas de moderação. Ratings ≤ 2 geram alerta. A Blacklist regista motivo/severidade/evidência e altera o <code>status</code> do utilizador.</p>
-    <div class="card">
-      <pre class="mermaid">
-flowchart TD
-    AD["AdminDashboard<br/><i>visão agregada: User, Job, Rating, Blacklist</i>"]
-    AD --> LR{"Rating &lt;= 2 ?"}
-    LR -->|sim| AL["Alerta de baixa avaliação"]
-    AL --> BM["Modal Blacklist<br/>reason · severity · evidence · expires_at"]
-    AD --> BM
-    BM --> BL["cria Blacklist<br/>(user_id, admin_id, ...)"]
-    BL --> US{"severity"}
-    US -->|warning| SA["User.status = active"]
-    US -->|suspension| SS["User.status = suspended"]
-    US -->|ban| SB["User.status = banned"]
-
-    classDef admin fill:#2a1b3f,stroke:#a371f7,color:#e8d9ff;
-    class AD,AL,BM,BL,US,SA,SS,SB admin;
-      </pre>
-    </div>
+    <div class="card"><div class="diagram" id="box_admin"></div></div>
   </section>
-
-  <!-- Appendix -->
   <section id="appendix">
-    <h2>Apêndices</h2>
-    <div class="grid2">
-      <div>
-        <h3>Níveis de XP</h3>
-        <table>
-          <tr><th>Nível</th><th>Nome</th><th>XP</th></tr>
-          <tr><td>0</td><td>Novato</td><td>0 – 999</td></tr>
-          <tr><td>1</td><td>Aprendiz</td><td>1.000 – 4.999</td></tr>
-          <tr><td>2</td><td>Profissional</td><td>5.000 – 14.999</td></tr>
-          <tr><td>3</td><td>Especialista</td><td>15.000 – 39.999</td></tr>
-          <tr><td>4</td><td>Mestre</td><td>40.000+</td></tr>
-        </table>
-        <h3>Eventos de XP</h3>
-        <table>
-          <tr><th>Evento</th><th>XP</th></tr>
-          <tr><td>Perfil completo</td><td>+50</td></tr>
-          <tr><td>Documento verificado</td><td>+100</td></tr>
-          <tr><td>Candidatura enviada</td><td>+10</td></tr>
-          <tr><td>Candidatura aceite</td><td>+25</td></tr>
-          <tr><td>Avaliar/concluir (self)</td><td>+30</td></tr>
-          <tr><td>Obra concluída (avaliado)</td><td>base por rating × preço (×5 com 3 fotos)</td></tr>
-        </table>
-      </div>
-      <div>
-        <h3>Páginas × tipos de utilizador</h3>
-        <table>
-          <tr><th>Página</th><th>worker</th><th>employer</th><th>admin</th></tr>
-          <tr><td>Welcome / SetupProfile</td><td>entrada</td><td>entrada</td><td>entrada</td></tr>
-          <tr><td>Home</td><td>mapa de obras</td><td>quick-links</td><td>→ AdminDashboard</td></tr>
-          <tr><td>NewJob</td><td>—</td><td>✔</td><td>—</td></tr>
-          <tr><td>MyJobs</td><td>✔</td><td>✔</td><td>✔ (agregado)</td></tr>
-          <tr><td>Applications</td><td>✔</td><td>✔</td><td>✔</td></tr>
-          <tr><td>Chat</td><td>✔</td><td>✔</td><td>✔</td></tr>
-          <tr><td>Calendar</td><td>✔</td><td>✔</td><td>—</td></tr>
-          <tr><td>Notifications</td><td>✔</td><td>✔</td><td>—</td></tr>
-          <tr><td>Scan (QR/PIN)</td><td>—</td><td>✔</td><td>—</td></tr>
-          <tr><td>Profile</td><td>✔</td><td>✔</td><td>✔</td></tr>
-          <tr><td>AdminDashboard</td><td>—</td><td>—</td><td>✔</td></tr>
-        </table>
-        <p class="desc" style="margin-top:10px">Nota: worker e employer partilham os itens de menu; o acesso ao <code>NewJob</code> e a diferenciação de conteúdo ocorrem dentro das páginas.</p>
-      </div>
+  <h2>Apêndices</h2>
+  <div class="grid2">
+    <div>
+      <h3>Níveis de XP</h3>
+      <table>
+        <tr><th>Nível</th><th>Nome</th><th>XP</th></tr>
+        <tr><td>0</td><td>Novato</td><td>0 – 999</td></tr>
+        <tr><td>1</td><td>Aprendiz</td><td>1.000 – 4.999</td></tr>
+        <tr><td>2</td><td>Profissional</td><td>5.000 – 14.999</td></tr>
+        <tr><td>3</td><td>Especialista</td><td>15.000 – 39.999</td></tr>
+        <tr><td>4</td><td>Mestre</td><td>40.000+</td></tr>
+      </table>
+      <h3>Eventos de XP</h3>
+      <table>
+        <tr><th>Evento</th><th>XP</th></tr>
+        <tr><td>Perfil completo</td><td>+50</td></tr>
+        <tr><td>Documento verificado</td><td>+100</td></tr>
+        <tr><td>Candidatura enviada</td><td>+10</td></tr>
+        <tr><td>Candidatura aceite</td><td>+25</td></tr>
+        <tr><td>Avaliar/concluir (self)</td><td>+30</td></tr>
+        <tr><td>Obra concluída (avaliado)</td><td>base por rating × preço (×5 com 3 fotos)</td></tr>
+      </table>
     </div>
-  </section>
+    <div>
+      <h3>Páginas × tipos de utilizador</h3>
+      <table>
+        <tr><th>Página</th><th>worker</th><th>employer</th><th>admin</th></tr>
+        <tr><td>Welcome / SetupProfile</td><td>entrada</td><td>entrada</td><td>entrada</td></tr>
+        <tr><td>Home</td><td>mapa de obras</td><td>quick-links</td><td>→ AdminDashboard</td></tr>
+        <tr><td>NewJob</td><td>—</td><td>✔</td><td>—</td></tr>
+        <tr><td>MyJobs</td><td>✔</td><td>✔</td><td>✔ (agregado)</td></tr>
+        <tr><td>Applications</td><td>✔</td><td>✔</td><td>✔</td></tr>
+        <tr><td>Chat</td><td>✔</td><td>✔</td><td>✔</td></tr>
+        <tr><td>Calendar</td><td>✔</td><td>✔</td><td>—</td></tr>
+        <tr><td>Notifications</td><td>✔</td><td>✔</td><td>—</td></tr>
+        <tr><td>Scan (QR/PIN)</td><td>—</td><td>✔</td><td>—</td></tr>
+        <tr><td>Profile</td><td>✔</td><td>✔</td><td>✔</td></tr>
+        <tr><td>AdminDashboard</td><td>—</td><td>—</td><td>✔</td></tr>
+      </table>
+      <p class="muted" style="margin-top:10px">Worker e employer partilham os itens de menu; o acesso ao <code>NewJob</code> e a diferenciação de conteúdo ocorrem dentro das páginas.</p>
+    </div>
+  </div></section>
 </main>
 
 <footer>
   Gerado a partir do código em <code>/home/user/kandu-copy</code> · App alvo: <b>KANDU (Copy)</b> · reflete o estado atual nesta sessão (2026-06-16).
-  Diagramas: Mermaid. Fontes: <code>src/pages.config.js</code>, <code>src/Layout.jsx</code>, <code>src/lib/AuthContext.jsx</code>, <code>src/pages/*</code>, <code>base44/entities/*</code>, <code>base44/functions/*</code>.
+  Diagramas renderizados com Mermaid 11. Fontes: <code>src/pages.config.js</code>, <code>src/Layout.jsx</code>, <code>src/lib/AuthContext.jsx</code>, <code>src/pages/*</code>, <code>base44/entities/*</code>, <code>base44/functions/*</code>.
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.min.js"></script>
 <script>
-  // Renderiza TODOS os diagramas no load (inclusive abas ocultas) para evitar
-  // o bug de Mermaid não renderizar em containers display:none.
+  // Fontes dos diagramas (strings exatas validadas com mermaid-cli 11.15.0).
+  // Renderizadas via mermaid.render() — o Mermaid recebe o texto literal,
+  // sem o HTML do <pre> ser interpretado pelo browser (evita "Syntax error").
+  var DIAGRAMS = {"overview":"flowchart TD\n    V[\"Welcome<br/>(landing, sem layout)\"] -->|login / signup Base44| AUTH{\"Autenticado?\"}\n    AUTH -->|\"não\"| V\n    AUTH -->|\"sim, sem user_type\"| SP[\"SetupProfile<br/>(onboarding, sem layout)\"]\n    AUTH -->|\"sim, com user_type\"| HOME[\"Home\"]\n    SP --> HOME\n    HOME --> ROLE{\"user_type / role\"}\n    ROLE -->|admin| AD[\"AdminDashboard\"]\n    ROLE -->|worker| WH[\"Home — mapa de obras\"]\n    ROLE -->|employer| EH[\"Home — quick-links\"]\n    subgraph NAV[\"Páginas com layout (sidebar / bottom-nav)\"]\n      MJ[\"MyJobs — obras + PINs\"]\n      NJ[\"NewJob (só employer)\"]\n      AP[\"Applications\"]\n      CH[\"Chat\"]\n      CA[\"Calendar\"]\n      NO[\"Notifications\"]\n      SC[\"Scan (QR / PIN)\"]\n      PR[\"Profile\"]\n    end\n    WH --> MJ & AP & CH & CA & NO & PR\n    EH --> NJ & MJ & AP & CH & CA & NO & PR\n    AD --> MJ & AP & CH & PR\n    EH -. \"publicar obra\" .-> NJ\n    MJ -. \"validar conclusão\" .-> SC\n    classDef worker fill:#E7F0FF,stroke:#1E66F5,color:#0b3a8f;\n    classDef employer fill:#FFE9DC,stroke:#F26522,color:#9a3b12;\n    classDef admin fill:#F1E9FF,stroke:#7C3AED,color:#4c1d95;\n    classDef entry fill:#E9FBEF,stroke:#16A34A,color:#0f5132;\n    class WH worker;\n    class EH,NJ employer;\n    class AD admin;\n    class V,SP,HOME entry;","onboarding":"flowchart TD\n    W[\"Welcome\"] --> C{\"Escolhe perfil\"}\n    C -->|\"Sou Profissional\"| LW[\"login / signup\"]\n    C -->|\"Preciso de Profissional\"| LE[\"login / signup\"]\n    LW --> GW[\"GDPR aceite\"]\n    GW --> IDW[\"Verificação de ID<br/>(opcional, +100 XP)\"]\n    IDW --> CW[\"Cria perfil<br/>user_type = worker\"]\n    CW --> HW[\"Home (worker)\"]\n    LE --> ST{\"Subtipo employer\"}\n    ST -->|simple| GE[\"GDPR aceite\"]\n    ST -->|\"cia (+ clientes / NIF)\"| GE\n    GE --> IDE[\"Verificação de ID (opcional)\"]\n    IDE --> CE[\"Cria perfil<br/>user_type = employer<br/>employer_type = simple / cia\"]\n    CE --> HE[\"Home (employer)\"]\n    A0[\"role = admin\"] --> AS[\"SetupProfile (perfil Admin visível)\"]\n    AS --> GA[\"GDPR\"] --> CA2[\"Finaliza\"] --> HA[\"Home → AdminDashboard\"]\n    classDef worker fill:#E7F0FF,stroke:#1E66F5,color:#0b3a8f;\n    classDef employer fill:#FFE9DC,stroke:#F26522,color:#9a3b12;\n    classDef admin fill:#F1E9FF,stroke:#7C3AED,color:#4c1d95;\n    class LW,GW,IDW,CW,HW worker;\n    class LE,ST,GE,IDE,CE,HE employer;\n    class A0,AS,GA,CA2,HA admin;","joblife":"stateDiagram-v2\n    [*] --> pending_employer: Employer rascunha (NewJob)\n    pending_employer --> open: Publica\n    [*] --> open: Cria já publicada\n    open --> in_progress: Employer ACEITA candidatura<br/>(define worker_id + preço · rejeita as demais)\n    open --> cancelled: Cancelada\n    in_progress --> in_progress: PIN presença diária<br/>(não muda status)\n    in_progress --> completed_by_employer: Employer valida PIN de conclusão\n    in_progress --> cancelled: Cancelada\n    completed_by_employer --> completed: Ambos avaliam (completeJob) ou prazo 7 dias\n    completed --> [*]\n    cancelled --> [*]","journey":"sequenceDiagram\n    autonumber\n    actor E as Employer\n    actor W as Worker\n    participant B as Base44 (entities / functions)\n    participant N as Notifications\n    E->>B: Cria Job (status=open)\n    W->>B: Vê obra no mapa (views++)\n    W->>B: Application (candidatura / proposta)\n    B->>B: cria ChatMessage inicial automática\n    B->>N: new_application / new_proposal --> Employer\n    Note over W: +10 XP (application_sent)\n    E->>B: Aceita candidatura\n    B->>B: Application=accepted · Job=in_progress (worker_id, preço) · rejeita restantes\n    B->>N: job_accepted --> Worker\n    Note over W: +25 XP (application_accepted)\n    E-->>W: Chat (mensagens)\n    E->>W: PIN presença diária (notifica)\n    W->>E: Mostra PIN de conclusão\n    E->>B: Valida PIN --> Job=completed_by_employer\n    W->>B: completeJob (rating, fotos, comentário)\n    E->>B: completeJob (rating, comentário)\n    B->>B: cria Rating(s) · aplica XP · Job=completed\n    B->>N: job_completed --> ambos\n    Note over B: Rating visível quando ambos avaliam ou +7 dias","data":"erDiagram\n    USER ||--o{ JOB : \"cria (employer_id)\"\n    USER ||--o{ JOB : \"executa (worker_id)\"\n    JOB ||--o{ APPLICATION : \"job_id\"\n    USER ||--o{ APPLICATION : \"worker_id\"\n    JOB ||--o{ RATING : \"job_id\"\n    USER ||--o{ RATING : \"rater / rated\"\n    USER ||--o{ CHATMESSAGE : \"sender / receiver\"\n    USER ||--o{ NOTIFICATION : \"user_id\"\n    USER ||--o{ BLACKLIST : \"user / admin\"\n    JOB ||--o{ BLACKLIST : \"related_job_id\"\n    RATING ||--o{ BLACKLIST : \"related_rating_id\"\n    USER {\n      string id PK\n      string user_type \"worker employer admin\"\n      string status \"active suspended banned\"\n      number rating\n      number xp\n    }\n    JOB {\n      string id PK\n      string category\n      string status \"open in_progress completed cancelled\"\n      string employer_id FK\n      string worker_id FK\n    }\n    APPLICATION {\n      string id PK\n      string job_id FK\n      string worker_id FK\n      string application_type \"application proposal\"\n      string status \"pending accepted rejected\"\n    }\n    RATING {\n      string id PK\n      string job_id FK\n      string rater_id FK\n      string rated_id FK\n      number rating \"1 a 5\"\n      boolean is_visible\n    }\n    CHATMESSAGE {\n      string id PK\n      string conversation_id\n      string sender_id FK\n      string receiver_id FK\n      boolean is_read\n    }\n    NOTIFICATION {\n      string id PK\n      string user_id FK\n      string type\n      boolean is_read\n    }\n    BLACKLIST {\n      string id PK\n      string user_id FK\n      string admin_id FK\n      string severity \"warning suspension ban\"\n    }","arch":"flowchart LR\n    subgraph CLIENT[\"Cliente — React / Vite\"]\n      API[\"base44Client.js<br/>entities.js · app-params.js\"]\n    end\n    subgraph B44[\"Base44 (Deno)\"]\n      ENT[\"Entities + RLS<br/>(User, Job, Application,<br/>ChatMessage, Rating,<br/>Notification, Blacklist)\"]\n      CJ[\"completeJob<br/>(auth + participante)\"]\n      AW[\"adminWipeAllData (admin)\"]\n      GU[\"getUserById (auth)\"]\n      AC[\"archiveInactiveChats<br/>(secret / automação)\"]\n      GW[\"supabase gateway<br/>(upsert/select/delete = admin)\"]\n      DEV[\"seedFakeUsers · wipeFakeData<br/>(DEV / admin)\"]\n    end\n    subgraph SUP[\"Supabase (Postgres + Storage)\"]\n      TU[\"tabela users\"]\n      TJ[\"tabela jobs\"]\n      STG[\"bucket kandu-files\"]\n    end\n    API -->|\"SDK: list / create / update\"| ENT\n    API -->|invoke| CJ\n    API -->|invoke| GW\n    ENT -. webhook .-> SUSER[\"syncUserToSupabase\"]\n    ENT -. webhook .-> SJOB[\"syncJobToSupabase\"]\n    API -->|\"após editar perfil\"| SCU[\"syncCurrentUserToSupabase\"]\n    SUSER --> TU\n    SCU --> TU\n    SJOB --> TJ\n    GW --> TU & TJ & STG\n    classDef backend fill:#FFE9DC,stroke:#F26522,color:#9a3b12;\n    classDef data fill:#FFE3F1,stroke:#DB2777,color:#831843;\n    classDef client fill:#E7F0FF,stroke:#1E66F5,color:#0b3a8f;\n    class CJ,AW,GU,AC,GW,DEV,SUSER,SJOB,SCU,ENT backend;\n    class TU,TJ,STG data;\n    class API client;","admin":"flowchart TD\n    AD[\"AdminDashboard<br/>(visão agregada: User, Job, Rating, Blacklist)\"]\n    AD --> LR{\"Rating menor ou igual a 2 ?\"}\n    LR -->|sim| AL[\"Alerta de baixa avaliação\"]\n    AL --> BM[\"Modal Blacklist<br/>reason · severity · evidence · expires_at\"]\n    AD --> BM\n    BM --> BL[\"cria Blacklist<br/>(user_id, admin_id, ...)\"]\n    BL --> US{\"severity\"}\n    US -->|warning| SA[\"User.status = active\"]\n    US -->|suspension| SS[\"User.status = suspended\"]\n    US -->|ban| SB[\"User.status = banned\"]\n    classDef admin fill:#F1E9FF,stroke:#7C3AED,color:#4c1d95;\n    class AD,AL,BM,BL,US,SA,SS,SB admin;"};
+
   mermaid.initialize({
     startOnLoad: false,
     securityLevel: 'loose',
-    theme: 'dark',
-    themeVariables: { fontSize: '14px' },
-    flowchart: { htmlLabels: true, curve: 'basis' }
-  });
-  window.addEventListener('DOMContentLoaded', async () => {
-    try { await mermaid.run({ querySelector: '.mermaid' }); }
-    catch (e) { console.error('Mermaid:', e); }
+    theme: 'base',
+    themeVariables: {
+      fontFamily: 'inherit', fontSize: '14px',
+      primaryColor: '#FFF1E8', primaryBorderColor: '#F26522', primaryTextColor: '#1f2933',
+      lineColor: '#9aa4b2', secondaryColor: '#EAF2FF', tertiaryColor: '#F7F8FA',
+      noteBkgColor: '#FFF7E6', noteBorderColor: '#d97706'
+    },
+    flowchart: { htmlLabels: true, curve: 'basis', useMaxWidth: true },
+    sequence: { useMaxWidth: true },
+    er: { useMaxWidth: true }
   });
 
-  // Navegação por abas (mostra/esconde — sem re-render).
-  const tabs = document.querySelectorAll('#tabs button');
-  const secs = document.querySelectorAll('main section');
-  tabs.forEach(btn => btn.addEventListener('click', () => {
-    const id = btn.dataset.tab;
-    tabs.forEach(b => b.classList.toggle('active', b === btn));
-    secs.forEach(s => s.classList.toggle('active', s.id === id));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }));
+  (async function renderAll(){
+    for (var key in DIAGRAMS){
+      var box = document.getElementById('box_' + key);
+      if (!box) continue;
+      try {
+        var out = await mermaid.render('g_' + key, DIAGRAMS[key]);
+        box.innerHTML = out.svg;
+      } catch (e) {
+        box.innerHTML = '<div class="err">Erro ao renderizar "' + key + '": ' + (e && e.message ? e.message : e) + '</div>';
+        console.error('Mermaid render error in', key, e);
+      }
+    }
+  })();
+
+  var tabBtns = document.querySelectorAll('#tabs button');
+  var secs = document.querySelectorAll('main section');
+  tabBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-tab');
+      tabBtns.forEach(function(b){ b.classList.toggle('active', b === btn); });
+      secs.forEach(function(s){ s.classList.toggle('active', s.id === id); });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
 </script>
 </body>
 </html>
