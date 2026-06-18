@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -29,6 +29,7 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const openedFromParam = useRef(false);
 
   const loadUser = useCallback(async () => {
     try {
@@ -189,6 +190,43 @@ export default function Chat() {
         setMessages([]); // Clear messages when no conversation is selected
     }
   }, [selectedConversation, user, loadMessages]);
+
+  // Abrir/iniciar conversa a partir de ?userId=... (ex.: botão "Contactar" no Perfil).
+  // O conversation_id segue a mesma convenção do resto da app: IDs ordenados + "_".
+  useEffect(() => {
+    if (!user || loading || openedFromParam.current) return;
+    const targetId = new URLSearchParams(window.location.search).get("userId");
+    if (!targetId || targetId === user.id) return;
+    openedFromParam.current = true;
+
+    (async () => {
+      try {
+        const existing = [...conversations, ...archivedConversations].find(
+          (c) => c.other_user?.id === targetId
+        );
+        if (existing) {
+          setSelectedConversation(existing);
+        } else {
+          const [otherUser] = await User.filter({ id: targetId });
+          if (otherUser) {
+            setSelectedConversation({
+              conversation_id: [user.id, targetId].sort().join("_"),
+              participants: [user, otherUser],
+              other_user: otherUser,
+              last_message: null,
+              unread_count: 0,
+              job_context: null,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao abrir conversa a partir do perfil:", error);
+      } finally {
+        // Remove o parâmetro para não reabrir e permitir voltar à lista.
+        window.history.replaceState({}, "", window.location.pathname + window.location.hash);
+      }
+    })();
+  }, [user, loading, conversations, archivedConversations]);
 
   const sendMessage = async (messageText, attachment = null) => {
     if (!messageText.trim() && !attachment) return;
