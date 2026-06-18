@@ -36,7 +36,7 @@ export default function ChatWindow({
     if (!lastMsg) return;
     if (lastMsg.sender_id === currentUser?.id) return; // é nossa — não traduzir
     if (translations[lastMsg.id]) return; // já traduzida
-    translateSingle(lastMsg.id, lastMsg.content);
+    translateSingle(lastMsg.id, lastMsg.message);
   }, [messages, autoTranslate, lang]); // eslint-disable-line
 
   const translateSingle = useCallback(async (msgId, text) => {
@@ -149,18 +149,18 @@ export default function ChatWindow({
                   fontSize:14, lineHeight:1.5,
                   boxShadow:"0 1px 4px rgba(0,0,0,0.12)",
                 }}>
-                  {message.attachment ? (
-                    message.attachment.type === "image" ? (
-                      <img src={message.attachment.url} alt="" style={{maxWidth:200,borderRadius:8,display:"block"}}/>
+                  {message.attachment_url ? (
+                    message.attachment_type === "image" ? (
+                      <img src={message.attachment_url} alt="" style={{maxWidth:200,borderRadius:8,display:"block"}}/>
                     ) : (
-                      <a href={message.attachment.url} target="_blank" rel="noopener noreferrer"
+                      <a href={message.attachment_url} target="_blank" rel="noopener noreferrer"
                         style={{color:isOwn?"#fff":"#F4621F",display:"flex",alignItems:"center",gap:6}}>
                         <FileText size={14}/> {t(lang, "documentLabel", "Documento")}
                       </a>
                     )
                   ) : (
                     <>
-                      <div>{message.content}</div>
+                      <div>{message.message}</div>
                       {/* Tradução */}
                       {!isOwn && (
                         <>
@@ -169,7 +169,7 @@ export default function ChatWindow({
                               {t(lang,"translating")}
                             </div>
                           )}
-                          {showTranslated && !isTranslating && translated !== message.content && (
+                          {showTranslated && !isTranslating && translated !== message.message && (
                             <div style={{
                               marginTop:6, paddingTop:6,
                               borderTop:`1px solid ${isOwn?"rgba(255,255,255,0.2)":"#eee"}`,
@@ -186,7 +186,7 @@ export default function ChatWindow({
                           {/* Botão traduzir manual (quando auto desligado) */}
                           {!autoTranslate && !translated && lang !== "PT" && (
                             <button
-                              onClick={() => translateSingle(message.id, message.content)}
+                              onClick={() => translateSingle(message.id, message.message)}
                               style={{
                                 marginTop:5, background:"none", border:"none",
                                 color:"#F4621F", fontSize:11, cursor:"pointer",
