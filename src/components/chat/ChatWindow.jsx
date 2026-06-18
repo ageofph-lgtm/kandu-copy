@@ -55,9 +55,10 @@ export default function ChatWindow({
   };
 
   const handleSend = async () => {
-    if (newMessage.trim()) {
-      await onSendMessage(newMessage);
+    const text = newMessage.trim();
+    if (text) {
       setNewMessage("");
+      await onSendMessage(text);
     }
   };
 

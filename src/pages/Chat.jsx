@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -29,6 +29,8 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const urlParamHandled = useRef(false);
 
   const loadUser = useCallback(async () => {
     try {
@@ -176,11 +178,60 @@ export default function Chat() {
         await loadConversations(currentUser);
     }
     setLoading(false);
+    setDataLoaded(true);
   }, [loadUser, loadConversations]);
 
   useEffect(() => {
     loadInitialData();
   }, [loadInitialData]);
+
+  // Handle ?userId= parameter — open/create conversation with target user
+  useEffect(() => {
+    if (!dataLoaded || !user || urlParamHandled.current) return;
+    urlParamHandled.current = true;
+
+    const params = new URLSearchParams(window.location.search);
+    const targetUserId = params.get("userId");
+    if (!targetUserId || targetUserId === user.id) return;
+
+    const openConversation = async () => {
+      const existingConv = conversations.find(c =>
+        c.participants.some(p => p.id === targetUserId)
+      );
+
+      if (existingConv) {
+        setSelectedConversation(existingConv);
+      } else {
+        try {
+          const [targetUser] = await User.filter({ id: targetUserId });
+          if (!targetUser) return;
+
+          const ids = [user.id, targetUserId].sort();
+          const conversationId = ids.join("_");
+
+          const newConv = {
+            conversation_id: conversationId,
+            participants: [user, targetUser],
+            other_user: targetUser,
+            last_message: null,
+            unread_count: 0,
+            job_context: null,
+          };
+
+          setSelectedConversation(newConv);
+        } catch (error) {
+          console.error("Error creating conversation from userId:", error);
+        }
+      }
+
+      const newParams = new URLSearchParams(window.location.search);
+      newParams.delete("userId");
+      const newUrl = window.location.pathname + (newParams.toString() ? "?" + newParams.toString() : "");
+      window.history.replaceState({}, "", newUrl);
+    };
+
+    openConversation();
+  }, [dataLoaded, user, conversations]);
 
   useEffect(() => {
     if (selectedConversation && user) {
