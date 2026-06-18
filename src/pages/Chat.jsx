@@ -12,6 +12,7 @@ import {
   MessageCircle // Add Settings icon
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
+import { base44 } from "@/api/base44Client";
 
 import ConversationList from "../components/chat/ConversationList";
 import ChatWindow from "../components/chat/ChatWindow";
@@ -54,8 +55,18 @@ export default function Chat() {
 
       const getUser = async (userId) => {
         if (userCache.has(userId)) return userCache.get(userId);
-        const [userData] = await User.filter({ id: userId });
-        if (userData) userCache.set(userId, userData);
+        if (userId === currentUser.id) {
+          userCache.set(userId, currentUser);
+          return currentUser;
+        }
+        let userData = { id: userId, full_name: "Utilizador" };
+        try {
+          const res = await base44.functions.invoke('getUserById', { userId });
+          if (res.data && !res.data.error) {
+            userData = res.data;
+          }
+        } catch (e) { /* fallback — dados mínimos */ }
+        userCache.set(userId, userData);
         return userData;
       };
 
@@ -76,33 +87,29 @@ export default function Chat() {
           if (!conversationMap.has(conversationId)) {
             const user1 = await getUser(message.sender_id);
             const user2 = await getUser(message.receiver_id);
-            if (user1 && user2) {
-              const otherUser = user1.id === currentUser.id ? user2 : user1;
-              // Find job context: accepted application between these two users
-              const relatedApp = acceptedApps.find(app =>
-                (app.worker_id === user1.id || app.worker_id === user2.id) &&
-                (app.worker_id !== app.worker_id || true) // check both participants
-              );
-              const jobLinkedApp = acceptedApps.find(app => {
-                const ids = [user1.id, user2.id];
-                return ids.includes(app.worker_id);
-              });
-              let jobContext = null;
-              if (jobLinkedApp) {
-                const job = await getJob(jobLinkedApp.job_id);
-                if (job && (job.employer_id === user1.id || job.employer_id === user2.id)) {
-                  jobContext = { job, application: jobLinkedApp };
-                }
+            const otherUser = user1.id === currentUser.id ? user2 : user1;
+
+            // Find job context: accepted application between these two users
+            const jobLinkedApp = acceptedApps.find(app => {
+              const ids = [user1.id, user2.id];
+              return ids.includes(app.worker_id);
+            });
+            let jobContext = null;
+            if (jobLinkedApp) {
+              const job = await getJob(jobLinkedApp.job_id);
+              if (job && (job.employer_id === user1.id || job.employer_id === user2.id)) {
+                jobContext = { job, application: jobLinkedApp };
               }
-              conversationMap.set(conversationId, {
-                conversation_id: conversationId,
-                participants: [user1, user2],
-                other_user: otherUser,
-                last_message: message,
-                unread_count: 0,
-                job_context: jobContext
-              });
             }
+
+            conversationMap.set(conversationId, {
+              conversation_id: conversationId,
+              participants: [user1, user2],
+              other_user: otherUser,
+              last_message: message,
+              unread_count: 0,
+              job_context: jobContext
+            });
           }
           const conversation = conversationMap.get(conversationId);
           if (conversation) {
@@ -203,8 +210,13 @@ export default function Chat() {
         setSelectedConversation(existingConv);
       } else {
         try {
-          const [targetUser] = await User.filter({ id: targetUserId });
-          if (!targetUser) return;
+          let targetUser = { id: targetUserId, full_name: "Utilizador" };
+          try {
+            const res = await base44.functions.invoke('getUserById', { userId: targetUserId });
+            if (res.data && !res.data.error) {
+              targetUser = res.data;
+            }
+          } catch (e) { /* fallback */ }
 
           const ids = [user.id, targetUserId].sort();
           const conversationId = ids.join("_");
