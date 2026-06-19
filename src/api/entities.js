@@ -1,15 +1,19 @@
 /**
- * KANDU — Supabase Entity Layer
- * Compatível com a API anterior: Entity.list(), .filter(), .get(), .create(), .update(), .delete()
+ * KANDU — Entity Layer
+ * Auth: Base44 (login, sessão, User.me)
+ * Dados: Supabase (jobs, applications, ratings, chat, notifications)
  */
+import { base44 } from './base44Client';
 import { supabase } from './supabaseClient';
 
+// ─── Normalização de sort ─────────────────────────────────────────────────────
 function normalizeSort(sort = '-created_at') {
   return sort
     .replace('created_date', 'created_at')
     .replace('updated_date', 'updated_at');
 }
 
+// ─── Factory para entidades Supabase ─────────────────────────────────────────
 function makeEntity(tableName) {
   return {
     async list(sort = '-created_at') {
@@ -40,10 +44,7 @@ function makeEntity(tableName) {
 
     async get(id) {
       const { data, error } = await supabase
-        .from(tableName)
-        .select('*')
-        .eq('id', id)
-        .single();
+        .from(tableName).select('*').eq('id', id).single();
       if (error) throw error;
       return data;
     },
@@ -53,8 +54,7 @@ function makeEntity(tableName) {
       const { data, error } = await supabase
         .from(tableName)
         .insert([{ ...record, created_at: now, updated_at: now }])
-        .select()
-        .single();
+        .select().single();
       if (error) throw error;
       return data;
     },
@@ -63,9 +63,7 @@ function makeEntity(tableName) {
       const { data, error } = await supabase
         .from(tableName)
         .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
+        .eq('id', id).select().single();
       if (error) throw error;
       return data;
     },
@@ -88,6 +86,7 @@ function makeEntity(tableName) {
   };
 }
 
+// ─── Entidades de dados (Supabase) ────────────────────────────────────────────
 export const Job          = makeEntity('jobs');
 export const Application  = makeEntity('applications');
 export const Rating       = makeEntity('ratings');
@@ -95,35 +94,36 @@ export const ChatMessage  = makeEntity('chat_messages');
 export const Notification = makeEntity('notifications');
 export const Blacklist    = makeEntity('blacklist');
 
-// User — Supabase Auth + tabela users
+// ─── User — Base44 Auth + sync com tabela users no Supabase ──────────────────
 export const User = {
+  // me() — usa Base44 auth, depois enriquece com dados do Supabase
   async me() {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) throw new Error('Not authenticated');
-    const { data, error: dbErr } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-    if (dbErr) throw dbErr;
-    return data;
+    const b44User = await base44.auth.me();
+    if (!b44User) throw new Error('Not authenticated');
+    // Tentar buscar dados extra do Supabase (user_type, bio, etc.)
+    const { data: supa } = await supabase
+      .from('users').select('*').eq('id', b44User.id).maybeSingle();
+    // Merge: dados Base44 + dados Supabase
+    return { ...b44User, ...(supa || {}) };
   },
 
   async update(id, updates) {
+    // Actualizar Base44
+    try { await base44.entities.User.update(id, updates); } catch {}
+    // Upsert no Supabase
+    const now = new Date().toISOString();
     const { data, error } = await supabase
       .from('users')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
+      .upsert({ id, ...updates, updated_at: now }, { onConflict: 'id' })
+      .select().single();
     if (error) throw error;
     return data;
   },
 
   async updateMyUserData(updates) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-    return this.update(user.id, updates);
+    const b44User = await base44.auth.me();
+    if (!b44User) throw new Error('Not authenticated');
+    return this.update(b44User.id, updates);
   },
 
   async filter(query = {}) {
@@ -138,22 +138,11 @@ export const User = {
 
   async get(id) {
     const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', id)
-      .single();
+      .from('users').select('*').eq('id', id).single();
     if (error) throw error;
     return data;
   },
 
-  async logout() {
-    await supabase.auth.signOut();
-  },
-
-  async loginWithRedirect() {
-    window.location.href = '/';
-  },
+  async logout() { base44.auth.logout(window.location.href); },
+  async loginWithRedirect() { base44.auth.redirectToLogin(window.location.href); },
 };
-
-// Compatibilidade com imports antigos @/entities/*
-export { Job as default };
