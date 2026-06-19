@@ -8,6 +8,10 @@ const norm = (row) => {
     ...row,
     created_date: row.created_at,
     updated_date: row.updated_at,
+    // Compatibilidade: BD usa "read", código antigo usava "is_read"
+    is_read: row.read,
+    // Rating: BD usa "score", código antigo usava "rating"
+    rating: row.score ?? row.rating,
   };
 };
 const normList = (rows) => (rows || []).map(norm);
