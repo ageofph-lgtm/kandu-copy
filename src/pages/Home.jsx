@@ -363,19 +363,15 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) { navigate(createPageUrl("Welcome")); return; }
-      try {
-        const u = await User.me();
-        if (!u?.user_type) { navigate(createPageUrl("SetupProfile")); return; }
-        setUser(u);
-        setLoading(false);
-      } catch { navigate(createPageUrl("Welcome")); }
-    });
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) { navigate(createPageUrl("Welcome")); }
-    });
-    return () => subscription.unsubscribe();
+      const u = await User.me();
+      if (!u?.user_type) { navigate(createPageUrl("SetupProfile")); return; }
+      setUser(u);
+      setLoading(false);
+    };
+    init();
   }, [navigate]);
 
   if (loading) return <LoadingScreen />;
