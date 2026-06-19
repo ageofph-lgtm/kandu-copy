@@ -158,6 +158,7 @@ export const Application = {
     const session = await getSession();
     const now = new Date().toISOString();
     const { data, error } = await supabase.from("applications").insert({
+      id: crypto.randomUUID(),
       ...payload,
       worker_id: payload.worker_id || session?.user?.id,
       created_at: now,
@@ -198,6 +199,7 @@ export const ChatMessage = {
     const session = await getSession();
     const now = new Date().toISOString();
     const { data, error } = await supabase.from("chat_messages").insert({
+      id: crypto.randomUUID(),
       ...payload,
       sender_id: payload.sender_id || session?.user?.id,
       created_at: now,
@@ -276,8 +278,9 @@ export const Notification = {
   async create(payload) {
     const now = new Date().toISOString();
     const { data, error } = await supabase.from("notifications").insert({
+      id: crypto.randomUUID(),
       ...payload,
-      read: false,
+      read: payload.read ?? false,
       created_at: now,
     }).select().single();
     if (error) throw error;
