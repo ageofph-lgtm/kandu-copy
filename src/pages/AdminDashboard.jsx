@@ -87,6 +87,9 @@ function UserManagementCard({ user, onAction }) {
             <Eye className="w-4 h-4 mr-1" />
             {t(lang, "view", "Ver")}
           </Button>
+          <Button size="sm" variant="outline" onClick={() => navigate(`${createPageUrl("Profile")}?userId=${user.id}`)}>
+            👤 Perfil
+          </Button>
           <Button size="sm" variant="destructive" onClick={() => onAction('blacklist', user)}>
             <Ban className="w-4 h-4 mr-1" />
             {t(lang, "adminBlacklist", "Blacklist")}
