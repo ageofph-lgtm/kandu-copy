@@ -128,7 +128,7 @@ export default function SetupProfile() {
         // Sincronizar com Supabase (dados da app)
     try {
       const { supabase } = await import('@/api/supabaseClient');
-      const b44User = await base44.auth.me();
+      const { data: { user: b44User } } = await supabase.auth.getUser();
       if (b44User?.id) {
         await supabase.from('users').upsert(
           { id: b44User.id, ...profileData, email: b44User.email, full_name: b44User.full_name, updated_at: new Date().toISOString() },
@@ -198,7 +198,7 @@ export default function SetupProfile() {
         <img src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" style={{height:64, objectFit:"contain", maxWidth:220}} alt="KANDU" />
         <h2 style={{color:"#FFF",fontWeight:800,fontSize:22,marginBottom:8,position:"relative",zIndex:1}}>{t(lang,"enterPlatform","Entrar na plataforma")}</h2>
         <p style={{color:"#AAAAAA",fontSize:14,marginBottom:24,position:"relative",zIndex:1}}>{t(lang,"loginToContinue","Faz login para continuares")}</p>
-        <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
+        <button onClick={() => navigate(createPageUrl("Welcome"))}
           style={{padding:"16px 40px",background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:"pointer",position:"relative",zIndex:1}}>
           {t(lang,"loginOrSignup","Entrar / Criar Conta")}
         </button>
@@ -207,7 +207,8 @@ export default function SetupProfile() {
   }
 
   const handleGdprAccept = async () => {
-    await base44.auth.updateMe({ gdpr_accepted: true, gdpr_accepted_at: new Date().toISOString() });
+    const { data: { user: gu } } = await supabase.auth.getUser();
+      if (gu?.id) await supabase.from('users').upsert({ id: gu.id, gdpr_accepted: true, gdpr_accepted_at: new Date().toISOString(), updated_at: new Date().toISOString() }, { onConflict: 'id' });;
     setUser(prev => ({ ...prev, gdpr_accepted: true }));
     setShowGdpr(false);
     // Retomar o fluxo no ponto certo consoante o tipo escolhido —
