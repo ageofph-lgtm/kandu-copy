@@ -15,17 +15,19 @@ const LISBON_COORDS = [38.7223, -9.1393];
 // pt = valor canónico guardado em Job.category (a DB está em PT);
 // key = chave i18n usada só para exibição. "ALL" é sentinela do filtro.
 const CATEGORIES = [
-  { key: "allCategories", pt: "ALL" },
-  { key: "painting", pt: "Pintura" },
-  { key: "electricity", pt: "Eletricidade" },
-  { key: "plumbing", pt: "Canalização" },
-  { key: "masonry", pt: "Alvenaria" },
-  { key: "tiling", pt: "Ladrilhador" },
-  { key: "carpentry", pt: "Carpintaria" },
-  { key: "hvac", pt: "Climatização" },
-  { key: "insulation", pt: "Isolamentos" },
-  { key: "flooring", pt: "Pavimentos" },
-  { key: "roofing", pt: "Telhados" },
+  { key: "allCategories", pt: "ALL",            icon: "🔍" },
+  { key: "painting",      pt: "Pintura",         icon: "🎨" },
+  { key: "electricity",   pt: "Eletricidade",    icon: "⚡" },
+  { key: "plumbing",      pt: "Canalização",     icon: "🔧" },
+  { key: "masonry",       pt: "Alvenaria",       icon: "🧱" },
+  { key: "tiling",        pt: "Azulejista",      icon: "🔲" },
+  { key: "carpentry",     pt: "Carpintaria",     icon: "🪚" },
+  { key: "hvac",          pt: "Climatização",    icon: "❄️" },
+  { key: "metalwork",     pt: "Serralharia",     icon: "🔩" },
+  { key: "gardening",     pt: "Jardinagem",      icon: "🌿" },
+  { key: "waterproofing", pt: "Impermeabilizador",icon: "💧" },
+  { key: "plastering",    pt: "Estucador",       icon: "🏗️" },
+  { key: "scaffolding",   pt: "Montador de Andaimes", icon: "🏛️" },
 ];
 
 function haversine(lat1, lon1, lat2, lon2) {
