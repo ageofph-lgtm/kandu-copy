@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { Job } from "@/entities/Job";
-import { Application } from "@/entities/Application";
-import { User } from "@/entities/User";
+import { Application, Job, User } from "@/api/entities";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
