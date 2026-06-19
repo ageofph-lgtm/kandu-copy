@@ -112,7 +112,7 @@ export default function Chat() {
             if (new Date(message.created_at) > new Date(conversation.last_message.created_at)) {
               conversation.last_message = message;
             }
-            if (!message.is_read && message.receiver_id === currentUser.id) {
+            if (!message.read && message.receiver_id === currentUser.id) {
               conversation.unread_count = (conversation.unread_count || 0) + 1;
             }
           }
@@ -146,10 +146,10 @@ export default function Chat() {
 
       // Marcar mensagens como lidas
       const unreadMessages = messageList.filter(msg =>
-        !msg.is_read && msg.receiver_id === currentUser.id
+        !msg.read && msg.receiver_id === currentUser.id
       );
       for (const msg of unreadMessages) {
-        await ChatMessage.update(msg.id, { is_read: true });
+        await ChatMessage.update(msg.id, { read: true });
       }
 
       // Marcar notificações relacionadas como lidas
@@ -158,12 +158,12 @@ export default function Chat() {
         const unreadNotifications = await Notification.filter({
           user_id: currentUser.id,
           type: 'new_message',
-          is_read: false,
+          read: false,
           related_id: otherUserId
         });
         
         for (const notif of unreadNotifications) {
-          await Notification.update(notif.id, { is_read: true });
+          await Notification.update(notif.id, { read: true });
         }
       }
 
