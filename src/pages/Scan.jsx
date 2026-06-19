@@ -1,14 +1,11 @@
 import { toast } from "sonner";
+import { Application, Job, Notification, User } from "@/api/entities";
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Job } from "@/entities/Job";
-import { Application } from "@/entities/Application";
-import { User } from "@/entities/User";
-import { Notification } from "@/entities/Notification";
 import CompletionModal from "../components/applications/CompletionModal";
 
 export default function ScanPage() {
