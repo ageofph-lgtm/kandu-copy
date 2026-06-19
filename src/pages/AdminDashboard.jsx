@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import { supabase } from "@/api/supabaseClient";
 import { Job, Rating, User } from "@/api/entities";
 import { useState, useEffect, useCallback } from "react";
-// Removed ChatMessage import as its cleanup logic is moved
+// v2026-06-19 22:58:27 UTC — Blacklist removed from entities import; using supabase directly
 // Removed Notification import as its cleanup logic is moved
 import LoadingScreen from "@/components/LoadingScreen";
 import { Card, CardContent } from "@/components/ui/card";
