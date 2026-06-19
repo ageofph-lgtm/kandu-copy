@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { User } from "@/entities/User";
 import { Job } from "@/entities/Job";
 import { Rating } from "@/entities/Rating";
-import { Blacklist } from "@/entities/Blacklist";
+import { supabase } from "@/api/supabaseClient";
 // Removed ChatMessage import as its cleanup logic is moved
 // Removed Notification import as its cleanup logic is moved
 import LoadingScreen from "@/components/LoadingScreen";
@@ -349,7 +349,7 @@ export default function AdminDashboard() {
         User.list("-created_date"),
         Job.list("-created_date"),
         Rating.list("-created_date"),
-        Blacklist.list("-created_date")
+        supabase.from("blacklist").select("*").order("created_at", { ascending: false }).then(r => r.data || [])
       ]);
 
       // Admin vê todos os usuários exceto outros admins
@@ -408,9 +408,13 @@ export default function AdminDashboard() {
 
   const handleBlacklistSubmit = async (blacklistData) => {
     try {
-      await Blacklist.create({
-        ...blacklistData,
-        admin_id: currentUser.id
+      await supabase.from("blacklist").insert({
+        id: crypto.randomUUID(),
+        user_id: blacklistData.user_id,
+        reason: blacklistData.reason || "",
+        severity: blacklistData.severity || "warning",
+        admin_id: currentUser.id,
+        created_at: new Date().toISOString()
       });
 
       // Atualizar status do usuário
