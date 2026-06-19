@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
+import { User } from "@/api/entities";
 import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
-import { User } from "@/entities/User";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
