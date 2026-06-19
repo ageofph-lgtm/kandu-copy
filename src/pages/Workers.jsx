@@ -63,8 +63,8 @@ function WorkerCard({ worker, navigate }) {
             : initials}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            <span style={{ fontWeight: 800, fontSize: 15, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 140 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", minWidth: 0, overflow: "hidden" }}>
+            <span style={{ fontWeight: 800, fontSize: 15, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
               {worker.full_name || "Profissional"}
             </span>
             {worker.verified && <span style={{ fontSize: 11, background: "#22c55e22", color: "#22c55e", padding: "1px 7px", borderRadius: 10, fontWeight: 700 }}>✓ Verificado</span>}
@@ -257,7 +257,7 @@ export default function Workers() {
 
       {/* Painel de filtros expandível */}
       {showFilters && (
-        <div style={{ background: "#161520", borderBottom: `1px solid ${border}`, padding: "16px 20px" }}>
+        <div style={{ background: "#161520", borderBottom: `1px solid ${border}`, padding: "16px 16px", width: "100%", boxSizing: "border-box" }}>
 
           {/* Sort */}
           <div style={{ marginBottom: 16 }}>
