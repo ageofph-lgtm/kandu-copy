@@ -352,7 +352,7 @@ export default function AdminDashboard() {
         User.list("-created_date"),
         Job.list("-created_date"),
         Rating.list("-created_date"),
-        await (async () => { const { data } = await supabase.from("blacklist").select("*").order("created_at", { ascending: false }); return data || []; })()
+        supabase.from("blacklist").select("*").order("created_at", { ascending: false }).then(r => r.data || [])
       ]);
 
       setUsers(allUsers.filter(u => u.user_type !== 'admin'));
