@@ -39,10 +39,19 @@ export default function Login() {
   const handleGoogle = async () => {
     setGoogleLoading(true);
     setError("");
+    // Redirecionar sempre para a página de login do ambiente actual
+    // Em produção usa o domínio do Base44, em dev usa localhost
+    const redirectUrl = window.location.origin.includes('localhost')
+      ? window.location.origin + "/login"
+      : window.location.origin + "/login";
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin + window.location.pathname,
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
       },
     });
     if (err) { setError(err.message); setGoogleLoading(false); }
