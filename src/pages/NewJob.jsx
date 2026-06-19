@@ -11,15 +11,18 @@ import { createPageUrl } from "@/utils";
 // pt = valor canónico do enum Job.category na entidade (a DB está em PT);
 // key = chave i18n usada apenas para exibição.
 const CATEGORY_KEYS = [
-  { key: "painting", pt: "Pintura", icon: "🎨" },
-  { key: "electricity", pt: "Eletricidade", icon: "⚡" },
-  { key: "plumbing", pt: "Canalização", icon: "🔧" },
-  { key: "masonry", pt: "Alvenaria", icon: "🧱" },
-  { key: "tiling", pt: "Ladrilhador", icon: "🔲" },
-  { key: "carpentry", pt: "Carpintaria", icon: "🪚" },
-  { key: "insulation", pt: "Isolamentos", icon: "🏗️" },
-  { key: "flooring", pt: "Pavimentos", icon: "🏠" },
-  { key: "roofing", pt: "Telhados", icon: "🏘️" },
+  { key: "painting",      pt: "Pintura",              icon: "🎨" },
+  { key: "electricity",   pt: "Eletricidade",         icon: "⚡" },
+  { key: "plumbing",      pt: "Canalização",          icon: "🔧" },
+  { key: "masonry",       pt: "Alvenaria",             icon: "🧱" },
+  { key: "tiling",        pt: "Azulejista",            icon: "🔲" },
+  { key: "carpentry",     pt: "Carpintaria",           icon: "🪚" },
+  { key: "hvac",          pt: "Climatização",          icon: "❄️" },
+  { key: "metalwork",     pt: "Serralharia",           icon: "🔩" },
+  { key: "gardening",     pt: "Jardinagem",            icon: "🌿" },
+  { key: "waterproofing", pt: "Impermeabilizador",     icon: "💧" },
+  { key: "plastering",    pt: "Estucador",             icon: "🏗️" },
+  { key: "scaffolding",   pt: "Montador de Andaimes",  icon: "🏛️" },
 ];
 
 const LOCATION_COORDS = {
