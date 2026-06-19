@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { Job, User } from "@/api/entities";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
-import { Job } from "@/entities/Job";
-import { User } from "@/entities/User";
 
 
 import { format, addDays, startOfWeek, isSameDay, parseISO, addWeeks, subWeeks } from "date-fns";
