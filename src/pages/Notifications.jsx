@@ -47,9 +47,7 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
     if (!notification.read) {
       onMarkAsRead(notification);
     }
-    if (notification.action_url) {
-      navigate(notification.action_url);
-    }
+    // action_url não existe na BD — navegação removida
   };
 
   return (
@@ -225,8 +223,8 @@ export default function Notifications() {
           const {icon, bg} = getIcon(notif.type);
           return (
             <div key={notif.id}
-              onClick={() => { handleMarkAsRead(notif); if(notif.action_url) window.location.href=notif.action_url; }}
-              style={{background:surface,borderRadius:14,padding:"14px 16px",borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:notif.is_read?0.6:1}}>
+              onClick={() => { handleMarkAsRead(notif); }}
+              style={{background:surface,borderRadius:14,padding:"14px 16px",borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:notif.read?0.6:1}}>
               <div style={{width:40,height:40,borderRadius:12,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
                 {icon}
               </div>
