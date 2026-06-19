@@ -3,7 +3,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { SUPPORTED_LANGUAGES } from "@/lib/LanguageContext";
 import { useTheme } from "@/lib/ThemeContext";
-import { base44 } from "@/api/base44Client";
+import { supabase } from "@/api/supabaseClient";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { Wrench, Briefcase, Star, Shield } from "lucide-react";
@@ -34,10 +34,10 @@ export default function Welcome() {
   useEffect(() => {
     const check = async () => {
       try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (isAuth) {
-          const user = await base44.auth.me();
-          if (user?.user_type) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const { data: profile } = await supabase.from('users').select('user_type').eq('id', authUser.id).maybeSingle();
+          if (profile?.user_type) {
             navigate(createPageUrl("Home"));
           } else {
             navigate(createPageUrl("SetupProfile"));
@@ -99,13 +99,13 @@ export default function Welcome() {
       {/* Botões */}
       <div style={{width:"100%", maxWidth:400, display:"flex", flexDirection:"column", gap:12, position:"relative", zIndex:1}}>
         <button
-          onClick={() => base44.auth.redirectToLogin(createPageUrl("SetupProfile"))}
+          onClick={() => navigate(createPageUrl("Login"))}
           style={{width:"100%", padding:16, background:"#FF6600", border:"none", borderRadius:14, color:"#FFF", fontWeight:700, fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:10}}
         >
           🔧 {t(lang,"imProfessional","Sou Profissional")}
         </button>
         <button
-          onClick={() => base44.auth.redirectToLogin(createPageUrl("SetupProfile"))}
+          onClick={() => navigate(createPageUrl("Login"))}
           style={{width:"100%", padding:16, background:"transparent", border:"2px solid #FF6600", borderRadius:14, color:"#FFF", fontWeight:700, fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:10}}
         >
           💼 {t(lang,"iNeedProfessional","Preciso de Profissional")}
