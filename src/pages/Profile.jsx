@@ -3,24 +3,12 @@ import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage, SUPPORTED_LANGUAGES } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
-import { base44 } from "@/api/base44Client";
 import { supabase } from "@/api/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Button } from "@/components/ui/button";
-import { Edit2, LogOut, RefreshCw, FileText, Image as ImageIcon, Award, MapPin as MapPinIcon } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Edit2, LogOut, Star, MapPin, Briefcase, Award, Phone, Globe } from "lucide-react";
 import ProfileForm from "../components/profile/ProfileForm";
 import ReviewsSection from "../components/profile/ReviewsSection";
-import PortfolioGallery from "../components/profile/PortfolioGallery";
-import DocumentsList from "../components/profile/DocumentsList";
-import VerificationUpgrade from "../components/profile/VerificationUpgrade";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -30,40 +18,47 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState("info");
   const avatarInputRef = useRef(null);
 
   const urlParams = new URLSearchParams(window.location.search);
-  const viewingUserId = urlParams.get('userId');
+  const viewingUserId = urlParams.get("userId");
   const isOwnProfile = !viewingUserId;
 
   const bg = isDark ? "#111016" : "#FFFFFF";
   const surface = isDark ? "#1C1B22" : "#F5F5F5";
   const text = isDark ? "#FFFFFF" : "#111016";
   const subtext = isDark ? "#AAAAAA" : "#666666";
-  const border = isDark ? "#333333" : "#E5E5E5";
+  const border = isDark ? "#2a2836" : "#E5E5E5";
 
-  useEffect(() => {
-    loadUser();
-  }, [viewingUserId]);
+  useEffect(() => { loadUser(); }, [viewingUserId]);
 
   const loadUser = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      let userData;
-      if (viewingUserId) {
-        const users = await User.filter({ id: viewingUserId });
-        userData = users[0];
-      } else {
-        userData = await User.me();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user && !viewingUserId) {
+        navigate(createPageUrl("Login")); return;
       }
-      if (!userData) throw new Error('User not found');
-      setUser(userData);
-      if (!userData.user_type) {
-        setIsEditing(true);
+      const targetId = viewingUserId || session?.user?.id;
+      const { data } = await supabase.from("users").select("*").eq("id", targetId).maybeSingle();
+      if (data) {
+        setUser({ ...data, email: data.email || session?.user?.email });
+      } else if (!viewingUserId) {
+        // Criar perfil básico se não existe
+        const now = new Date().toISOString();
+        const basic = {
+          id: session.user.id,
+          email: session.user.email,
+          full_name: session.user.user_metadata?.full_name || session.user.email,
+          user_type: "worker",
+          created_at: now, updated_at: now
+        };
+        await supabase.from("users").upsert(basic, { onConflict: "id" });
+        setUser(basic);
       }
-    } catch (error) {
-      console.error("Error loading user:", error);
-      setUser(null);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -71,323 +66,216 @@ export default function Profile() {
 
   const handleSave = async (profileData) => {
     try {
-      await User.updateMyUserData(profileData);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      await supabase.from("users")
+        .update({ ...profileData, updated_at: new Date().toISOString() })
+        .eq("id", session.user.id);
       await loadUser();
       setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-    }
+    } catch (e) { console.error(e); }
   };
 
-  const handleAvatarUpload = async (event) => {
-    const file = event.target.files[0];
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
     if (!file) return;
-    // 🚀 Optimistic update: show preview immediately
-    const localPreview = URL.createObjectURL(file);
-    setUser(prev => ({ ...prev, avatar_url: localPreview }));
     setIsUploading(true);
+    const preview = URL.createObjectURL(file);
+    setUser(prev => ({ ...prev, avatar_url: preview }));
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      await User.updateMyUserData({ avatar_url: file_url });
-      // Replace local preview with real URL
-      setUser(prev => ({ ...prev, avatar_url: file_url }));
-      URL.revokeObjectURL(localPreview);
-    } catch (error) {
-      console.error("Error uploading avatar:", error);
-      await loadUser(); // revert on error
-    } finally {
-      setIsUploading(false);
-    }
+      const ext = file.name.split(".").pop();
+      const name = `avatars/${user.id}_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("kandu-uploads").upload(name, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from("kandu-uploads").getPublicUrl(name);
+      await supabase.from("users").update({ avatar_url: publicUrl, updated_at: new Date().toISOString() }).eq("id", user.id);
+      setUser(prev => ({ ...prev, avatar_url: publicUrl }));
+      URL.revokeObjectURL(preview);
+    } catch (err) { console.error(err); await loadUser(); }
+    finally { setIsUploading(false); }
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut(); window.location.href = "/";
+    await supabase.auth.signOut();
+    navigate(createPageUrl("Login"));
   };
 
   const handleChangeProfile = async () => {
-    try {
-      const { data: { user: gu } } = await supabase.auth.getUser(); if (gu?.id) await supabase.from("users").update({ user_type: null, updated_at: new Date().toISOString() }).eq("id", gu.id);
-      window.location.href = createPageUrl("SetupProfile");
-    } catch (error) {
-      console.error("Error changing profile:", error);
-    }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) await supabase.from("users").update({ user_type: null }).eq("id", session.user.id);
+    navigate(createPageUrl("SetupProfile"));
   };
 
-  if (loading) {
-    return <LoadingScreen label={t(lang,"loading")} />;
-  }
+  if (loading) return <LoadingScreen label="A carregar..." />;
 
-  if (!user) {
-    return (
-      <div style={{ minHeight: "100vh", background: bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-        <div style={{ textAlign: "center" }}>
-          <p style={{ color: text, fontSize: 16, marginBottom: 16 }}>{t(lang,"error")}</p>
-          <Button 
-            style={{ background: "#F26522" }}
-            onClick={() => navigate(createPageUrl("Login"))}
-          >
-            Fazer Login
-          </Button>
-        </div>
+  if (!user) return (
+    <div style={{ minHeight: "100vh", background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ textAlign: "center" }}>
+        <p style={{ color: text, marginBottom: 16 }}>Sessão não encontrada</p>
+        <button onClick={() => navigate(createPageUrl("Login"))}
+          style={{ padding: "12px 28px", background: "#F4621F", border: "none", borderRadius: 12, color: "#fff", fontWeight: 700, cursor: "pointer" }}>
+          Fazer Login
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (isEditing && isOwnProfile) {
-    return (
-      <div style={{ padding: 16, maxWidth: 480, margin: "0 auto", background: bg, minHeight: "100vh" }}>
-        <ProfileForm user={user} onSave={handleSave} onCancel={() => setIsEditing(false)} isFirstTime={!user.user_type} />
-      </div>
-    );
-  }
+  if (isEditing && isOwnProfile) return (
+    <div style={{ padding: 16, maxWidth: 480, margin: "0 auto", background: bg, minHeight: "100vh" }}>
+      <ProfileForm user={user} onSave={handleSave} onCancel={() => setIsEditing(false)} isFirstTime={!user.user_type} />
+    </div>
+  );
 
-  const xp = user.xp || 0;
-  const getNivelFromXP = (x) => {
-    if (x >= 5000) return "Mestre";
-    if (x >= 2000) return "Avançado";
-    if (x >= 500) return "Intermédio";
-    return "Iniciante";
-  };
+  const typeLabel = user.user_type === "employer" ? "Empregador" : user.user_type === "worker" ? "Profissional" : "Utilizador";
+  const typeColor = user.user_type === "employer" ? "#3B82F6" : "#F4621F";
+  const initials = (user.full_name || user.email || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 
   return (
-    <div style={{ background: bg, minHeight: "100vh", padding: "50px 20px 80px", overflowY: "auto" }}>
-      <input type="file" ref={avatarInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
+    <div style={{ background: bg, minHeight: "100vh", paddingBottom: 80 }}>
+      <input type="file" ref={avatarInputRef} onChange={handleAvatarUpload} style={{ display: "none" }} accept="image/*" />
 
-      {/* Top Bar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20 }}>←</button>
-        {isOwnProfile ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 6px", borderRadius: 8, display:"flex", alignItems:"center", justifyContent:"center", color: text }}><svg width="18" height="18" viewBox="0 0 24 24" fill={text}><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setIsEditing(true)}><Edit2 className="w-4 h-4 mr-2" /> {t(lang,"editProfile")}</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleChangeProfile}><RefreshCw className="w-4 h-4 mr-2" /> {t(lang,"setupProfile")}</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="text-red-600"><LogOut className="w-4 h-4 mr-2" /> {t(lang,"logout")}</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <button style={{ background: "#FF6600", border: "none", borderRadius: 8, padding: "8px 16px", color: "#FFF", fontWeight: 600, cursor: "pointer", fontSize: 13 }} onClick={() => navigate(createPageUrl("Chat") + `?userId=${user.id}`)}>
-            💬 {t(lang,"contact")}
-          </button>
-        )}
-      </div>
-
-
-      {/* KANDU Logo */}
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-        <img
-          src={isDark
-            ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
-            : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"}
-          alt="KANDU" style={{ height: 26, objectFit: "contain" }}
-        />
-      </div>
-      {/* Avatar */}
-      <div 
-        style={{ 
-          width: 100, 
-          height: 100, 
-          clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", 
-          overflow: "hidden", 
-          border: "4px solid #FF6600", 
-          margin: "0 auto 12px", 
-          cursor: isOwnProfile ? "pointer" : "default",
-          background: "#FF6600",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#FFF",
-          fontSize: 36,
-          fontWeight: 800,
-          flexShrink: 0
-        }} 
-        onClick={() => isOwnProfile && avatarInputRef.current?.click()}
-      >
-        {user?.avatar_url ? (
-          <img src={user.avatar_url} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        ) : (
-          user?.full_name?.charAt(0) || "U"
-        )}
-      </div>
-
-      {/* Nome */}
-      <p style={{ fontWeight: 800, fontSize: 20, color: text, textAlign: "center", margin: "0 0 4px" }}>
-        {user?.full_name || "Nome não definido"}
-      </p>
-      <p style={{ color: subtext, textAlign: "center", marginBottom: 16, fontSize: 14 }}>
-        {user?.user_type || "Tipo não definido"}
-      </p>
-
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 16 }}>
-        <div style={{ background: surface, borderRadius: 14, padding: "14px 8px", textAlign: "center" }}>
-          <p style={{ fontWeight: 800, fontSize: 18, color: text, margin: 0 }}>{user?.completed_jobs || 0}</p>
-          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>{t(lang,"myJobs")}</p>
+      {/* Header */}
+      <div style={{ background: isDark ? "#1C1B22" : "#F5F5F5", padding: "50px 20px 24px", position: "relative" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: text }}>←</button>
+          {isOwnProfile && (
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setIsEditing(true)}
+                style={{ padding: "8px 16px", background: "#F4621F", border: "none", borderRadius: 10, color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                <Edit2 size={14} /> Editar
+              </button>
+              <button onClick={handleLogout}
+                style={{ padding: "8px 12px", background: surface, border: `1px solid ${border}`, borderRadius: 10, color: subtext, cursor: "pointer" }}>
+                <LogOut size={14} />
+              </button>
+            </div>
+          )}
         </div>
-        <div style={{ background: surface, borderRadius: 14, padding: "14px 8px", textAlign: "center" }}>
-          <p style={{ fontWeight: 800, fontSize: 18, color: "#FF6600", margin: 0 }}>{user?.rating?.toFixed(1) || "N/A"} ⭐</p>
-          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>{t(lang,"rating")}</p>
-        </div>
-        <div style={{ background: surface, borderRadius: 14, padding: "14px 8px", textAlign: "center" }}>
-          <p style={{ fontWeight: 800, fontSize: 18, color: "#22C55E", margin: 0 }}>{user?.attendance_rate || "—"}%</p>
-          <p style={{ color: subtext, fontSize: 11, margin: 0 }}>{t(lang,"rating")}</p>
-        </div>
-      </div>
 
-      {/* XP Card */}
-      <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
-          <span style={{ fontWeight: 800, fontSize: 20, color: "#FF6600" }}>{xp} XP</span>
-          <span style={{ color: "#AAAAAA", fontSize: 13, marginLeft: "auto" }}>{t(lang,"level")}: {getNivelFromXP(xp)}</span>
-        </div>
-        <div style={{ background: border, height: 8, borderRadius: 8, overflow: "hidden" }}>
-          <div style={{ background: "#FF6600", height: "100%", borderRadius: 8, width: "50%", transition: "width 0.5s" }} />
-        </div>
-      </div>
-
-      {/* Skills — só para workers */}
-      {user?.user_type === 'worker' && user?.skills && user.skills.length > 0 && (
-        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <Award style={{ width: 16, height: 16, color: "#FF6600" }} />
-            <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{t(lang,"skills")}</p>
+        {/* Avatar + nome */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 16 }}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            {user.avatar_url ? (
+              <img src={user.avatar_url} alt="avatar"
+                style={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover", border: `3px solid ${typeColor}` }} />
+            ) : (
+              <div style={{ width: 80, height: 80, borderRadius: "50%", background: typeColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 900, color: "#fff", border: `3px solid ${typeColor}` }}>
+                {initials}
+              </div>
+            )}
+            {isOwnProfile && (
+              <button onClick={() => avatarInputRef.current?.click()}
+                style={{ position: "absolute", bottom: 0, right: 0, width: 26, height: 26, borderRadius: "50%", background: "#F4621F", border: "2px solid " + bg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff" }}>
+                {isUploading ? "⏳" : "📷"}
+              </button>
+            )}
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {user.skills.map((skill) => (
-              <span key={skill} style={{ background: isDark ? "#333" : "#E5E5E5", color: text, padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
-                {skill}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Áreas de Atuação — só para workers */}
-      {user?.user_type === 'worker' && user?.service_areas && user.service_areas.length > 0 && (
-        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <MapPinIcon style={{ width: 16, height: 16, color: "#FF6600" }} />
-            <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{t(lang,"location")}</p>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {user.service_areas.map((area) => (
-              <span key={area} style={{ background: "transparent", border: "1px solid #FF6600", color: "#FF6600", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
-                {area}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-
-
-      {/* Upgrade de verificação — caminho para quem escolheu "Fazer mais tarde"
-          no onboarding (o componente esconde-se quando já é ultra_verified) */}
-      {isOwnProfile && user?.verified_level !== 'ultra_verified' && (
-        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-          <VerificationUpgrade user={user} onUpdate={loadUser} />
-        </div>
-      )}
-
-      {/* Avaliações */}
-      <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-        <p style={{ fontWeight: 700, fontSize: 15, color: text, marginBottom: 12 }}>{t(lang,"rating")}</p>
-        <ReviewsSection userId={user?.id} />
-      </div>
-
-      {/* Tabs Portfólio / Documentos — só para workers */}
-      {user?.user_type === 'worker' && isOwnProfile && (
-        <div style={{ background: surface, borderRadius: 16, marginBottom: 12, overflow: "hidden" }}>
-          <Tabs defaultValue="portfolio">
-            <TabsList style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: isDark ? "#222" : "#EEEEEE", margin: "0", borderRadius: "16px 16px 0 0", padding: 4, gap: 4 }}>
-              <TabsTrigger value="portfolio" style={{ display: "flex", alignItems: "center", gap: 6, borderRadius: 12, fontSize: 13, fontWeight: 600 }}>
-                <ImageIcon style={{ width: 14, height: 14 }} />
-                Portfólio
-              </TabsTrigger>
-              <TabsTrigger value="documents" style={{ display: "flex", alignItems: "center", gap: 6, borderRadius: 12, fontSize: 13, fontWeight: 600 }}>
-                <FileText style={{ width: 14, height: 14 }} />
-                Documentos
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="portfolio" style={{ padding: 16 }}>
-              <PortfolioGallery
-                images={user?.portfolio_images || []}
-                onUpdate={loadUser}
-                canEdit={isOwnProfile}
-              />
-            </TabsContent>
-            <TabsContent value="documents" style={{ padding: 16 }}>
-              <DocumentsList
-                documents={user?.documents || []}
-                onUpdate={loadUser}
-                canEdit={isOwnProfile}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
-      )}
-
-      {/* ── Idioma / Language (só para o próprio perfil) ── */}
-      {isOwnProfile && (
-        <div style={{ background: surface, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-          {/* Header */}
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
-            <span style={{ fontSize:18 }}>🌐</span>
-            <p style={{ fontWeight:700, fontSize:15, color:text, margin:0 }}>
-              {t(lang, "selectLanguage")}
-            </p>
-            {/* Badge idioma activo */}
-            <span style={{
-              marginLeft:"auto", background:"rgba(244,98,31,0.12)",
-              border:"1px solid rgba(244,98,31,0.3)", color:"#F4621F",
-              fontSize:11, fontWeight:800, padding:"2px 10px", borderRadius:50,
-              letterSpacing:"0.06em"
-            }}>
-              {SUPPORTED_LANGUAGES.find(l => l.code === lang)?.flag} {lang}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h2 style={{ color: text, fontWeight: 800, fontSize: 20, margin: "0 0 4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {user.full_name || user.email}
+            </h2>
+            <span style={{ background: typeColor + "22", color: typeColor, padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+              {typeLabel}
             </span>
-          </div>
-
-          {/* Grid de botões — 2 colunas */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-            {SUPPORTED_LANGUAGES.map((l) => {
-              const isActive = lang === l.code;
-              return (
-                <button
-                  key={l.code}
-                  onClick={() => setLang(l.code)}
-                  style={{
-                    display:"flex", alignItems:"center", gap:10,
-                    padding:"11px 12px", borderRadius:12, cursor:"pointer",
-                    border: isActive ? "2px solid #F4621F" : `1px solid ${isDark ? "#2a2a2a" : "#E5E5E5"}`,
-                    background: isActive
-                      ? "rgba(244,98,31,0.10)"
-                      : (isDark ? "#1a1a1a" : "#F9F9F9"),
-                    transition:"all 0.16s", fontFamily:"inherit", textAlign:"left",
-                  }}
-                >
-                  <span style={{ fontSize:20, flexShrink:0 }}>{l.flag}</span>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{
-                      fontWeight: isActive ? 700 : 500,
-                      fontSize:13,
-                      color: isActive ? "#F4621F" : text,
-                      lineHeight:1.2,
-                      overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"
-                    }}>{l.label}</div>
-                    <div style={{ fontSize:10, color:isDark?"#555":"#bbb", marginTop:1 }}>{l.code}</div>
-                  </div>
-                  {isActive && (
-                    <span style={{ color:"#F4621F", fontSize:14, flexShrink:0 }}>✓</span>
-                  )}
-                </button>
-              );
-            })}
+            {user.city && (
+              <p style={{ color: subtext, fontSize: 13, margin: "6px 0 0", display: "flex", alignItems: "center", gap: 4 }}>
+                <MapPin size={12} /> {user.city}
+              </p>
+            )}
           </div>
         </div>
-      )}
 
+        {/* Stats */}
+        <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+          {[
+            { label: "Rating", value: user.rating ? `${Number(user.rating).toFixed(1)} ⭐` : "—" },
+            { label: "Trabalhos", value: user.completed_jobs || 0 },
+            { label: "XP", value: user.xp || 0 },
+          ].map(stat => (
+            <div key={stat.label} style={{ flex: 1, background: surface, borderRadius: 12, padding: "10px 8px", textAlign: "center", border: `1px solid ${border}` }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: text }}>{stat.value}</div>
+              <div style={{ fontSize: 11, color: subtext, marginTop: 2 }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", borderBottom: `1px solid ${border}`, background: bg, position: "sticky", top: 0, zIndex: 5 }}>
+        {[
+          { id: "info", label: "Informação" },
+          { id: "reviews", label: "Avaliações" },
+        ].map(tab => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            style={{ flex: 1, padding: "14px 8px", border: "none", background: "none", cursor: "pointer",
+              color: activeTab === tab.id ? "#F4621F" : subtext,
+              fontWeight: activeTab === tab.id ? 700 : 400,
+              borderBottom: activeTab === tab.id ? "2px solid #F4621F" : "2px solid transparent",
+              fontSize: 14 }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: "20px 16px" }}>
+        {activeTab === "info" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {user.bio && (
+              <div style={{ background: surface, borderRadius: 14, padding: 16, border: `1px solid ${border}` }}>
+                <p style={{ color: subtext, fontSize: 12, marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Sobre</p>
+                <p style={{ color: text, fontSize: 14, lineHeight: 1.6, margin: 0 }}>{user.bio}</p>
+              </div>
+            )}
+            {user.skills?.length > 0 && (
+              <div style={{ background: surface, borderRadius: 14, padding: 16, border: `1px solid ${border}` }}>
+                <p style={{ color: subtext, fontSize: 12, marginBottom: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Competências</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {user.skills.map((s, i) => (
+                    <span key={i} style={{ background: "#F4621F22", color: "#F4621F", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>{s}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {[
+              { icon: <Phone size={14}/>, label: "Telefone", value: user.phone },
+              { icon: <Globe size={14}/>, label: "Idioma", value: user.language },
+              { icon: <Briefcase size={14}/>, label: "Experiência", value: user.experience_years ? `${user.experience_years} anos` : null },
+              { icon: <Award size={14}/>, label: "Nível", value: user.level },
+            ].filter(f => f.value).map(f => (
+              <div key={f.label} style={{ background: surface, borderRadius: 14, padding: "12px 16px", border: `1px solid ${border}`, display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ color: "#F4621F" }}>{f.icon}</span>
+                <div>
+                  <p style={{ color: subtext, fontSize: 11, margin: 0, fontWeight: 600 }}>{f.label}</p>
+                  <p style={{ color: text, fontSize: 14, margin: "2px 0 0", fontWeight: 600 }}>{f.value}</p>
+                </div>
+              </div>
+            ))}
+            {isOwnProfile && (
+              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 10 }}>
+                <button onClick={handleChangeProfile}
+                  style={{ padding: "12px", background: surface, border: `1px solid ${border}`, borderRadius: 12, color: subtext, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>
+                  🔄 Mudar tipo de perfil
+                </button>
+                <div style={{ background: surface, borderRadius: 14, padding: 14, border: `1px solid ${border}` }}>
+                  <p style={{ color: subtext, fontSize: 12, margin: "0 0 10px", fontWeight: 600 }}>Idioma da app</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {(SUPPORTED_LANGUAGES || [{ code: "pt", label: "PT" }, { code: "en", label: "EN" }]).map(l => (
+                      <button key={l.code} onClick={() => setLang(l.code)}
+                        style={{ padding: "6px 14px", borderRadius: 20, border: "none", cursor: "pointer",
+                          background: lang === l.code ? "#F4621F" : border,
+                          color: lang === l.code ? "#fff" : text, fontWeight: 600, fontSize: 13 }}>
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {activeTab === "reviews" && <ReviewsSection userId={user.id} isDark={isDark} />}
+      </div>
     </div>
   );
 }
