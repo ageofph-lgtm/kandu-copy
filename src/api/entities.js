@@ -335,9 +335,12 @@ export const Blacklist = {
   },
 
   async create(payload) {
+    // A tabela tem: id, user_id, blocked_id, reason, created_at
+    // Ignorar campos extras que o AdminDashboard pode enviar (severity, evidence, expires_at, admin_id)
+    const { severity: _s, evidence: _e, expires_at: _ea, admin_id: _ai, ...rest } = payload;
     const { data, error } = await supabase.from("blacklist").insert({
       id: crypto.randomUUID(),
-      ...payload,
+      ...rest,
       created_at: new Date().toISOString(),
     }).select().single();
     if (error) throw error;
