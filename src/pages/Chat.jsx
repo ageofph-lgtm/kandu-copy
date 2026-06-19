@@ -4,14 +4,17 @@ import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
-import { 
-  MessageCircle // Add Settings icon
-} from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import { base44 } from "@/api/base44Client";
 
 import ConversationList from "../components/chat/ConversationList";
 import ChatWindow from "../components/chat/ChatWindow";
+
+// Gerar ID de conversa sintético a partir dos participantes + job
+function makeConvId(uid1, uid2, jobId) {
+  const pair = [uid1, uid2].sort().join("_");
+  return jobId ? `${pair}__${jobId}` : pair;
+}
 
 export default function Chat() {
   const { isDark } = useTheme();
@@ -21,313 +24,185 @@ export default function Chat() {
   const headerBg = isDark ? "#111" : "#F0F0F0";
   const border = isDark ? "#222" : "#E5E5E5";
   const [conversations, setConversations] = useState([]);
-  const [archivedConversations, setArchivedConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dataLoaded, setDataLoaded] = useState(false);
   const urlParamHandled = useRef(false);
 
   const loadUser = useCallback(async () => {
-    try {
-      const userData = await User.me();
-      setUser(userData);
-      return userData;
-    } catch (error) {
-      console.log("User not authenticated");
-      return null;
-    }
+    try { const u = await User.me(); setUser(u); return u; }
+    catch { return null; }
   }, []);
-
-  const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
 
   const loadConversations = useCallback(async (currentUser) => {
     if (!currentUser) return;
     try {
-      const allMessages = await ChatMessage.list("-created_at");
+      // Buscar todas as mensagens em que o utilizador participa
+      const [asSender, asReceiver] = await Promise.all([
+        ChatMessage.filter({ sender_id: currentUser.id }),
+        ChatMessage.filter({ receiver_id: currentUser.id }),
+      ]);
+      const allMessages = [...asSender, ...asReceiver];
+
+      // Agrupar por conversa sintética (pair + job_id)
+      const convMap = new Map();
       const userCache = new Map();
-      const conversationMap = new Map();
 
       const getUser = async (userId) => {
         if (userCache.has(userId)) return userCache.get(userId);
-        if (userId === currentUser.id) {
-          userCache.set(userId, currentUser);
-          return currentUser;
-        }
-        let userData = { id: userId, full_name: "Utilizador" };
+        if (userId === currentUser.id) { userCache.set(userId, currentUser); return currentUser; }
         try {
-          const res = await base44.functions.invoke('getUserById', { userId });
-          if (res.data && !res.data.error) {
-            userData = res.data;
-          }
-        } catch (e) { /* fallback — dados mínimos */ }
-        userCache.set(userId, userData);
-        return userData;
+          const res = await User.get(userId);
+          if (res) { userCache.set(userId, res); return res; }
+        } catch {}
+        const fallback = { id: userId, full_name: "Utilizador" };
+        userCache.set(userId, fallback);
+        return fallback;
       };
 
-      // Load accepted applications to determine job context
-      const acceptedApps = await Application.filter({ status: 'accepted' });
-      const jobCache = new Map();
-      const getJob = async (jobId) => {
-        if (jobCache.has(jobId)) return jobCache.get(jobId);
-        const [job] = await Job.filter({ id: jobId });
-        if (job) jobCache.set(jobId, job);
-        return job;
-      };
+      for (const msg of allMessages) {
+        const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id;
+        const convId = makeConvId(currentUser.id, otherId, msg.job_id);
 
-      for (const message of allMessages) {
-        const isParticipant = message.sender_id === currentUser.id || message.receiver_id === currentUser.id;
-        if (currentUser.user_type === 'admin' || isParticipant) {
-          const conversationId = message.conversation_id;
-          if (!conversationMap.has(conversationId)) {
-            const user1 = await getUser(message.sender_id);
-            const user2 = await getUser(message.receiver_id);
-            const otherUser = user1.id === currentUser.id ? user2 : user1;
-
-            // Find job context: accepted application between these two users
-            const jobLinkedApp = acceptedApps.find(app => {
-              const ids = [user1.id, user2.id];
-              return ids.includes(app.worker_id);
-            });
-            let jobContext = null;
-            if (jobLinkedApp) {
-              const job = await getJob(jobLinkedApp.job_id);
-              if (job && (job.employer_id === user1.id || job.employer_id === user2.id)) {
-                jobContext = { job, application: jobLinkedApp };
-              }
-            }
-
-            conversationMap.set(conversationId, {
-              conversation_id: conversationId,
-              participants: [user1, user2],
-              other_user: otherUser,
-              last_message: message,
-              unread_count: 0,
-              job_context: jobContext
-            });
-          }
-          const conversation = conversationMap.get(conversationId);
-          if (conversation) {
-            if (new Date(message.created_at) > new Date(conversation.last_message.created_at)) {
-              conversation.last_message = message;
-            }
-            if (!message.read && message.receiver_id === currentUser.id) {
-              conversation.unread_count = (conversation.unread_count || 0) + 1;
-            }
-          }
+        if (!convMap.has(convId)) {
+          convMap.set(convId, {
+            conversation_id: convId,
+            job_id: msg.job_id,
+            other_user_id: otherId,
+            other_user: null,
+            last_message: msg,
+            unread_count: 0,
+          });
+        }
+        const conv = convMap.get(convId);
+        if (new Date(msg.created_at) > new Date(conv.last_message.created_at)) {
+          conv.last_message = msg;
+        }
+        if (!msg.read && msg.receiver_id === currentUser.id) {
+          conv.unread_count = (conv.unread_count || 0) + 1;
         }
       }
 
-      const allConvs = Array.from(conversationMap.values());
-      allConvs.sort((a, b) =>
+      // Carregar otherUser para cada conversa
+      const convs = Array.from(convMap.values());
+      await Promise.all(convs.map(async (c) => {
+        c.other_user = await getUser(c.other_user_id);
+      }));
+
+      convs.sort((a, b) =>
         new Date(b.last_message.created_at) - new Date(a.last_message.created_at)
       );
 
-      // Split by archived flag (persisted in DB by backend automation)
-      const active = allConvs.filter(c => !c.last_message.is_archived);
-      const archived = allConvs.filter(c => c.last_message.is_archived);
-
-      setConversations(active);
-      setArchivedConversations(archived);
-    } catch (error) {
-      console.error("Error loading conversations:", error);
+      setConversations(convs);
+      setLoading(false);
+    } catch (err) {
+      console.error("Erro ao carregar conversas:", err);
+      setLoading(false);
     }
   }, []);
 
-  const loadMessages = useCallback(async (conversationId, currentUser) => {
-    if (!currentUser || !conversationId) return;
+  const loadMessages = useCallback(async (conv, currentUser) => {
+    if (!conv || !currentUser) return;
     try {
-      const messageList = await ChatMessage.filter(
-        { conversation_id: conversationId },
-        "created_at"
-      );
-      setMessages(messageList);
-
-      // Marcar mensagens como lidas
-      const unreadMessages = messageList.filter(msg =>
-        !msg.read && msg.receiver_id === currentUser.id
-      );
-      for (const msg of unreadMessages) {
-        await ChatMessage.update(msg.id, { read: true });
-      }
-
-      // Marcar notificações relacionadas como lidas
-      const otherUserId = selectedConversation?.other_user.id;
-      if (otherUserId) {
-        const unreadNotifications = await Notification.filter({
-          user_id: currentUser.id,
-          type: 'new_message',
-          read: false,
-          related_id: otherUserId
-        });
-        
-        for (const notif of unreadNotifications) {
-          await Notification.update(notif.id, { read: true });
-        }
-      }
-
-      // Recarregar conversas para atualizar contadores
-      await loadConversations(currentUser);
-    } catch (error) {
-      console.error("Error loading messages:", error);
-    }
-  }, [selectedConversation, loadConversations]);
-
-  const loadInitialData = useCallback(async () => {
-    setLoading(true);
-    const currentUser = await loadUser();
-    if(currentUser) {
-        await loadConversations(currentUser);
-    }
-    setLoading(false);
-    setDataLoaded(true);
-  }, [loadUser, loadConversations]);
-
-  useEffect(() => {
-    loadInitialData();
-  }, [loadInitialData]);
-
-  // Handle ?userId= parameter — open/create conversation with target user
-  useEffect(() => {
-    if (!dataLoaded || !user || urlParamHandled.current) return;
-    urlParamHandled.current = true;
-
-    const params = new URLSearchParams(window.location.search);
-    const targetUserId = params.get("userId");
-    if (!targetUserId || targetUserId === user.id) return;
-
-    const openConversation = async () => {
-      const existingConv = conversations.find(c =>
-        c.participants.some(p => p.id === targetUserId)
-      );
-
-      if (existingConv) {
-        setSelectedConversation(existingConv);
+      // Buscar mensagens por job_id ou por par de utilizadores
+      let msgs = [];
+      if (conv.job_id) {
+        const all = await ChatMessage.filter({ job_id: conv.job_id });
+        msgs = all.filter(m =>
+          (m.sender_id === currentUser.id && m.receiver_id === conv.other_user_id) ||
+          (m.receiver_id === currentUser.id && m.sender_id === conv.other_user_id)
+        );
       } else {
-        try {
-          let targetUser = { id: targetUserId, full_name: "Utilizador" };
-          try {
-            const res = await base44.functions.invoke('getUserById', { userId: targetUserId });
-            if (res.data && !res.data.error) {
-              targetUser = res.data;
-            }
-          } catch (e) { /* fallback */ }
-
-          const ids = [user.id, targetUserId].sort();
-          const conversationId = ids.join("_");
-
-          const newConv = {
-            conversation_id: conversationId,
-            participants: [user, targetUser],
-            other_user: targetUser,
-            last_message: null,
-            unread_count: 0,
-            job_context: null,
-          };
-
-          setSelectedConversation(newConv);
-        } catch (error) {
-          console.error("Error creating conversation from userId:", error);
-        }
+        const [asSender, asReceiver] = await Promise.all([
+          ChatMessage.filter({ sender_id: currentUser.id, receiver_id: conv.other_user_id }),
+          ChatMessage.filter({ receiver_id: currentUser.id, sender_id: conv.other_user_id }),
+        ]);
+        msgs = [...asSender, ...asReceiver];
       }
+      msgs.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      setMessages(msgs);
 
-      const newParams = new URLSearchParams(window.location.search);
-      newParams.delete("userId");
-      const newUrl = window.location.pathname + (newParams.toString() ? "?" + newParams.toString() : "");
-      window.history.replaceState({}, "", newUrl);
-    };
-
-    openConversation();
-  }, [dataLoaded, user, conversations]);
-
-  useEffect(() => {
-    if (selectedConversation && user) {
-      loadMessages(selectedConversation.conversation_id, user);
-    } else {
-        setMessages([]); // Clear messages when no conversation is selected
+      // Marcar como lidas
+      const unread = msgs.filter(m => !m.read && m.receiver_id === currentUser.id);
+      await Promise.all(unread.map(m => ChatMessage.update(m.id, { read: true })));
+    } catch (err) {
+      console.error("Erro ao carregar mensagens:", err);
     }
-  }, [selectedConversation, user, loadMessages]);
+  }, []);
 
-  const sendMessage = async (messageText, attachment = null) => {
-    if (!messageText.trim() && !attachment) return;
-    if (!user || !selectedConversation) return;
-
+  const handleSendMessage = async (text) => {
+    if (!user || !selectedConversation || !text.trim()) return;
     try {
-      const conversationId = selectedConversation.conversation_id;
-      const receiverId = selectedConversation.other_user.id;
-
-      const messageData = {
-        conversation_id: conversationId,
+      const newMsg = await ChatMessage.create({
+        job_id: selectedConversation.job_id || null,
         sender_id: user.id,
-        receiver_id: receiverId,
-        message: messageText || "",
-      };
-
-      if (attachment) {
-        messageData.attachment_url = attachment.url;
-        messageData.attachment_type = attachment.type;
-      }
-
-      await ChatMessage.create(messageData);
-
-      await Notification.create({
-          user_id: receiverId,
-          type: "new_message",
-          title: `Nova mensagem de ${user.full_name}`,
-          message: messageText.substring(0, 50) + (messageText.length > 50 ? '...' : ''),
-          related_id: user.id,
-          action_url: createPageUrl("Chat"),
+        receiver_id: selectedConversation.other_user_id,
+        content: text.trim(),
+        read: false,
       });
+      setMessages(prev => [...prev, newMsg]);
 
-      await loadMessages(conversationId, user);
-      await loadConversations(user);
-    } catch (error) {
-      console.error("Error sending message:", error);
+      // Notificação
+      await Notification.create({
+        user_id: selectedConversation.other_user_id,
+        type: "new_message",
+        title: "💬 Nova mensagem",
+        message: `${user.full_name || user.email}: "${text.trim().substring(0, 60)}"`,
+        related_id: selectedConversation.job_id || null,
+        read: false,
+      });
+    } catch (err) {
+      console.error("Erro ao enviar mensagem:", err);
     }
   };
 
-  if (loading) {
-    return <LoadingScreen label={t(lang, "loading", "A carregar...")} />;
-  }
+  useEffect(() => { loadUser().then(u => { if (u) loadConversations(u); }); }, [loadUser, loadConversations]);
+
+  useEffect(() => {
+    if (selectedConversation && user) loadMessages(selectedConversation, user);
+  }, [selectedConversation, user, loadMessages]);
+
+  if (loading) return <LoadingScreen />;
+
+  const unreadTotal = conversations.reduce((s, c) => s + (c.unread_count || 0), 0);
 
   return (
-    <div style={{background:bg,height:"100vh",display:"flex",flexDirection:"column"}}>
-      {/* Conversation list panel */}
-      <div style={{display: selectedConversation ? "none" : "flex", flexDirection:"column", flex:1, overflow:"hidden"}} className="md:flex md:w-1/3 md:border-r md:border-[#222]">
-        <div style={{background:headerBg, padding:"14px 20px 10px"}}>
-          <div style={{display:"flex",justifyContent:"center",marginBottom:8}}>
-            <img src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"} alt="KANDU" style={{height:24,objectFit:"contain"}} />
-          </div>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <h2 style={{fontSize:18,fontWeight:700,color:text,margin:0}}>{t(lang,"messages")}</h2>
-            <span style={{background:"#FF6600",color:"#FFF",borderRadius:20,padding:"3px 10px",fontSize:12,fontWeight:700}}>{conversations.length}</span>
-          </div>
-        </div>
-        <ConversationList
-          conversations={conversations}
-          archivedConversations={archivedConversations}
-          onSelect={setSelectedConversation}
-          selectedId={selectedConversation?.conversation_id}
-        />
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: bg, color: text }}>
+      {/* Header */}
+      <div style={{ padding: "16px 20px", background: headerBg, borderBottom: `1px solid ${border}`, display: "flex", alignItems: "center", gap: 10 }}>
+        <MessageCircle size={22} color="#F4621F" />
+        <span style={{ fontWeight: 700, fontSize: 18 }}>{t(lang, "messages", "Mensagens")}</span>
+        {unreadTotal > 0 && (
+          <span style={{ background: "#F4621F", color: "#fff", borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 700 }}>
+            {unreadTotal}
+          </span>
+        )}
       </div>
 
-      {/* Chat window panel */}
-      <div style={{display: selectedConversation ? "flex" : "none", flexDirection:"column", flex:1, overflow:"hidden"}} className="md:flex">
+      {/* Layout */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <ConversationList
+          conversations={conversations}
+          selectedId={selectedConversation?.conversation_id}
+          onSelect={setSelectedConversation}
+          isDark={isDark}
+          lang={lang}
+          currentUser={user}
+        />
         {selectedConversation ? (
           <ChatWindow
             conversation={selectedConversation}
             messages={messages}
             currentUser={user}
-            onSendMessage={sendMessage}
-            onBack={() => setSelectedConversation(null)}
+            onSend={handleSendMessage}
+            isDark={isDark}
+            lang={lang}
           />
         ) : (
-          <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%"}}>
-            <div style={{textAlign:"center"}}>
-              <MessageCircle style={{width:48,height:48,color:"#444",margin:"0 auto 12px"}} />
-              <p style={{color:"#555"}}>{t(lang, "selectConversation", "Selecione uma conversa para começar")}</p>
-            </div>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: isDark ? "#555" : "#aaa", flexDirection: "column", gap: 12 }}>
+            <MessageCircle size={48} />
+            <p>{t(lang, "selectConversation", "Seleciona uma conversa")}</p>
           </div>
         )}
       </div>
