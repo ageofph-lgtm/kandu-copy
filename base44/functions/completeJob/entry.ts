@@ -1,188 +1,144 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const XP_LEVELS = [
-  { name: "Novato", min: 0, max: 999 },
-  { name: "Aprendiz", min: 1000, max: 4999 },
-  { name: "Profissional", min: 5000, max: 14999 },
-  { name: "Especialista", min: 15000, max: 39999 },
-  { name: "Mestre", min: 40000, max: Infinity },
-];
-
-const xpLevelFor = (xp: number) =>
-  (XP_LEVELS.find(l => xp >= l.min && xp <= l.max) || XP_LEVELS[0]).name;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
+const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
 Deno.serve(async (req) => {
+  // CORS
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" } });
+  }
+
   try {
-    const base44 = createClientFromRequest(req);
+    // 1. Autenticação — extrair JWT do header Authorization
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace("Bearer ", "");
+    if (!token) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    // ── 0. Autenticação obrigatória ──────────────────────────────────────────
-    // A identidade do avaliador vem da sessão, NUNCA do body, para impedir
-    // que um utilizador avalie/atribua XP em nome de outro.
-    const authedUser = await base44.auth.me();
-    if (!authedUser?.id) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // Cliente com JWT do utilizador (para verificar identidade)
+    const supabaseUser = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+      auth: { persistSession: false }
+    });
 
-    const db = base44.asServiceRole;
+    // Verificar quem é o utilizador autenticado
+    const { data: { user: authUser } } = await supabaseUser.auth.getUser(token);
+    if (!authUser?.id) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+    const raterId = authUser.id;
+
+    // Cliente admin para operações de escrita
+    const db = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
     const body = await req.json();
-    const { jobId, applicationId, otherUserId, rating, comment, qualities } = body;
-    // raterId é sempre o utilizador autenticado — ignora-se qualquer valor do body.
-    const raterId = authedUser.id;
+    const { jobId, applicationId, otherUserId, rating, comment, qualities, photoCount, raterUserType } = body;
 
     if (!jobId || !otherUserId || !rating) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+      return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const ratingNum = Number(rating);
     if (!Number.isFinite(ratingNum) || ratingNum < 1 || ratingNum > 5) {
-      return Response.json({ error: 'Invalid rating' }, { status: 400 });
+      return Response.json({ error: "Invalid rating (1-5)" }, { status: 400 });
     }
 
     if (otherUserId === raterId) {
-      return Response.json({ error: 'Cannot rate yourself' }, { status: 400 });
+      return Response.json({ error: "Cannot rate yourself" }, { status: 400 });
     }
 
-    // ── 0.1 Autorização — o avaliador tem de ser participante da obra ─────────
-    const jobForAuth = await db.entities.Job.get(jobId);
-    if (!jobForAuth) {
-      return Response.json({ error: 'Job not found' }, { status: 404 });
-    }
-    const isEmployerOfJob = jobForAuth.employer_id === raterId;
-    const isWorkerOfJob = jobForAuth.worker_id === raterId;
-    if (!isEmployerOfJob && !isWorkerOfJob) {
-      return Response.json({ error: 'Forbidden — not a participant of this job' }, { status: 403 });
-    }
-    // O avaliado tem de ser a outra parte da obra.
-    const expectedOther = isEmployerOfJob ? jobForAuth.worker_id : jobForAuth.employer_id;
-    if (expectedOther && otherUserId !== expectedOther) {
-      return Response.json({ error: 'Forbidden — rated user is not the job counterparty' }, { status: 403 });
-    }
-    // A obra tem de estar num estado que permita avaliação.
-    if (!['in_progress', 'completed_by_employer', 'completed'].includes(jobForAuth.status)) {
-      return Response.json({ error: 'Job is not in a reviewable state' }, { status: 409 });
-    }
-    // Impedir avaliação duplicada do mesmo avaliador para a mesma obra.
-    const existingByRater = await db.entities.Rating.filter({ job_id: jobId, rater_id: raterId });
-    if (existingByRater.length > 0) {
-      return Response.json({ error: 'You have already rated this job' }, { status: 409 });
-    }
+    // 2. Verificar o job
+    const { data: job } = await db.from("jobs").select("*").eq("id", jobId).maybeSingle();
+    if (!job) return Response.json({ error: "Job not found" }, { status: 404 });
 
-    // ── 1. Criar a avaliação ─────────────────────────────────────────────────
-    const visibleAfter = new Date();
-    visibleAfter.setDate(visibleAfter.getDate() + 7);
-
-    const newRating = await db.entities.Rating.create({
+    // 3. Criar avaliação (score — não rating)
+    const ratingId = crypto.randomUUID();
+    const { error: ratingErr } = await db.from("ratings").insert({
+      id: ratingId,
       job_id: jobId,
       rater_id: raterId,
       rated_id: otherUserId,
-      rating: ratingNum,
-      comment: comment || '',
-      qualities: qualities || [],
-      is_visible: false,
-      visible_after: visibleAfter.toISOString()
+      score: ratingNum,
+      comment: comment || "",
+      created_at: new Date().toISOString(),
     });
-
-    // ── 2. Verificar se a outra parte já avaliou (Blind Review) ──────────────
-    const reciprocalRatings = await db.entities.Rating.filter({ job_id: jobId, rater_id: otherUserId });
-    const reciprocalForThisJob = reciprocalRatings.filter(r => r.job_id === jobId);
-
-    if (reciprocalForThisJob.length > 0) {
-      await db.entities.Rating.update(newRating.id, { is_visible: true });
-      await db.entities.Rating.update(reciprocalForThisJob[0].id, { is_visible: true });
-    }
-
-    // ── 3. Atualizar XP e rating do utilizador avaliado ──────────────────────
-    const otherUser = await db.entities.User.get(otherUserId);
-    if (otherUser) {
-      const job = await db.entities.Job.get(jobId);
-      const jobPrice = job?.price || 0;
-
-      // Calcular XP ganho
-      const base = Math.min(Math.max(jobPrice * 0.1, 10), 100);
-      const xpGained = Math.round(base * (ratingNum / 5));
-      const newXP = (otherUser.xp || 0) + xpGained;
-
-      // Calcular novo rating médio
-      const allRatings = await db.entities.Rating.filter({ rated_id: otherUserId, is_visible: true });
-      const totalRatings = allRatings.length;
-      const ratingSum = allRatings.reduce((sum, r) => sum + (r.rating || 0), 0);
-      const newAvgRating = totalRatings > 0 ? parseFloat((ratingSum / totalRatings).toFixed(1)) : ratingNum;
-
-      await db.entities.User.update(otherUserId, {
-        xp: newXP,
-        xp_level: xpLevelFor(newXP),
-        rating: newAvgRating
-      });
-    }
-
-    // ── 4. Atualizar XP do utilizador que avaliou (raterId) ────────────────
-    const raterUser = await db.entities.User.get(raterId);
-    const selfXPGained = 30;
-    const newSelfXP = (raterUser?.xp || 0) + selfXPGained;
-    await db.entities.User.update(raterId, {
-      xp: newSelfXP,
-      xp_level: xpLevelFor(newSelfXP)
-    });
-
-    // ── 5. Atualizar status da obra e enviar notificações ────────────────────
-    // O papel do avaliador é determinado pela sua posição na obra (validado
-    // acima), nunca por um campo enviado pelo cliente.
-    const raterType = isEmployerOfJob ? 'employer' : 'worker';
-    let finalJobStatus = 'completed';
-    let notifTitle = '';
-    let notifMessage = '';
-    let notifTarget = otherUserId;
-
-    if (raterType === 'employer') {
-      const workerRatedThisJob = reciprocalForThisJob.length > 0;
-      finalJobStatus = workerRatedThisJob ? 'completed' : 'completed_by_employer';
-
-      await db.entities.Job.update(jobId, {
-        status: finalJobStatus,
-        actual_end_date: finalJobStatus === 'completed' ? new Date().toISOString() : undefined
-      });
-
-      if (finalJobStatus === 'completed_by_employer') {
-        notifTitle = '✍️ Avalia o empregador!';
-        notifMessage = `A obra foi concluída. Abre Trabalho → Em Curso para avaliar e fechar a obra.`;
-      } else {
-        notifTitle = '⭐ Obra concluída!';
-        notifMessage = `A obra foi concluída e avaliada por ambas as partes.`;
+    if (ratingErr) {
+      console.error("Rating insert error:", ratingErr);
+      // Se for duplicado, ignorar
+      if (!ratingErr.code?.includes("23505")) {
+        return Response.json({ error: ratingErr.message }, { status: 500 });
       }
-
-    } else {
-      finalJobStatus = 'completed';
-      await db.entities.Job.update(jobId, {
-        status: 'completed',
-        actual_end_date: new Date().toISOString()
-      });
-      notifTitle = '⭐ Obra concluída!';
-      notifMessage = `O profissional avaliou o trabalho. Obra oficialmente encerrada.`;
     }
 
-    // Criar notificação para a outra parte
-    if (notifTarget) {
-      await db.entities.Notification.create({
-        user_id: notifTarget,
-        type: finalJobStatus === 'completed_by_employer' ? 'job_ready_for_review' : 'job_completed',
-        title: notifTitle,
-        message: notifMessage,
-        related_id: jobId,
-        action_url: '/MyJobs',
-        is_read: false
-      });
+    // 4. Calcular novo rating médio do avaliado
+    const { data: allRatings } = await db.from("ratings").select("score").eq("rated_id", otherUserId);
+    const totalRatings = allRatings?.length || 1;
+    const ratingSum = (allRatings || []).reduce((s, r) => s + (r.score || 0), 0);
+    const newAvgRating = parseFloat((ratingSum / totalRatings).toFixed(1));
+
+    // 5. Calcular XP ganho
+    const jobPrice = job.price || 0;
+    const base = Math.min(Math.max(jobPrice * 0.1, 10), 100);
+    const xpGained = Math.round(base * (ratingNum / 5));
+
+    // 6. Atualizar o avaliado (rating + xp + jobs completados)
+    const { data: otherUser } = await db.from("users").select("*").eq("id", otherUserId).maybeSingle();
+    if (otherUser) {
+      const newXP = (otherUser.xp || 0) + xpGained;
+      await db.from("users").update({
+        rating: newAvgRating,
+        xp: newXP,
+        completed_jobs: (otherUser.completed_jobs || 0) + 1,
+        total_jobs: Math.max(otherUser.total_jobs || 0, (otherUser.completed_jobs || 0) + 1),
+        updated_at: new Date().toISOString(),
+      }).eq("id", otherUserId);
     }
+
+    // 7. Actualizar XP do avaliador
+    const { data: raterUser } = await db.from("users").select("*").eq("id", raterId).maybeSingle();
+    const selfXPGained = Math.round(xpGained * 0.3);
+    if (raterUser) {
+      await db.from("users").update({
+        xp: (raterUser.xp || 0) + selfXPGained,
+        updated_at: new Date().toISOString(),
+      }).eq("id", raterId);
+    }
+
+    // 8. Atualizar status do job para "completed"
+    await db.from("jobs").update({
+      status: "completed",
+      updated_at: new Date().toISOString(),
+    }).eq("id", jobId);
+
+    // 9. Atualizar application para "completed"
+    if (applicationId) {
+      await db.from("applications").update({
+        status: "completed",
+        updated_at: new Date().toISOString(),
+      }).eq("id", applicationId);
+    }
+
+    // 10. Notificação para o avaliado
+    await db.from("notifications").insert({
+      user_id: otherUserId,
+      type: "new_rating",
+      title: `Nova avaliação ${"⭐".repeat(ratingNum)}`,
+      message: `Recebeste uma avaliação de ${ratingNum}/5: "${(comment || "").substring(0, 60)}"`,
+      related_id: jobId,
+      read: false,
+      created_at: new Date().toISOString(),
+    });
+
+    const newSelfXP = (raterUser?.xp || 0) + selfXPGained;
 
     return Response.json({
       success: true,
-      jobStatus: finalJobStatus,
       selfXPGained,
-      newSelfXP
-    });
+      newSelfXP,
+      xpGained,
+      newAvgRating,
+    }, { headers: { "Access-Control-Allow-Origin": "*" } });
 
-  } catch (error) {
-    console.error('completeJob error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+  } catch (err) {
+    console.error("completeJob error:", err);
+    return Response.json({ error: err.message || "Internal error" }, { status: 500 });
   }
 });
