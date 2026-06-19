@@ -1,146 +1,230 @@
-/**
- * KANDU — Entity Layer (Supabase 100%)
- * Auth: Supabase Auth (login, sessão, User.me)
- * Dados: Supabase Postgres (jobs, applications, ratings, chat, notifications)
- */
-import { supabase } from './supabaseClient';
+import { supabase } from "./supabaseClient";
 
-function normalizeSort(sort = '-created_at') {
-  return sort
-    .replace('created_date', 'created_at')
-    .replace('updated_date', 'updated_at');
-}
-
-function normalizeFields(obj) {
-  const map = { is_read: 'read', created_date: 'created_at', updated_date: 'updated_at' };
-  const out = {};
-  for (const [k, v] of Object.entries(obj)) out[map[k] || k] = v;
-  return out;
-}
-
-function makeEntity(tableName) {
+// Helper: normalizar campos created_at/updated_at para created_date/updated_date
+// e garantir compatibilidade com código legado Base44
+const norm = (row) => {
+  if (!row) return row;
   return {
-    async list(sort = '-created_at') {
-      sort = normalizeSort(sort);
-      const isDesc = sort.startsWith('-');
-      const col = isDesc ? sort.slice(1) : sort;
-      const { data, error } = await supabase
-        .from(tableName).select('*').order(col, { ascending: !isDesc });
-      if (error) throw error;
-      return data || [];
-    },
-
-    async filter(query = {}, sort = '-created_at') {
-      sort = normalizeSort(sort);
-      const isDesc = sort.startsWith('-');
-      const col = isDesc ? sort.slice(1) : sort;
-      const nq = normalizeFields(query);
-      let req = supabase.from(tableName).select('*');
-      for (const [k, v] of Object.entries(nq)) {
-        if (v !== undefined && v !== null) req = req.eq(k, v);
-      }
-      req = req.order(col, { ascending: !isDesc });
-      const { data, error } = await req;
-      if (error) throw error;
-      return data || [];
-    },
-
-    async get(id) {
-      const { data, error } = await supabase
-        .from(tableName).select('*').eq('id', id).single();
-      if (error) throw error;
-      return data;
-    },
-
-    async create(record) {
-      const now = new Date().toISOString();
-      const { data, error } = await supabase
-        .from(tableName)
-        .insert([{ ...record, created_at: now, updated_at: now }])
-        .select().single();
-      if (error) throw error;
-      return data;
-    },
-
-    async update(id, updates) {
-      const normalized = normalizeFields(updates);
-      const { data, error } = await supabase
-        .from(tableName)
-        .update({ ...normalized, updated_at: new Date().toISOString() })
-        .eq('id', id).select().single();
-      if (error) throw error;
-      return data;
-    },
-
-    async delete(id) {
-      const { error } = await supabase.from(tableName).delete().eq('id', id);
-      if (error) throw error;
-      return true;
-    },
-
-    async bulkCreate(records) {
-      const now = new Date().toISOString();
-      const { data, error } = await supabase
-        .from(tableName)
-        .insert(records.map(r => ({ ...r, created_at: now, updated_at: now })))
-        .select();
-      if (error) throw error;
-      return data || [];
-    },
+    ...row,
+    created_date: row.created_at,
+    updated_date: row.updated_at,
   };
-}
+};
+const normList = (rows) => (rows || []).map(norm);
 
-export const Job          = makeEntity('jobs');
-export const Application  = makeEntity('applications');
-export const Rating       = makeEntity('ratings');
-export const ChatMessage  = makeEntity('chat_messages');
-export const Notification = makeEntity('notifications');
-export const Blacklist    = makeEntity('blacklist');
+// Sessão actual
+const getSession = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+};
 
-// ─── User — Supabase Auth + tabela users ─────────────────────────────────────
+// ─── USER ───────────────────────────────────────────────
 export const User = {
   async me() {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) throw new Error('Not authenticated');
-    const { data: profile } = await supabase
-      .from('users').select('*').eq('id', authUser.id).maybeSingle();
-    return { id: authUser.id, email: authUser.email, full_name: authUser.user_metadata?.full_name || authUser.email, ...(profile || {}) };
-  },
-
-  async update(id, updates) {
-    const now = new Date().toISOString();
+    const session = await getSession();
+    if (!session?.user) return null;
     const { data, error } = await supabase
-      .from('users')
-      .upsert({ id, ...updates, updated_at: now }, { onConflict: 'id' })
-      .select().single();
-    if (error) throw error;
-    return data;
+      .from("users")
+      .select("*")
+      .eq("id", session.user.id)
+      .maybeSingle();
+    if (error || !data) return null;
+    return norm({ ...data, email: session.user.email });
   },
 
-  async updateMyUserData(updates) {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) throw new Error('Not authenticated');
-    return this.update(authUser.id, updates);
-  },
-
-  async filter(query = {}) {
-    const nq = normalizeFields(query);
-    let req = supabase.from('users').select('*');
-    for (const [k, v] of Object.entries(nq)) {
-      if (v !== undefined && v !== null) req = req.eq(k, v);
-    }
-    const { data, error } = await req;
-    if (error) throw error;
-    return data || [];
+  async filter(params = {}) {
+    let q = supabase.from("users").select("*");
+    Object.entries(params).forEach(([k, v]) => { q = q.eq(k, v); });
+    const { data } = await q;
+    return normList(data);
   },
 
   async get(id) {
-    const { data, error } = await supabase
-      .from('users').select('*').eq('id', id).single();
-    if (error) throw error;
-    return data;
+    const { data } = await supabase.from("users").select("*").eq("id", id).maybeSingle();
+    return norm(data);
   },
 
-  async logout() { await supabase.auth.signOut(); window.location.href = '/'; },
-  async loginWithRedirect() { window.location.href = '/Welcome'; },
+  async updateMyUserData(updates) {
+    const session = await getSession();
+    if (!session?.user) throw new Error("No session");
+    const { error } = await supabase
+      .from("users")
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", session.user.id);
+    if (error) throw error;
+  },
+
+  // alias para Layout.jsx (UserEntity.me())
+  async me() {
+    const session = await getSession();
+    if (!session?.user) return null;
+    const { data } = await supabase
+      .from("users").select("*").eq("id", session.user.id).maybeSingle();
+    return data ? norm({ ...data, email: session.user.email }) : null;
+  },
+
+  auth: {
+    async signOut() { await supabase.auth.signOut(); },
+    redirectToLogin(url) { window.location.href = "/login"; }
+  }
+};
+
+// ─── JOB ────────────────────────────────────────────────
+export const Job = {
+  async list(opts = {}) {
+    let q = supabase.from("jobs").select("*").order("created_at", { ascending: false });
+    if (opts.limit) q = q.limit(opts.limit);
+    const { data } = await q;
+    return normList(data);
+  },
+
+  async filter(params = {}) {
+    let q = supabase.from("jobs").select("*").order("created_at", { ascending: false });
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) q = q.eq(k, v);
+    });
+    const { data } = await q;
+    return normList(data);
+  },
+
+  async get(id) {
+    const { data } = await supabase.from("jobs").select("*").eq("id", id).maybeSingle();
+    return norm(data);
+  },
+
+  async create(payload) {
+    const session = await getSession();
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from("jobs").insert({
+      ...payload,
+      employer_id: session?.user?.id,
+      created_at: now,
+      updated_at: now,
+    }).select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
+  async update(id, updates) {
+    const { data, error } = await supabase
+      .from("jobs")
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
+  async delete(id) {
+    const { error } = await supabase.from("jobs").delete().eq("id", id);
+    if (error) throw error;
+  },
+};
+
+// ─── APPLICATION ────────────────────────────────────────
+export const Application = {
+  async filter(params = {}) {
+    let q = supabase.from("applications").select("*").order("created_at", { ascending: false });
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) q = q.eq(k, v);
+    });
+    const { data } = await q;
+    return normList(data);
+  },
+
+  async create(payload) {
+    const session = await getSession();
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from("applications").insert({
+      ...payload,
+      worker_id: payload.worker_id || session?.user?.id,
+      created_at: now,
+      updated_at: now,
+    }).select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
+  async update(id, updates) {
+    const { data, error } = await supabase
+      .from("applications")
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
+  async delete(id) {
+    const { error } = await supabase.from("applications").delete().eq("id", id);
+    if (error) throw error;
+  },
+};
+
+// ─── CHAT MESSAGE ────────────────────────────────────────
+export const ChatMessage = {
+  async filter(params = {}) {
+    let q = supabase.from("chat_messages").select("*").order("created_at", { ascending: true });
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) q = q.eq(k, v);
+    });
+    const { data } = await q;
+    return normList(data);
+  },
+
+  async create(payload) {
+    const session = await getSession();
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from("chat_messages").insert({
+      ...payload,
+      sender_id: payload.sender_id || session?.user?.id,
+      created_at: now,
+    }).select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
+  async update(id, updates) {
+    const { data, error } = await supabase
+      .from("chat_messages")
+      .update(updates)
+      .eq("id", id)
+      .select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+};
+
+// ─── NOTIFICATION ────────────────────────────────────────
+export const Notification = {
+  async filter(params = {}) {
+    let q = supabase.from("notifications").select("*").order("created_at", { ascending: false });
+    Object.entries(params).forEach(([k, v]) => {
+      if (typeof v === 'object' && v !== null) return; // skip complex filters
+      if (v !== undefined && v !== null) q = q.eq(k, v);
+    });
+    const { data } = await q;
+    return normList(data);
+  },
+
+  async create(payload) {
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from("notifications").insert({
+      ...payload,
+      is_read: false,
+      created_at: now,
+    }).select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
+  async update(id, updates) {
+    const { data, error } = await supabase
+      .from("notifications")
+      .update(updates)
+      .eq("id", id)
+      .select().single();
+    if (error) throw error;
+    return norm(data);
+  },
 };
