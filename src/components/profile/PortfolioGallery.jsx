@@ -1,7 +1,7 @@
 import { toast } from "sonner";
+import { User } from "@/api/entities";
 import React, { useState } from "react";
 import { UploadFile } from "@/api/integrations";
-import { User } from "@/entities/User";
 import { Plus, X, Upload, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
