@@ -1,6 +1,7 @@
 // v2
 import React, { useState, useEffect, useCallback } from "react";
 import { Notification, User as UserEntity } from "@/api/entities";
+import { supabase } from "@/api/supabaseClient";
 import { useTheme } from "@/lib/ThemeContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -84,6 +85,9 @@ export default function Layout({ children }) {
 
   const loadUserAndNotifications = useCallback(async () => {
     try {
+      // Verificar sessão Supabase antes de carregar perfil
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("No session");
       const userData = await UserEntity.me();
       if (!userData) throw new Error("User not found");
       setUser(userData);
@@ -151,8 +155,13 @@ export default function Layout({ children }) {
     } catch (error) {
       const setupUrl = createPageUrl("SetupProfile");
       const welcomeUrl = createPageUrl("Welcome");
-      if (location.pathname !== setupUrl && location.pathname !== welcomeUrl) {
-        navigate(welcomeUrl);
+      const loginUrl = createPageUrl("Login");
+      const noAuthPages = [setupUrl, welcomeUrl, loginUrl];
+      if (!noAuthPages.includes(location.pathname)) {
+        // Só redireciona se realmente não há sessão Supabase
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) navigate(welcomeUrl);
+        else navigate(setupUrl); // há sessão mas sem perfil → setup
       }
     }
   }, [navigate, location.pathname]);
@@ -198,7 +207,8 @@ export default function Layout({ children }) {
   // Páginas sem layout
   if (
     location.pathname === createPageUrl("SetupProfile") ||
-    location.pathname === createPageUrl("Welcome")
+    location.pathname === createPageUrl("Welcome") ||
+    location.pathname === createPageUrl("Login")
   ) {
     return children;
   }
