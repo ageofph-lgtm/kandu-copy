@@ -1,19 +1,23 @@
 /**
- * KANDU — Entity Layer
- * Auth: Base44 (login, sessão, User.me)
- * Dados: Supabase (jobs, applications, ratings, chat, notifications)
+ * KANDU — Entity Layer (Supabase 100%)
+ * Auth: Supabase Auth (login, sessão, User.me)
+ * Dados: Supabase Postgres (jobs, applications, ratings, chat, notifications)
  */
-import { base44 } from './base44Client';
 import { supabase } from './supabaseClient';
 
-// ─── Normalização de sort ─────────────────────────────────────────────────────
 function normalizeSort(sort = '-created_at') {
   return sort
     .replace('created_date', 'created_at')
     .replace('updated_date', 'updated_at');
 }
 
-// ─── Factory para entidades Supabase ─────────────────────────────────────────
+function normalizeFields(obj) {
+  const map = { is_read: 'read', created_date: 'created_at', updated_date: 'updated_at' };
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) out[map[k] || k] = v;
+  return out;
+}
+
 function makeEntity(tableName) {
   return {
     async list(sort = '-created_at') {
@@ -21,9 +25,7 @@ function makeEntity(tableName) {
       const isDesc = sort.startsWith('-');
       const col = isDesc ? sort.slice(1) : sort;
       const { data, error } = await supabase
-        .from(tableName)
-        .select('*')
-        .order(col, { ascending: !isDesc });
+        .from(tableName).select('*').order(col, { ascending: !isDesc });
       if (error) throw error;
       return data || [];
     },
@@ -32,11 +34,9 @@ function makeEntity(tableName) {
       sort = normalizeSort(sort);
       const isDesc = sort.startsWith('-');
       const col = isDesc ? sort.slice(1) : sort;
-      // Normalizar nomes de campos Base44 → Supabase
-      const fieldMap = { is_read: 'read', created_date: 'created_at', updated_date: 'updated_at' };
+      const nq = normalizeFields(query);
       let req = supabase.from(tableName).select('*');
-      for (let [k, v] of Object.entries(query)) {
-        k = fieldMap[k] || k;
+      for (const [k, v] of Object.entries(nq)) {
         if (v !== undefined && v !== null) req = req.eq(k, v);
       }
       req = req.order(col, { ascending: !isDesc });
@@ -63,10 +63,7 @@ function makeEntity(tableName) {
     },
 
     async update(id, updates) {
-      // Normalizar campos
-      const fieldMap = { is_read: 'read', created_date: 'created_at', updated_date: 'updated_at' };
-      const normalized = {};
-      for (const [k, v] of Object.entries(updates)) { normalized[fieldMap[k] || k] = v; }
+      const normalized = normalizeFields(updates);
       const { data, error } = await supabase
         .from(tableName)
         .update({ ...normalized, updated_at: new Date().toISOString() })
@@ -93,7 +90,6 @@ function makeEntity(tableName) {
   };
 }
 
-// ─── Entidades de dados (Supabase) ────────────────────────────────────────────
 export const Job          = makeEntity('jobs');
 export const Application  = makeEntity('applications');
 export const Rating       = makeEntity('ratings');
@@ -101,23 +97,17 @@ export const ChatMessage  = makeEntity('chat_messages');
 export const Notification = makeEntity('notifications');
 export const Blacklist    = makeEntity('blacklist');
 
-// ─── User — Base44 Auth + sync com tabela users no Supabase ──────────────────
+// ─── User — Supabase Auth + tabela users ─────────────────────────────────────
 export const User = {
-  // me() — usa Base44 auth, depois enriquece com dados do Supabase
   async me() {
-    const b44User = await base44.auth.me();
-    if (!b44User) throw new Error('Not authenticated');
-    // Tentar buscar dados extra do Supabase (user_type, bio, etc.)
-    const { data: supa } = await supabase
-      .from('users').select('*').eq('id', b44User.id).maybeSingle();
-    // Merge: dados Base44 + dados Supabase
-    return { ...b44User, ...(supa || {}) };
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) throw new Error('Not authenticated');
+    const { data: profile } = await supabase
+      .from('users').select('*').eq('id', authUser.id).maybeSingle();
+    return { id: authUser.id, email: authUser.email, full_name: authUser.user_metadata?.full_name || authUser.email, ...(profile || {}) };
   },
 
   async update(id, updates) {
-    // Actualizar Base44
-    try { await base44.entities.User.update(id, updates); } catch {}
-    // Upsert no Supabase
     const now = new Date().toISOString();
     const { data, error } = await supabase
       .from('users')
@@ -128,14 +118,15 @@ export const User = {
   },
 
   async updateMyUserData(updates) {
-    const b44User = await base44.auth.me();
-    if (!b44User) throw new Error('Not authenticated');
-    return this.update(b44User.id, updates);
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) throw new Error('Not authenticated');
+    return this.update(authUser.id, updates);
   },
 
   async filter(query = {}) {
+    const nq = normalizeFields(query);
     let req = supabase.from('users').select('*');
-    for (const [k, v] of Object.entries(query)) {
+    for (const [k, v] of Object.entries(nq)) {
       if (v !== undefined && v !== null) req = req.eq(k, v);
     }
     const { data, error } = await req;
@@ -150,6 +141,6 @@ export const User = {
     return data;
   },
 
-  async logout() { base44.auth.logout(window.location.href); },
-  async loginWithRedirect() { base44.auth.redirectToLogin(window.location.href); },
+  async logout() { await supabase.auth.signOut(); window.location.href = '/'; },
+  async loginWithRedirect() { window.location.href = '/Welcome'; },
 };
