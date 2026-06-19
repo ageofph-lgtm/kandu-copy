@@ -4,6 +4,7 @@ import { useLanguage, SUPPORTED_LANGUAGES } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { base44 } from "@/api/base44Client";
+import { supabase } from "@/api/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
@@ -50,10 +51,10 @@ export default function Profile() {
       setLoading(true);
       let userData;
       if (viewingUserId) {
-        const users = await base44.entities.User.filter({ id: viewingUserId });
+        const users = await User.filter({ id: viewingUserId });
         userData = users[0];
       } else {
-        userData = await base44.auth.me();
+        userData = await User.me();
       }
       if (!userData) throw new Error('User not found');
       setUser(userData);
@@ -70,7 +71,7 @@ export default function Profile() {
 
   const handleSave = async (profileData) => {
     try {
-      await base44.auth.updateMe(profileData);
+      await User.updateMyUserData(profileData);
       await loadUser();
       setIsEditing(false);
     } catch (error) {
@@ -87,7 +88,7 @@ export default function Profile() {
     setIsUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      await base44.auth.updateMe({ avatar_url: file_url });
+      await User.updateMyUserData({ avatar_url: file_url });
       // Replace local preview with real URL
       setUser(prev => ({ ...prev, avatar_url: file_url }));
       URL.revokeObjectURL(localPreview);
@@ -100,7 +101,7 @@ export default function Profile() {
   };
 
   const handleLogout = async () => {
-    await base44.auth.logout();
+    await supabase.auth.signOut(); window.location.href = "/";
   };
 
   const handleChangeProfile = async () => {
