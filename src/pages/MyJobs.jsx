@@ -1,11 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { Application, Job, Notification, User } from "@/api/entities";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
-import { Job } from "@/entities/Job";
-import { User } from "@/entities/User";
-import { Application } from "@/entities/Application";
-import { Notification } from "@/entities/Notification";
 import CompletionModal from "@/components/applications/CompletionModal";
 import { MapPin, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
