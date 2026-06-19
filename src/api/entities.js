@@ -276,6 +276,11 @@ export const Notification = {
     if (error) throw error;
     return norm(data);
   },
+
+  async delete(id) {
+    const { error } = await supabase.from("notifications").delete().eq("id", id);
+    if (error) throw error;
+  },
 };
 
 // ─── RATING ────────────────────────────────────────────
