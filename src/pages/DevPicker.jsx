@@ -9,7 +9,7 @@ const DEV_EMAILS = [
   "ageofph@gmail.com",
 ];
 
-const SEED_PASSWORD = "Kandu2026!Seed";
+const SEED_PASSWORD = "Kandu2026!";
 
 const TYPE_CONFIG = {
   worker:   { label: "Profissional", color: "#3b82f6", emoji: "👷" },
