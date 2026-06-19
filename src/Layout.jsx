@@ -1,9 +1,8 @@
 // v2
 import React, { useState, useEffect, useCallback } from "react";
+import { Notification, User as UserEntity } from "@/api/entities";
 import { useTheme } from "@/lib/ThemeContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { User as UserEntity } from "@/entities/User";
-import { Notification } from "@/entities/Notification";
 import {
   MapPin,
   MessageCircle,
