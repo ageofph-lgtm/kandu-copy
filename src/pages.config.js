@@ -61,6 +61,7 @@ import SetupProfile from './pages/SetupProfile';
 import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import Workers from './pages/Workers';
+import DevPicker from './pages/DevPicker';
 import __Layout from './Layout.jsx';
 
 
@@ -79,6 +80,7 @@ export const PAGES = {
     "Welcome": Welcome,
     "Login": Login,
     "Workers": Workers,
+    "DevPicker": DevPicker,
 }
 
 export const pagesConfig = {
