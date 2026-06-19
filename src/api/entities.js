@@ -54,6 +54,24 @@ export const User = {
     if (error) throw error;
   },
 
+  async list(order = "-created_at") {
+    const ascending = order.startsWith("-") ? false : true;
+    const col = order.replace(/^-/, "");
+    let q = supabase.from("users").select("*").order(col, { ascending });
+    const { data } = await q;
+    return normList(data);
+  },
+
+  async update(id, updates) {
+    const { data, error } = await supabase
+      .from("users")
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
   // alias para Layout.jsx (UserEntity.me())
   async me() {
     const session = await getSession();
@@ -192,6 +210,41 @@ export const ChatMessage = {
       .select().single();
     if (error) throw error;
     return norm(data);
+  },
+};
+
+// ─── BLACKLIST ─────────────────────────────────────────
+export const Blacklist = {
+  async list(order = "-created_at") {
+    const ascending = order.startsWith("-") ? false : true;
+    const col = order.replace(/^-/, "");
+    let q = supabase.from("blacklists").select("*").order(col, { ascending });
+    const { data } = await q;
+    return normList(data);
+  },
+
+  async create(payload) {
+    const session = await getSession();
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from("blacklists").insert({
+      ...payload,
+      admin_id: payload.admin_id || session?.user?.id,
+      created_at: now,
+      updated_at: now,
+    }).select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+};
+
+// ─── RATING ────────────────────────────────────────────
+export const Rating = {
+  async list(order = "-created_at") {
+    const ascending = order.startsWith("-") ? false : true;
+    const col = order.replace(/^-/, "");
+    let q = supabase.from("ratings").select("*").order(col, { ascending });
+    const { data } = await q;
+    return normList(data);
   },
 };
 
