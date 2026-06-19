@@ -3,11 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/api/supabaseClient";
 import { createPageUrl } from "@/utils";
 
-const DEV_EMAILS = [
-  "ageofph@gmail.com",
-  "lucasfelipesantos@gmail.com",
-  "urielramoss@gmail.com",
-  "phtoledo9@gmail.com",
+// Os 3 credenciados — qualquer um pode entrar como qualquer um (é só teste)
+const DEV_USERS = [
+  {
+    name: "PH",
+    emoji: "👑",
+    email: "ageofph@gmail.com",
+    password: "Kandu2026!Dev",
+    color: "#F4621F",
+  },
+  {
+    name: "Uri",
+    emoji: "🚀",
+    email: "urielramoss@gmail.com",
+    password: "Kandu2026!Dev",
+    color: "#8b5cf6",
+  },
+  {
+    name: "Luquinhas",
+    emoji: "⚡",
+    email: "lucasfelipesantos@gmail.com",
+    password: "Kandu2026!Dev",
+    color: "#3b82f6",
+  },
 ];
 
 export default function Login() {
@@ -19,12 +37,9 @@ export default function Login() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Modal de credenciados
+  // Estado do popover de credenciados
   const [showDev, setShowDev] = useState(false);
-  const [devEmail, setDevEmail] = useState("");
-  const [devPassword, setDevPassword] = useState("");
-  const [devLoading, setDevLoading] = useState(false);
-  const [devError, setDevError] = useState("");
+  const [devLoading, setDevLoading] = useState(null); // email do user a entrar
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -74,26 +89,21 @@ export default function Login() {
     }
   };
 
-  // Login credenciado — verifica email e redireciona para DevPicker
-  const handleDevLogin = async (e) => {
-    e.preventDefault();
-    setDevError("");
-    if (!DEV_EMAILS.includes(devEmail.trim().toLowerCase())) {
-      setDevError("Email não autorizado para acesso de teste.");
-      return;
-    }
-    setDevLoading(true);
+  // Entrar como dev user — vai para o DevPicker
+  const handleDevEnter = async (devUser) => {
+    setDevLoading(devUser.email);
     try {
       const { error: err } = await supabase.auth.signInWithPassword({
-        email: devEmail.trim().toLowerCase(),
-        password: devPassword,
+        email: devUser.email,
+        password: devUser.password,
       });
       if (err) throw err;
-      // Redirecionar directamente para DevPicker
+      // Ir directo para o DevPicker independentemente do perfil
       navigate(createPageUrl("DevPicker"), { replace: true });
-    } catch (err) {
-      setDevError("Credenciais inválidas. Usa a tua password real do Supabase.");
-      setDevLoading(false);
+    } catch (e) {
+      console.error("Dev login error:", e);
+      setDevLoading(null);
+      setShowDev(false);
     }
   };
 
@@ -106,75 +116,10 @@ export default function Login() {
     }}>
       {/* Hex background pattern */}
       <div style={{
-        position: "absolute", inset: 0, opacity: 0.15, pointerEvents: "none",
+        position: "absolute", inset: 0, opacity: 0.12, pointerEvents: "none",
         backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpolygon points='30,2 58,17 58,47 30,62 2,47 2,17' fill='none' stroke='%23F4621F' stroke-width='0.5'/%3E%3C/svg%3E\")",
         backgroundRepeat: "repeat",
       }} />
-
-      {/* Modal Credenciados */}
-      {showDev && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 100,
-          background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)",
-          display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
-        }} onClick={(e) => e.target === e.currentTarget && setShowDev(false)}>
-          <div style={{
-            background: "#13131a", border: "1.5px solid #333",
-            borderRadius: 20, padding: 32, width: "100%", maxWidth: 400,
-            boxShadow: "0 24px 64px rgba(0,0,0,0.8)",
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div>
-                <h2 style={{ margin: 0, color: "#fff", fontSize: 18, fontWeight: 700 }}>🧪 Acesso de Teste</h2>
-                <p style={{ margin: "4px 0 0", color: "#666", fontSize: 12 }}>Só para emails credenciados</p>
-              </div>
-              <button onClick={() => setShowDev(false)} style={{
-                background: "none", border: "none", color: "#666", fontSize: 22,
-                cursor: "pointer", lineHeight: 1, padding: 4,
-              }}>×</button>
-            </div>
-
-            <form onSubmit={handleDevLogin} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <input
-                type="email"
-                placeholder="O teu email credenciado"
-                value={devEmail}
-                onChange={e => setDevEmail(e.target.value)}
-                required
-                style={{
-                  padding: "12px 14px", borderRadius: 10, border: "1.5px solid #333",
-                  background: "#1a1a24", color: "#fff", fontFamily: "inherit", fontSize: 14, outline: "none",
-                }}
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={devPassword}
-                onChange={e => setDevPassword(e.target.value)}
-                required
-                style={{
-                  padding: "12px 14px", borderRadius: 10, border: "1.5px solid #333",
-                  background: "#1a1a24", color: "#fff", fontFamily: "inherit", fontSize: 14, outline: "none",
-                }}
-              />
-              {devError && (
-                <div style={{ color: "#f87171", fontSize: 12, padding: "8px 12px", background: "rgba(239,68,68,0.1)", borderRadius: 8, border: "1px solid rgba(239,68,68,0.3)" }}>
-                  ⚠️ {devError}
-                </div>
-              )}
-              <button type="submit" disabled={devLoading} style={{
-                padding: "13px", borderRadius: 10, border: "none",
-                background: devLoading ? "#555" : "linear-gradient(135deg, #F4621F, #d44a0a)",
-                color: "#fff", fontWeight: 700, fontSize: 15,
-                cursor: devLoading ? "not-allowed" : "pointer", fontFamily: "inherit",
-                marginTop: 4,
-              }}>
-                {devLoading ? "⏳ A entrar..." : "Entrar no Modo Teste"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Card principal */}
       <div style={{
@@ -204,7 +149,6 @@ export default function Login() {
           color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
           gap: 10, cursor: googleLoading ? "not-allowed" : "pointer",
           fontFamily: "inherit", fontSize: 14, fontWeight: 600, marginBottom: 16,
-          transition: "border-color 0.2s",
         }}>
           <svg width="18" height="18" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -215,6 +159,7 @@ export default function Login() {
           {googleLoading ? "A redirecionar..." : "Continuar com Google"}
         </button>
 
+        {/* Divider */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
           <div style={{ flex: 1, height: 1, background: "#2a2a3a" }} />
           <span style={{ color: "#444", fontSize: 12 }}>ou</span>
@@ -251,19 +196,64 @@ export default function Login() {
           </span>
         </p>
 
-        {/* Botão Credenciados — discreto no fundo */}
-        <div style={{ textAlign: "center", marginTop: 24, paddingTop: 16, borderTop: "1px solid #1e1e2e" }}>
-          <button onClick={() => { setShowDev(true); setDevError(""); setDevEmail(""); setDevPassword(""); }}
+        {/* ─── Botão Credenciados ─── */}
+        <div style={{ textAlign: "center", marginTop: 24, paddingTop: 16, borderTop: "1px solid #1e1e2e", position: "relative" }}>
+          <button
+            onClick={() => setShowDev(v => !v)}
             style={{
               background: "none", border: "1px solid #2a2a3a", borderRadius: 8,
-              color: "#444", fontSize: 12, padding: "7px 16px", cursor: "pointer",
+              color: "#555", fontSize: 12, padding: "7px 18px", cursor: "pointer",
               fontFamily: "inherit", transition: "all 0.2s",
+              ...(showDev ? { borderColor: "#F4621F", color: "#F4621F" } : {}),
             }}
-            onMouseEnter={e => { e.target.style.borderColor = "#F4621F"; e.target.style.color = "#F4621F"; }}
-            onMouseLeave={e => { e.target.style.borderColor = "#2a2a3a"; e.target.style.color = "#444"; }}
           >
             🔑 Credenciados
           </button>
+
+          {/* Popover com os 3 users */}
+          {showDev && (
+            <div style={{
+              position: "absolute", bottom: "calc(100% + 10px)", left: "50%",
+              transform: "translateX(-50%)",
+              background: "#13131a", border: "1.5px solid #2a2a3a",
+              borderRadius: 16, padding: "16px 14px",
+              display: "flex", gap: 10, zIndex: 50,
+              boxShadow: "0 -8px 32px rgba(0,0,0,0.6)",
+              minWidth: 280,
+            }}>
+              {/* seta do popover */}
+              <div style={{
+                position: "absolute", bottom: -7, left: "50%", transform: "translateX(-50%)",
+                width: 12, height: 12, background: "#13131a",
+                border: "1.5px solid #2a2a3a", borderTop: "none", borderLeft: "none",
+                rotate: "45deg",
+              }} />
+              {DEV_USERS.map(u => (
+                <button
+                  key={u.email}
+                  onClick={() => handleDevEnter(u)}
+                  disabled={!!devLoading}
+                  style={{
+                    flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+                    gap: 6, padding: "12px 8px", borderRadius: 12,
+                    border: `1.5px solid ${devLoading === u.email ? u.color : "#2a2a3a"}`,
+                    background: devLoading === u.email ? `${u.color}22` : "rgba(255,255,255,0.03)",
+                    cursor: devLoading ? "not-allowed" : "pointer",
+                    fontFamily: "inherit", transition: "all 0.15s", opacity: devLoading && devLoading !== u.email ? 0.4 : 1,
+                  }}
+                  onMouseEnter={e => { if (!devLoading) { e.currentTarget.style.borderColor = u.color; e.currentTarget.style.background = u.color + "22"; }}}
+                  onMouseLeave={e => { if (!devLoading && devLoading !== u.email) { e.currentTarget.style.borderColor = "#2a2a3a"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}}
+                >
+                  <span style={{ fontSize: 26 }}>
+                    {devLoading === u.email ? "⏳" : u.emoji}
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: devLoading === u.email ? u.color : "#ccc" }}>
+                    {devLoading === u.email ? "..." : u.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
