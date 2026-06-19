@@ -13,7 +13,7 @@ export default function ChatWindow({
   conversation,
   messages,
   currentUser,
-  onSendMessage,
+  onSend,
   onBack
 }) {
   const { lang } = useLanguage();
@@ -39,7 +39,7 @@ export default function ChatWindow({
     if (!lastMsg) return;
     if (lastMsg.sender_id === currentUser?.id) return; // é nossa — não traduzir
     if (translations[lastMsg.id]) return; // já traduzida
-    translateSingle(lastMsg.id, lastMsg.message);
+    translateSingle(lastMsg.id, lastMsg.content);
   }, [messages, autoTranslate, lang]); // eslint-disable-line
 
   const translateSingle = useCallback(async (msgId, text) => {
@@ -61,7 +61,7 @@ export default function ChatWindow({
     const text = newMessage.trim();
     if (text) {
       setNewMessage("");
-      await onSendMessage(text);
+      await onSend(text);
     }
   };
 
@@ -79,7 +79,7 @@ export default function ChatWindow({
     try {
       const { file_url } = await UploadFile({ file });
       const attachmentType = file.type.startsWith("image/") ? "image" : "document";
-      await onSendMessage(`Enviou um ${attachmentType === "image" ? "imagem" : "documento"}`, {
+      await onSend(`Enviou um ${attachmentType === "image" ? "imagem" : "documento"}`, {
         url: file_url,
         type: attachmentType,
       });
@@ -176,7 +176,7 @@ export default function ChatWindow({
                     )
                   ) : (
                     <>
-                      <div>{message.message}</div>
+                      <div>{message.content}</div>
                       {/* Tradução */}
                       {!isOwn && (
                         <>
@@ -185,7 +185,7 @@ export default function ChatWindow({
                               {t(lang,"translating")}
                             </div>
                           )}
-                          {showTranslated && !isTranslating && translated !== message.message && (
+                          {showTranslated && !isTranslating && translated !== message.content && (
                             <div style={{
                               marginTop:6, paddingTop:6,
                               borderTop:`1px solid ${isOwn?"rgba(255,255,255,0.2)":"#eee"}`,
@@ -202,7 +202,7 @@ export default function ChatWindow({
                           {/* Botão traduzir manual (quando auto desligado) */}
                           {!autoTranslate && !translated && lang !== "PT" && (
                             <button
-                              onClick={() => translateSingle(message.id, message.message)}
+                              onClick={() => translateSingle(message.id, message.content)}
                               style={{
                                 marginTop:5, background:"none", border:"none",
                                 color:"#F4621F", fontSize:11, cursor:"pointer",
