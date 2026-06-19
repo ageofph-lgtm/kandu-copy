@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { supabase } from "@/api/supabaseClient";
-import { Blacklist, Job, Rating, User } from "@/api/entities";
+import { Job, Rating, User } from "@/api/entities";
 import { useState, useEffect, useCallback } from "react";
 // Removed ChatMessage import as its cleanup logic is moved
 // Removed Notification import as its cleanup logic is moved
@@ -348,17 +348,19 @@ export default function AdminDashboard() {
       }
       
       // Admin vê TODOS os dados, independentemente de filtros
-      const [allUsers, allJobs, allRatings, allBlacklist] = await Promise.all([
+      const [allUsers, allJobs, allRatings] = await Promise.all([
         User.list("-created_date"),
         Job.list("-created_date"),
         Rating.list("-created_date"),
-        Blacklist.list("-created_at")
+        supabase.from("blacklist").select("*").order("created_at", { ascending: false }).then(r => r.data || [])
       ]);
 
       // Admin vê todos os usuários exceto outros admins
       setUsers(allUsers.filter(u => u.user_type !== 'admin'));
       setJobs(allJobs);
-      setBlacklistEntries(allBlacklist);
+      // Carregar blacklist separadamente
+    supabase.from("blacklist").select("*").order("created_at", { ascending: false })
+      .then(({ data }) => setBlacklistEntries(data || []));
 
       // Filtrar avaliações baixas (≤ 2 estrelas)
       setLowRatings(allRatings.filter(r => r.rating <= 2));
@@ -411,9 +413,11 @@ export default function AdminDashboard() {
 
   const handleBlacklistSubmit = async (blacklistData) => {
     try {
-      await Blacklist.create({
-        ...blacklistData,
-        admin_id: currentUser.id
+      await supabase.from("blacklist").insert({
+        id: crypto.randomUUID(),
+        user_id: blacklistData.user_id,
+        reason: blacklistData.reason,
+        created_at: new Date().toISOString(),
       });
 
       // Atualizar status do usuário
