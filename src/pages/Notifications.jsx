@@ -110,12 +110,12 @@ export default function Notifications() {
       let notificationList;
       if (userData.user_type === 'admin') {
         // Admin pode ver todas as notificações
-        notificationList = await Notification.list("-created_date");
+        notificationList = await Notification.list("-created_at");
       } else {
         // Usuários veem apenas suas notificações
         notificationList = await Notification.filter(
           { user_id: userData.id }, 
-          "-created_date"
+          "-created_at"
         );
       }
 
