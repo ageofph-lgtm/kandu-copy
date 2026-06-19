@@ -11,6 +11,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 // ─── Card de candidato (para o employer aprovar/recusar) ─────────────────────
 function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, text, subtext, border }) {
   const { lang } = useLanguage();
+  const navigate = useNavigate();
   const [acting, setActing] = useState(false);
 
   const handleAccept = async () => {
@@ -29,7 +30,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
         user_id: app.worker_id, type: "job_accepted",
         title: "🎉 Candidatura Aceite!",
         message: `A tua candidatura para "${job?.title}" foi aceite. Vai a Trabalhos para começar.`,
-        related_id: job?.id, action_url: createPageUrl("MyJobs"), read: false
+        related_id: job?.id, read: false
       });
       onAccept();
     } catch (_) { setActing(false); }
@@ -43,7 +44,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
         user_id: app.worker_id, type: "job_rejected",
         title: "Candidatura não aceite",
         message: `A tua candidatura para "${job?.title}" não foi selecionada.`,
-        related_id: job?.id, action_url: createPageUrl("Home"), read: false
+        related_id: job?.id, read: false
       });
       onReject();
     } catch (_) { setActing(false); }
