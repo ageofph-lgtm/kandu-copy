@@ -32,7 +32,12 @@ function FilterChip({ label, active, onClick, color = "#F4621F" }) {
   );
 }
 
-function WorkerCard({ worker, navigate }) {
+function WorkerCard({ worker, navigate, isDark }) {
+  const cardBg = isDark ? "#1C1B22" : "#FFFFFF";
+  const cardBorder = isDark ? "#2a2836" : "#E5E5E5";
+  const statBg = isDark ? "#111016" : "#F5F5F5";
+  const statText = isDark ? "#FFFFFF" : "#111016";
+  const subC = isDark ? "#888" : "#666";
   const initials = (worker.full_name || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
   const typeColor = "#F4621F";
   const xpLevel = worker.xp >= 5000 ? "Mestre" : worker.xp >= 2000 ? "Avançado" : worker.xp >= 500 ? "Intermédio" : "Iniciante";
@@ -42,13 +47,13 @@ function WorkerCard({ worker, navigate }) {
     <div
       onClick={() => navigate(`${createPageUrl("Profile")}?userId=${worker.id}`)}
       style={{
-        background: "#1C1B22", borderRadius: 18, padding: 16, cursor: "pointer",
-        border: "1px solid #2a2836", transition: "all 0.18s",
+        background: cardBg, borderRadius: 18, padding: 16, cursor: "pointer",
+        border: `1px solid ${cardBorder}`, transition: "all 0.18s",
         display: "flex", flexDirection: "column", gap: 12,
         width: "100%", boxSizing: "border-box", overflow: "hidden",
       }}
       onMouseEnter={e => { e.currentTarget.style.border = "1px solid #F4621F66"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-      onMouseLeave={e => { e.currentTarget.style.border = "1px solid #2a2836"; e.currentTarget.style.transform = "translateY(0)"; }}
+      onMouseLeave={e => { e.currentTarget.style.border = `1px solid ${cardBorder}`; e.currentTarget.style.transform = "translateY(0)"; }}
     >
       {/* Topo: avatar + nome + badges */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -64,19 +69,19 @@ function WorkerCard({ worker, navigate }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", minWidth: 0, overflow: "hidden" }}>
-            <span style={{ fontWeight: 800, fontSize: 15, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+            <span style={{ fontWeight: 800, fontSize: 15, color: statText, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
               {worker.full_name || "Profissional"}
             </span>
             {worker.verified && <span style={{ fontSize: 11, background: "#22c55e22", color: "#22c55e", padding: "1px 7px", borderRadius: 10, fontWeight: 700 }}>✓ Verificado</span>}
           </div>
-          {worker.city && <p style={{ margin: "3px 0 0", fontSize: 12, color: "#888" }}>📍 {worker.city}</p>}
+          {worker.city && <p style={{ margin: "3px 0 0", fontSize: 12, color: subC }}>📍 {worker.city}</p>}
         </div>
         {/* Rating destaque */}
         <div style={{ textAlign: "center", flexShrink: 0 }}>
           <div style={{ fontSize: 18, fontWeight: 900, color: "#F59E0B" }}>
             {worker.rating ? Number(worker.rating).toFixed(1) : "—"}
           </div>
-          <div style={{ fontSize: 10, color: "#888" }}>⭐ rating</div>
+          <div style={{ fontSize: 10, color: subC }}>⭐ rating</div>
         </div>
       </div>
 
@@ -98,15 +103,15 @@ function WorkerCard({ worker, navigate }) {
           { label: "Trabalhos", value: worker.completed_jobs || 0 },
         ].map(s => (
           <div key={s.label} style={{
-            flex: 1, background: "#111016", borderRadius: 10, padding: "7px 6px", textAlign: "center"
+            flex: 1, background: statBg, borderRadius: 10, padding: "7px 6px", textAlign: "center"
           }}>
-            <div style={{ fontWeight: 800, fontSize: 14, color: s.color || "#fff" }}>{s.value}</div>
-            <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>{s.label}</div>
+            <div style={{ fontWeight: 800, fontSize: 14, color: s.color || statText }}>{s.value}</div>
+            <div style={{ fontSize: 10, color: subC, marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
         <div style={{ flex: 1, background: "#111016", borderRadius: 10, padding: "7px 6px", textAlign: "center" }}>
           <div style={{ fontWeight: 800, fontSize: 14, color: levelColor }}>{xpLevel}</div>
-          <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>Nível</div>
+          <div style={{ fontSize: 10, color: subC, marginTop: 2 }}>Nível</div>
         </div>
       </div>
 
@@ -197,11 +202,11 @@ export default function Workers() {
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
   const hasActiveFilters = filters.skills.length > 0 || filters.city || filters.minRating > 0 || filters.minXp > 0 || filters.minExperience > 0 || filters.level || filters.verified || filters.search;
 
-  const bg = "#111016";
-  const surface = "#1C1B22";
-  const border = "#2a2836";
-  const text = "#fff";
-  const subtext = "#888";
+  const bg = isDark ? "#111016" : "#F5F5F5";
+  const surface = isDark ? "#1C1B22" : "#FFFFFF";
+  const border = isDark ? "#2a2836" : "#E5E5E5";
+  const text = isDark ? "#FFFFFF" : "#111016";
+  const subtext = isDark ? "#888" : "#666666";
 
   return (
     <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80, overflowX: "hidden", width: "100%", boxSizing: "border-box" }}>
@@ -243,7 +248,7 @@ export default function Workers() {
             placeholder="Pesquisar por nome, bio, especialidade..."
             style={{
               width: "100%", padding: "12px 12px 12px 40px", borderRadius: 12,
-              background: "#111016", border: `1.5px solid ${border}`, color: text,
+              background: isDark ? "#111016" : "#FFFFFF", border: `1.5px solid ${border}`, color: text,
               fontSize: 14, outline: "none", boxSizing: "border-box",
             }}
           />
@@ -257,7 +262,7 @@ export default function Workers() {
 
       {/* Painel de filtros expandível */}
       {showFilters && (
-        <div style={{ background: "#161520", borderBottom: `1px solid ${border}`, padding: "16px 16px", width: "100%", boxSizing: "border-box" }}>
+        <div style={{ background: isDark ? "#161520" : "#F0F0F0", borderBottom: `1px solid ${border}`, padding: "16px 16px", width: "100%", boxSizing: "border-box" }}>
 
           {/* Sort */}
           <div style={{ marginBottom: 16 }}>
@@ -363,7 +368,7 @@ export default function Workers() {
 
       {/* Active filter pills (sempre visíveis) */}
       {hasActiveFilters && !showFilters && (
-        <div style={{ padding: "10px 16px", display: "flex", gap: 6, flexWrap: "wrap", background: "#161520", borderBottom: `1px solid ${border}` }}>
+        <div style={{ padding: "10px 16px", display: "flex", gap: 6, flexWrap: "wrap", background: isDark ? "#161520" : "#F0F0F0", borderBottom: `1px solid ${border}` }}>
           {filters.skills.map(s => (
             <span key={s} onClick={() => toggleSkill(s)} style={{ background: "#F4621F22", color: "#F4621F", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}>
               {s} <X size={11} />
@@ -395,7 +400,7 @@ export default function Workers() {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {workers.map(w => <WorkerCard key={w.id} worker={w} navigate={navigate} />)}
+            {workers.map(w => <WorkerCard key={w.id} worker={w} navigate={navigate} isDark={isDark} />)}
 
             {/* Load more */}
             {workers.length < total && (
