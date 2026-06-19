@@ -211,7 +211,8 @@ export default function Layout({ children }) {
   if (
     location.pathname === createPageUrl("SetupProfile") ||
     location.pathname === createPageUrl("Welcome") ||
-    location.pathname === createPageUrl("Login")
+    location.pathname === createPageUrl("Login") ||
+    location.pathname === createPageUrl("DevPicker")
   ) {
     return children;
   }
