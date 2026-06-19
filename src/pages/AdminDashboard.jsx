@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { supabase } from "@/api/supabaseClient";
 import { Job, Rating, User } from "@/api/entities";
+import { Blacklist } from "@/api/blacklistClient";
 import { useState, useEffect, useCallback } from "react";
 // v2026-06-19 22:58:27 UTC — Blacklist removed from entities import; using supabase directly
 // Removed Notification import as its cleanup logic is moved
@@ -352,7 +353,7 @@ export default function AdminDashboard() {
         User.list("-created_date"),
         Job.list("-created_date"),
         Rating.list("-created_date"),
-        supabase.from("blacklist").select("*").order("created_at", { ascending: false }).then(r => r.data || [])
+        Blacklist.list("-created_at")
       ]);
 
       setUsers(allUsers.filter(u => u.user_type !== 'admin'));
@@ -410,11 +411,9 @@ export default function AdminDashboard() {
 
   const handleBlacklistSubmit = async (blacklistData) => {
     try {
-      await supabase.from("blacklist").insert({
-        id: crypto.randomUUID(),
+      await Blacklist.create({
         user_id: blacklistData.user_id,
         reason: blacklistData.reason,
-        created_at: new Date().toISOString(),
       });
 
       // Atualizar status do usuário
