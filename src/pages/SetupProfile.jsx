@@ -68,26 +68,30 @@ export default function SetupProfile() {
     setError("");
     try {
       const selectedType = profiles[activeIndex].type;
+      const now = new Date().toISOString();
+      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email;
+      const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
 
-      // Chamar backend function (tem service key — bypassa RLS)
-      const res = await fetch(
-        "https://api.base44.com/api/apps/69c166ad19149fb0c07883cb/functions/saveUserProfile",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_id: user.id,
-            email: user.email,
-            full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
-            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-            user_type: selectedType,
-          }),
-        }
-      );
+      // Upsert directo no Supabase (RLS desactivado para MVP)
+      const { error: upsertErr } = await supabase.from("users").upsert({
+        id: user.id,
+        email: user.email,
+        full_name: fullName,
+        avatar_url: avatarUrl,
+        user_type: selectedType,
+        status: "active",
+        gdpr_accepted: true,
+        gdpr_accepted_at: now,
+        created_at: now,
+        updated_at: now,
+      }, { onConflict: "id" });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Erro ao guardar perfil");
+      if (upsertErr) {
+        // Fallback: UPDATE por email (conta Google pode ter ID diferente)
+        const { error: updateErr } = await supabase.from("users")
+          .update({ user_type: selectedType, status: "active", updated_at: now })
+          .eq("email", user.email);
+        if (updateErr) throw new Error(updateErr.message);
       }
 
       navigate(createPageUrl("Home"));
