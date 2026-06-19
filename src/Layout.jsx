@@ -94,7 +94,7 @@ export default function Layout({ children }) {
 
       const allNotifications = await Notification.filter({
         user_id: userData.id,
-        is_read: false
+        read: false
       });
 
       const chatNotifications = allNotifications.filter(n => n.type === 'new_message');
@@ -174,13 +174,13 @@ export default function Layout({ children }) {
     try {
       const unreadAppNotifications = await Notification.filter({
         user_id: user.id,
-        is_read: false,
+        read: false,
         type: { $in: ['new_application', 'new_proposal', 'job_accepted', 'job_rejected', 'job_completed', 'job_ready_for_review'] }
       });
 
       if (unreadAppNotifications.length > 0) {
         for (const notif of unreadAppNotifications) {
-          await Notification.update(notif.id, { is_read: true });
+          await Notification.update(notif.id, { read: true });
         }
         setUnreadNotifications(prev => ({ ...prev, applications: 0 }));
       }
