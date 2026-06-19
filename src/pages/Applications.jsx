@@ -29,7 +29,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
         user_id: app.worker_id, type: "job_accepted",
         title: "🎉 Candidatura Aceite!",
         message: `A tua candidatura para "${job?.title}" foi aceite. Vai a Trabalhos para começar.`,
-        related_id: job?.id, action_url: createPageUrl("MyJobs"), is_read: false
+        related_id: job?.id, action_url: createPageUrl("MyJobs"), read: false
       });
       onAccept();
     } catch (_) { setActing(false); }
@@ -43,7 +43,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
         user_id: app.worker_id, type: "job_rejected",
         title: "Candidatura não aceite",
         message: `A tua candidatura para "${job?.title}" não foi selecionada.`,
-        related_id: job?.id, action_url: createPageUrl("Home"), is_read: false
+        related_id: job?.id, action_url: createPageUrl("Home"), read: false
       });
       onReject();
     } catch (_) { setActing(false); }
