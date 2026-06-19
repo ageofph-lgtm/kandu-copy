@@ -140,7 +140,7 @@ export default function Notifications() {
 
   const handleMarkAllAsRead = async () => {
     try {
-      const unreadNotifications = notifications.filter(n => !n.is_read);
+      const unreadNotifications = notifications.filter(n => !n.read);
       for (const notification of unreadNotifications) {
         await Notification.update(notification.id, { read: true });
       }
@@ -164,8 +164,8 @@ export default function Notifications() {
     }
   };
 
-  const unreadNotifications = notifications.filter(n => !n.is_read);
-  const readNotifications = notifications.filter(n => n.is_read);
+  const unreadNotifications = notifications.filter(n => !n.read);
+  const readNotifications = notifications.filter(n => n.read);
 
   const getIcon = (type) => {
     switch(type) {
