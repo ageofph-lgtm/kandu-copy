@@ -45,7 +45,7 @@ function ConversationItem({ conversation, onSelect, selectedId }) {
           </div>
           {hasJobContext && <p style={{fontSize:11,color:"#FF6600",margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>📋 {conversation.job_context.job.title}</p>}
           <p style={{fontSize:13,color:"#666",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-            {conversation.last_message.attachment_url ? `📎 ${t(lang, "attachment", "Anexo")}` : truncateMessage(conversation.last_message.message)}
+            {conversation.last_message.attachment_url ? `📎 ${t(lang, "attachment", "Anexo")}` : truncateMessage(conversation.last_message.content)}
           </p>
         </div>
       </div>
