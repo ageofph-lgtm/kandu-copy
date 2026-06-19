@@ -1,11 +1,10 @@
 import { toast } from "sonner";
+import { Job, User } from "@/api/entities";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
-import { Job } from "@/entities/Job";
-import { User } from "@/entities/User";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
