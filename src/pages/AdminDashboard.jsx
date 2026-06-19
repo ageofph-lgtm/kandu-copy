@@ -348,19 +348,16 @@ export default function AdminDashboard() {
       }
       
       // Admin vê TODOS os dados, independentemente de filtros
-      const [allUsers, allJobs, allRatings] = await Promise.all([
+      const [allUsers, allJobs, allRatings, blData] = await Promise.all([
         User.list("-created_date"),
         Job.list("-created_date"),
         Rating.list("-created_date"),
         supabase.from("blacklist").select("*").order("created_at", { ascending: false }).then(r => r.data || [])
       ]);
 
-      // Admin vê todos os usuários exceto outros admins
       setUsers(allUsers.filter(u => u.user_type !== 'admin'));
       setJobs(allJobs);
-      // Carregar blacklist separadamente
-    supabase.from("blacklist").select("*").order("created_at", { ascending: false })
-      .then(({ data }) => setBlacklistEntries(data || []));
+      setBlacklistEntries(blData);
 
       // Filtrar avaliações baixas (≤ 2 estrelas)
       setLowRatings(allRatings.filter(r => r.rating <= 2));
