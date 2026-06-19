@@ -45,6 +45,7 @@ function WorkerCard({ worker, navigate }) {
         background: "#1C1B22", borderRadius: 18, padding: 16, cursor: "pointer",
         border: "1px solid #2a2836", transition: "all 0.18s",
         display: "flex", flexDirection: "column", gap: 12,
+        width: "100%", boxSizing: "border-box", overflow: "hidden",
       }}
       onMouseEnter={e => { e.currentTarget.style.border = "1px solid #F4621F66"; e.currentTarget.style.transform = "translateY(-2px)"; }}
       onMouseLeave={e => { e.currentTarget.style.border = "1px solid #2a2836"; e.currentTarget.style.transform = "translateY(0)"; }}
@@ -203,10 +204,10 @@ export default function Workers() {
   const subtext = "#888";
 
   return (
-    <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80 }}>
+    <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80, overflowX: "hidden", width: "100%", boxSizing: "border-box" }}>
 
       {/* Header */}
-      <div style={{ background: surface, padding: "50px 20px 16px", borderBottom: `1px solid ${border}` }}>
+      <div style={{ background: surface, padding: "50px 16px 16px", borderBottom: `1px solid ${border}`, width: "100%", boxSizing: "border-box" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", color: "#F4621F", fontSize: 22, cursor: "pointer", padding: 0 }}>←</button>
           <div style={{ flex: 1 }}>
@@ -261,7 +262,7 @@ export default function Workers() {
           {/* Sort */}
           <div style={{ marginBottom: 16 }}>
             <p style={{ color: subtext, fontSize: 12, fontWeight: 700, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 0.5 }}>Ordenar por</p>
-            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {[
                 { val: "rating", label: "⭐ Rating" },
                 { val: "xp", label: "🔥 XP" },
@@ -290,7 +291,7 @@ export default function Workers() {
           {/* Cidade */}
           <div style={{ marginBottom: 16 }}>
             <p style={{ color: subtext, fontSize: 12, fontWeight: 700, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 0.5 }}>Cidade</p>
-            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <FilterChip label="Todas" active={!filters.city} onClick={() => setFilter("city", "")} color="#6B7280" />
               {CITIES.map(c => (
                 <FilterChip key={c} label={c} active={filters.city === c} onClick={() => setFilter("city", c === filters.city ? "" : c)} />
@@ -362,7 +363,7 @@ export default function Workers() {
 
       {/* Active filter pills (sempre visíveis) */}
       {hasActiveFilters && !showFilters && (
-        <div style={{ padding: "10px 20px", display: "flex", gap: 8, overflowX: "auto", background: "#161520", borderBottom: `1px solid ${border}` }}>
+        <div style={{ padding: "10px 16px", display: "flex", gap: 6, flexWrap: "wrap", background: "#161520", borderBottom: `1px solid ${border}` }}>
           {filters.skills.map(s => (
             <span key={s} onClick={() => toggleSkill(s)} style={{ background: "#F4621F22", color: "#F4621F", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}>
               {s} <X size={11} />
@@ -376,7 +377,7 @@ export default function Workers() {
       )}
 
       {/* Lista de workers */}
-      <div style={{ padding: "16px 16px 0" }}>
+      <div style={{ padding: "16px 16px 0", width: "100%", boxSizing: "border-box" }}>
         {loading && page === 0 ? (
           <div style={{ padding: "60px 0", textAlign: "center" }}>
             <div style={{ width: 40, height: 40, border: "3px solid #F4621F", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
