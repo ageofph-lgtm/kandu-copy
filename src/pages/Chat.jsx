@@ -5,6 +5,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { MessageCircle } from "lucide-react";
+import { toast } from "sonner";
 import { createPageUrl } from "@/utils";
 
 import ConversationList from "../components/chat/ConversationList";
@@ -131,16 +132,22 @@ export default function Chat() {
     }
   }, []);
 
-  const handleSendMessage = async (text) => {
+  const handleSendMessage = async (text, attachment) => {
     if (!user || !selectedConversation || !text.trim()) return;
     try {
-      const newMsg = await ChatMessage.create({
+      const payload = {
         job_id: selectedConversation.job_id || null,
         sender_id: user.id,
         receiver_id: selectedConversation.other_user_id,
         content: text.trim(),
         read: false,
-      });
+      };
+      if (attachment?.url) {
+        payload.content = attachment.type === "image"
+          ? `📷 ${text.trim()}`
+          : `📎 ${text.trim()}`;
+      }
+      const newMsg = await ChatMessage.create(payload);
       setMessages(prev => [...prev, newMsg]);
 
       // Notificação
@@ -154,6 +161,7 @@ export default function Chat() {
       });
     } catch (err) {
       console.error("Erro ao enviar mensagem:", err);
+      toast && toast.error("Erro ao enviar mensagem");
     }
   };
 
