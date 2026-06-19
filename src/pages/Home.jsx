@@ -367,7 +367,10 @@ export default function Home() {
       if (!u.user_type) { navigate(createPageUrl("SetupProfile")); return; }
       setUser(u);
       setLoading(false);
-    }).catch(() => {}); // sem redirect — jobs carregam sem auth
+    }).catch(() => {
+      // Sem sessão → ir para Welcome
+      navigate(createPageUrl("Welcome"));
+    });
   }, [navigate]);
 
   if (loading) return <LoadingScreen />;
