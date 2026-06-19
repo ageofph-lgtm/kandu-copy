@@ -19,7 +19,7 @@ export default function Login() {
       if (session?.user) {
         const { data: profile } = await supabase
           .from("users").select("user_type").eq("id", session.user.id).maybeSingle();
-        navigate(createPageUrl(profile?.user_type ? "Home" : "SetupProfile"), { replace: true });
+        navigate(createPageUrl(profile?.user_type === 'admin' ? 'AdminDashboard' : profile?.user_type ? 'Home' : 'SetupProfile'), { replace: true });
       } else {
         setCheckingSession(false);
       }
@@ -30,7 +30,7 @@ export default function Login() {
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
         const { data: profile } = await supabase
           .from("users").select("user_type").eq("id", session.user.id).maybeSingle();
-        navigate(createPageUrl(profile?.user_type ? "Home" : "SetupProfile"), { replace: true });
+        navigate(createPageUrl(profile?.user_type === 'admin' ? 'AdminDashboard' : profile?.user_type ? 'Home' : 'SetupProfile'), { replace: true });
       }
     });
     return () => subscription.unsubscribe();
@@ -69,7 +69,7 @@ export default function Login() {
       if (session?.user) {
         const { data: profile } = await supabase
           .from("users").select("user_type").eq("id", session.user.id).maybeSingle();
-        navigate(createPageUrl(profile?.user_type ? "Home" : "SetupProfile"), { replace: true });
+        navigate(createPageUrl(profile?.user_type === 'admin' ? 'AdminDashboard' : profile?.user_type ? 'Home' : 'SetupProfile'), { replace: true });
       }
     } catch (err) {
       setError(err.message || "Erro ao autenticar");
