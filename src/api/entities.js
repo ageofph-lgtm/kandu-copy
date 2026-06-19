@@ -27,13 +27,12 @@ export const User = {
   async me() {
     const session = await getSession();
     if (!session?.user) return null;
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("users")
       .select("*")
       .eq("id", session.user.id)
       .maybeSingle();
-    if (error || !data) return null;
-    return norm({ ...data, email: session.user.email });
+    return data ? norm({ ...data, email: session.user.email }) : null;
   },
 
   async filter(params = {}) {
@@ -61,8 +60,7 @@ export const User = {
   async list(order = "-created_at") {
     const ascending = order.startsWith("-") ? false : true;
     const col = order.replace(/^-/, "");
-    let q = supabase.from("users").select("*").order(col, { ascending });
-    const { data } = await q;
+    const { data } = await supabase.from("users").select("*").order(col, { ascending });
     return normList(data);
   },
 
@@ -76,18 +74,9 @@ export const User = {
     return norm(data);
   },
 
-  // alias para Layout.jsx (UserEntity.me())
-  async me() {
-    const session = await getSession();
-    if (!session?.user) return null;
-    const { data } = await supabase
-      .from("users").select("*").eq("id", session.user.id).maybeSingle();
-    return data ? norm({ ...data, email: session.user.email }) : null;
-  },
-
   auth: {
     async signOut() { await supabase.auth.signOut(); },
-    redirectToLogin(url) { window.location.href = "/login"; }
+    redirectToLogin() { window.location.href = "/Welcome"; }
   }
 };
 
@@ -120,7 +109,7 @@ export const Job = {
     const { data, error } = await supabase.from("jobs").insert({
       id: crypto.randomUUID(),
       ...payload,
-      employer_id: session?.user?.id,
+      employer_id: payload.employer_id || session?.user?.id,
       created_at: now,
       updated_at: now,
     }).select().single();
@@ -146,6 +135,13 @@ export const Job = {
 
 // ─── APPLICATION ────────────────────────────────────────
 export const Application = {
+  async list(order = "-created_at") {
+    const ascending = order.startsWith("-") ? false : true;
+    const col = order.replace(/^-/, "");
+    const { data } = await supabase.from("applications").select("*").order(col, { ascending });
+    return normList(data);
+  },
+
   async filter(params = {}) {
     let q = supabase.from("applications").select("*").order("created_at", { ascending: false });
     Object.entries(params).forEach(([k, v]) => {
@@ -187,6 +183,13 @@ export const Application = {
 
 // ─── CHAT MESSAGE ────────────────────────────────────────
 export const ChatMessage = {
+  async list(order = "-created_at") {
+    const ascending = order.startsWith("-") ? false : true;
+    const col = order.replace(/^-/, "");
+    const { data } = await supabase.from("chat_messages").select("*").order(col, { ascending });
+    return normList(data);
+  },
+
   async filter(params = {}) {
     let q = supabase.from("chat_messages").select("*").order("created_at", { ascending: true });
     Object.entries(params).forEach(([k, v]) => {
@@ -199,10 +202,14 @@ export const ChatMessage = {
   async create(payload) {
     const session = await getSession();
     const now = new Date().toISOString();
+    // Mapear content → content (BD), message → content (legado)
+    const content = payload.content || payload.message || "";
     const { data, error } = await supabase.from("chat_messages").insert({
-      id: crypto.randomUUID(),
+      // id tem default na BD — não precisamos gerar aqui
       ...payload,
+      content,
       sender_id: payload.sender_id || session?.user?.id,
+      read: payload.read ?? false,
       created_at: now,
     }).select().single();
     if (error) throw error;
@@ -210,9 +217,12 @@ export const ChatMessage = {
   },
 
   async update(id, updates) {
+    // Mapear is_read → read para compatibilidade
+    const mapped = { ...updates };
+    if ("is_read" in mapped) { mapped.read = mapped.is_read; delete mapped.is_read; }
     const { data, error } = await supabase
       .from("chat_messages")
-      .update(updates)
+      .update(mapped)
       .eq("id", id)
       .select().single();
     if (error) throw error;
@@ -220,25 +230,49 @@ export const ChatMessage = {
   },
 };
 
-// ─── BLACKLIST ─────────────────────────────────────────
-export const Blacklist = {
+// ─── NOTIFICATION ────────────────────────────────────────
+export const Notification = {
   async list(order = "-created_at") {
     const ascending = order.startsWith("-") ? false : true;
     const col = order.replace(/^-/, "");
-    let q = supabase.from("blacklists").select("*").order(col, { ascending });
+    const { data } = await supabase.from("notifications").select("*").order(col, { ascending });
+    return normList(data);
+  },
+
+  async filter(params = {}) {
+    let q = supabase.from("notifications").select("*").order("created_at", { ascending: false });
+    // Mapear is_read → read para compatibilidade com código legado
+    const mapped = { ...params };
+    if ("is_read" in mapped) { mapped.read = mapped.is_read; delete mapped.is_read; }
+    Object.entries(mapped).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) q = q.eq(k, v);
+    });
     const { data } = await q;
     return normList(data);
   },
 
   async create(payload) {
-    const session = await getSession();
-    const now = new Date().toISOString();
-    const { data, error } = await supabase.from("blacklists").insert({
-      ...payload,
-      admin_id: payload.admin_id || session?.user?.id,
-      created_at: now,
-      updated_at: now,
+    // Ignorar action_url (não existe na BD)
+    const { action_url: _action_url, ...rest } = payload;
+    const { data, error } = await supabase.from("notifications").insert({
+      // id tem default na BD
+      ...rest,
+      read: rest.read ?? false,
+      created_at: new Date().toISOString(),
     }).select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
+  async update(id, updates) {
+    // Mapear is_read → read para compatibilidade
+    const mapped = { ...updates };
+    if ("is_read" in mapped) { mapped.read = mapped.is_read; delete mapped.is_read; }
+    const { data, error } = await supabase
+      .from("notifications")
+      .update(mapped)
+      .eq("id", id)
+      .select().single();
     if (error) throw error;
     return norm(data);
   },
@@ -249,8 +283,7 @@ export const Rating = {
   async list(order = "-created_at") {
     const ascending = order.startsWith("-") ? false : true;
     const col = order.replace(/^-/, "");
-    let q = supabase.from("ratings").select("*").order(col, { ascending });
-    const { data } = await q;
+    const { data } = await supabase.from("ratings").select("*").order(col, { ascending });
     return normList(data);
   },
 
@@ -264,47 +297,15 @@ export const Rating = {
   },
 
   async create(payload) {
-    const now = new Date().toISOString();
+    // Mapear rating → score se necessário (BD usa score)
+    const score = payload.score ?? payload.rating;
+    const { rating: _r, ...rest } = payload;
     const { data, error } = await supabase.from("ratings").insert({
-      id: crypto.randomUUID(),
-      ...payload,
-      created_at: now,
+      // id tem default na BD
+      ...rest,
+      score,
+      created_at: new Date().toISOString(),
     }).select().single();
-    if (error) throw error;
-    return norm(data);
-  },
-};
-
-// ─── NOTIFICATION ────────────────────────────────────────
-export const Notification = {
-  async filter(params = {}) {
-    let q = supabase.from("notifications").select("*").order("created_at", { ascending: false });
-    Object.entries(params).forEach(([k, v]) => {
-      if (typeof v === 'object' && v !== null) return; // skip complex filters
-      if (v !== undefined && v !== null) q = q.eq(k, v);
-    });
-    const { data } = await q;
-    return normList(data);
-  },
-
-  async create(payload) {
-    const now = new Date().toISOString();
-    const { data, error } = await supabase.from("notifications").insert({
-      id: crypto.randomUUID(),
-      ...payload,
-      read: payload.read ?? false,
-      created_at: now,
-    }).select().single();
-    if (error) throw error;
-    return norm(data);
-  },
-
-  async update(id, updates) {
-    const { data, error } = await supabase
-      .from("notifications")
-      .update(updates)
-      .eq("id", id)
-      .select().single();
     if (error) throw error;
     return norm(data);
   },
