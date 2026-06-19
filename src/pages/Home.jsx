@@ -87,7 +87,7 @@ function WorkerHome({ user, isDark }) {
 
   // ── Carregar TODAS as obras abertas ──
   useEffect(() => {
-    Job.list("-created_date")
+    Job.list("-created_at")
       .then(all => { setJobs(all.filter(j => j.status === "open")); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
@@ -367,7 +367,7 @@ export default function Home() {
       if (!u.user_type) { navigate(createPageUrl("SetupProfile")); return; }
       setUser(u);
       setLoading(false);
-    }).catch(() => navigate(createPageUrl("Welcome")));
+    }).catch(() => {}); // sem redirect — jobs carregam sem auth
   }, [navigate]);
 
   if (loading) return <LoadingScreen />;
