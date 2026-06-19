@@ -1,9 +1,6 @@
 import { toast } from "sonner";
+import { Blacklist, Job, Rating, User } from "@/api/entities";
 import { useState, useEffect, useCallback } from "react";
-import { User } from "@/entities/User";
-import { Job } from "@/entities/Job";
-import { Rating } from "@/entities/Rating";
-import { Blacklist } from "@/entities/Blacklist";
 // Removed ChatMessage import as its cleanup logic is moved
 // Removed Notification import as its cleanup logic is moved
 import LoadingScreen from "@/components/LoadingScreen";
