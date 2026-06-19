@@ -156,12 +156,15 @@ export default function Layout({ children }) {
       const setupUrl = createPageUrl("SetupProfile");
       const welcomeUrl = createPageUrl("Welcome");
       const loginUrl = createPageUrl("Login");
-      const noAuthPages = [setupUrl, welcomeUrl, loginUrl];
+      const devPickerUrl = createPageUrl("DevPicker");
+      const noAuthPages = [setupUrl, welcomeUrl, loginUrl, devPickerUrl];
       if (!noAuthPages.includes(location.pathname)) {
         // Só redireciona se realmente não há sessão Supabase
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) navigate(welcomeUrl);
-        else navigate(setupUrl); // há sessão mas sem perfil → setup
+        else if (!location.pathname.includes("DevPicker")) {
+          navigate(setupUrl); // há sessão mas sem perfil → setup
+        }
       }
     }
   }, [navigate, location.pathname]);
