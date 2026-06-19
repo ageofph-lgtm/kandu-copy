@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/api/supabaseClient";
 import { Job, User } from "@/api/entities";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -362,15 +363,19 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    User.me().then(u => {
-      if (!u) { navigate(createPageUrl("Welcome")); return; }
-      if (!u.user_type) { navigate(createPageUrl("SetupProfile")); return; }
-      setUser(u);
-      setLoading(false);
-    }).catch(() => {
-      // Sem sessão → ir para Welcome
-      navigate(createPageUrl("Welcome"));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session?.user) { navigate(createPageUrl("Welcome")); return; }
+      try {
+        const u = await User.me();
+        if (!u?.user_type) { navigate(createPageUrl("SetupProfile")); return; }
+        setUser(u);
+        setLoading(false);
+      } catch { navigate(createPageUrl("Welcome")); }
     });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) { navigate(createPageUrl("Welcome")); }
+    });
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   if (loading) return <LoadingScreen />;
