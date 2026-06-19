@@ -321,10 +321,10 @@ function EmployerHome({ user, isDark }) {
           }}
         >
           <div style={{ textAlign: "left" }}>
-            <p style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>+ {t(lang,"jobTitle")}</p>
+            <p style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>🏗️ {t(lang,"announceJob","Anunciar a sua Obra")}</p>
             <p style={{ margin: "4px 0 0", fontSize: 13, opacity: 0.85 }}>{t(lang,"findProInMinutes","Encontra o profissional certo em minutos")}</p>
           </div>
-          <span style={{ fontSize: 36 }}>🏗️</span>
+          <span style={{ fontSize: 36 }}>→</span>
         </button>
 
         {/* Botão destaque — Encontrar Profissionais */}
