@@ -19,15 +19,18 @@ export default function Login() {
       if (session?.user) {
         const { data: profile } = await supabase
           .from("users").select("user_type").eq("id", session.user.id).maybeSingle();
-        const devEmails = ["lucasfelipesantos@gmail.com", "urielramoss@gmail.com", "ageofph@gmail.com"];
+        const devEmails = ["lucasfelipesantos@gmail.com", "urielramoss@gmail.com", "ageofph@gmail.com", "phtoledo9@gmail.com"];
         const isDevUser = devEmails.includes(session.user.email);
-        const dest = isDevUser
-          ? 'DevPicker'
-          : profile?.user_type === 'admin'
-            ? 'AdminDashboard'
-            : profile?.user_type
-              ? 'Home'
-              : 'SetupProfile';
+        // Emails credenciados vão SEMPRE para o DevPicker (independentemente do perfil)
+        if (isDevUser) {
+          navigate(createPageUrl('DevPicker'), { replace: true });
+          return;
+        }
+        const dest = profile?.user_type === 'admin'
+          ? 'AdminDashboard'
+          : profile?.user_type
+            ? 'Home'
+            : 'SetupProfile';
         navigate(createPageUrl(dest), { replace: true });
       } else {
         setCheckingSession(false);
@@ -39,15 +42,18 @@ export default function Login() {
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
         const { data: profile } = await supabase
           .from("users").select("user_type").eq("id", session.user.id).maybeSingle();
-        const devEmails = ["lucasfelipesantos@gmail.com", "urielramoss@gmail.com", "ageofph@gmail.com"];
+        const devEmails = ["lucasfelipesantos@gmail.com", "urielramoss@gmail.com", "ageofph@gmail.com", "phtoledo9@gmail.com"];
         const isDevUser = devEmails.includes(session.user.email);
-        const dest = isDevUser
-          ? 'DevPicker'
-          : profile?.user_type === 'admin'
-            ? 'AdminDashboard'
-            : profile?.user_type
-              ? 'Home'
-              : 'SetupProfile';
+        // Emails credenciados vão SEMPRE para o DevPicker (independentemente do perfil)
+        if (isDevUser) {
+          navigate(createPageUrl('DevPicker'), { replace: true });
+          return;
+        }
+        const dest = profile?.user_type === 'admin'
+          ? 'AdminDashboard'
+          : profile?.user_type
+            ? 'Home'
+            : 'SetupProfile';
         navigate(createPageUrl(dest), { replace: true });
       }
     });
@@ -96,15 +102,18 @@ export default function Login() {
       if (session?.user) {
         const { data: profile } = await supabase
           .from("users").select("user_type").eq("id", session.user.id).maybeSingle();
-        const devEmails = ["lucasfelipesantos@gmail.com", "urielramoss@gmail.com", "ageofph@gmail.com"];
+        const devEmails = ["lucasfelipesantos@gmail.com", "urielramoss@gmail.com", "ageofph@gmail.com", "phtoledo9@gmail.com"];
         const isDevUser = devEmails.includes(session.user.email);
-        const dest = isDevUser
-          ? 'DevPicker'
-          : profile?.user_type === 'admin'
-            ? 'AdminDashboard'
-            : profile?.user_type
-              ? 'Home'
-              : 'SetupProfile';
+        // Emails credenciados vão SEMPRE para o DevPicker (independentemente do perfil)
+        if (isDevUser) {
+          navigate(createPageUrl('DevPicker'), { replace: true });
+          return;
+        }
+        const dest = profile?.user_type === 'admin'
+          ? 'AdminDashboard'
+          : profile?.user_type
+            ? 'Home'
+            : 'SetupProfile';
         navigate(createPageUrl(dest), { replace: true });
       }
     } catch (err) {
