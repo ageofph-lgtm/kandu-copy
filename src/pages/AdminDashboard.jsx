@@ -490,6 +490,12 @@ export default function AdminDashboard() {
               {t(lang, "adminExampleJobs", "Obras de Exemplo")}
             </Button>
             {/* Removed the "Limpar Dados" button from the AdminDashboard */}
+            <Button variant="outline" size="sm" onClick={() => navigate("/profile")}>
+              👤 Perfil
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleLogout}>
+              🚪 Sair
+            </Button>
           </div>
         </div>
 
