@@ -315,3 +315,47 @@ export const Rating = {
     return norm(data);
   },
 };
+
+// ─── BLACKLIST ────────────────────────────────────────
+export const Blacklist = {
+  async list(order = "-created_at") {
+    const ascending = order.startsWith("-") ? false : true;
+    const col = order.replace(/^-/, "").replace("created_date", "created_at");
+    const { data } = await supabase.from("blacklist").select("*").order(col, { ascending });
+    return normList(data);
+  },
+
+  async filter(params = {}) {
+    let q = supabase.from("blacklist").select("*").order("created_at", { ascending: false });
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) q = q.eq(k, v);
+    });
+    const { data } = await q;
+    return normList(data);
+  },
+
+  async create(payload) {
+    const { data, error } = await supabase.from("blacklist").insert({
+      id: crypto.randomUUID(),
+      ...payload,
+      created_at: new Date().toISOString(),
+    }).select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
+  async update(id, updates) {
+    const { data, error } = await supabase
+      .from("blacklist")
+      .update(updates)
+      .eq("id", id)
+      .select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
+  async delete(id) {
+    const { error } = await supabase.from("blacklist").delete().eq("id", id);
+    if (error) throw error;
+  },
+};
