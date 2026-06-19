@@ -1,4 +1,6 @@
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { UploadFile } from "@/api/integrations";
 import { FileText, Languages } from "lucide-react";
@@ -15,6 +17,7 @@ export default function ChatWindow({
   onBack
 }) {
   const { lang } = useLanguage();
+  const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [translations, setTranslations] = useState({}); // { [msgId]: translatedText }
@@ -96,12 +99,24 @@ export default function ChatWindow({
       {/* Top Bar */}
       <div style={{padding:"50px 16px 12px",background:"#111",display:"flex",alignItems:"center",gap:12}}>
         <button onClick={onBack} style={{background:"none",border:"none",color:"#F4621F",fontSize:22,cursor:"pointer",padding:0,lineHeight:1}}>←</button>
-        <div style={{width:36,height:36,borderRadius:"50%",background:"#F4621F",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:700,color:"#FFF",flexShrink:0}}>
-          {conversation.other_user.full_name?.charAt(0) || "?"}
-        </div>
-        <div style={{flex:1}}>
-          <p style={{fontWeight:700,fontSize:14,color:"#FFF",margin:0}}>{conversation.other_user.full_name || t(lang, "userLabel", "Utilizador")}</p>
-          <p style={{fontSize:11,color:"#22C55E",margin:0}}>● online</p>
+        <div
+          onClick={() => navigate(`${createPageUrl("Profile")}?userId=${conversation.other_user.id}`)}
+          style={{display:"flex",alignItems:"center",gap:10,flex:1,cursor:"pointer",borderRadius:8,padding:"4px 6px",transition:"background 0.15s"}}
+          onMouseEnter={e=>e.currentTarget.style.background="rgba(244,98,31,0.1)"}
+          onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+        >
+          <div style={{width:36,height:36,borderRadius:"50%",background:"#F4621F",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:700,color:"#FFF",flexShrink:0,overflow:"hidden"}}>
+            {conversation.other_user.avatar_url
+              ? <img src={conversation.other_user.avatar_url} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>
+              : conversation.other_user.full_name?.charAt(0) || "?"}
+          </div>
+          <div style={{flex:1}}>
+            <p style={{fontWeight:700,fontSize:14,color:"#FFF",margin:0}}>
+              {conversation.other_user.full_name || t(lang, "userLabel", "Utilizador")}
+              <span style={{fontSize:10,color:"#F4621F",marginLeft:6}}>ver perfil →</span>
+            </p>
+            <p style={{fontSize:11,color:"#22C55E",margin:0}}>● online</p>
+          </div>
         </div>
         {/* Botão de auto-tradução */}
         <button
