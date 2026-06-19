@@ -246,6 +246,15 @@ export const Rating = {
     const { data } = await q;
     return normList(data);
   },
+
+  async filter(params = {}) {
+    let q = supabase.from("ratings").select("*").order("created_at", { ascending: false });
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) q = q.eq(k, v);
+    });
+    const { data } = await q;
+    return normList(data);
+  },
 };
 
 // ─── NOTIFICATION ────────────────────────────────────────
