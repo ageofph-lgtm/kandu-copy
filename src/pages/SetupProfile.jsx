@@ -122,7 +122,19 @@ export default function SetupProfile() {
       profileData.id_document_url = idDocUrl;
       profileData.id_document_status = 'pending';
     }
+    // Actualizar Base44 Auth (login/sessão)
     await base44.auth.updateMe(profileData);
+    // Sincronizar com Supabase (dados da app)
+    try {
+      const { supabase } = await import('@/api/supabaseClient');
+      const b44User = await base44.auth.me();
+      if (b44User?.id) {
+        await supabase.from('users').upsert(
+          { id: b44User.id, ...profileData, email: b44User.email, full_name: b44User.full_name, updated_at: new Date().toISOString() },
+          { onConflict: 'id' }
+        );
+      }
+    } catch (e) { console.warn('Supabase sync error:', e); }
     window.location.href = createPageUrl("Home");
   };
 
