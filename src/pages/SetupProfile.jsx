@@ -358,9 +358,9 @@ export default function SetupProfile() {
         </div>
       </div>
       <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px 20px 28px",background:"linear-gradient(to top, #111016 70%, transparent)",zIndex:10}}>
-        <button onClick={handleContinueToVerify} disabled={isCreating}
+        <button onClick={handleContinueToVerify} disabled={isCreating || !user}
           style={{width:"100%",maxWidth:420,display:"block",margin:"0 auto",padding:16,background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:16,cursor:"pointer"}}>
-          {user ? t(lang,"continueAs","Continuar como {type}").replace("{type}", t(lang, visibleProfiles[activeIndex]?.titleKey, visibleProfiles[activeIndex]?.title)) : t(lang,"doLogin","Fazer Login")}
+          {!user ? "⏳ A carregar..." : t(lang,"continueAs","Continuar como {type}").replace("{type}", t(lang, visibleProfiles[activeIndex]?.titleKey, visibleProfiles[activeIndex]?.title))}
         </button>
       </div>
     </div>
