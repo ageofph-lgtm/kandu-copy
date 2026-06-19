@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Rating } from "@/entities/Rating";
+import { Rating } from "@/api/entities";
 import { Star, Clock } from "lucide-react";
 import { useLanguage, translateText } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
