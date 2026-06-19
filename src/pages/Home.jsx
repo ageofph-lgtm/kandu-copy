@@ -327,6 +327,25 @@ function EmployerHome({ user, isDark }) {
           <span style={{ fontSize: 36 }}>🏗️</span>
         </button>
 
+        {/* Botão destaque — Encontrar Profissionais */}
+        <button
+          onClick={() => navigate(createPageUrl("Workers"))}
+          style={{
+            width: "100%", background: isDark ? "#1C1B22" : "#F5F5F5",
+            border: `2px solid #F4621F`, borderRadius: 20, padding: "20px 24px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            cursor: "pointer", marginBottom: 12,
+            boxShadow: "0 4px 20px rgba(244,98,31,0.18)"
+          }}
+        >
+          <div style={{ textAlign: "left" }}>
+            <p style={{ margin: 0, fontSize: 13, color: "#F4621F", fontWeight: 700 }}>🔍 Novo</p>
+            <p style={{ margin: "4px 0 2px", fontSize: 19, fontWeight: 900, color: text }}>Encontrar Profissionais</p>
+            <p style={{ margin: 0, fontSize: 12, color: subtext }}>Pesquisa por skill, rating, XP e mais</p>
+          </div>
+          <span style={{ fontSize: 36 }}>👷</span>
+        </button>
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {[
             { icon: "📋", label: t(lang,"work","Trabalho"),     desc: t(lang,"pendingActiveJobs","Obras pendentes e activas"), to: "MyJobs" },
