@@ -59,6 +59,7 @@ import Profile from './pages/Profile';
 import Scan from './pages/Scan';
 import SetupProfile from './pages/SetupProfile';
 import Welcome from './pages/Welcome';
+import Login from './pages/Login';
 import __Layout from './Layout.jsx';
 
 
@@ -75,6 +76,7 @@ export const PAGES = {
     "Scan": Scan,
     "SetupProfile": SetupProfile,
     "Welcome": Welcome,
+    "Login": Login,
 }
 
 export const pagesConfig = {
