@@ -193,7 +193,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
           user_id: job.worker_id, type: "pin_received",
           title: "📍 PIN de presença recebido!",
           message: `PIN para "${job.title}": ${pinCode} — Abre o app, vai a Trabalho → Em Curso e insere este código.`,
-          related_id: job.id, action_url: createPageUrl("MyJobs"), is_read: false
+          related_id: job.id, action_url: createPageUrl("MyJobs"), read: false
         });
         playPing();
         sendBrowserPush("KANDU — PIN Recebido! 📍", `PIN: ${getDailyPin(job.id)} — Obra: "${job.title}". Insere no app.`);
@@ -217,7 +217,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
           user_id: job.worker_id, type: "job_completed",
           title: "🏁 Obra finalizada!",
           message: `O empregador finalizou a obra "${job.title}". Avalia a experiência em Trabalhos!`,
-          related_id: job.id, action_url: createPageUrl("MyJobs"), is_read: false
+          related_id: job.id, action_url: createPageUrl("MyJobs"), read: false
         });
         playPing();
         onReload();
@@ -398,7 +398,7 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
       await Job.update(job.id, { status: "in_progress", worker_id: app.worker_id, price });
       const others = await Application.filter({ job_id: job.id });
       await Promise.all(others.filter(a => a.id !== app.id && a.status === "pending").map(a => Application.update(a.id, { status: "rejected" })));
-      await Notification.create({ user_id: app.worker_id, type: "job_accepted", title: "🎉 Candidatura Aceite!", message: `A tua candidatura para "${job.title}" foi aceite. Começa a obra!`, related_id: job.id, action_url: createPageUrl("MyJobs"), is_read: false });
+      await Notification.create({ user_id: app.worker_id, type: "job_accepted", title: "🎉 Candidatura Aceite!", message: `A tua candidatura para "${job.title}" foi aceite. Começa a obra!`, related_id: job.id, action_url: createPageUrl("MyJobs"), read: false });
       playPing();
       onReload();
     } catch (_) { setActing(false); }
@@ -408,7 +408,7 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
     if (acting) return; setActing(true);
     try {
       await Application.update(app.id, { status: "rejected" });
-      await Notification.create({ user_id: app.worker_id, type: "job_rejected", title: "Candidatura não aceite", message: `A tua candidatura para "${job.title}" não foi selecionada.`, related_id: job.id, action_url: createPageUrl("Home"), is_read: false });
+      await Notification.create({ user_id: app.worker_id, type: "job_rejected", title: "Candidatura não aceite", message: `A tua candidatura para "${job.title}" não foi selecionada.`, related_id: job.id, action_url: createPageUrl("Home"), read: false });
       onReload();
     } catch (_) { setActing(false); }
   };
@@ -503,14 +503,14 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
           user_id: job.employer_id, type: "pin_confirmed",
           title: "✅ Presença confirmada!",
           message: `O profissional confirmou presença na obra "${job.title}".`,
-          related_id: job.id, action_url: createPageUrl("MyJobs"), is_read: false
+          related_id: job.id, action_url: createPageUrl("MyJobs"), read: false
         });
         // Notificar o próprio worker (para o calendário)
         await Notification.create({
           user_id: user.id, type: "attendance_confirmed",
           title: "📅 Presença registada",
           message: `A tua presença na obra "${job.title}" foi registada hoje às ${format(new Date(), "HH:mm", { locale: pt })}.`,
-          related_id: job.id, action_url: createPageUrl("Calendar"), is_read: false
+          related_id: job.id, action_url: createPageUrl("Calendar"), read: false
         });
         playPing();
         sendBrowserPush("✅ Presença confirmada!", `Obra "${job.title}" — presença registada.`);
@@ -624,7 +624,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                           user_id: job.employer_id, type: "completion_pin",
                           title: "🏁 PIN de conclusão recebido!",
                           message: `PIN de conclusão para "${job.title}": ${completionPin} — Vai a Trabalhos → Em Curso e insere este código para finalizar.`,
-                          related_id: job.id, action_url: createPageUrl("MyJobs"), is_read: false
+                          related_id: job.id, action_url: createPageUrl("MyJobs"), read: false
                         });
                         playPing();
                         sendBrowserPush("KANDU — Obra Concluída! 🏁", `PIN: ${completionPin} — "${job.title}". Insere no app para finalizar.`);
