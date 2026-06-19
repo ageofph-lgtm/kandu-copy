@@ -68,32 +68,26 @@ export default function SetupProfile() {
     setError("");
     try {
       const selectedType = profiles[activeIndex].type;
-      const now = new Date().toISOString();
-      const profileData = {
-        id: user.id,
-        email: user.email,
-        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
-        avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-        user_type: selectedType,
-        status: "active",
-        gdpr_accepted: true,
-        gdpr_accepted_at: now,
-        updated_at: now,
-      };
 
-      // Tentar upsert pelo ID (primary key)
-      const { error: upsertErr } = await supabase
-        .from("users")
-        .upsert({ ...profileData, created_at: now }, { onConflict: "id" });
+      // Chamar backend function (tem service key — bypassa RLS)
+      const res = await fetch(
+        "https://api.base44.com/api/apps/69c166ad19149fb0c07883cb/functions/saveUserProfile",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+            user_type: selectedType,
+          }),
+        }
+      );
 
-      if (upsertErr) {
-        // Pode haver registo com o mesmo email mas ID diferente (ex: login anterior)
-        // Tentar UPDATE por email
-        const { error: updateErr } = await supabase
-          .from("users")
-          .update({ user_type: selectedType, status: "active", updated_at: now, id: user.id })
-          .eq("email", user.email);
-        if (updateErr) throw updateErr;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erro ao guardar perfil");
       }
 
       navigate(createPageUrl("Home"));
