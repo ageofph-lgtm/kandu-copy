@@ -67,12 +67,10 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
       const payload = {
         job_id: job.id,
         worker_id: user.id,
-        // employer_id é necessário para a RLS dar acesso ao empregador
         employer_id: job.employer_id,
         message: message.trim(),
-        application_type: applicationType,
         status: "pending",
-        ...(applicationType === "proposal" && proposedPrice
+        ...(proposedPrice
           ? { proposed_price: parseFloat(proposedPrice) }
           : {})
       };
@@ -81,24 +79,22 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
       // notificar empregador
       await Notification.create({
         user_id: job.employer_id,
-        type: applicationType === "application" ? "new_application" : "new_proposal",
-        title: applicationType === "application" ? "📋 Nova candidatura!" : "💰 Nova proposta!",
-        message: `${user.full_name || user.email} ${applicationType === "application" ? "candidatou-se" : "enviou uma proposta"} para "${job.title}"`,
+        type: "new_application",
+        title: "📋 Nova candidatura!",
+        message: `${user.full_name || user.email} candidatou-se para "${job.title}"`,
         related_id: job.id,
-        action_url: createPageUrl("Applications"),
       });
 
       // mensagem inicial no chat
-      const convId = createConversationId(user.id, job.employer_id);
       const chatMsg = applicationType === "application"
         ? `Olá! Candidatei-me à obra "${job.title}". ${message.trim()}`
         : `Olá! Enviei uma proposta de €${proposedPrice} para "${job.title}". ${message.trim()}`;
       await ChatMessage.create({
-        conversation_id: convId,
+        job_id: job.id,
         sender_id: user.id,
         receiver_id: job.employer_id,
-        message: chatMsg,
-        is_read: false
+        content: chatMsg,
+        read: false
       });
 
       setAlreadyApplied(true);
