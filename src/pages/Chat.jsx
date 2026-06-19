@@ -1,13 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Application, ChatMessage, Job, Notification, User } from "@/api/entities";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
-import { ChatMessage } from "@/entities/ChatMessage";
-import { User } from "@/entities/User";
-import { Notification } from "@/entities/Notification";
-import { Application } from "@/entities/Application";
-import { Job } from "@/entities/Job";
 import { 
   MessageCircle // Add Settings icon
 } from "lucide-react";
