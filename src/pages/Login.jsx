@@ -33,15 +33,12 @@ export default function Login() {
         const { error: err } = await supabase.auth.signUp({ email, password });
         if (err) throw err;
       }
-      // Aguardar sessão e navegar
-      const { data: { user } } = await supabase.auth.getUser();
+      // Aguardar sessão propagada
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (user) {
         const { data: profile } = await supabase.from('users').select('user_type').eq('id', user.id).maybeSingle();
-        if (profile?.user_type) {
-          navigate(createPageUrl("Home"));
-        } else {
-          navigate(createPageUrl("SetupProfile"));
-        }
+        navigate(createPageUrl(profile?.user_type ? "Home" : "SetupProfile"));
       }
     } catch (err) {
       setError(err.message || "Erro ao autenticar");
