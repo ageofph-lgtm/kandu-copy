@@ -75,18 +75,23 @@ export default function SetupProfile() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    const checkUser = async () => {
-      setLoading(true);
+    setLoading(true);
+    // Usar onAuthStateChange para garantir que apanha a sessão mesmo após redirect
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session?.user) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (!authUser) {
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-        // Buscar perfil Supabase
+        const authUser = session.user;
         const { data: profile } = await supabase.from('users').select('*').eq('id', authUser.id).maybeSingle();
-        const userData = { id: authUser.id, email: authUser.email, full_name: authUser.user_metadata?.full_name || authUser.email, ...(profile || {}) };
+        const userData = {
+          id: authUser.id,
+          email: authUser.email,
+          full_name: authUser.user_metadata?.full_name || authUser.email,
+          ...(profile || {}),
+        };
         setUser(userData);
         if (userData?.user_type) {
           navigate(createPageUrl("Home"));
@@ -96,8 +101,12 @@ export default function SetupProfile() {
         setUser(null);
       }
       setLoading(false);
-    };
-    checkUser();
+    });
+    // Verificar sessão actual imediatamente (não esperar por evento)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) { setUser(null); setLoading(false); }
+    });
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleFileSelect = (e) => {
