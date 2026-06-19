@@ -55,24 +55,41 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
       border: `1px solid ${border}`, borderLeft: "4px solid #F59E0B",
       padding: 16, marginBottom: 12
     }}>
-      {/* Worker info */}
+      {/* Worker info — clicável → Profile */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-        <div style={{
-          width: 46, height: 46, borderRadius: "50%",
-          background: "#FF660022", display: "flex", alignItems: "center",
-          justifyContent: "center", fontWeight: 800, fontSize: 20, color: "#FF6600", flexShrink: 0
-        }}>
-          {worker?.full_name?.charAt(0)?.toUpperCase() || "?"}
+        <div
+          onClick={() => worker && navigate(`${createPageUrl("Profile")}?userId=${worker.id}`)}
+          style={{
+            display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0,
+            cursor: worker ? "pointer" : "default", borderRadius: 10, padding: "4px 6px",
+            transition: "background 0.15s"
+          }}
+          onMouseEnter={e => worker && (e.currentTarget.style.background = "rgba(244,98,31,0.07)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+        >
+          <div style={{
+            width: 46, height: 46, borderRadius: "50%", flexShrink: 0,
+            background: "#F4621F22", display: "flex", alignItems: "center",
+            justifyContent: "center", fontWeight: 800, fontSize: 20, color: "#F4621F",
+            overflow: "hidden", border: "2px solid #F4621F44"
+          }}>
+            {worker?.avatar_url
+              ? <img src={worker.avatar_url} style={{width:"100%",height:"100%",objectFit:"cover"}} alt="" />
+              : worker?.full_name?.charAt(0)?.toUpperCase() || "?"}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>
+              {worker?.full_name || t(lang, "worker", "Profissional")}
+              {worker && <span style={{fontSize:11,color:"#F4621F",marginLeft:6}}>ver perfil →</span>}
+            </p>
+            <p style={{ fontSize: 12, color: subtext, margin: "2px 0 0" }}>
+              ⭐ {worker?.rating?.toFixed(1) || t(lang, "newLabel", "Novo")} · {worker?.skills?.slice(0,2).join(", ") || ""}
+            </p>
+          </div>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{worker?.full_name || t(lang, "worker", "Profissional")}</p>
-          <p style={{ fontSize: 12, color: subtext, margin: "2px 0 0" }}>
-            ⭐ {worker?.rating?.toFixed(1) || t(lang, "newLabel", "Novo")} · {worker?.skills?.slice(0,2).join(", ") || ""}
-          </p>
-        </div>
-        <div style={{ textAlign: "right" }}>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
           <p style={{ color: subtext, fontSize: 11, margin: 0 }}>{t(lang, "proposal", "Proposta")}</p>
-          <p style={{ color: "#FF6600", fontWeight: 800, fontSize: 18, margin: 0 }}>
+          <p style={{ color: "#F4621F", fontWeight: 800, fontSize: 18, margin: 0 }}>
             €{app.proposed_price || job?.price}
           </p>
         </div>
