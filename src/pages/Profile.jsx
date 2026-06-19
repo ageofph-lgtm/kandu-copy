@@ -106,7 +106,7 @@ export default function Profile() {
 
   const handleChangeProfile = async () => {
     try {
-      await base44.auth.updateMe({ user_type: null });
+      const { data: { user: gu } } = await supabase.auth.getUser(); if (gu?.id) await supabase.from("users").update({ user_type: null, updated_at: new Date().toISOString() }).eq("id", gu.id);
       window.location.href = createPageUrl("SetupProfile");
     } catch (error) {
       console.error("Error changing profile:", error);
@@ -124,7 +124,7 @@ export default function Profile() {
           <p style={{ color: text, fontSize: 16, marginBottom: 16 }}>{t(lang,"error")}</p>
           <Button 
             style={{ background: "#F26522" }}
-            onClick={() => base44.auth.redirectToLogin(window.location.href)}
+            onClick={() => navigate(createPageUrl("Login"))}
           >
             Fazer Login
           </Button>
