@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { supabase } from "@/api/supabaseClient";
 import { Blacklist, Job, Rating, User } from "@/api/entities";
 import { useState, useEffect, useCallback } from "react";
 // Removed ChatMessage import as its cleanup logic is moved
@@ -32,6 +33,7 @@ import {
 } from "lucide-react"; // Removed Trash2 import
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom"; // Added useNavigate import
+import { createPageUrl as createPageUrlUtil } from "@/utils";
 import { t } from "@/components/utils/translations";
 import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import InviteUserForm from '../components/admin/InviteUserForm';
@@ -328,7 +330,8 @@ export default function AdminDashboard() {
   // Removed cleanupMessage state variable
   const [isCreatingExamples, setIsCreatingExamples] = useState(false); // New state for example jobs loading
 
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
+  const handleLogout = async () => { await supabase.auth.signOut(); navigate("/login"); }; // Initialize useNavigate
 
   // Removed runCleanup function, its logic is now entirely handled by the AdminCleanup page.
 
