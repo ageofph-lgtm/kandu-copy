@@ -78,13 +78,15 @@ export default function SetupProfile() {
     const checkUser = async () => {
       setLoading(true);
       try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (!isAuth) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (!authUser) {
           setUser(null);
           setLoading(false);
           return;
         }
-        const userData = await base44.auth.me();
+        // Buscar perfil Supabase
+        const { data: profile } = await supabase.from('users').select('*').eq('id', authUser.id).maybeSingle();
+        const userData = { id: authUser.id, email: authUser.email, full_name: authUser.user_metadata?.full_name || authUser.email, ...(profile || {}) };
         setUser(userData);
         if (userData?.user_type) {
           navigate(createPageUrl("Home"));
@@ -123,8 +125,7 @@ export default function SetupProfile() {
       profileData.id_document_status = 'pending';
     }
     // Actualizar Base44 Auth (login/sessão)
-    await base44.auth.updateMe(profileData);
-    // Sincronizar com Supabase (dados da app)
+        // Sincronizar com Supabase (dados da app)
     try {
       const { supabase } = await import('@/api/supabaseClient');
       const b44User = await base44.auth.me();
@@ -142,7 +143,7 @@ export default function SetupProfile() {
   const visibleProfiles = profileTypes.filter(p => !p.adminOnly || isAdmin);
 
   const handleContinueToVerify = () => {
-    if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
+    if (!user) { navigate(createPageUrl("Welcome")); return; }
     if (!user.gdpr_accepted) { setShowGdpr(true); return; }
     const selectedType = visibleProfiles[activeIndex]?.type;
     if (selectedType === 'admin') { handleFinish(true); return; }
