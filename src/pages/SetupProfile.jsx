@@ -3,7 +3,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { useState, useEffect, useRef } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
-import { base44 } from "@/api/base44Client";
+import { supabase } from "@/api/supabaseClient";
 import GdprConsent from "@/components/GdprConsent";
 import { Briefcase, Wrench, Shield } from "lucide-react";
 import { UploadFile } from "@/api/integrations";
@@ -127,7 +127,6 @@ export default function SetupProfile() {
     // Actualizar Base44 Auth (login/sessão)
         // Sincronizar com Supabase (dados da app)
     try {
-      const { supabase } = await import('@/api/supabaseClient');
       const { data: { user: b44User } } = await supabase.auth.getUser();
       if (b44User?.id) {
         await supabase.from('users').upsert(
