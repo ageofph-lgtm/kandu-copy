@@ -69,20 +69,36 @@ export default function SetupProfile() {
     try {
       const selectedType = profiles[activeIndex].type;
       const now = new Date().toISOString();
-      const { error: err } = await supabase.from("users").upsert({
+      const profileData = {
         id: user.id,
         email: user.email,
-        full_name: user.user_metadata?.full_name || user.email,
+        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+        avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
         user_type: selectedType,
         status: "active",
         gdpr_accepted: true,
         gdpr_accepted_at: now,
-        created_at: now,
         updated_at: now,
-      }, { onConflict: "id" });
-      if (err) throw err;
+      };
+
+      // Tentar upsert pelo ID (primary key)
+      const { error: upsertErr } = await supabase
+        .from("users")
+        .upsert({ ...profileData, created_at: now }, { onConflict: "id" });
+
+      if (upsertErr) {
+        // Pode haver registo com o mesmo email mas ID diferente (ex: login anterior)
+        // Tentar UPDATE por email
+        const { error: updateErr } = await supabase
+          .from("users")
+          .update({ user_type: selectedType, status: "active", updated_at: now, id: user.id })
+          .eq("email", user.email);
+        if (updateErr) throw updateErr;
+      }
+
       navigate(createPageUrl("Home"));
     } catch (e) {
+      console.error("SetupProfile error:", e);
       setError("Erro ao guardar perfil. Tenta novamente.");
       setSaving(false);
     }
