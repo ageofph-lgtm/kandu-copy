@@ -1,11 +1,10 @@
 import { toast } from "sonner";
+import { Notification, User } from "@/api/entities";
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
-import { Notification } from "@/entities/Notification";
-import { User } from "@/entities/User";
 import { Button } from "@/components/ui/button";
 import {
   CheckCircle,
