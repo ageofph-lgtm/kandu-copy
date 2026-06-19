@@ -72,7 +72,7 @@ export default function SetupProfile() {
       const fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email;
       const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
 
-      // Upsert directo no Supabase (RLS desactivado para MVP)
+      // Upsert com apenas as colunas que existem na tabela
       const { error: upsertErr } = await supabase.from("users").upsert({
         id: user.id,
         email: user.email,
@@ -80,14 +80,12 @@ export default function SetupProfile() {
         avatar_url: avatarUrl,
         user_type: selectedType,
         status: "active",
-        gdpr_accepted: true,
-        gdpr_accepted_at: now,
-        created_at: now,
         updated_at: now,
       }, { onConflict: "id" });
 
       if (upsertErr) {
-        // Fallback: UPDATE por email (conta Google pode ter ID diferente)
+        console.error("Upsert error:", upsertErr);
+        // Fallback: UPDATE por email
         const { error: updateErr } = await supabase.from("users")
           .update({ user_type: selectedType, status: "active", updated_at: now })
           .eq("email", user.email);
