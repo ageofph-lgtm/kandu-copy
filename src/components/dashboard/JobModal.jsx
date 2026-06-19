@@ -351,14 +351,21 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
               </div>
 
               {employer && (
-                <div style={{ background: "#F8F8F8", borderRadius: 14, padding: 16, marginBottom: 14 }}>
+                <div
+                  onClick={() => navigate(`${createPageUrl("Profile")}?userId=${employer.id}`)}
+                  style={{ background: "#F8F8F8", borderRadius: 14, padding: 16, marginBottom: 14, cursor: "pointer", transition: "opacity 0.15s" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity="0.8"}
+                  onMouseLeave={e => e.currentTarget.style.opacity="1"}
+                >
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <div style={{
-                      width: 44, height: 44, borderRadius: "50%", background: "#FF6600",
+                      width: 44, height: 44, borderRadius: "50%", background: "#F4621F",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      color: "#FFF", fontWeight: 800, fontSize: 18, flexShrink: 0
+                      color: "#FFF", fontWeight: 800, fontSize: 18, flexShrink: 0, overflow: "hidden"
                     }}>
-                      {employer.full_name?.charAt(0) || "U"}
+                      {employer.avatar_url
+                        ? <img src={employer.avatar_url} style={{width:"100%",height:"100%",objectFit:"cover"}} alt="" />
+                        : employer.full_name?.charAt(0) || "U"}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -369,6 +376,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                         ⭐ {employer.rating || "N/A"} · {employer.city || "Portugal"}
                       </span>
                     </div>
+                    <span style={{fontSize:11,color:"#F4621F",fontWeight:600}}>Ver perfil →</span>
                     <button
                       onClick={() => { onClose(); navigate(createPageUrl("Chat")); }}
                       style={{
