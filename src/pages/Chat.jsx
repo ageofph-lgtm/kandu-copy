@@ -45,7 +45,7 @@ export default function Chat() {
   const loadConversations = useCallback(async (currentUser) => {
     if (!currentUser) return;
     try {
-      const allMessages = await ChatMessage.list("-created_date");
+      const allMessages = await ChatMessage.list("-created_at");
       const userCache = new Map();
       const conversationMap = new Map();
 
