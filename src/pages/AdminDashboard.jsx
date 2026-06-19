@@ -3,7 +3,7 @@ import { supabase } from "@/api/supabaseClient";
 import { Job, Rating, User } from "@/api/entities";
 import { Blacklist } from "@/api/blacklistClient";
 import { useState, useEffect, useCallback } from "react";
-// v2026-06-19 22:58:27 UTC — Blacklist removed from entities import; using supabase directly
+// v20260619232302 — Blacklist from blacklistClient (not entities); build cache bust
 // Removed Notification import as its cleanup logic is moved
 import LoadingScreen from "@/components/LoadingScreen";
 import { Card, CardContent } from "@/components/ui/card";
