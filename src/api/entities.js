@@ -273,7 +273,7 @@ export const Notification = {
     const now = new Date().toISOString();
     const { data, error } = await supabase.from("notifications").insert({
       ...payload,
-      is_read: false,
+      read: false,
       created_at: now,
     }).select().single();
     if (error) throw error;
