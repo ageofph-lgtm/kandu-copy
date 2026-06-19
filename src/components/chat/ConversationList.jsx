@@ -41,7 +41,7 @@ function ConversationItem({ conversation, onSelect, selectedId }) {
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
             <p style={{fontWeight:600,fontSize:14,color:"#FFF",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{conversation.other_user.full_name || t(lang, "userLabel", "Utilizador")}</p>
-            <span style={{fontSize:11,color:"#555",flexShrink:0,marginLeft:8}}>{formatLastMessageTime(conversation.last_message.created_date)}</span>
+            <span style={{fontSize:11,color:"#555",flexShrink:0,marginLeft:8}}>{formatLastMessageTime(conversation.last_message.created_at)}</span>
           </div>
           {hasJobContext && <p style={{fontSize:11,color:"#FF6600",margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>📋 {conversation.job_context.job.title}</p>}
           <p style={{fontSize:13,color:"#666",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>

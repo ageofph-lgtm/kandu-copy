@@ -211,7 +211,7 @@ export default function ChatWindow({
                 </div>
                 {/* Timestamp */}
                 <div style={{fontSize:10,color:"#555",textAlign:isOwn?"right":"left",paddingInline:4}}>
-                  {formatMessageTime(message.created_date)}
+                  {formatMessageTime(message.created_at)}
                 </div>
               </div>
             </div>

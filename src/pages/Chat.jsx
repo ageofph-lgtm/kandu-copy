@@ -109,7 +109,7 @@ export default function Chat() {
           }
           const conversation = conversationMap.get(conversationId);
           if (conversation) {
-            if (new Date(message.created_date) > new Date(conversation.last_message.created_date)) {
+            if (new Date(message.created_at) > new Date(conversation.last_message.created_at)) {
               conversation.last_message = message;
             }
             if (!message.is_read && message.receiver_id === currentUser.id) {
@@ -121,7 +121,7 @@ export default function Chat() {
 
       const allConvs = Array.from(conversationMap.values());
       allConvs.sort((a, b) =>
-        new Date(b.last_message.created_date) - new Date(a.last_message.created_date)
+        new Date(b.last_message.created_at) - new Date(a.last_message.created_at)
       );
 
       // Split by archived flag (persisted in DB by backend automation)
@@ -140,7 +140,7 @@ export default function Chat() {
     try {
       const messageList = await ChatMessage.filter(
         { conversation_id: conversationId },
-        "created_date"
+        "created_at"
       );
       setMessages(messageList);
 
