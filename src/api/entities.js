@@ -32,8 +32,11 @@ function makeEntity(tableName) {
       sort = normalizeSort(sort);
       const isDesc = sort.startsWith('-');
       const col = isDesc ? sort.slice(1) : sort;
+      // Normalizar nomes de campos Base44 → Supabase
+      const fieldMap = { is_read: 'read', created_date: 'created_at', updated_date: 'updated_at' };
       let req = supabase.from(tableName).select('*');
-      for (const [k, v] of Object.entries(query)) {
+      for (let [k, v] of Object.entries(query)) {
+        k = fieldMap[k] || k;
         if (v !== undefined && v !== null) req = req.eq(k, v);
       }
       req = req.order(col, { ascending: !isDesc });
@@ -60,9 +63,13 @@ function makeEntity(tableName) {
     },
 
     async update(id, updates) {
+      // Normalizar campos
+      const fieldMap = { is_read: 'read', created_date: 'created_at', updated_date: 'updated_at' };
+      const normalized = {};
+      for (const [k, v] of Object.entries(updates)) { normalized[fieldMap[k] || k] = v; }
       const { data, error } = await supabase
         .from(tableName)
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update({ ...normalized, updated_at: new Date().toISOString() })
         .eq('id', id).select().single();
       if (error) throw error;
       return data;
