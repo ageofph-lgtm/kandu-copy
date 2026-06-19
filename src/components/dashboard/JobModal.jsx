@@ -1,9 +1,6 @@
 import { toast } from "sonner";
+import { Application, ChatMessage, Notification, User } from "@/api/entities";
 import { useState, useEffect } from "react";
-import { Application } from "@/entities/Application";
-import { Notification } from "@/entities/Notification";
-import { ChatMessage } from "@/entities/ChatMessage";
-import { User } from "@/entities/User";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { MapPin, Clock, Eye, Shield, X, Trash2, CheckCircle, AlertCircle } from "lucide-react";
