@@ -118,6 +118,7 @@ export const Job = {
     const session = await getSession();
     const now = new Date().toISOString();
     const { data, error } = await supabase.from("jobs").insert({
+      id: crypto.randomUUID(),
       ...payload,
       employer_id: session?.user?.id,
       created_at: now,
@@ -260,6 +261,17 @@ export const Rating = {
     });
     const { data } = await q;
     return normList(data);
+  },
+
+  async create(payload) {
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from("ratings").insert({
+      id: crypto.randomUUID(),
+      ...payload,
+      created_at: now,
+    }).select().single();
+    if (error) throw error;
+    return norm(data);
   },
 };
 
