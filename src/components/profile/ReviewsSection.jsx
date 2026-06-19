@@ -25,7 +25,7 @@ export default function ReviewsSection({ userId }) {
     const load = async () => {
       const now = new Date();
       const all = await Rating.filter({ rated_id: userId });
-      const visible = all.filter(r => r.is_visible || (r.visible_after && new Date(r.visible_after) <= now));
+      const visible = all;  // todos os ratings são visíveis
       setRatings(visible);
       setLoading(false);
     };
@@ -69,10 +69,10 @@ function RatingCard({ rating: r, lang }) {
           <div className="flex justify-between items-center mb-2">
             <div className="flex text-yellow-400">
               {[1,2,3,4,5].map(i => (
-                <Star key={i} className={"w-4 h-4 " + (i <= r.rating ? "fill-yellow-400" : "text-gray-200")} />
+                <Star key={i} className={"w-4 h-4 " + (i <= (r.score ?? r.rating) ? "fill-yellow-400" : "text-gray-200")} />
               ))}
             </div>
-            <span className="text-xs text-gray-400">{new Date(r.created_date).toLocaleDateString()}</span>
+            <span className="text-xs text-gray-400">{new Date(r.created_at || r.created_date).toLocaleDateString()}</span>
           </div>
           {r.comment && <p className="text-sm text-gray-700">{comment}</p>}
           {r.qualities?.length > 0 && (
