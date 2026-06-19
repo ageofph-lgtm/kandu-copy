@@ -1,3 +1,4 @@
+// @version 2 — Blacklist export added 2026-06-19
 import { supabase } from "./supabaseClient";
 
 // Helper: normalizar campos created_at/updated_at para created_date/updated_date
