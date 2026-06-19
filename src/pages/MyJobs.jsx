@@ -416,14 +416,26 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
   return (
     <div style={{ background: isDark ? "#161616" : "#FFF", borderRadius: 10, padding: "10px 12px", border: `1px solid ${border}`, marginBottom: 8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#FF660033", display: "flex", alignItems: "center", justifyContent: "center", color: "#FF6600", fontWeight: 700, fontSize: 15 }}>
-          {worker?.full_name?.charAt(0) || "?"}
+        <div
+          onClick={() => worker && navigate(`${createPageUrl("Profile")}?userId=${worker.id}`)}
+          style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0, cursor: worker ? "pointer" : "default", borderRadius: 8, padding: "2px 4px", transition: "background 0.15s" }}
+          onMouseEnter={e => worker && (e.currentTarget.style.background = "rgba(244,98,31,0.08)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+        >
+          <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#F4621F33", display: "flex", alignItems: "center", justifyContent: "center", color: "#F4621F", fontWeight: 700, fontSize: 15, flexShrink: 0, overflow: "hidden" }}>
+            {worker?.avatar_url
+              ? <img src={worker.avatar_url} style={{width:"100%",height:"100%",objectFit:"cover"}} alt="" />
+              : worker?.full_name?.charAt(0) || "?"}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontWeight: 700, fontSize: 13, color: text, margin: 0 }}>
+              {worker?.full_name || t(lang, "worker", "Profissional")}
+              {worker && <span style={{fontSize:10,color:"#F4621F",marginLeft:4}}>ver →</span>}
+            </p>
+            <p style={{ fontSize: 11, color: subtext, margin: 0 }}>⭐ {worker?.rating?.toFixed(1) || t(lang, "newLabel", "Novo")}</p>
+          </div>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontWeight: 700, fontSize: 13, color: text, margin: 0 }}>{worker?.full_name || t(lang, "worker", "Profissional")}</p>
-          <p style={{ fontSize: 11, color: subtext, margin: 0 }}>⭐ {worker?.rating?.toFixed(1) || t(lang, "newLabel", "Novo")}</p>
-        </div>
-        <p style={{ color: "#FF6600", fontWeight: 800, fontSize: 15, margin: 0 }}>€{app.proposed_price || job.price}</p>
+        <p style={{ color: "#F4621F", fontWeight: 800, fontSize: 15, margin: 0, flexShrink: 0 }}>€{app.proposed_price || job.price}</p>
       </div>
       {app.message && (
         <p style={{ color: subtext, fontSize: 12, fontStyle: "italic", background: isDark ? "#0A0A0A" : "#F5F5F5", borderRadius: 7, padding: "6px 10px", margin: "0 0 8px" }}>
