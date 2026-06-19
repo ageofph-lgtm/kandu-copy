@@ -1,9 +1,9 @@
 import { toast } from "sonner";
+import { User } from "@/api/entities";
 import { useState, useRef } from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { UploadFile } from "@/api/integrations";
-import { User } from "@/entities/User";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
