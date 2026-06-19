@@ -44,7 +44,7 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   };
 
   const handleClick = () => {
-    if (!notification.is_read) {
+    if (!notification.read) {
       onMarkAsRead(notification);
     }
     if (notification.action_url) {
@@ -54,7 +54,7 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
 
   return (
     <div
-      style={{background:surface,borderRadius:14,cursor:"pointer",opacity:notification.is_read?0.6:1}}
+      style={{background:surface,borderRadius:14,cursor:"pointer",opacity:notification.read?0.6:1}}
       onClick={handleClick}
     >
       <div style={{padding:16}}>
@@ -64,7 +64,7 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h4 style={{fontWeight:600,fontSize:14,color:text,margin:"0 0 2px"}}>{translatedTitle}</h4>
-                {!notification.is_read && (
+                {!notification.read && (
                   <span style={{width:8,height:8,borderRadius:"50%",background:"#FF6600",display:"inline-block",marginLeft:6,flexShrink:0}}></span>
                 )}
               </div>
@@ -75,7 +75,7 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
             </div>
           </div>
           <div className="flex items-center gap-1 ml-2">
-            {!notification.is_read && (
+            {!notification.read && (
               <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onMarkAsRead(notification); }} className="text-blue-600 hover:text-blue-800">
                 <CheckCircle className="w-4 h-4" />
               </Button>
@@ -133,7 +133,7 @@ export default function Notifications() {
 
   const handleMarkAsRead = async (notification) => {
     try {
-      await Notification.update(notification.id, { is_read: true });
+      await Notification.update(notification.id, { read: true });
       loadData(); // Recarregar para atualizar a visualização
     } catch (error) {
       console.error("Error marking notification as read:", error);
@@ -144,7 +144,7 @@ export default function Notifications() {
     try {
       const unreadNotifications = notifications.filter(n => !n.is_read);
       for (const notification of unreadNotifications) {
-        await Notification.update(notification.id, { is_read: true });
+        await Notification.update(notification.id, { read: true });
       }
       loadData();
     } catch (error) {
