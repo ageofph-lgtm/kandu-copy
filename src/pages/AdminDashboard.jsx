@@ -352,7 +352,7 @@ export default function AdminDashboard() {
         User.list("-created_date"),
         Job.list("-created_date"),
         Rating.list("-created_date"),
-        Blacklist.list("-created_date")
+        Blacklist.list("-created_at")
       ]);
 
       // Admin vê todos os usuários exceto outros admins
