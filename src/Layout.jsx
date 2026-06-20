@@ -207,17 +207,6 @@ export default function Layout({ children }) {
     }
   }, [location.pathname, markApplicationNotificationsAsRead]);
 
-  // Páginas sem layout
-  if (
-    location.pathname === createPageUrl("SetupProfile") ||
-    location.pathname === createPageUrl("Welcome") ||
-    location.pathname === createPageUrl("Login") ||
-    location.pathname === createPageUrl("DevPicker")
-  ) {
-    return children;
-  }
-
-
   // Som de notificação quando chegam novas notificações
   const prevUnreadRef = React.useRef(0);
   useEffect(() => {
@@ -239,6 +228,16 @@ export default function Layout({ children }) {
     }
     prevUnreadRef.current = total;
   }, [unreadNotifications]);
+
+  // Páginas sem layout
+  if (
+    location.pathname === createPageUrl("SetupProfile") ||
+    location.pathname === createPageUrl("Welcome") ||
+    location.pathname === createPageUrl("Login") ||
+    location.pathname === createPageUrl("DevPicker")
+  ) {
+    return children;
+  }
 
   return (
     <div className="k-bg" style={{minHeight:"100vh"}}>
