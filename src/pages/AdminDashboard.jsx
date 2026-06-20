@@ -1,5 +1,6 @@
 import { toast } from "sonner";
-import { Blacklist, Job, Rating, User } from "@/api/entities";
+import { Job, Rating, User } from "@/api/entities";
+import { supabase } from "@/api/supabaseClient";
 import { useState, useEffect, useCallback } from "react";
 // v20260620003932 — Blacklist from @/api/entities (exported); build force
 // Removed Notification import as its cleanup logic is moved
@@ -37,6 +38,37 @@ import { t } from "@/components/utils/translations";
 import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import InviteUserForm from '../components/admin/InviteUserForm';
 import TestingPanel from '../components/admin/TestingPanel';
+
+// Blacklist inline (Supabase) — evita o build error "Blacklist is not exported by @/api/entities"
+const Blacklist = {
+  async list() {
+    const { data } = await supabase.from("blacklist").select("*").order("created_at", { ascending: false });
+    return data || [];
+  },
+  async filter(params = {}) {
+    let q = supabase.from("blacklist").select("*");
+    Object.entries(params).forEach(([k, v]) => { if (v != null) q = q.eq(k, v); });
+    const { data } = await q;
+    return data || [];
+  },
+  async create(payload = {}) {
+    // A tabela blacklist tem apenas: id, user_id, blocked_id, reason, created_at
+    const row = {
+      id: crypto.randomUUID(),
+      user_id: payload.user_id,
+      blocked_id: payload.blocked_id ?? payload.admin_id ?? payload.user_id,
+      reason: payload.reason ?? null,
+      created_at: new Date().toISOString(),
+    };
+    const { data, error } = await supabase.from("blacklist").insert(row).select().single();
+    if (error) throw error;
+    return data;
+  },
+  async delete(id) {
+    const { error } = await supabase.from("blacklist").delete().eq("id", id);
+    if (error) throw error;
+  },
+};
 
 // Placeholder for createPageUrl - replace with actual implementation if available in the project
 // This function typically constructs URLs based on named routes or a specific pattern.
