@@ -36,9 +36,10 @@ export default function DevPicker() {
   const [page, setPage]               = useState(0);
   const PER_PAGE = 30;
 
-  // Criar cliente dedicado (sem depender do supabase global)
+  // Usar o supabase global para garantir que a sessão persiste
+  // e o Home.jsx a consegue ler após o redirect
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: false }
+    auth: { persistSession: true, storageKey: "sb-bktwvgwokrnqvkpvemfv-auth-token" }
   });
 
   // Verificar sessão e email do caller
