@@ -76,33 +76,37 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
       };
       await Application.create(payload);
 
-      // notificar empregador
-      await Notification.create({
-        user_id: job.employer_id,
-        type: "new_application",
-        title: "📋 Nova candidatura!",
-        message: `${user.full_name || user.email} candidatou-se para "${job.title}"`,
-        related_id: job.id,
-      });
+      // Efeitos secundários (notificação + mensagem inicial) — NÃO devem derrubar a candidatura
+      try {
+        await Notification.create({
+          user_id: job.employer_id,
+          type: "new_application",
+          title: "📋 Nova candidatura!",
+          message: `${user.full_name || user.email} candidatou-se para "${job.title}"`,
+          related_id: job.id,
+        });
 
-      // mensagem inicial no chat
-      const chatMsg = applicationType === "application"
-        ? `Olá! Candidatei-me à obra "${job.title}". ${message.trim()}`
-        : `Olá! Enviei uma proposta de €${proposedPrice} para "${job.title}". ${message.trim()}`;
-      await ChatMessage.create({
-        job_id: job.id,
-        sender_id: user.id,
-        receiver_id: job.employer_id,
-        content: chatMsg,
-        read: false
-      });
+        const chatMsg = applicationType === "application"
+          ? `Olá! Candidatei-me à obra "${job.title}". ${message.trim()}`
+          : `Olá! Enviei uma proposta de €${proposedPrice} para "${job.title}". ${message.trim()}`;
+        await ChatMessage.create({
+          job_id: job.id,
+          sender_id: user.id,
+          receiver_id: job.employer_id,
+          content: chatMsg,
+          read: false
+        });
+      } catch (sideErr) {
+        console.error("Candidatura criada, mas falhou notificação/chat:", sideErr);
+      }
 
       setAlreadyApplied(true);
       setStep("success");
       if (typeof onApply === "function") onApply();
     } catch (err) {
       console.error("Erro ao enviar candidatura:", err);
-      toast.error(t(lang, "applicationSendError", "Erro ao enviar candidatura. Tenta novamente."));
+      const detalhe = err?.message || err?.error_description || err?.details || JSON.stringify(err);
+      toast.error("Erro ao enviar candidatura: " + detalhe);
     }
     setIsSubmitting(false);
   };
