@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
 import { createPageUrl } from "@/utils";
+import { supabase as globalSupabase } from "@/api/supabaseClient";
 
 // ── Config ──────────────────────────────────────────────────────────────────
 const SUPABASE_URL = "https://bktwvgwokrnqvkpvemfv.supabase.co";
@@ -36,11 +36,9 @@ export default function DevPicker() {
   const [page, setPage]               = useState(0);
   const PER_PAGE = 30;
 
-  // Usar o supabase global para garantir que a sessão persiste
-  // e o Home.jsx a consegue ler após o redirect
-  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: true, storageKey: "sb-bktwvgwokrnqvkpvemfv-auth-token" }
-  });
+  // Usar o supabase GLOBAL (mesmo cliente que Home.jsx usa)
+  // Assim o signInWithPassword escreve na sessão que o Home vai ler
+  const db = globalSupabase;
 
   // Verificar sessão e email do caller
   useEffect(() => {
