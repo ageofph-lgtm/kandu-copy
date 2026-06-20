@@ -272,25 +272,26 @@ function EmployerHome({ user, isDark }) {
 
   return (
     <div className="k-bg" style={{ minHeight: "100vh", paddingBottom: 80 }}>
-      <div style={{ padding: "32px 24px 28px", borderBottom: `1px solid var(--hair)` }}>
+      <div style={{
+        padding: "32px 24px 28px",
+        background: "linear-gradient(180deg, #0d0f12 0%, #111318 100%)",
+        borderBottom: "1px solid rgba(255,255,255,.08)"
+      }}>
         {/* Logo grande à direita + saudação à esquerda */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontSize: 13, color: isDark ? "#FF9944" : "#FF6600", fontWeight: 600 }}>{t(lang,"welcome","Bem-vindo")} 👋</p>
-            <h1 style={{ margin: "4px 0 6px", fontSize: 28, fontWeight: 900, color: isDark ? "#FFFFFF" : "#111016", letterSpacing: -0.5 }}>
+            <p style={{ margin: 0, fontSize: 13, color: "#FF9944", fontWeight: 600 }}>{t(lang,"welcome","Bem-vindo")} 👋</p>
+            <h1 style={{ margin: "4px 0 6px", fontSize: 28, fontWeight: 900, color: "#FFFFFF", letterSpacing: -0.5 }}>
               {firstName}
             </h1>
-            <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: isDark ? "#AAAAAA" : "#444444" }}>
+            <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#8A909A" }}>
               {t(lang,"whatDoYouNeed","O que precisa?")}
             </p>
           </div>
           <img
             src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
             alt="KANDU"
-            style={{
-              height: 48, objectFit: "contain", flexShrink: 0, maxWidth: 140,
-              filter: isDark ? "none" : "invert(1) sepia(1) saturate(2) hue-rotate(340deg) brightness(0.3)",
-            }}
+            style={{ height: 48, objectFit: "contain", flexShrink: 0, maxWidth: 140 }}
           />
         </div>
       </div>
