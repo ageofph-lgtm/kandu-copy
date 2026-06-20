@@ -221,7 +221,7 @@ function WorkerHome({ user, isDark }) {
               <div
                 key={job.id}
                 onClick={() => { handleJobClick(job); setShowList(false); }}
-                className="k-job-card" style={{ marginBottom: 10, borderBottom: "none" ", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                className="k-job-card" style={{ marginBottom: 10, borderBottom: "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}
               >
                 <div style={{ flex: 1, marginRight: 10 }}>
                   <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: text }}>{job.title}</p>
