@@ -59,10 +59,10 @@ function WorkerHome({ user, isDark }) {
   const [geoStatus, setGeoStatus] = useState("loading"); // "loading" | "ok" | "error"
   const [loading, setLoading] = useState(true);
 
-  const text = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
-  const surface = isDark ? "#1C1C1C" : "#FFFFFF";
-  const surfaceAlpha = isDark ? "rgba(28,28,28,0.95)" : "rgba(255,255,255,0.95)";
+  const text = "var(--text)";
+  const subtext = "var(--text2)";
+  const surface = "var(--surface2)";
+  const surfaceAlpha = isDark ? "rgba(20,22,26,0.95)" : "rgba(234,237,240,0.95)";
 
   // ── Geolocalização contínua ──
   const lastGeoSync = useRef(0);
@@ -263,11 +263,11 @@ function WorkerHome({ user, isDark }) {
 function EmployerHome({ user, isDark }) {
   const { lang } = useLanguage();
   const navigate = useNavigate();
-  const bg = isDark ? "#111016" : "#F5F5F5";
-  const surface = isDark ? "#1C1B22" : "#FFFFFF";
-  const text = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
-  const border = isDark ? "#333" : "#E5E5E5";
+  const bg = "var(--base)";
+  const surface = "var(--surface2)";
+  const text = "var(--text)";
+  const subtext = "var(--text2)";
+  const border = "var(--hair)";
   const firstName = user.full_name?.split(" ")[0] || t(lang,"userGeneric","Utilizador");
 
   return (
@@ -285,7 +285,9 @@ function EmployerHome({ user, isDark }) {
             </p>
           </div>
           <img
-            src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"}
+            src={isDark
+              ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
+              : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"}
             alt="KANDU"
             style={{ height: 48, objectFit: "contain", flexShrink: 0, maxWidth: 140 }}
           />
