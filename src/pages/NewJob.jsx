@@ -149,6 +149,8 @@ export default function NewJob() {
       const coords = LOCATION_COORDS[formData.location];
       // categoryKey é só estado de UI — não pertence à entidade Job
       const { categoryKey: _categoryKey, ...jobData } = formData;
+      // FIX: strings vazias em campos date causam erro 22007 no Supabase
+      // Converter "" → null para start_date e end_date
       await Job.create({
         ...jobData,
         price: parseFloat(formData.price),
@@ -156,12 +158,14 @@ export default function NewJob() {
         latitude: coords.lat + (Math.random() - 0.5) * 0.005,
         longitude: coords.lon + (Math.random() - 0.5) * 0.005,
         views: 0,
-        status: "open"  // FIX: era "pending_employer", profissionais não viam a obra
+        status: "open",
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
       });
       navigate(createPageUrl("MyJobs"));
     } catch (error) {
-      console.error("Error:", error);
-      toast.error(t(lang,"errorPublishingJob","Erro ao publicar obra."));
+      console.error("NewJob error:", error);
+      toast.error(t(lang,"errorPublishingJob","Erro ao publicar obra. Tente novamente."));
     }
     setIsSubmitting(false);
   };
