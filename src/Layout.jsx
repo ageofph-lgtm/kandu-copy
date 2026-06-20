@@ -63,19 +63,19 @@ export default function Layout({ children }) {
       Notification.requestPermission();
     }
   }, []);
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const bg = isDark ? "var(--base)" : "var(--base2)";
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#1A1A1A";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
-  const border = isDark ? "#222" : "#E5E5E5";
+  const text = "var(--text)";
+  const subtext = "var(--text2)";
+  const border = "var(--hair)";
   const logoH = isDark
     ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
     : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png";
   const logoIcon = isDark
     ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png"
     : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png";
-  const sidebarBg = isDark ? "#111111" : "#F8F8F8";
-  const bottomNavBg = isDark ? "#111111" : "#FFFFFF";
+  const sidebarBg = isDark ? "var(--base)" : "var(--base2)";
+  const bottomNavBg = "var(--base)";
 
   const navItems = user?.user_type === 'admin'
     ? adminNavigationItems
@@ -217,6 +217,29 @@ export default function Layout({ children }) {
     return children;
   }
 
+
+  // Som de notificação quando chegam novas notificações
+  const prevUnreadRef = React.useRef(0);
+  useEffect(() => {
+    const total = unreadNotifications.applications + unreadNotifications.chat;
+    if (total > prevUnreadRef.current) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.4);
+      } catch {}
+    }
+    prevUnreadRef.current = total;
+  }, [unreadNotifications]);
+
   return (
     <div className="k-bg" style={{minHeight:"100vh"}}>
       <Toaster position="top-center" richColors />
@@ -306,32 +329,20 @@ export default function Layout({ children }) {
             )}
           </div>
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("MyJobs")?700:400}}>{t(lang,"myJobs")}</span>
-          {location.pathname===createPageUrl("MyJobs") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
+
         </Link>
 
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",flex:1,paddingBottom:4}}>
-          {/* PIN de localização estilizado — leva a Notifications */}
-          <Link to={createPageUrl("Notifications")} style={{position:"relative",textDecoration:"none",marginBottom:2,marginTop:-20,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            {/* Sombra / glow laranja */}
-            <div style={{position:"absolute",width:64,height:64,borderRadius:"50%",background:"#FF6600",filter:"blur(14px)",opacity:0.4,top:4}} />
-            {/* Corpo do PIN */}
-            <svg width="56" height="68" viewBox="0 0 56 68" fill="none" xmlns="http://www.w3.org/2000/svg" style={{filter:"drop-shadow(0 4px 12px #FF660099)"}}>
-              {/* Gota */}
-              <path d="M28 2C16.4 2 7 11.4 7 23C7 38.5 28 66 28 66C28 66 49 38.5 49 23C49 11.4 39.6 2 28 2Z" fill="#FF6600"/>
-              {/* Círculo interior */}
-              <circle cx="28" cy="23" r="10" fill="#1A1A1A"/>
-              {/* Sino minúsculo dentro */}
-              <path d="M28 14C24.7 14 22 16.7 22 20V25L20 27V28H36V27L34 25V20C34 16.7 31.3 14 28 14Z" fill="#FF6600"/>
-              <path d="M26 28C26 29.1 26.9 30 28 30C29.1 30 30 29.1 30 28H26Z" fill="#FF6600"/>
-            </svg>
-            {/* Badge de notificações */}
+        <Link to={createPageUrl("Notifications")} className={`k-nav-item${location.pathname===createPageUrl("Notifications")?" active":""}`} style={{textDecoration:"none",position:"relative"}}>
+          <div style={{position:"relative"}}>
+            <Bell size={22} />
             {(unreadNotifications.applications + unreadNotifications.chat) > 0 && (
-              <span style={{position:"absolute",top:-4,right:-4,background:"#EF4444",color:"#FFF",borderRadius:"50%",minWidth:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,border:"2px solid #111"}}>
+              <span style={{position:"absolute",top:-6,right:-8,background:"#EF4444",color:"#FFF",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
                 {(unreadNotifications.applications + unreadNotifications.chat) > 9 ? "9+" : (unreadNotifications.applications + unreadNotifications.chat)}
               </span>
             )}
-          </Link>
-        </div>
+          </div>
+          <span style={{fontSize:10,marginTop:2}}>{t(lang,"notifications","Avisos")}</span>
+        </Link>
 
         <Link to={createPageUrl("Chat")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Chat")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
           <div style={{position:"relative"}}>
@@ -343,14 +354,14 @@ export default function Layout({ children }) {
             )}
           </div>
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Chat")?700:400}}>{t(lang,"chat")}</span>
-          {location.pathname===createPageUrl("Chat") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
+
         </Link>
 
 
         <Link to={createPageUrl("Profile")} className={`k-nav-item${location.pathname===createPageUrl("Profile")?" active":""}`} style={{textDecoration:"none"}}>
           <User size={22} />
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Profile")?700:400}}>{t(lang,"profile")}</span>
-          {location.pathname===createPageUrl("Profile") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
+
         </Link>
       </nav>
     </div>
