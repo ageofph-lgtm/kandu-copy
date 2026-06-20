@@ -66,7 +66,7 @@ const STEP_LABELS = [
 // ─── Modal de Confirmação custom (substitui window.confirm) ───────────────────
 function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }) {
   const { lang } = useLanguage();
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
+  const bg = "var(--surface2)";
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
   return (
     <div style={{
@@ -102,10 +102,10 @@ export default function NewJob() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const { lang } = useLanguage();
-  const bg = isDark ? "#111016" : "#FFFFFF";
-  const surface = isDark ? "#1C1B22" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const bg = "var(--base)";
+  const surface = "var(--surface2)";
+  const text = "var(--text)";
+  const subtext = "var(--text2)";
   const [user, setUser] = useState(null);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
