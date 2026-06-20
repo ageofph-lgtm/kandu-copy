@@ -141,23 +141,19 @@ function WorkerHome({ user, isDark }) {
 
       {/* ── SEARCH + CATEGORIAS (topo flutuante) ── */}
       <div style={{ position: "absolute", top: 16, left: 16, right: 16, zIndex: 20, display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ background: surfaceAlpha, borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}>
-          <Search size={16} color="#FF6600" />
+        <div className="k-search">
+          <Search size={16} color="var(--or)" />
           <input
             placeholder={t(lang,"searchPlaceholder")}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            style={{ background: "none", border: "none", outline: "none", color: text, fontSize: 14, flex: 1 }}
           />
         </div>
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
           {CATEGORIES.map(cat => (
             <button key={cat.pt} onClick={() => setSelectedCategory(cat.pt)} style={{
               flexShrink: 0, padding: "5px 12px", borderRadius: 20, border: "none", cursor: "pointer",
-              background: selectedCategory === cat.pt ? "#FF6600" : surfaceAlpha,
-              color: selectedCategory === cat.pt ? "#FFF" : subtext,
-              fontWeight: selectedCategory === cat.pt ? 700 : 500, fontSize: 12,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.12)", transition: "all 0.15s"
+              className: selectedCategory === cat.pt ? "k-cat active" : "k-cat"
             }}>
               {t(lang, cat.key, cat.pt === "ALL" ? "Todas" : cat.pt)}
             </button>
@@ -171,11 +167,8 @@ function WorkerHome({ user, isDark }) {
         bottom: showList ? "calc(50% + 12px)" : 80,
         left: 16, zIndex: 20, transition: "bottom 0.3s ease"
       }}>
-        <div style={{
-          background: surfaceAlpha, borderRadius: 20, padding: "5px 12px",
-          fontSize: 11, fontWeight: 600, boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
-          color: geoStatus === "ok" ? "#16A34A" : geoStatus === "error" ? "#EF4444" : "#F59E0B",
-          display: "flex", alignItems: "center", gap: 5
+        <div className="k-geo" style={{
+          color: geoStatus === "ok" ? "#4ADE80" : geoStatus === "error" ? "#F87171" : "#FBBF24"
         }}>
           <span style={{
             width: 7, height: 7, borderRadius: "50%", flexShrink: 0,
@@ -193,19 +186,12 @@ function WorkerHome({ user, isDark }) {
         display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6,
         transition: "bottom 0.3s ease"
       }}>
-        <div style={{ background: surfaceAlpha, borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#FF6600", boxShadow: "0 2px 10px rgba(0,0,0,0.15)" }}>
+        <div className="k-badge" style={{ fontSize: 11 }}>
           {(filteredJobs.length !== 1 ? t(lang,"jobsCount","{count} obras") : t(lang,"jobCount","{count} obra")).replace("{count}", filteredJobs.length)}
         </div>
         <button
           onClick={() => setShowList(v => !v)}
-          style={{
-            background: showList ? "#FF6600" : surfaceAlpha,
-            color: showList ? "#FFF" : "#FF6600",
-            border: "none", borderRadius: 20, padding: "7px 14px",
-            fontSize: 12, fontWeight: 700, cursor: "pointer",
-            boxShadow: "0 2px 12px rgba(0,0,0,0.18)",
-            display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s"
-          }}
+          className={showList ? "k-pill k-pill-primary" : "k-pill k-pill-secondary"}
         >
           <List size={14} /> {t(lang, "list")}
         </button>
@@ -214,14 +200,13 @@ function WorkerHome({ user, isDark }) {
       {/* ── SHEET LISTA (slide-up) ── */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 15,
-        background: surface, borderRadius: "20px 20px 0 0",
-        boxShadow: "0 -4px 20px rgba(0,0,0,0.15)",
+        borderRadius: "24px 24px 0 0",
         transform: showList ? "translateY(0)" : "translateY(100%)",
         transition: "transform 0.35s cubic-bezier(0.4,0,0.2,1)",
         maxHeight: "50vh", display: "flex", flexDirection: "column"
       }}>
         <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 4px" }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: isDark ? "#444" : "#DDD" }} />
+          <div className="k-sheet-handle" />
         </div>
         <div style={{ overflowY: "auto", padding: "0 16px 80px", flex: 1 }}>
           {filteredJobs.length === 0 ? (
@@ -236,7 +221,7 @@ function WorkerHome({ user, isDark }) {
               <div
                 key={job.id}
                 onClick={() => { handleJobClick(job); setShowList(false); }}
-                style={{ padding: "12px 0", borderBottom: `1px solid ${isDark ? "#333" : "#F0F0F0"}`, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                className="k-job-card" style={{ marginBottom: 10, borderBottom: "none" ", display: "flex", justifyContent: "space-between", alignItems: "center" }}
               >
                 <div style={{ flex: 1, marginRight: 10 }}>
                   <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: text }}>{job.title}</p>
@@ -286,12 +271,8 @@ function EmployerHome({ user, isDark }) {
   const firstName = user.full_name?.split(" ")[0] || t(lang,"userGeneric","Utilizador");
 
   return (
-    <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80 }}>
-      <div style={{
-        background: isDark ? "#111016" : "#FFFFFF",
-        padding: "32px 24px 28px",
-        borderBottom: isDark ? "none" : "1px solid #F0F0F0"
-      }}>
+    <div className="k-bg" style={{ minHeight: "100vh", paddingBottom: 80 }}>
+      <div style={{ padding: "32px 24px 28px", borderBottom: `1px solid var(--hair)` }}>
         {/* Logo grande à direita + saudação à esquerda */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ flex: 1 }}>
@@ -314,12 +295,9 @@ function EmployerHome({ user, isDark }) {
       <div style={{ padding: "24px 20px" }}>
         <button
           onClick={() => navigate(createPageUrl("NewJob"))}
-          style={{
-            width: "100%", background: "#FF6600", color: "#FFF",
-            border: "none", borderRadius: 20, padding: "22px 24px",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            cursor: "pointer", marginBottom: 16,
-            boxShadow: "0 8px 24px rgba(255,102,0,0.35)"
+          className="k-hero" style={{
+            width: "100%", border: "none", cursor: "pointer", marginBottom: 16,
+            display: "block", textAlign: "left", padding: 0
           }}
         >
           <div style={{ textAlign: "left" }}>
@@ -332,12 +310,10 @@ function EmployerHome({ user, isDark }) {
         {/* Botão destaque — Encontrar Profissionais */}
         <button
           onClick={() => navigate(createPageUrl("Workers"))}
-          style={{
-            width: "100%", background: isDark ? "#1C1B22" : "#F5F5F5",
-            border: `2px solid #F4621F`, borderRadius: 20, padding: "20px 24px",
+          className="k-tile" style={{
+            width: "100%", border: "none", cursor: "pointer", marginBottom: 12,
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            cursor: "pointer", marginBottom: 12,
-            boxShadow: "0 4px 20px rgba(244,98,31,0.18)"
+            padding: "20px 24px"
           }}
         >
           <div style={{ textAlign: "left" }}>
@@ -358,10 +334,7 @@ function EmployerHome({ user, isDark }) {
             <button
               key={to}
               onClick={() => navigate(createPageUrl(to))}
-              style={{
-                background: surface, border: `1px solid ${border}`, borderRadius: 16,
-                padding: "18px 16px", textAlign: "left", cursor: "pointer",
-              }}
+              className="k-grid-card" style={{}}
             >
               <span style={{ fontSize: 28 }}>{icon}</span>
               <p style={{ margin: "8px 0 2px", fontWeight: 700, fontSize: 14, color: text }}>{label}</p>
