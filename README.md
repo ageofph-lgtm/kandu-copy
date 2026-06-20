@@ -44,3 +44,5 @@ npm run typecheck   # tsc sobre jsconfig.json
   (`src/lib/dailyPin.js`, `src/pages/MyJobs.jsx`) e servem apenas como UX;
   não são prova anti-fraude. Migrar para geração/validação server-side antes
   de comunicar como funcionalidade de segurança.
+
+<!-- build 2026-06-20 00:18:08 UTC -->
