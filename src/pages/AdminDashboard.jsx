@@ -86,6 +86,7 @@ const createPageUrl = (pageName) => {
 
 function UserManagementCard({ user, onAction }) {
   const { lang } = useLanguage();
+  const navigate = useNavigate();
   const getStatusColor = (status) => {
     switch(status) {
       case 'active': return 'bg-green-100 text-green-800';

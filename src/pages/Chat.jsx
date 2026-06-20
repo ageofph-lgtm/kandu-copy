@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Application, ChatMessage, Job, Notification, User } from "@/api/entities";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -25,6 +26,7 @@ export default function Chat() {
   const headerBg = isDark ? "#111" : "#F0F0F0";
   const border = isDark ? "#222" : "#E5E5E5";
   const [conversations, setConversations] = useState([]);
+  const [archivedConversations, setArchivedConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [user, setUser] = useState(null);

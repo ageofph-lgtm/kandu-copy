@@ -384,6 +384,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
 // ─── Mini card de candidatura (dentro do card employer) ───────────────────────
 function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReload }) {
   const { lang } = useLanguage();
+  const navigate = useNavigate();
   const [worker, setWorker] = useState(null);
   const [acting, setActing] = useState(false);
   useEffect(() => {
@@ -846,4 +847,3 @@ export default function MyJobs() {
     </div>
   );
 }
-

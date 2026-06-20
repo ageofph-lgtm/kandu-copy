@@ -43,8 +43,6 @@ export default function DevPicker() {
 
   // Verificar sessão e email do caller
   useEffect(() => {
-    // Usar o supabase global (com persistSession) para ler a sessão actual
-    const { createClient: create } = require("@supabase/supabase-js");
     // Ler a sessão do localStorage directamente
     const sessionKey = Object.keys(localStorage).find(k => k.includes("supabase.auth.token") || k.includes("sb-"));
     
@@ -62,15 +60,15 @@ export default function DevPicker() {
     try {
       // Usar fetch directo à REST API para garantir que não há problema de sessão
       const resp = await fetch(
-        \`\${SUPABASE_URL}/rest/v1/users?select=id,email,full_name,user_type,avatar_url,rating,city,xp&order=user_type.asc,full_name.asc&limit=200\`,
+        `${SUPABASE_URL}/rest/v1/users?select=id,email,full_name,user_type,avatar_url,rating,city,xp&order=user_type.asc,full_name.asc&limit=200`,
         {
           headers: {
             "apikey": SUPABASE_ANON_KEY,
-            "Authorization": \`Bearer \${SUPABASE_ANON_KEY}\`,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
           }
         }
       );
-      if (!resp.ok) throw new Error(\`HTTP \${resp.status}\`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data = await resp.json();
       // Filtrar admin@kandu.pt e credenciados da lista de impersonation
       const fakes = (data || []).filter(u => 
@@ -78,7 +76,7 @@ export default function DevPicker() {
       );
       setUsers(fakes);
     } catch (e) {
-      setError(\`Erro ao carregar utilizadores: \${e.message}\`);
+      setError(`Erro ao carregar utilizadores: ${e.message}`);
     }
     setLoading(false);
   }, []);
@@ -101,7 +99,7 @@ export default function DevPicker() {
       // Force reload para garantir que o Layout lê a nova sessão
       setTimeout(() => window.location.href = createPageUrl(dest), 100);
     } catch (e) {
-      setError(\`Não foi possível entrar como \${user.full_name}: \${e.message}\`);
+      setError(`Não foi possível entrar como ${user.full_name}: ${e.message}`);
       setImpersonating(null);
     }
   };
@@ -119,7 +117,7 @@ export default function DevPicker() {
       navigate(createPageUrl("AdminDashboard"), { replace: true });
       setTimeout(() => window.location.href = createPageUrl("AdminDashboard"), 100);
     } catch (e) {
-      setError(\`Erro ao entrar como admin: \${e.message}\`);
+      setError(`Erro ao entrar como admin: ${e.message}`);
       setImpersonating(null);
     }
   };
@@ -251,7 +249,7 @@ export default function DevPicker() {
         {/* Stats */}
         <div style={{ fontSize: 12, color: "#555", marginBottom: 12 }}>
           A mostrar {Math.min(paginated.length + page * PER_PAGE, filtered.length)} de {filtered.length} utilizadores
-          {filtered.length !== users.length ? \` (filtrado de \${users.length})\` : ""}
+          {filtered.length !== users.length ? ` (filtrado de ${users.length})` : ""}
         </div>
 
         {/* Grid */}
@@ -277,23 +275,23 @@ export default function DevPicker() {
                     key={user.id}
                     onClick={() => !impersonating && handleImpersonate(user)}
                     style={{
-                      background: isLoading ? \`\${cfg.color}22\` : "rgba(255,255,255,0.04)",
-                      border: \`1.5px solid \${isLoading ? cfg.color : "#2a2a3a"}\`,
+                      background: isLoading ? `${cfg.color}22` : "rgba(255,255,255,0.04)",
+                      border: `1.5px solid ${isLoading ? cfg.color : "#2a2a3a"}`,
                       borderRadius: 14, padding: "14px 16px",
                       cursor: impersonating ? "not-allowed" : "pointer",
                       transition: "all 0.15s ease",
                       opacity: impersonating && !isLoading ? 0.5 : 1,
                       position: "relative", overflow: "hidden",
                     }}
-                    onMouseEnter={e => { if (!impersonating) { e.currentTarget.style.borderColor = cfg.color; e.currentTarget.style.background = \`\${cfg.color}11\`; } }}
+                    onMouseEnter={e => { if (!impersonating) { e.currentTarget.style.borderColor = cfg.color; e.currentTarget.style.background = `${cfg.color}11`; } }}
                     onMouseLeave={e => { if (!impersonating) { e.currentTarget.style.borderColor = "#2a2a3a"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; } }}
                   >
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: cfg.color, borderRadius: "14px 14px 0 0" }} />
                     <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4 }}>
                       <div style={{
                         width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-                        background: \`linear-gradient(135deg, \${cfg.color}44, \${cfg.color}22)\`,
-                        border: \`2px solid \${cfg.color}66\`,
+                        background: `linear-gradient(135deg, ${cfg.color}44, ${cfg.color}22)`,
+                        border: `2px solid ${cfg.color}66`,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontWeight: 800, fontSize: 18, color: cfg.color,
                         overflow: "hidden",
@@ -314,7 +312,7 @@ export default function DevPicker() {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
                       <span style={{
-                        background: \`\${cfg.color}22\`, color: cfg.color,
+                        background: `${cfg.color}22`, color: cfg.color,
                         borderRadius: 6, padding: "3px 8px", fontSize: 11, fontWeight: 600
                       }}>
                         {cfg.emoji} {cfg.label}

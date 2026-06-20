@@ -83,7 +83,7 @@ export default function TestingPanel() {
       await Application.create({
         job_id: createdJobs[0].id,
         worker_id: worker1.id,
-        message: 'Tenho 8 anos de experiência em pintura. Posso começar esta semana!'
+        message: 'Tenho 8 anos de experiência em pintura. Posso começar esta semana!',
         status: 'accepted'
       });
 
@@ -91,7 +91,7 @@ export default function TestingPanel() {
         job_id: createdJobs[0].id,
         worker_id: worker2.id,
         message: 'Especialista em pintura de cozinhas. Portfólio disponível.',
-        proposed_price: 750
+        proposed_price: 750,
         status: 'pending'
       });
 
@@ -102,7 +102,7 @@ export default function TestingPanel() {
       await Application.create({
         job_id: createdJobs[1].id,
         worker_id: worker1.id,
-        message: 'Eletricista certificado. Disponível para atendimento urgente hoje mesmo.'
+        message: 'Eletricista certificado. Disponível para atendimento urgente hoje mesmo.',
         status: 'pending'
       });
 
@@ -111,7 +111,7 @@ export default function TestingPanel() {
         job_id: createdJobs[2].id,
         worker_id: worker2.id,
         message: 'Experiência de 10 anos em instalação de pisos. Posso oferecer um preço melhor mantendo a qualidade.',
-        proposed_price: 1000
+        proposed_price: 1000,
         status: 'pending'
       });
 
