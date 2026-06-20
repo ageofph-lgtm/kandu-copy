@@ -21,10 +21,10 @@ function makeConvId(uid1, uid2, jobId) {
 export default function Chat() {
   const { isDark } = useTheme();
   const { lang } = useLanguage();
-  const bg = isDark ? "#111016" : "#FFFFFF";
-  const text = isDark ? "#FFFFFF" : "#111016";
-  const headerBg = isDark ? "#111" : "#F0F0F0";
-  const border = isDark ? "#222" : "#E5E5E5";
+  const bg = "var(--base)";
+  const text = "var(--text)";
+  const headerBg = "var(--base2)";
+  const border = "var(--hair)";
   const [conversations, setConversations] = useState([]);
   const [archivedConversations, setArchivedConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
