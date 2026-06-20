@@ -110,7 +110,7 @@ export default function Login() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #0a0a0f 0%, #111016 60%, #1a0800 100%)",
+      background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), radial-gradient(800px 600px at 100% 0%, rgba(120,150,200,.06), transparent 55%), #0B0C0E",
       display: "flex", alignItems: "center", justifyContent: "center",
       padding: 20, fontFamily: "'Chakra Petch', sans-serif", position: "relative",
     }}>
@@ -145,7 +145,7 @@ export default function Login() {
         {/* Google */}
         <button onClick={handleGoogle} disabled={googleLoading} style={{
           width: "100%", padding: "12px 16px", borderRadius: 12,
-          border: "1.5px solid #333", background: googleLoading ? "#1a1a24" : "#1e1e2e",
+          border: "1px solid var(--hair)", background: "linear-gradient(180deg, var(--glass2), var(--glass))",
           color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
           gap: 10, cursor: googleLoading ? "not-allowed" : "pointer",
           fontFamily: "inherit", fontSize: 14, fontWeight: 600, marginBottom: 16,
