@@ -84,7 +84,7 @@ export default function Welcome() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(160deg, #0d0d14 0%, #111016 50%, #1a0a00 100%)",
+      background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), radial-gradient(800px 600px at 100% 0%, rgba(120,150,200,.06), transparent 55%), #0B0C0E",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       padding: "40px 24px", gap: 0, position: "relative", overflow: "hidden",
       fontFamily: "'Chakra Petch', sans-serif",
@@ -120,11 +120,11 @@ export default function Welcome() {
           onClick={() => navigate(createPageUrl("Login"))}
           style={{
             width: "100%", padding: "17px 20px",
-            background: "linear-gradient(135deg, #F4621F, #d44a0a)",
+            background: "linear-gradient(135deg, #FFC489, #FF7A1A 42%, #E04E00)",
             border: "none", borderRadius: 16,
-            color: "#fff", fontWeight: 700, fontSize: 17,
+            color: "#2a1402", fontWeight: 800, fontSize: 17,
             cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-            boxShadow: "0 6px 24px rgba(244,98,31,0.4)",
+            boxShadow: "0 0 0 1px rgba(255,106,0,.20), 0 18px 40px -16px rgba(224,78,0,.55), inset 0 1px 0 rgba(255,255,255,.35)",
             fontFamily: "inherit",
           }}
         >
@@ -136,11 +136,12 @@ export default function Welcome() {
           onClick={() => navigate(createPageUrl("Login"))}
           style={{
             width: "100%", padding: "17px 20px",
-            background: "rgba(255,255,255,0.06)",
-            border: "2px solid rgba(244,98,31,0.6)",
+            background: "linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.055))",
+            border: "1px solid rgba(255,255,255,.10)",
             borderRadius: 16,
-            color: "#fff", fontWeight: 700, fontSize: 17,
+            color: "#F1F3F6", fontWeight: 700, fontSize: 17,
             cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+            boxShadow: "inset 0 1.5px 0 rgba(255,255,255,.24), 0 8px 24px -12px rgba(0,0,0,.72)",
             fontFamily: "inherit",
           }}
         >
@@ -172,10 +173,12 @@ export default function Welcome() {
         <button
           onClick={() => setShowDev(v => !v)}
           style={{
-            background: "none", border: "1px solid #2a2a3a", borderRadius: 8,
-            color: showDev ? "#F4621F" : "#555", fontSize: 12, padding: "7px 18px",
+            background: "linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.055))",
+            border: `1px solid ${showDev ? "rgba(255,106,0,.55)" : "rgba(255,255,255,.10)"}`,
+            borderRadius: 10, color: showDev ? "var(--or)" : "#8A909A",
+            fontSize: 12, padding: "7px 18px",
             cursor: "pointer", fontFamily: "inherit",
-            borderColor: showDev ? "#F4621F" : "#2a2a3a",
+            boxShadow: "inset 0 1.5px 0 rgba(255,255,255,.24)",
             transition: "all 0.2s",
           }}
         >
@@ -187,10 +190,12 @@ export default function Welcome() {
           <div style={{
             position: "absolute", bottom: "calc(100% + 10px)", left: "50%",
             transform: "translateX(-50%)",
-            background: "#13131a", border: "1.5px solid #2a2a3a",
+            background: "linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.055))",
+            backdropFilter: "blur(22px)", WebkitBackdropFilter: "blur(22px)",
+            border: "1px solid rgba(255,255,255,.10)",
             borderRadius: 16, padding: "16px 12px",
             display: "flex", gap: 10, zIndex: 50,
-            boxShadow: "0 -8px 40px rgba(0,0,0,0.7)",
+            boxShadow: "inset 0 1.5px 0 rgba(255,255,255,.24), 0 -8px 40px rgba(0,0,0,0.7)",
             minWidth: 260,
           }}>
             <div style={{ position: "absolute", bottom: -7, left: "50%", transform: "translateX(-50%) rotate(45deg)", width: 12, height: 12, background: "#13131a", border: "1.5px solid #2a2a3a", borderTop: "none", borderLeft: "none" }} />
