@@ -33,10 +33,10 @@ function FilterChip({ label, active, onClick, color = "#F4621F" }) {
 }
 
 function WorkerCard({ worker, navigate, isDark }) {
-  const cardBg = isDark ? "#1C1B22" : "#FFFFFF";
-  const cardBorder = isDark ? "#2a2836" : "#E5E5E5";
-  const statBg = isDark ? "#111016" : "#F5F5F5";
-  const statText = isDark ? "#FFFFFF" : "#111016";
+  const cardBg = "var(--surface2)";
+  const cardBorder = "var(--hair)";
+  const statBg = "var(--base)";
+  const statText = "var(--text)";
   const subC = isDark ? "#888" : "#666";
   const initials = (worker.full_name || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
   const typeColor = "#F4621F";
@@ -202,10 +202,10 @@ export default function Workers() {
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
   const hasActiveFilters = filters.skills.length > 0 || filters.city || filters.minRating > 0 || filters.minXp > 0 || filters.minExperience > 0 || filters.level || filters.verified || filters.search;
 
-  const bg = isDark ? "#111016" : "#F5F5F5";
-  const surface = isDark ? "#1C1B22" : "#FFFFFF";
-  const border = isDark ? "#2a2836" : "#E5E5E5";
-  const text = isDark ? "#FFFFFF" : "#111016";
+  const bg = "var(--base)";
+  const surface = "var(--surface2)";
+  const border = "var(--hair)";
+  const text = "var(--text)";
   const subtext = isDark ? "#888" : "#666666";
 
   return (
@@ -248,7 +248,7 @@ export default function Workers() {
             placeholder="Pesquisar por nome, bio, especialidade..."
             style={{
               width: "100%", padding: "12px 12px 12px 40px", borderRadius: 12,
-              background: isDark ? "#111016" : "#FFFFFF", border: `1.5px solid ${border}`, color: text,
+              background: "var(--base)", border: `1.5px solid ${border}`, color: text,
               fontSize: 14, outline: "none", boxSizing: "border-box",
             }}
           />
