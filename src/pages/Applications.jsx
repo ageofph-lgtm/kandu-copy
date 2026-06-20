@@ -52,7 +52,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
 
   return (
     <div style={{
-      background: surface, borderRadius: 16,
+      background: "var(--surface2)", borderRadius: 16, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)",
       border: `1px solid ${border}`, borderLeft: "4px solid #F59E0B",
       padding: 16, marginBottom: 12
     }}>
@@ -98,7 +98,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
 
       {/* Obra */}
       <div style={{
-        background: isDark ? "#0D0D0D" : "#F5F5F5",
+        background: "var(--base)",
         borderRadius: 10, padding: "8px 12px", marginBottom: 10,
         display: "flex", alignItems: "center", justifyContent: "space-between"
       }}>
@@ -112,7 +112,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
       {app.message && (
         <p style={{
           color: subtext, fontSize: 13, fontStyle: "italic",
-          background: isDark ? "#111" : "#FAFAFA",
+          background: "var(--base)",
           borderRadius: 8, padding: "8px 12px", margin: "0 0 12px",
           borderLeft: "3px solid #FF660044"
         }}>
@@ -149,7 +149,7 @@ function WorkerAppCard({ app, job, isDark, surface, text, subtext, border }) {
 
   return (
     <div style={{
-      background: surface, borderRadius: 16,
+      background: "var(--surface2)", borderRadius: 16, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)",
       border: `1px solid ${border}`, borderLeft: `4px solid ${s.color}`,
       padding: 16, marginBottom: 12
     }}>
@@ -183,10 +183,10 @@ export default function Applications() {
   const { isDark } = useTheme();
   const { lang } = useLanguage();
   const navigate   = useNavigate();
-  const bg      = isDark ? "#111016" : "#F5F5F5";
-  const surface = isDark ? "#1C1B22" : "#FFFFFF";
-  const text    = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const bg      = "var(--base)";
+  const surface = "var(--surface2)";
+  const text    = "var(--text)";
+  const subtext = "var(--text2)";
   const border  = isDark ? "#2A2A2A" : "#E5E5E5";
 
   const [user,  setUser]  = useState(null);
@@ -293,7 +293,7 @@ export default function Applications() {
       {/* Lista */}
       <div style={{ padding: "16px 16px 0" }}>
         {filtered.length === 0 ? (
-          <div style={{ background: surface, borderRadius: 16, padding: "48px 24px", textAlign: "center" }}>
+          <div style={{ background: "var(--surface2)", borderRadius: 16, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)", padding: "48px 24px", textAlign: "center" }}>
             <div style={{ fontSize: 44, marginBottom: 12 }}>📋</div>
             <p style={{ color: text, fontWeight: 700, fontSize: 16, margin: "0 0 6px" }}>
               {isWorker ? t(lang, "noApplicationsYet", "Ainda não te candidataste a nenhuma obra") : t(lang, "noPendingCandidates", "Sem candidatos pendentes")}
