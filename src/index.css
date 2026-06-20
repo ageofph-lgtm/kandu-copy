@@ -161,3 +161,321 @@ button:focus-visible {
     @apply bg-background text-foreground;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   KANDU · TITÂNIO — Design System (vidro forjado)
+   Aplica-se globalmente via data-theme no <html>
+   ══════════════════════════════════════════════════════*/
+
+/* Paleta base */
+:root {
+  --or: #FF6A00;
+  --or-lite: #FFAE5C;
+  --or-deep: #E04E00;
+  --anod: linear-gradient(135deg, #FFC489, #FF7A1A 42%, #E04E00);
+  --radius-tile: 22px;
+  --radius-btn: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── DARK ── */
+:root, html[data-theme="dark"], body.dark, .dark {
+  --base:     #0B0C0E;
+  --base2:    #14161A;
+  --glass:    rgba(255,255,255,.055);
+  --glass2:   rgba(255,255,255,.085);
+  --text:     #F1F3F6;
+  --text2:    #8A909A;
+  --text3:    #565C66;
+  --edge-hi:  rgba(255,255,255,.24);
+  --edge-lo:  rgba(0,0,0,.55);
+  --hair:     rgba(255,255,255,.10);
+  --hair2:    rgba(255,255,255,.05);
+  --shadow:   rgba(0,0,0,.72);
+  --brush:    rgba(255,255,255,.015);
+  --surface:  #14161A;
+  --surface2: #1C1E24;
+  --border:   rgba(255,255,255,.10);
+}
+
+/* ── LIGHT ── */
+html[data-theme="light"], body.light, .light {
+  --base:     #D6DADF;
+  --base2:    #EAEDF0;
+  --glass:    rgba(255,255,255,.58);
+  --glass2:   rgba(255,255,255,.74);
+  --text:     #15171B;
+  --text2:    #5A616B;
+  --text3:    #9AA1AB;
+  --edge-hi:  rgba(255,255,255,.95);
+  --edge-lo:  rgba(70,80,95,.28);
+  --hair:     rgba(20,25,35,.13);
+  --hair2:    rgba(20,25,35,.06);
+  --shadow:   rgba(70,80,95,.26);
+  --brush:    rgba(0,0,0,.012);
+  --surface:  #EAEDF0;
+  --surface2: #FFFFFF;
+  --border:   rgba(20,25,35,.13);
+}
+
+/* ── TILE — chamfered glass card ── */
+.k-tile {
+  position: relative;
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  backdrop-filter: saturate(170%) blur(22px);
+  -webkit-backdrop-filter: saturate(170%) blur(22px);
+  border: 1px solid var(--hair);
+  border-radius: var(--radius-tile);
+  box-shadow:
+    inset 0 1.5px 0 var(--edge-hi),
+    inset 0 -1.5px 2px var(--edge-lo),
+    inset 0 0 0 1px var(--hair2),
+    0 1px 0 rgba(255,255,255,.04),
+    0 22px 40px -22px var(--shadow),
+    0 4px 12px -6px var(--shadow);
+  overflow: hidden;
+}
+.k-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), transparent 22%, transparent 78%, rgba(0,0,0,.10));
+  z-index: 0;
+}
+.k-tile > * { position: relative; z-index: 1; }
+
+/* ── HERO TILE — anodised orange rim ── */
+.k-hero {
+  position: relative;
+  background: var(--anod);
+  padding: 1.6px;
+  border-radius: 24px;
+  box-shadow:
+    0 0 0 1px rgba(255,106,0,.20),
+    0 18px 40px -16px rgba(224,78,0,.55),
+    0 6px 16px -8px var(--shadow);
+  overflow: hidden;
+}
+.k-hero-face {
+  position: relative;
+  border-radius: 22.6px;
+  overflow: hidden;
+  padding: 20px;
+  color: #fff;
+  background: linear-gradient(180deg, #1a1d22, #0d0f12);
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.16), inset 0 -2px 4px rgba(0,0,0,.7);
+}
+.k-hero-face::after {
+  content: "";
+  position: absolute;
+  top: -60%; left: -40%;
+  width: 80%; height: 240%;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.16) 50%, transparent 62%);
+  transform: rotate(8deg);
+  animation: k-sweep 7s ease-in-out infinite;
+}
+@keyframes k-sweep {
+  0%,100% { transform: translateX(-30%) rotate(8deg); opacity: 0; }
+  45%      { opacity: 1; }
+  55%      { opacity: 1; }
+  70%      { transform: translateX(260%) rotate(8deg); opacity: 0; }
+}
+
+/* ── ICON BUTTON ── */
+.k-iconbtn {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-btn);
+  display: grid; place-items: center;
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--hair);
+  box-shadow:
+    inset 0 1.5px 0 var(--edge-hi),
+    inset 0 -1.5px 2px var(--edge-lo),
+    0 8px 18px -10px var(--shadow);
+  cursor: pointer;
+}
+
+/* ── BADGE ANODISED ── */
+.k-badge {
+  display: inline-flex; align-items: center;
+  background: var(--anod);
+  color: #2a1402;
+  font-weight: 700; font-size: 12px;
+  border-radius: 8px; padding: 3px 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
+}
+
+/* ── SEGMENTED CONTROL ── */
+.k-seg {
+  display: flex; padding: 4px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.05));
+  border: 1px solid var(--hair);
+  box-shadow: inset 0 1px 2px var(--edge-lo);
+}
+.k-seg button {
+  flex: 1; border: 0;
+  background: transparent;
+  color: var(--text2);
+  font-weight: 600; font-size: 14px;
+  padding: 9px 0; border-radius: 10px; cursor: pointer;
+  transition: all .18s;
+}
+.k-seg button.active {
+  color: var(--text);
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  box-shadow:
+    inset 0 1.5px 0 var(--edge-hi),
+    inset 0 -1px 1px var(--edge-lo),
+    0 4px 10px -4px var(--shadow);
+}
+
+/* ── PILL BUTTON ── */
+.k-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 20px;
+  font-weight: 700; font-size: 13px;
+  border: none; cursor: pointer;
+  transition: all .15s;
+}
+.k-pill-primary {
+  background: var(--anod);
+  color: #2a1402;
+  box-shadow: 0 6px 16px -6px rgba(224,78,0,.65), inset 0 1px 0 rgba(255,255,255,.35);
+}
+.k-pill-secondary {
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  color: var(--or);
+  border: 1px solid rgba(255,106,0,.28);
+  box-shadow: inset 0 1.5px 0 var(--edge-hi);
+}
+
+/* ── SEARCH BAR ── */
+.k-search {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  box-shadow: inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -12px var(--shadow);
+}
+.k-search input {
+  background: none; border: none; outline: none;
+  color: var(--text); font-size: 15px; flex: 1;
+}
+.k-search input::placeholder { color: var(--text3); }
+
+/* ── CATEGORY PILL ── */
+.k-cat {
+  flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
+  border: 1px solid var(--hair); cursor: pointer;
+  font-weight: 600; font-size: 12px;
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  color: var(--text2);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 var(--edge-hi), 0 2px 8px -4px var(--shadow);
+  transition: all .15s;
+}
+.k-cat.active {
+  background: var(--anod);
+  color: #2a1402;
+  border-color: transparent;
+  box-shadow: 0 4px 12px -4px rgba(224,78,0,.55), inset 0 1px 0 rgba(255,255,255,.4);
+}
+
+/* ── JOB CARD ── */
+.k-job-card {
+  display: flex; gap: 0;
+  border-radius: 16px; overflow: hidden;
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  border: 1px solid var(--hair);
+  box-shadow: inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow);
+  cursor: pointer; transition: transform .15s, box-shadow .15s;
+}
+.k-job-card:active { transform: scale(.98); }
+.k-job-edge {
+  width: 4px; flex: none;
+  background: var(--anod);
+  box-shadow: 1px 0 6px -1px rgba(224,78,0,.55);
+}
+.k-job-body { padding: 14px 14px; flex: 1; }
+
+/* ── NAV BAR ── */
+.k-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 72px;
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  backdrop-filter: saturate(200%) blur(28px);
+  -webkit-backdrop-filter: saturate(200%) blur(28px);
+  border-top: 1px solid var(--hair);
+  box-shadow: 0 -1px 0 var(--edge-hi), 0 -12px 32px -16px var(--shadow);
+  display: flex; align-items: center; justify-content: space-around;
+  z-index: 100;
+}
+.k-nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  flex: 1; padding: 10px 0; cursor: pointer; border: none; background: none;
+  color: var(--text3); font-size: 10px; font-weight: 600;
+  transition: color .15s;
+}
+.k-nav-item.active { color: var(--or); }
+.k-nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; }
+
+/* ── GEO STATUS ── */
+.k-geo {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--hair);
+  box-shadow: inset 0 1px 0 var(--edge-hi), 0 4px 10px -6px var(--shadow);
+}
+
+/* ── BOTTOM SHEET ── */
+.k-sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  border-radius: 24px 24px 0 0;
+  background: linear-gradient(180deg, var(--base2), var(--base));
+  border-top: 1px solid var(--hair);
+  box-shadow: 0 -1px 0 var(--edge-hi), 0 -32px 64px -24px var(--shadow);
+}
+.k-sheet-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: var(--hair);
+  margin: 10px auto 6px;
+}
+
+/* ── GRID CARDS (employer dashboard) ── */
+.k-grid-card {
+  background: linear-gradient(180deg, var(--glass2), var(--glass));
+  border: 1px solid var(--hair);
+  border-radius: 18px;
+  padding: 18px 16px;
+  text-align: left; cursor: pointer;
+  box-shadow: inset 0 1.5px 0 var(--edge-hi), 0 8px 20px -12px var(--shadow);
+  transition: transform .15s;
+}
+.k-grid-card:active { transform: scale(.97); }
+
+/* ── EYE (overline label) ── */
+.k-eye {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .20em; text-transform: uppercase;
+  color: var(--or);
+}
+
+/* ── BODY BG ── */
+.k-bg {
+  background:
+    radial-gradient(600px 360px at 50% -6%, color-mix(in srgb, var(--or) 10%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--base2), var(--base) 40%);
+  min-height: 100vh;
+}
