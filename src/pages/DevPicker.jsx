@@ -58,20 +58,21 @@ export default function DevPicker() {
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
-      // Usar fetch directo à REST API para garantir que não há problema de sessão
-      const resp = await fetch(
-        `${SUPABASE_URL}/rest/v1/users?select=id,email,full_name,user_type,avatar_url,rating,city,xp&order=user_type.asc,full_name.asc&limit=500`,
-        {
-          headers: {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-          }
-        }
-      );
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
+      const hdrs = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      };
+      // Buscar workers e employers separadamente para garantir todos os registos
+      const [wResp, eResp] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/users?select=id,email,full_name,user_type,avatar_url,rating,city,xp&user_type=eq.worker&order=full_name.asc&limit=300`, { headers: hdrs }),
+        fetch(`${SUPABASE_URL}/rest/v1/users?select=id,email,full_name,user_type,avatar_url,rating,city,xp&user_type=eq.employer&order=full_name.asc&limit=200`, { headers: hdrs }),
+      ]);
+      if (!wResp.ok) throw new Error(`HTTP workers ${wResp.status}`);
+      if (!eResp.ok) throw new Error(`HTTP employers ${eResp.status}`);
+      const [wData, eData] = await Promise.all([wResp.json(), eResp.json()]);
+      const combined = [...(wData || []), ...(eData || [])];
       // Filtrar admin@kandu.pt e credenciados da lista de impersonation
-      const fakes = (data || []).filter(u => 
+      const fakes = combined.filter(u => 
         u.email !== "admin@kandu.pt" && !DEV_EMAILS.includes(u.email)
       );
       setUsers(fakes);
