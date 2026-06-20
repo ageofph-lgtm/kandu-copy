@@ -1,6 +1,5 @@
 import { toast } from "sonner";
-import { supabase } from "@/api/supabaseClient";
-import { Job, Rating, User } from "@/api/entities";
+import { Blacklist, Job, Rating, User } from "@/api/entities";
 import { useState, useEffect, useCallback } from "react";
 // v20260619232302 — Blacklist from blacklistClient (not entities); build cache bust
 // Removed Notification import as its cleanup logic is moved
@@ -331,7 +330,7 @@ export default function AdminDashboard() {
   const [isCreatingExamples, setIsCreatingExamples] = useState(false); // New state for example jobs loading
 
   const navigate = useNavigate();
-  const handleLogout = async () => { await supabase.auth.signOut(); navigate("/login"); }; // Initialize useNavigate
+  const handleLogout = async () => { await User.logout(); navigate("/login"); }; // Initialize useNavigate
 
   // Removed runCleanup function, its logic is now entirely handled by the AdminCleanup page.
 
@@ -352,7 +351,7 @@ export default function AdminDashboard() {
         User.list("-created_date"),
         Job.list("-created_date"),
         Rating.list("-created_date"),
-        supabase.from("blacklist").select("*").order("created_at", { ascending: false }).then(r => r.data || [])
+        Blacklist.list("-created_date")
       ]);
 
       setUsers(allUsers.filter(u => u.user_type !== 'admin'));
@@ -410,7 +409,7 @@ export default function AdminDashboard() {
 
   const handleBlacklistSubmit = async (blacklistData) => {
     try {
-      await supabase.from("blacklist").insert({ id: crypto.randomUUID(), user_id: blacklistData.user_id, reason: blacklistData.reason, created_at: new Date().toISOString() });
+      await Blacklist.create({ user_id: blacklistData.user_id, reason: blacklistData.reason || "", severity: blacklistData.severity || "warning", admin_id: blacklistData.admin_id || currentUser?.id || "", evidence: blacklistData.evidence || "", expires_at: blacklistData.expires_at || null, related_job_id: blacklistData.related_job_id || null });
 
       // Atualizar status do usuário
       let newStatus = 'active';
