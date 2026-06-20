@@ -74,7 +74,7 @@ function PinKeypad({ value, onChange, isDark, surface, text, onConfirm }) {
       <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 14 }}>
         {[0,1,2,3,4,5].map(i => (
           <div key={i} style={{
-            width: 38, height: 46, background: isDark ? "#111" : "#FFF",
+            width: 38, height: 46, background: "var(--surface2)",
             borderRadius: 9, border: i === value.length ? "2px solid #FF6600" : `2px solid ${isDark ? "#333" : "#CCC"}`,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 20, fontWeight: 700, color: text
@@ -85,7 +85,7 @@ function PinKeypad({ value, onChange, isDark, surface, text, onConfirm }) {
         {["1","2","3","4","5","6","7","8","9","","0","del"].map((k, i) =>
           k === "" ? <div key={i} /> : (
             <button key={i} onClick={() => handleKey(k)}
-              style={{ background: isDark ? "#1A1A1A" : "#EBEBEB", borderRadius: 10, padding: "11px 0",
+              style={{ background: "var(--surface)", borderRadius: 10, padding: "11px 0",
                 fontSize: k === "del" ? 16 : 18, fontWeight: 700, color: text, border: "none", cursor: "pointer" }}>
               {k === "del" ? "⌫" : k}
             </button>
@@ -240,7 +240,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
 
   return (
     <>
-      <div style={{ background: surface, borderRadius: 16, border: `1px solid ${border}`, borderLeft: `4px solid ${s.color}`, marginBottom: 12, overflow: "hidden" }}>
+      <div style={{ background: "var(--surface2)", borderRadius: 16, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)", border: `1px solid ${border}`, borderLeft: `4px solid ${s.color}`, marginBottom: 12, overflow: "hidden" }}>
         {/* Header */}
         <div style={{ padding: 16, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => setExpanded(e => !e)}>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -526,7 +526,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
 
   return (
     <>
-      <div style={{ background: surface, borderRadius: 16, border: `1px solid ${border}`, borderLeft: `4px solid ${s.color}`, marginBottom: 12, overflow: "hidden" }}>
+      <div style={{ background: "var(--surface2)", borderRadius: 16, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)", border: `1px solid ${border}`, borderLeft: `4px solid ${s.color}`, marginBottom: 12, overflow: "hidden" }}>
         <div style={{ padding: 16, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => setExpanded(e => !e)}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: "0 0 4px" }}>{job.title}</p>
@@ -668,10 +668,10 @@ export default function MyJobs() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const { lang } = useLanguage();
-  const bg      = isDark ? "#111016" : "#F5F5F5";
-  const surface = isDark ? "#1C1B22" : "#FFFFFF";
-  const text    = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const bg      = "var(--base)";
+  const surface = "var(--surface2)";
+  const text    = "var(--text)";
+  const subtext = "var(--text2)";
   const border  = isDark ? "#2A2A2A" : "#E5E5E5";
 
   const [user,         setUser]         = useState(null);
@@ -811,7 +811,7 @@ export default function MyJobs() {
       {/* Cards */}
       <div style={{ padding: "16px 16px 0" }}>
         {currentData.length === 0 ? (
-          <div style={{ background: surface, borderRadius: 16, padding: "40px 24px", textAlign: "center" }}>
+          <div style={{ background: "var(--surface2)", borderRadius: 16, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)", padding: "40px 24px", textAlign: "center" }}>
             <div style={{ fontSize: 44, marginBottom: 10 }}>{TABS.find(tabItem=>tabItem.id===tab)?.icon}</div>
             <p style={{ color: subtext, fontWeight: 700, fontSize: 15, margin: "0 0 6px" }}>
               {tab === "pending"
