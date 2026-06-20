@@ -285,11 +285,12 @@ function EmployerHome({ user, isDark }) {
             </p>
           </div>
           <img
-            src={isDark
-              ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
-              : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"}
+            src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
             alt="KANDU"
-            style={{ height: 48, objectFit: "contain", flexShrink: 0, maxWidth: 140 }}
+            style={{
+              height: 48, objectFit: "contain", flexShrink: 0, maxWidth: 140,
+              filter: isDark ? "none" : "invert(1) sepia(1) saturate(2) hue-rotate(340deg) brightness(0.3)",
+            }}
           />
         </div>
       </div>
