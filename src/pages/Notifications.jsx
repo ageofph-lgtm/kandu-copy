@@ -19,9 +19,9 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   const { lang } = useLanguage();
   const translatedTitle = notification.title;
   const translatedMessage = notification.message;
-  const surface = isDark ? "#1C1B22" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const surface = "var(--surface2)";
+  const text = "var(--text)";
+  const subtext = "var(--text2)";
 
   const getNotificationIcon = (type) => {
     switch(type) {
@@ -91,10 +91,10 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
 export default function Notifications() {
   const { isDark } = useTheme();
   const { lang } = useLanguage();
-  const bg = isDark ? "#111016" : "#FFFFFF";
-  const surface = isDark ? "#1C1B22" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const bg = "var(--base)";
+  const surface = "var(--surface2)";
+  const text = "var(--text)";
+  const subtext = "var(--text2)";
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
