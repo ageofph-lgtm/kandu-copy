@@ -29,6 +29,7 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const openedFromParam = useRef(false);
   const urlParamHandled = useRef(false);
 
   const loadUser = useCallback(async () => {
@@ -170,6 +171,44 @@ export default function Chat() {
   useEffect(() => {
     if (selectedConversation && user) loadMessages(selectedConversation, user);
   }, [selectedConversation, user, loadMessages]);
+
+  // Abrir/iniciar conversa a partir de ?userId=... (ex.: botão "Contactar" no Perfil).
+  useEffect(() => {
+    if (!user || loading || openedFromParam.current) return;
+    const targetId = new URLSearchParams(window.location.search).get("userId");
+    if (!targetId || targetId === user.id) return;
+    openedFromParam.current = true;
+
+    (async () => {
+      try {
+        const existing = [...conversations, ...archivedConversations].find(
+          (c) => c.other_user?.id === targetId
+        );
+        if (existing) {
+          setSelectedConversation(existing);
+        } else {
+          const [otherUser] = await User.filter({ id: targetId });
+          if (otherUser) {
+            setSelectedConversation({
+              conversation_id: [user.id, targetId].sort().join("_"),
+              participants: [user, otherUser],
+              other_user: otherUser,
+              last_message: null,
+              unread_count: 0,
+              job_context: null,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao abrir conversa a partir do perfil:", error);
+      } finally {
+        // Remove o parâmetro para não reabrir
+        const url = new URL(window.location.href);
+        url.searchParams.delete("userId");
+        window.history.replaceState({}, "", url.toString());
+      }
+    })();
+  }, [user, loading, conversations, archivedConversations]);
 
   if (loading) return <LoadingScreen />;
 
