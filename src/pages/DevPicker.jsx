@@ -60,7 +60,7 @@ export default function DevPicker() {
     try {
       // Usar fetch directo à REST API para garantir que não há problema de sessão
       const resp = await fetch(
-        `${SUPABASE_URL}/rest/v1/users?select=id,email,full_name,user_type,avatar_url,rating,city,xp&order=user_type.asc,full_name.asc&limit=200`,
+        `${SUPABASE_URL}/rest/v1/users?select=id,email,full_name,user_type,avatar_url,rating,city,xp&order=user_type.asc,full_name.asc&limit=500`,
         {
           headers: {
             "apikey": SUPABASE_ANON_KEY,
