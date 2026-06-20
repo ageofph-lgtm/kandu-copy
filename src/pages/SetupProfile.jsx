@@ -102,7 +102,7 @@ export default function SetupProfile() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#111016", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), #0B0C0E", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", color: "#FFF" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
           <p style={{ color: "#AAA" }}>A verificar sessão...</p>
@@ -113,7 +113,7 @@ export default function SetupProfile() {
 
   if (!user) {
     return (
-      <div style={{ minHeight: "100vh", background: "#111016", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 28 }}>
+      <div style={{ minHeight: "100vh", background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), #0B0C0E", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 28 }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>🔒</div>
         <h2 style={{ color: "#FFF", fontWeight: 800, marginBottom: 8 }}>Sessão não encontrada</h2>
         <p style={{ color: "#AAA", marginBottom: 24 }}>Faz login para continuar</p>
@@ -126,7 +126,7 @@ export default function SetupProfile() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#111016", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
+    <div style={{ minHeight: "100vh", background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), #0B0C0E", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
       {/* Logo */}
       <img
         src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
