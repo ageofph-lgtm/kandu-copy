@@ -218,12 +218,12 @@ export default function Layout({ children }) {
   }
 
   return (
-    <div style={{minHeight:"100vh", background:bg}}>
+    <div className="k-bg" style={{minHeight:"100vh"}}>
       <Toaster position="top-center" richColors />
 
       {/* Sidebar Desktop */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <div style={{flex:1, display:"flex", flexDirection:"column", minHeight:0, background:sidebarBg, borderRight:`1px solid ${border}`}}>
+        <div className="k-tile" style={{flex:1, display:"flex", flexDirection:"column", minHeight:0, borderRadius:0, borderTop:0, borderBottom:0, borderLeft:0}}>
           <div style={{flex:1, display:"flex", flexDirection:"column", paddingTop:20, paddingBottom:16, overflowY:"auto"}}>
             <div style={{display:"flex", alignItems:"center", padding:"0 16px", marginBottom:32}}>
               <img src={logoH} style={{height:36, maxWidth:160, objectFit:"contain"}} alt="KANDU" />
@@ -239,26 +239,26 @@ export default function Layout({ children }) {
                 return (
                   <Link key={`desktop-${item.title}`} to={item.url}
                     style={{display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 12px", borderRadius:8, textDecoration:"none",
-                      background: isActive ? "#FF660022" : "transparent",
-                      color: isActive ? "#FF6600" : subtext,
-                      borderLeft: isActive ? "3px solid #FF6600" : "3px solid transparent",
+                      background: isActive ? "rgba(255,106,0,.10)" : "transparent",
+                      color: isActive ? "var(--or)" : "var(--text2)",
+                      borderLeft: isActive ? "3px solid var(--or)" : "3px solid transparent",
                       fontWeight: isActive ? 600 : 400, fontSize:14, transition:"all 0.15s"}}>
                     <div style={{display:"flex", alignItems:"center", gap:12}}>
                       <item.icon size={18} />
                       {t(lang, item.title)}
                     </div>
                     {item.title === 'applications' && unreadNotifications.applications > 0 && (
-                      <span style={{background:"#FF6600", color:"#FFF", borderRadius:"50%", minWidth:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700}}>
+                      <span className="k-badge" style={{borderRadius:"50%", minWidth:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, padding:"0 4px"}}>
                         {unreadNotifications.applications}
                       </span>
                     )}
                     {item.title === 'chat' && unreadNotifications.chat > 0 && (
-                      <span style={{background:"#FF6600", color:"#FFF", borderRadius:"50%", minWidth:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700}}>
+                      <span className="k-badge" style={{borderRadius:"50%", minWidth:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, padding:"0 4px"}}>
                         {unreadNotifications.chat}
                       </span>
                     )}
                     {item.title === 'notifications' && (unreadNotifications.applications + unreadNotifications.chat) > 0 && (
-                      <span style={{background:"#FF6600", color:"#FFF", borderRadius:"50%", minWidth:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700}}>
+                      <span className="k-badge" style={{borderRadius:"50%", minWidth:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, padding:"0 4px"}}>
                         {unreadNotifications.applications + unreadNotifications.chat}
                       </span>
                     )}
@@ -287,16 +287,16 @@ export default function Layout({ children }) {
       </div>
 
       {/* Bottom Nav Mobile */}
-      <nav className="md:hidden" style={{position:"fixed", bottom:0, left:0, right:0, background:bottomNavBg, borderTop:`1px solid ${border}`, zIndex:50, display:"flex", paddingBottom:"env(safe-area-inset-bottom)"}}>        <button onClick={toggleTheme} style={{position:"absolute",top:-36,right:12,background:isDark?"#2A2A2A":"#F0F0F0",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",fontSize:12,color:"#FF6600",fontWeight:700,cursor:"pointer",zIndex:51}}>
+      <nav className="md:hidden k-nav" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>        <button onClick={toggleTheme} style={{position:"absolute",top:-36,right:12,background:isDark?"#2A2A2A":"#F0F0F0",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",fontSize:12,color:"#FF6600",fontWeight:700,cursor:"pointer",zIndex:51}}>
           {isDark ? "☀️ Light" : "🌙 Dark"}
         </button>
-        <Link to={createPageUrl("Home")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Home")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
+        <Link to={createPageUrl("Home")} className={`k-nav-item${location.pathname===createPageUrl("Home")?" active":""}`} style={{textDecoration:"none"}}>
           <MapPin size={22} />
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Home")?700:400}}>{t(lang,"home")}</span>
-          {location.pathname===createPageUrl("Home") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
+
         </Link>
 
-        <Link to={createPageUrl("MyJobs")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("MyJobs")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0",position:"relative"}}>
+        <Link to={createPageUrl("MyJobs")} className={`k-nav-item${location.pathname===createPageUrl("MyJobs")?" active":""}`} style={{textDecoration:"none", position:"relative"}}>
           <div style={{position:"relative"}}>
             <FileText size={22} />
             {unreadNotifications.applications > 0 && (
@@ -347,7 +347,7 @@ export default function Layout({ children }) {
         </Link>
 
 
-        <Link to={createPageUrl("Profile")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Profile")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
+        <Link to={createPageUrl("Profile")} className={`k-nav-item${location.pathname===createPageUrl("Profile")?" active":""}`} style={{textDecoration:"none"}}>
           <User size={22} />
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Profile")?700:400}}>{t(lang,"profile")}</span>
           {location.pathname===createPageUrl("Profile") && <div style={{width:4,height:4,borderRadius:"50%",background:"#FF6600",marginTop:2}} />}
