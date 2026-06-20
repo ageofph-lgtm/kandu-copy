@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 import { Blacklist, Job, Rating, User } from "@/api/entities";
 import { useState, useEffect, useCallback } from "react";
-// v20260619232302 — Blacklist from blacklistClient (not entities); build cache bust
+// v20260620003932 — Blacklist from @/api/entities (exported); build force
 // Removed Notification import as its cleanup logic is moved
 import LoadingScreen from "@/components/LoadingScreen";
 import { Card, CardContent } from "@/components/ui/card";
