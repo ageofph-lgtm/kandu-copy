@@ -25,11 +25,11 @@ export default function Profile() {
   const viewingUserId = urlParams.get("userId");
   const isOwnProfile = !viewingUserId;
 
-  const bg = isDark ? "#111016" : "#FFFFFF";
-  const surface = isDark ? "#1C1B22" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
-  const border = isDark ? "#2a2836" : "#E5E5E5";
+  const bg = "var(--base)";
+  const surface = "var(--surface2)";
+  const text = "var(--text)";
+  const subtext = "var(--text2)";
+  const border = "var(--hair)";
 
   useEffect(() => { loadUser(); }, [viewingUserId]);
 
@@ -135,7 +135,7 @@ export default function Profile() {
       <input type="file" ref={avatarInputRef} onChange={handleAvatarUpload} style={{ display: "none" }} accept="image/*" />
 
       {/* Header */}
-      <div style={{ background: isDark ? "#1C1B22" : "#F5F5F5", padding: "50px 20px 24px", position: "relative" }}>
+      <div style={{ background: "var(--surface2)", padding: "50px 20px 24px", position: "relative" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: text }}>←</button>
           {isOwnProfile && (
@@ -222,13 +222,13 @@ export default function Profile() {
         {activeTab === "info" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {user.bio && (
-              <div style={{ background: surface, borderRadius: 14, padding: 16, border: `1px solid ${border}` }}>
+              <div style={{ background: "var(--surface2)", borderRadius: 14, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)", padding: 16, border: `1px solid ${border}` }}>
                 <p style={{ color: subtext, fontSize: 12, marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Sobre</p>
                 <p style={{ color: text, fontSize: 14, lineHeight: 1.6, margin: 0 }}>{user.bio}</p>
               </div>
             )}
             {user.skills?.length > 0 && (
-              <div style={{ background: surface, borderRadius: 14, padding: 16, border: `1px solid ${border}` }}>
+              <div style={{ background: "var(--surface2)", borderRadius: 14, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)", padding: 16, border: `1px solid ${border}` }}>
                 <p style={{ color: subtext, fontSize: 12, marginBottom: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Competências</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {user.skills.map((s, i) => (
@@ -243,7 +243,7 @@ export default function Profile() {
               { icon: <Briefcase size={14}/>, label: "Experiência", value: user.experience_years ? `${user.experience_years} anos` : null },
               { icon: <Award size={14}/>, label: "Nível", value: user.level },
             ].filter(f => f.value).map(f => (
-              <div key={f.label} style={{ background: surface, borderRadius: 14, padding: "12px 16px", border: `1px solid ${border}`, display: "flex", alignItems: "center", gap: 12 }}>
+              <div key={f.label} style={{ background: "var(--surface2)", borderRadius: 14, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)", padding: "12px 16px", border: `1px solid ${border}`, display: "flex", alignItems: "center", gap: 12 }}>
                 <span style={{ color: "#F4621F" }}>{f.icon}</span>
                 <div>
                   <p style={{ color: subtext, fontSize: 11, margin: 0, fontWeight: 600 }}>{f.label}</p>
@@ -257,7 +257,7 @@ export default function Profile() {
                   style={{ padding: "12px", background: surface, border: `1px solid ${border}`, borderRadius: 12, color: subtext, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>
                   🔄 Mudar tipo de perfil
                 </button>
-                <div style={{ background: surface, borderRadius: 14, padding: 14, border: `1px solid ${border}` }}>
+                <div style={{ background: "var(--surface2)", borderRadius: 14, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)", padding: 14, border: `1px solid ${border}` }}>
                   <p style={{ color: subtext, fontSize: 12, margin: "0 0 10px", fontWeight: 600 }}>Idioma da app</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {(SUPPORTED_LANGUAGES || [{ code: "pt", label: "PT" }, { code: "en", label: "EN" }]).map(l => (
