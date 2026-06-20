@@ -11,10 +11,10 @@ export default function Calendar() {
   const { isDark } = useTheme();
   const { lang } = useLanguage();
   const dateLocale = getDateLocale(lang);
-  const bg = isDark ? "#111016" : "#FFFFFF";
-  const surface = isDark ? "#1C1B22" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const bg = "var(--base)";
+  const surface = "var(--surface2)";
+  const text = "var(--text)";
+  const subtext = "var(--text2)";
   const [user, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [currentWeek, setCurrentWeek] = useState(new Date());
