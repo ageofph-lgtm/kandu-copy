@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { Rating, User, Job, Application, Notification } from "@/api/entities";
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -177,33 +178,53 @@ export default function CompletionModal({
     setIsSubmitting(true);
 
     try {
-      // Calcular XP bonus por fotos (se worker)
-      const photosBonus = isWorkerFlow && photoCount >= 3 ? 5 : 1; // 5x se 3 fotos
-
-      const result = await fetch('/api/functions/completeJob', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jobId: job.id,
-          applicationId: application?.id,
-          otherUserId: otherUser.id,
-          raterId: currentUser.id,
-          raterUserType: currentUser.user_type,
-          rating,
-          comment: comment.trim(),
-          qualities: selectedQualities,
-          photoCount: isWorkerFlow ? photoCount : 0,
-        })
+      // 1. Criar avaliação na tabela ratings
+      await Rating.create({
+        job_id: job.id,
+        rater_id: currentUser.id,
+        rated_id: otherUser.id,
+        score: rating,
+        comment: comment.trim(),
       });
 
-      if (!result.ok) {
-        const err = await result.json().catch(() => ({}));
-        throw new Error(err.error || `HTTP ${result.status}`);
+      // 2. Actualizar o score médio do utilizador avaliado
+      const allRatings = await Rating.filter({ rated_id: otherUser.id });
+      if (allRatings.length > 0) {
+        const avg = allRatings.reduce((s, r) => s + (r.score || r.rating || 0), 0) / allRatings.length;
+        await User.updateMyUserData({ rating: parseFloat(avg.toFixed(2)), total_reviews: allRatings.length }).catch(() =>
+          User.update(otherUser.id, { rating: parseFloat(avg.toFixed(2)), total_reviews: allRatings.length }).catch(() => {})
+        );
       }
 
-      const data = await result.json();
-      setXpToast({ show: true, gained: data.selfXPGained || 30, total: data.newSelfXP || 30 });
+      // 3. Marcar a obra como concluída (só o employer ou quando ambos avaliaram)
+      const isEmployer = currentUser.user_type === "employer";
+      if (isEmployer) {
+        // Employer avaliou → obra concluída
+        await Job.update(job.id, { status: "completed" });
+      } else {
+        // Worker avaliou → marcar completed (já estava completed_by_employer)
+        await Job.update(job.id, { status: "completed" });
+      }
+
+      // 4. Actualizar candidatura
+      if (application?.id) {
+        await Application.update(application.id, { status: "completed" }).catch(() => {});
+      }
+
+      // 5. XP — calcular e mostrar toast
+      const xpGained = calcJobXP(rating, job.price || 0, false);
+      setXpToast({ show: true, gained: xpGained, total: (currentUser.xp || 0) + xpGained });
+
+      // 6. Notificação para o utilizador avaliado
+      await Notification.create({
+        user_id: otherUser.id,
+        type: "new_review",
+        title: "⭐ Nova avaliação recebida!",
+        message: `Recebeste ${rating} estrela${rating !== 1 ? "s" : ""} por "${job.title}".`,
+        related_id: job.id,
+        read: false,
+      }).catch(() => {});
+
       onComplete();
 
     } catch (error) {
