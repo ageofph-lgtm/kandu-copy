@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KANDU — Direção de Arte estilo Kurzgesagt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#F4621F; --brand-2:#ff8a4c; --brand-d:#c8430f;
+    /* paleta de apoio (categorias) — flat/saturada estilo Kurzgesagt */
+    --c-blue:#2D7DD2; --c-yellow:#F4C20D; --c-green:#3BB273; --c-red:#E15554;
+    --c-purple:#7B5EA7; --c-cyan:#25B8C4; --c-brown:#B07D4F; --c-pink:#E86A92;
+    /* superfícies */
+    --ink:#1a1830; --muted:#6b6a80; --soft:#f4f1ec; --card:#ffffff; --line:#e7e2da;
+    --sky:#cdeafe;
+    /* dark surfaces (consolidadas) */
+    --d0:#0E0D14; --d1:#16151E; --d2:#1E1D28; --d-line:#2b2937;
+    --disp:'Baloo 2', 'Nunito', system-ui, sans-serif;
+    --body:'Nunito', system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--soft);color:var(--ink);font:15px/1.6 var(--body)}
+  header{padding:26px 28px 18px;background:radial-gradient(1200px 300px at 10% -30%, #ffd9c4 0, transparent 60%),linear-gradient(120deg,var(--brand-d),var(--brand) 60%,var(--brand-2));color:#fff;position:relative;overflow:hidden}
+  header .planet{position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #ffd07a, #f4c20d 55%, #e0940a);box-shadow:0 0 0 14px rgba(255,255,255,.12);opacity:.85}
+  header .ring{position:absolute;right:-60px;top:10px;width:220px;height:60px;border:6px solid rgba(255,255,255,.25);border-radius:50%;transform:rotate(-18deg)}
+  h1{font-family:var(--disp);margin:0 0 4px;font-size:26px;font-weight:800;letter-spacing:.3px;position:relative}
+  header .sub{font-size:13.5px;opacity:.96;max-width:70ch;position:relative}
+  .chip{display:inline-block;font-family:var(--disp);font-weight:700;font-size:11.5px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.5);padding:2px 10px;border-radius:999px;margin-left:8px;vertical-align:3px}
+  nav{display:flex;flex-wrap:wrap;gap:8px;padding:14px 28px;position:sticky;top:0;background:rgba(244,241,236,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:10}
+  nav button{font-family:var(--disp);cursor:pointer;border:2px solid var(--line);background:#fff;color:var(--muted);padding:9px 14px;border-radius:12px;font-size:13.5px;font-weight:700;transition:.15s}
+  nav button:hover{color:var(--ink);border-color:var(--brand-2)}
+  nav button.active{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 4px 0 var(--brand-d)}
+  main{padding:26px 28px 70px;max-width:1200px;margin:0 auto}
+  section{display:none;animation:f .2s ease}
+  section.active{display:block}
+  @keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2{font-family:var(--disp);font-size:22px;margin:4px 0 6px;font-weight:800}
+  h3{font-family:var(--disp);font-size:15px;margin:18px 0 6px;font-weight:700;color:var(--brand-d);text-transform:uppercase;letter-spacing:.5px}
+  p{margin:0 0 12px}
+  .lead{font-size:16px;color:#33314a;max-width:75ch}
+  .grid{display:grid;gap:18px}
+  .cols-2{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:900px){.cols-2,.cols-3{grid-template-columns:1fr}}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:0 4px 0 var(--line)}
+  .card.pop{box-shadow:0 6px 0 var(--brand-d);border-color:var(--brand)}
+  .tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:12px;padding:3px 10px;border-radius:999px;color:#fff}
+  .ok{background:var(--c-green)} .warn{background:var(--c-red)} .info{background:var(--c-blue)}
+  ul.clean{list-style:none;padding:0;margin:8px 0 0}
+  ul.clean li{position:relative;padding:6px 0 6px 30px;border-bottom:1px dashed var(--line)}
+  ul.clean li:last-child{border-bottom:none}
+  ul.clean li::before{content:"";position:absolute;left:6px;top:12px;width:12px;height:12px;border-radius:50%;background:var(--brand)}
+  ul.clean li.g::before{background:var(--c-green)} ul.clean li.r::before{background:var(--c-red)} ul.clean li.b::before{background:var(--c-blue)}
+  code{background:#efe9e0;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px;font-family:ui-monospace,monospace}
+  /* swatches */
+  .swatches{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+  .sw{width:96px;border-radius:12px;overflow:hidden;border:2px solid var(--line);font-size:11px}
+  .sw .cap{padding:5px 7px;background:#fff;font-family:var(--disp);font-weight:700}
+  .sw .cap small{display:block;color:var(--muted);font-weight:400;font-family:var(--body)}
+  .sw .chipc{height:46px}
+  /* phone mockups */
+  .phones{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;margin-top:10px}
+  .phone{width:340px;flex:0 0 auto}
+  .phone .label{font-family:var(--disp);font-weight:700;text-align:center;margin-bottom:8px}
+  .screen{width:340px;height:720px;border-radius:34px;border:10px solid #14121c;background:var(--d0);overflow:hidden;position:relative;box-shadow:0 12px 30px rgba(20,18,28,.28)}
+  .screen.light{background:#fbf7f1}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:22px;background:#14121c;border-radius:0 0 14px 14px;z-index:6}
+  .s-pad{position:absolute;inset:0;overflow:hidden}
+  .stbar{display:flex;justify-content:space-between;align-items:center;padding:9px 18px 2px;font-size:11px;color:#fff;opacity:.8;font-weight:700}
+  .light .stbar{color:#14121c}
+  /* generic mock atoms */
+  .mtitle{font-family:var(--disp);font-weight:800}
+  .pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;font-family:var(--disp);font-weight:700;color:#fff;font-size:12px;padding:5px 10px;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+  .cta{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--brand);color:#fff;font-family:var(--disp);font-weight:800;border-radius:16px;padding:14px;box-shadow:0 5px 0 var(--brand-d);font-size:15px}
+  .bnav{position:absolute;bottom:0;left:0;right:0;height:64px;background:#100f18;border-top:1px solid #262433;display:flex;align-items:center;justify-content:space-around;z-index:5}
+  .light .bnav{background:#fff;border-top:1px solid var(--line)}
+  .bnav .it{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;font-weight:700;color:#7a7890;font-family:var(--disp)}
+  .bnav .it.on{color:var(--brand)}
+  .center-fab{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(244,98,31,.5);z-index:7;border:4px solid #100f18}
+  .roadmap{counter-reset:step}
+  .roadmap .step{position:relative;padding:14px 16px 14px 58px;background:#fff;border:2px solid var(--line);border-radius:16px;margin-bottom:12px;box-shadow:0 4px 0 var(--line)}
+  .roadmap .step::before{counter-increment:step;content:counter(step);position:absolute;left:14px;top:12px;width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;font-family:var(--disp);font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 var(--brand-d)}
+  .kbd{font-family:var(--disp);font-weight:700}
+  footer{color:var(--muted);font-size:12px;padding:18px 28px;border-top:1px solid var(--line);background:#fff}
+  .note{font-size:12.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <div class="planet"></div><div class="ring"></div>
+  <h1>KANDU — Direção de Arte <span class="chip">estilo Kurzgesagt</span></h1>
+  <div class="sub">Minimalista, direto, colorido e fácil de digerir. Parecer para o modelo de negócio + sistema visual + mockups das telas-chave. Material de decisão — não altera o app.</div>
+</header>
+
+<nav id="tabs">
+  <button data-tab="parecer" class="active">Parecer</button>
+  <button data-tab="sistema">Sistema visual</button>
+  <button data-tab="mockups">Mockups (4 telas)</button>
+  <button data-tab="roadmap">Como aplicar</button>
+</nav>
+
+<main>
+  <!-- PARECER -->
+  <section id="parecer" class="active">
+    <h2>Aprovo esta direção — com uma regra de ouro</h2>
+    <p class="lead">Sim, o estilo Kurzgesagt encaixa no KANDU e no seu público. É uma aposta <b>disruptiva e memorável</b> num mercado (plataformas de trabalho/obras em Portugal) que é quase todo corporativo e cinzento. Mas há uma condição para não sabotar a confiança: <b>cor e ilustração onde se acolhe; contenção onde há dinheiro.</b></p>
+
+    <div class="grid cols-2">
+      <div class="card pop">
+        <span class="tag ok">✓ A favor</span>
+        <ul class="clean">
+          <li class="g"><b>Público visual.</b> Profissionais de construção e muitos imigrantes — comunicação por ícone/cor/forma vence texto denso. Alvos de toque grandes e claros reduzem fricção.</li>
+          <li class="g"><b>O instinto já existe.</b> O app já usa emojis como ícones de categoria e pills coloridas por categoria no mapa. Falta <i>sistema</i>, não vontade.</li>
+          <li class="g"><b>Gamificação nativa.</b> XP, níveis e avaliações são o playground perfeito do estilo (planetas, foguetes, anéis de progresso).</li>
+          <li class="g"><b>Diferenciação real.</b> Ninguém no nicho parece assim. Memorável = boca-a-boca, que é como este público adota app.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag warn">▲ Riscos a gerir</span>
+        <ul class="clean">
+          <li class="r"><b>“Parecer brinquedo”.</b> Employer que vai gastar €3.000 numa obra precisa de sentir seriedade. Cor a mais no momento errado = menos confiança.</li>
+          <li class="r"><b>Legibilidade de dados.</b> Preço, PIN, datas e estados não podem competir com ilustração. Hierarquia sóbria nesses pontos.</li>
+          <li class="r"><b>Excesso.</b> Kurzgesagt funciona por <i>contenção</i> — muito espaço branco, poucas cores por tela. Não é “arco-íris em tudo”.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h3 style="margin-top:0">A regra de ouro</h3>
+      <div class="grid cols-2">
+        <div>
+          <p><b style="color:var(--c-green)">Estilo pleno</b> (ilustração flat, cor viva, personagens): <br>Welcome/Onboarding · empty-states · XP & níveis · celebrações (obra concluída, avaliação recebida) · notificações.</p>
+        </div>
+        <div>
+          <p><b style="color:var(--c-red)">Contenção</b> (sóbrio, 1 CTA, dados grandes e limpos): <br>preço & candidatura · PIN de presença/conclusão · pagamento · detalhes contratuais.</p>
+        </div>
+      </div>
+      <p class="note">Regra prática: quanto mais perto do dinheiro/contrato, menos decoração e mais clareza. A cor guia; nunca distrai.</p>
+    </div>
+  </section>
+
+  <!-- SISTEMA -->
+  <section id="sistema">
+    <h2>O sistema visual</h2>
+    <p class="lead">Um redesign também arruma a casa: hoje há <b>3 laranjas</b> (<code>#FF6600</code>, <code>#F4621F</code>, <code>#F26522</code>), <b>~8 fundos escuros</b> e uma fonte (<code>Chakra Petch</code>) referenciada mas nunca carregada. Proposta de tokens únicos:</p>
+
+    <h3>Marca</h3>
+    <div class="swatches">
+      <div class="sw"><div class="chipc" style="background:#F4621F"></div><div class="cap">Brand<small>#F4621F</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#ff8a4c"></div><div class="cap">Brand+<small>#ff8a4c</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#c8430f"></div><div class="cap">Brand–<small>#c8430f</small></div></div>
+    </div>
+    <p class="note">Unifica os três laranjas num só (<code>--brand = #F4621F</code>, o que já é o <code>theme-color</code>). A sombra dura “bloco” (<code>0 5px 0 brand–</code>) dá o toque cartoon sem gradiente pesado.</p>
+
+    <h3>Paleta de apoio — categorias (flat + saturada)</h3>
+    <div class="swatches">
+      <div class="sw"><div class="chipc" style="background:#F4C20D"></div><div class="cap">Eletricidade<small>#F4C20D</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#2D7DD2"></div><div class="cap">Canalização<small>#2D7DD2</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#3BB273"></div><div class="cap">Jardim/Isol.<small>#3BB273</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#E15554"></div><div class="cap">Telhados<small>#E15554</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#7B5EA7"></div><div class="cap">Pintura<small>#7B5EA7</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#25B8C4"></div><div class="cap">Climatização<small>#25B8C4</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#B07D4F"></div><div class="cap">Carpintaria<small>#B07D4F</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#E86A92"></div><div class="cap">Ladrilhador<small>#E86A92</small></div></div>
+    </div>
+    <p class="note">Reaproveita a lógica “cor por categoria” que já existe em <code>src/components/dashboard/MapView.jsx</code>, mas normalizada (mesma saturação/luminosidade) para ler como um sistema. Regra de contraste: texto sempre branco sobre estas, ou <code>--ink</code> sobre o amarelo.</p>
+
+    <h3>Superfícies</h3>
+    <div class="swatches">
+      <div class="sw"><div class="chipc" style="background:#0E0D14"></div><div class="cap">dark-0<small>#0E0D14</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#16151E"></div><div class="cap">dark-1<small>#16151E</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#1E1D28"></div><div class="cap">dark-2<small>#1E1D28</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#fbf7f1"></div><div class="cap">light-0<small>#fbf7f1</small></div></div>
+      <div class="sw"><div class="chipc" style="background:#ffffff;border-bottom:1px solid #eee"></div><div class="cap">light-1<small>#ffffff</small></div></div>
+    </div>
+    <p class="note">Substitui os ~8 pretos por 3 níveis dark + 2 light. Fundo escuro “espacial” (roxo-azulado) é a assinatura Kurzgesagt — mais quente que preto puro.</p>
+
+    <h3>Tipografia & forma</h3>
+    <div class="grid cols-3">
+      <div class="card"><div style="font-family:var(--disp);font-weight:800;font-size:26px">Baloo 2</div><p class="note">Display: títulos, preços, XP. Geométrica arredondada = amigável + confiante.</p></div>
+      <div class="card"><div style="font-family:'Nunito';font-weight:700;font-size:20px">Nunito</div><p class="note">Corpo e labels. Legível, arredondada, combina com o display.</p></div>
+      <div class="card"><div style="font-size:15px">Cantos <b>16–20px</b> · sombra-bloco · traços grossos · <b>1 cor viva</b> por bloco</div><p class="note">Regras de forma que dão o “ar Kurzgesagt”.</p></div>
+    </div>
+  </section>
+
+  <!-- MOCKUPS -->
+  <section id="mockups">
+    <h2>Mockups — 4 telas-chave</h2>
+    <p class="lead">HTML/CSS + SVG puro (sem imagens externas). Ilustração flat reproduzida com formas simples — é exatamente assim que o estilo se implementa no app real.</p>
+    <div class="phones">
+
+      <!-- 1. WELCOME -->
+      <div class="phone">
+        <div class="label">1 · Welcome / Onboarding</div>
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <div style="padding:14px 18px 0">
+              <!-- ilustração flat -->
+              <svg viewBox="0 0 300 210" width="100%" height="200" style="display:block">
+                <defs><radialGradient id="sun" cx="35%" cy="30%"><stop offset="0" stop-color="#ffd07a"/><stop offset="1" stop-color="#f4c20d"/></radialGradient></defs>
+                <circle cx="240" cy="52" r="46" fill="url(#sun)"/>
+                <circle cx="240" cy="52" r="46" fill="none" stroke="#ffffff" stroke-opacity=".15" stroke-width="10"/>
+                <!-- estrelas -->
+                <g fill="#fff" opacity=".7"><circle cx="40" cy="30" r="2"/><circle cx="90" cy="60" r="1.5"/><circle cx="150" cy="24" r="2"/><circle cx="196" cy="96" r="1.5"/></g>
+                <!-- prédio/casa em construção -->
+                <rect x="40" y="120" width="90" height="70" rx="8" fill="#2D7DD2"/>
+                <rect x="52" y="134" width="24" height="24" rx="4" fill="#cdeafe"/>
+                <rect x="94" y="134" width="24" height="24" rx="4" fill="#cdeafe"/>
+                <rect x="72" y="166" width="26" height="24" rx="3" fill="#14121c"/>
+                <!-- guindaste -->
+                <rect x="150" y="70" width="8" height="120" rx="3" fill="#F4621F"/>
+                <rect x="150" y="70" width="86" height="8" rx="3" fill="#F4621F"/>
+                <rect x="222" y="78" width="6" height="26" fill="#c8430f"/>
+                <rect x="214" y="104" width="22" height="14" rx="2" fill="#F4C20D"/>
+                <!-- personagem abstrato (worker) -->
+                <circle cx="196" cy="150" r="16" fill="#3BB273"/>
+                <rect x="184" y="164" width="24" height="26" rx="10" fill="#3BB273"/>
+                <rect x="186" y="138" width="20" height="7" rx="3" fill="#F4C20D"/>
+                <!-- chão -->
+                <rect x="0" y="188" width="300" height="6" fill="#7B5EA7" opacity=".5"/>
+              </svg>
+              <div style="text-align:center;margin-top:6px">
+                <div class="mtitle" style="color:#fff;font-size:24px;line-height:1.15">Obras e talento,<br><span style="color:var(--brand-2)">num só sítio.</span></div>
+                <div style="color:#b9b7cc;font-size:13px;margin-top:6px">Encontra profissionais ou o teu próximo trabalho.</div>
+              </div>
+              <!-- 2 cartões de perfil -->
+              <div style="display:flex;gap:12px;margin-top:16px">
+                <div style="flex:1;background:#1E1D28;border:2px solid #2b2937;border-radius:16px;padding:14px 10px;text-align:center;box-shadow:0 4px 0 #0b0a10">
+                  <svg width="42" height="42" viewBox="0 0 40 40"><circle cx="20" cy="14" r="8" fill="#F4C20D"/><rect x="8" y="24" width="24" height="12" rx="6" fill="#F4C20D"/><rect x="12" y="9" width="16" height="5" rx="2.5" fill="#c8430f"/></svg>
+                  <div class="mtitle" style="color:#fff;font-size:14px;margin-top:6px">Sou Profissional</div>
+                </div>
+                <div style="flex:1;background:#1E1D28;border:2px solid var(--brand);border-radius:16px;padding:14px 10px;text-align:center;box-shadow:0 4px 0 var(--brand-d)">
+                  <svg width="42" height="42" viewBox="0 0 40 40"><rect x="8" y="12" width="24" height="20" rx="4" fill="#2D7DD2"/><rect x="14" y="8" width="12" height="6" rx="2" fill="#2D7DD2"/><circle cx="20" cy="22" r="5" fill="#cdeafe"/></svg>
+                  <div class="mtitle" style="color:#fff;font-size:14px;margin-top:6px">Preciso de Obra</div>
+                </div>
+              </div>
+              <div class="cta" style="margin-top:16px">Continuar &nbsp;→</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. HOME MAPA -->
+      <div class="phone">
+        <div class="label">2 · Home worker (mapa)</div>
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <!-- mapa flat -->
+            <svg viewBox="0 0 340 720" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0">
+              <rect width="340" height="720" fill="#111826"/>
+              <g stroke="#1c2740" stroke-width="10">
+                <path d="M-10 160 H350 M-10 340 H350 M-10 520 H350 M60 -10 V730 M180 -10 V730 M280 -10 V730" />
+              </g>
+              <path d="M60 160 L180 160 L180 340 L280 340" stroke="#26406b" stroke-width="12" fill="none"/>
+              <circle cx="60" cy="520" r="40" fill="#14304a" opacity=".6"/>
+              <rect x="200" y="380" width="90" height="90" rx="10" fill="#14304a" opacity=".5"/>
+            </svg>
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <!-- busca -->
+            <div style="position:absolute;top:34px;left:14px;right:14px;background:#fff;border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.3)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6a80" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+              <span style="color:#9a99ab;font-size:13px;font-weight:600">Pesquisar obras…</span>
+            </div>
+            <!-- pills categoria -->
+            <div style="position:absolute;top:82px;left:14px;right:0;display:flex;gap:7px;overflow:hidden">
+              <span class="pill" style="background:var(--brand)">Todas</span>
+              <span class="pill" style="background:#F4C20D;color:#1a1830">⚡ Eletric.</span>
+              <span class="pill" style="background:#7B5EA7">🎨 Pintura</span>
+            </div>
+            <!-- price markers -->
+            <div style="position:absolute;top:210px;left:40px" class="pill">€38<small style="font-weight:600">/h</small></div>
+            <div style="position:absolute;top:300px;left:170px" class="pill" style="background:#2D7DD2">€1.850</div>
+            <div style="position:absolute;top:250px;left:230px" class="pill" style="background:#F4C20D;color:#1a1830">€25/h</div>
+            <div style="position:absolute;top:420px;left:90px" class="pill" style="background:#3BB273">€900</div>
+            <div style="position:absolute;top:470px;left:210px" class="pill" style="background:#E15554">€2.4k</div>
+            <!-- meu ponto -->
+            <div style="position:absolute;top:360px;left:150px;width:20px;height:20px;border-radius:50%;background:#2D7DD2;border:4px solid #fff;box-shadow:0 0 0 6px rgba(45,125,210,.35)"></div>
+            <!-- sheet peek -->
+            <div style="position:absolute;bottom:64px;left:0;right:0;background:#16151E;border-radius:20px 20px 0 0;padding:12px 16px 16px;border-top:2px solid #2b2937">
+              <div style="width:40px;height:4px;border-radius:2px;background:#3a3850;margin:0 auto 10px"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="mtitle" style="color:#fff;font-size:15px">142 obras perto</span>
+                <span class="pill" style="background:#1E1D28;color:#b9b7cc;box-shadow:none;border:1px solid #2b2937">Lista ▾</span>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:10px;align-items:center;background:#1E1D28;border-radius:14px;padding:10px">
+                <div style="width:38px;height:38px;border-radius:10px;background:#7B5EA7;display:flex;align-items:center;justify-content:center;font-size:18px">🎨</div>
+                <div style="flex:1"><div class="mtitle" style="color:#fff;font-size:13px">Pintura de apartamento T2</div><div style="color:#8a889c;font-size:11px">Lisboa · 2,1 km</div></div>
+                <div class="mtitle" style="color:var(--brand-2);font-size:15px">€820</div>
+              </div>
+            </div>
+            <!-- bottom nav -->
+            <div class="bnav">
+              <div class="it on"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8 7v11h-5v-6H9v6H4V9z"/></svg>Início</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>Obras</div>
+              <div class="it" style="opacity:0">·</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v12H7l-3 3z"/></svg>Chat</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>Perfil</div>
+            </div>
+            <div class="center-fab"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="#F4621F"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. CARD OBRA / CANDIDATURA -->
+      <div class="phone">
+        <div class="label">3 · Obra + candidatura <span class="note">(contenção)</span></div>
+        <div class="screen light">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <!-- header sóbrio -->
+            <div style="padding:12px 18px 0;display:flex;align-items:center;gap:10px">
+              <div style="width:30px;height:30px;border-radius:9px;background:#efe9e0;display:flex;align-items:center;justify-content:center">←</div>
+              <span class="mtitle" style="font-size:15px">Candidatura</span>
+            </div>
+            <!-- obra: categoria colorida discreta + preço grande -->
+            <div style="margin:12px 16px;background:#fff;border:2px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 4px 0 var(--line)">
+              <div style="height:8px;background:#2D7DD2"></div>
+              <div style="padding:14px 16px">
+                <span class="pill" style="background:#2D7DD2;box-shadow:none;font-size:11px">💧 Canalização</span>
+                <div class="mtitle" style="font-size:17px;margin-top:8px">Substituição de canos — moradia</div>
+                <div style="color:var(--muted);font-size:12px;margin-top:2px">📍 Setúbal · há 2 dias</div>
+                <div class="mtitle" style="font-size:30px;color:var(--ink);margin-top:10px">€1.850</div>
+                <div style="color:var(--muted);font-size:12px">preço fixo</div>
+              </div>
+            </div>
+            <!-- tipo candidatura: sóbrio -->
+            <div style="margin:0 16px">
+              <div style="font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:8px">A tua candidatura</div>
+              <div style="display:flex;gap:10px">
+                <div style="flex:1;border:2px solid var(--brand);border-radius:14px;padding:12px;text-align:center;background:#fff5ef">
+                  <div style="font-size:20px">✓</div><div class="mtitle" style="font-size:13px;color:var(--brand-d)">Aceito o preço</div>
+                </div>
+                <div style="flex:1;border:2px solid var(--line);border-radius:14px;padding:12px;text-align:center;background:#fff">
+                  <div style="font-size:20px">✎</div><div class="mtitle" style="font-size:13px;color:var(--muted)">Fazer proposta</div>
+                </div>
+              </div>
+              <textarea readonly style="width:100%;margin-top:12px;border:2px solid var(--line);border-radius:14px;padding:12px;font-family:var(--body);font-size:13px;resize:none;height:70px;background:#fff">Olá! Tenho 10 anos de experiência em canalização e disponibilidade imediata.</textarea>
+            </div>
+            <div class="cta" style="position:absolute;left:16px;right:16px;bottom:20px">Enviar candidatura &nbsp;→</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. PERFIL / XP -->
+      <div class="phone">
+        <div class="label">4 · Perfil (XP & níveis)</div>
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <!-- topo espacial -->
+            <div style="background:linear-gradient(180deg,#241f3a,#16151E);padding:18px 16px 20px;position:relative;overflow:hidden">
+              <div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd07a,#e0940a);opacity:.25"></div>
+              <div style="display:flex;gap:14px;align-items:center">
+                <!-- anel de nível -->
+                <svg width="76" height="76" viewBox="0 0 76 76">
+                  <circle cx="38" cy="38" r="32" fill="none" stroke="#2b2937" stroke-width="8"/>
+                  <circle cx="38" cy="38" r="32" fill="none" stroke="#F4C20D" stroke-width="8" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="70" transform="rotate(-90 38 38)"/>
+                  <circle cx="38" cy="38" r="24" fill="#F4621F"/>
+                  <text x="38" y="45" text-anchor="middle" font-family="Baloo 2,sans-serif" font-weight="800" font-size="22" fill="#fff">7</text>
+                </svg>
+                <div>
+                  <div class="mtitle" style="color:#fff;font-size:18px">Santiago García</div>
+                  <div style="color:#b9b7cc;font-size:12px">Pedreiro · Porto</div>
+                  <div style="margin-top:4px;display:flex;gap:6px">
+                    <span class="pill" style="background:#F4C20D;color:#1a1830;box-shadow:none;font-size:11px">★ 4.8</span>
+                    <span class="pill" style="background:#7B5EA7;box-shadow:none;font-size:11px">Nível Avançado</span>
+                  </div>
+                </div>
+              </div>
+              <!-- barra XP estilo foguete -->
+              <div style="margin-top:16px">
+                <div style="display:flex;justify-content:space-between;color:#b9b7cc;font-size:11px;font-weight:700"><span>2.534 XP</span><span>próximo nível: 3.000</span></div>
+                <div style="height:14px;background:#2b2937;border-radius:8px;margin-top:5px;position:relative;overflow:hidden">
+                  <div style="position:absolute;left:0;top:0;bottom:0;width:70%;background:linear-gradient(90deg,#F4621F,#ff8a4c);border-radius:8px"></div>
+                  <div style="position:absolute;left:68%;top:-3px;font-size:16px">🚀</div>
+                </div>
+              </div>
+            </div>
+            <!-- badges flat -->
+            <div style="padding:16px">
+              <div class="mtitle" style="color:#fff;font-size:14px;margin-bottom:10px">Conquistas</div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+                <div style="text-align:center"><div style="width:52px;height:52px;margin:0 auto;border-radius:14px;background:#3BB273;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 0 #268a55">🏆</div><div style="color:#b9b7cc;font-size:9px;margin-top:4px;font-weight:700">50 obras</div></div>
+                <div style="text-align:center"><div style="width:52px;height:52px;margin:0 auto;border-radius:14px;background:#2D7DD2;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 0 #1c5a9e">⚡</div><div style="color:#b9b7cc;font-size:9px;margin-top:4px;font-weight:700">Rápido</div></div>
+                <div style="text-align:center"><div style="width:52px;height:52px;margin:0 auto;border-radius:14px;background:#F4C20D;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 0 #c99a08">★</div><div style="color:#b9b7cc;font-size:9px;margin-top:4px;font-weight:700">Top rated</div></div>
+                <div style="text-align:center"><div style="width:52px;height:52px;margin:0 auto;border-radius:14px;background:#2b2937;display:flex;align-items:center;justify-content:center;font-size:24px">🔒</div><div style="color:#6b6a80;font-size:9px;margin-top:4px;font-weight:700">100 obras</div></div>
+              </div>
+              <div style="margin-top:16px;background:#16151E;border:1px solid #2b2937;border-radius:14px;padding:12px">
+                <div style="display:flex;justify-content:space-between;color:#fff;font-size:12px;font-weight:700"><span>Avaliações recentes</span><span style="color:#F4C20D">★★★★★</span></div>
+                <div style="color:#b9b7cc;font-size:11px;margin-top:6px">“Excelente trabalho, pontual e limpo.” — Ana S.</div>
+              </div>
+            </div>
+            <div class="bnav">
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8 7v11h-5v-6H9v6H4V9z"/></svg>Início</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>Obras</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v12H7l-3 3z"/></svg>Chat</div>
+              <div class="it on"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>Perfil</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section id="roadmap">
+    <h2>Como aplicar — roadmap curto</h2>
+    <p class="lead">Ordem que dá impacto visível cedo e reduz risco. Referência aos pontos de atrito achados no código.</p>
+    <div class="roadmap">
+      <div class="step"><b>Unificar tokens de marca.</b> Um só laranja <code>--brand:#F4621F</code> substituindo <code>#FF6600</code>/<code>#F26522</code>, e uma escala de 3 darks + 2 lights. Toca <code>src/Layout.jsx</code>, <code>src/pages/Home.jsx</code>, <code>src/lib/xp.js</code>.</div>
+      <div class="step"><b>Carregar a fonte.</b> Adotar <span class="kbd">Baloo 2 + Nunito</span> via <code>&lt;link&gt;</code> no <code>index.html</code> e ativar no <code>src/index.css</code> (hoje <code>Inter</code> está comentada e <code>Chakra Petch</code> nunca é carregada).</div>
+      <div class="step"><b>Decidir 1 mecanismo de tema.</b> Ativar a classe <code>.dark</code> do shadcn e brandizar as CSS-vars, OU assumir o inline com tokens — hoje os dois coexistem e não sincronizam. Recomendo tokens CSS-vars.</div>
+      <div class="step"><b>Migrar por tela, na ordem do impacto:</b> Welcome/Onboarding → Home (mapa + pills) → Perfil (XP) → Card/candidatura. Deixa os fluxos “de dinheiro” sóbrios (regra de ouro).</div>
+      <div class="step"><b>Sistema de ícones.</b> Trocar emoji-como-ícone por um set flat consistente (SVG), reconciliando os dois sistemas atuais (emoji na Home vs SVG no <code>MapView.jsx</code>).</div>
+    </div>
+    <p class="note">Cada passo é publicável isoladamente — não precisa de um “big bang”. Começar pelo Welcome dá o “wow” de adesão logo na primeira impressão, que é o objetivo.</p>
+  </section>
+</main>
+
+<footer>
+  Material de decisão de design — inspirado em Kurzgesagt (minimalista, colorido, flat). Mockups em HTML/CSS/SVG puro, sem imagens externas. Baseado na leitura do frontend atual (<code>src/Layout.jsx</code>, <code>src/pages/*</code>, <code>src/components/dashboard/MapView.jsx</code>, <code>src/lib/xp.js</code>). Não altera o app.
+</footer>
+
+<script>
+  var tabs = document.querySelectorAll('#tabs button');
+  var secs = document.querySelectorAll('main section');
+  tabs.forEach(function(b){ b.addEventListener('click', function(){
+    var id=b.getAttribute('data-tab');
+    tabs.forEach(function(x){x.classList.toggle('active',x===b);});
+    secs.forEach(function(s){s.classList.toggle('active',s.id===id);});
+    window.scrollTo({top:0,behavior:'smooth'});
+  });});
+</script>
+</body>
+</html>
