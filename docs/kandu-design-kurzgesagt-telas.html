@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KANDU — Mais telas (estilo Kurzgesagt)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#F4621F; --brand-2:#ff8a4c; --brand-d:#c8430f;
+    --c-blue:#2D7DD2; --c-yellow:#F4C20D; --c-green:#3BB273; --c-red:#E15554;
+    --c-purple:#7B5EA7; --c-cyan:#25B8C4; --c-brown:#B07D4F; --c-pink:#E86A92;
+    --c-stone:#8a8577; --c-lime:#8FBF3F;
+    --ink:#1a1830; --muted:#6b6a80; --soft:#f4f1ec; --card:#ffffff; --line:#e7e2da;
+    --sky:#cdeafe;
+    --d0:#0E0D14; --d1:#16151E; --d2:#1E1D28; --d-line:#2b2937;
+    --disp:'Baloo 2', 'Nunito', system-ui, sans-serif;
+    --body:'Nunito', system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--soft);color:var(--ink);font:15px/1.6 var(--body)}
+  header{padding:26px 28px 18px;background:radial-gradient(1200px 300px at 10% -30%, #ffd9c4 0, transparent 60%),linear-gradient(120deg,var(--brand-d),var(--brand) 60%,var(--brand-2));color:#fff;position:relative;overflow:hidden}
+  header .planet{position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #ffd07a, #f4c20d 55%, #e0940a);box-shadow:0 0 0 14px rgba(255,255,255,.12);opacity:.85}
+  header .ring{position:absolute;right:-60px;top:10px;width:220px;height:60px;border:6px solid rgba(255,255,255,.25);border-radius:50%;transform:rotate(-18deg)}
+  h1{font-family:var(--disp);margin:0 0 4px;font-size:26px;font-weight:800;letter-spacing:.3px;position:relative}
+  header .sub{font-size:13.5px;opacity:.96;max-width:74ch;position:relative}
+  .chip{display:inline-block;font-family:var(--disp);font-weight:700;font-size:11.5px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.5);padding:2px 10px;border-radius:999px;margin-left:8px;vertical-align:3px}
+  nav{display:flex;flex-wrap:wrap;gap:8px;padding:14px 28px;position:sticky;top:0;background:rgba(244,241,236,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:10}
+  nav button{font-family:var(--disp);cursor:pointer;border:2px solid var(--line);background:#fff;color:var(--muted);padding:9px 14px;border-radius:12px;font-size:13.5px;font-weight:700;transition:.15s}
+  nav button:hover{color:var(--ink);border-color:var(--brand-2)}
+  nav button.active{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 4px 0 var(--brand-d)}
+  main{padding:26px 28px 70px;max-width:1240px;margin:0 auto}
+  section{display:none;animation:f .2s ease}
+  section.active{display:block}
+  @keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2{font-family:var(--disp);font-size:22px;margin:4px 0 6px;font-weight:800}
+  .lead{font-size:16px;color:#33314a;max-width:80ch;margin:0 0 6px}
+  .rule{display:inline-flex;align-items:center;gap:7px;font-family:var(--disp);font-weight:700;font-size:12px;padding:4px 12px;border-radius:999px;margin:8px 8px 4px 0}
+  .rule.full{background:rgba(59,178,115,.14);color:#238a56;border:1px solid rgba(59,178,115,.4)}
+  .rule.calm{background:rgba(225,85,84,.12);color:#c0392b;border:1px solid rgba(225,85,84,.35)}
+  code{background:#efe9e0;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px;font-family:ui-monospace,monospace}
+  /* phone mockups */
+  .phones{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;margin-top:16px}
+  .phone{width:340px;flex:0 0 auto}
+  .phone .label{font-family:var(--disp);font-weight:700;text-align:center;margin-bottom:8px}
+  .phone .label small{display:block;color:var(--muted);font-weight:600;font-size:11.5px}
+  .screen{width:340px;height:720px;border-radius:34px;border:10px solid #14121c;background:var(--d0);overflow:hidden;position:relative;box-shadow:0 12px 30px rgba(20,18,28,.28)}
+  .screen.light{background:#fbf7f1}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:22px;background:#14121c;border-radius:0 0 14px 14px;z-index:6}
+  .s-pad{position:absolute;inset:0;overflow:hidden}
+  .stbar{display:flex;justify-content:space-between;align-items:center;padding:9px 18px 2px;font-size:11px;color:#fff;opacity:.8;font-weight:700}
+  .light .stbar{color:#14121c}
+  .mtitle{font-family:var(--disp);font-weight:800}
+  .pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;font-family:var(--disp);font-weight:700;color:#fff;font-size:12px;padding:5px 10px;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+  .pill.flat{box-shadow:none}
+  .cta{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--brand);color:#fff;font-family:var(--disp);font-weight:800;border-radius:16px;padding:14px;box-shadow:0 5px 0 var(--brand-d);font-size:15px}
+  .cta.ghost{background:#fff;color:var(--muted);box-shadow:0 4px 0 var(--line);border:2px solid var(--line)}
+  .bnav{position:absolute;bottom:0;left:0;right:0;height:64px;background:#100f18;border-top:1px solid #262433;display:flex;align-items:center;justify-content:space-around;z-index:5}
+  .light .bnav{background:#fff;border-top:1px solid var(--line)}
+  .bnav .it{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;font-weight:700;color:#7a7890;font-family:var(--disp)}
+  .bnav .it.on{color:var(--brand)}
+  .center-fab{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(244,98,31,.5);z-index:7;border:4px solid #100f18}
+  /* hexágono (motivo recorrente do app) */
+  .hex{clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:800;color:#fff}
+  footer{color:var(--muted);font-size:12px;padding:18px 28px;border-top:1px solid var(--line);background:#fff}
+  .note{font-size:12.5px;color:var(--muted)}
+  .blockhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px dashed var(--line);padding-bottom:8px;margin-bottom:2px}
+</style>
+</head>
+<body>
+<header>
+  <div class="planet"></div><div class="ring"></div>
+  <h1>KANDU — Mais telas <span class="chip">estilo Kurzgesagt</span></h1>
+  <div class="sub">Segunda leva de mockups, no mesmo sistema visual da direção aprovada. 11 telas nos 4 blocos — comunicação, fluxo do empregador, presença/conclusão e navegação. Regra de ouro aplicada: <b>cor onde acolhe · contenção onde há dinheiro</b>. Material de decisão — não altera o app.</div>
+</header>
+
+<nav id="tabs">
+  <button data-tab="social" class="active">Comunicação &amp; social</button>
+  <button data-tab="employer">Fluxo employer</button>
+  <button data-tab="presenca">Presença &amp; conclusão</button>
+  <button data-tab="nav">Navegação &amp; descoberta</button>
+</nav>
+
+<main>
+
+  <!-- ============ ABA 1 — COMUNICAÇÃO & SOCIAL ============ -->
+  <section id="social" class="active">
+    <div class="blockhead"><h2>Comunicação &amp; social</h2><span class="rule full">● Estilo pleno — a cor acolhe</span></div>
+    <p class="lead">Onde as pessoas se falam, o estilo pode respirar: bolhas vivas, avatares hexagonais, ícones cheios de cor. É o lado humano da app.</p>
+    <div class="phones">
+
+      <!-- 1. CHAT / CONVERSA -->
+      <div class="phone">
+        <div class="label">1 · Chat / conversa<small>worker ↔ employer</small></div>
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <!-- topbar -->
+            <div style="padding:6px 14px 10px;display:flex;align-items:center;gap:10px;background:#100f18;border-bottom:1px solid #262433">
+              <span style="color:var(--brand);font-size:20px">←</span>
+              <div class="hex" style="width:38px;height:38px;background:#7B5EA7;font-size:15px">R</div>
+              <div style="flex:1">
+                <div class="mtitle" style="color:#fff;font-size:14px">Rita Fernandes <span style="font-size:10px;color:var(--brand)">ver perfil →</span></div>
+                <div style="color:#3BB273;font-size:11px;font-weight:700">● online</div>
+              </div>
+              <div style="border:1px solid var(--brand);border-radius:9px;padding:4px 7px;color:var(--brand);font-size:10px;font-weight:800;display:flex;align-items:center;gap:3px;font-family:var(--disp)">🌐 PT</div>
+            </div>
+            <!-- job context banner -->
+            <div style="background:var(--brand);padding:8px 14px;display:flex;gap:8px;align-items:center">
+              <span style="font-size:15px">💼</span>
+              <span style="flex:1;color:#fff;font-weight:800;font-size:12.5px;font-family:var(--disp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Pintura de apartamento T2</span>
+              <span style="color:#fff;font-size:11px;opacity:.85">· Ativo</span>
+            </div>
+            <!-- messages -->
+            <div style="padding:14px;display:flex;flex-direction:column;gap:9px">
+              <div style="align-self:flex-start;max-width:74%">
+                <div style="background:#fff;color:#111;border-radius:18px 18px 18px 4px;padding:9px 13px;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.2)">Boa tarde! Vi a sua obra, tenho disponibilidade já para segunda.</div>
+                <div style="font-size:9px;color:#6b6a80;margin-top:3px">14:02</div>
+              </div>
+              <div style="align-self:flex-end;max-width:74%">
+                <div style="background:var(--brand);color:#fff;border-radius:18px 18px 4px 18px;padding:9px 13px;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.2)">Perfeito! O material fica por minha conta?</div>
+                <div style="font-size:9px;color:#6b6a80;margin-top:3px;text-align:right">14:05</div>
+              </div>
+              <div style="align-self:flex-start;max-width:74%">
+                <div style="background:#fff;color:#111;border-radius:18px 18px 18px 4px;padding:9px 13px;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.2)">Sim, incluído no orçamento. Envio já uma foto do espaço 👇</div>
+                <div style="margin-top:6px;width:150px;height:96px;border-radius:12px;background:linear-gradient(135deg,#2D7DD2,#25B8C4);display:flex;align-items:flex-end;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+                  <span style="background:rgba(0,0,0,.35);color:#fff;font-size:9px;padding:2px 6px;border-radius:6px">📷 sala.jpg</span>
+                </div>
+                <div style="font-size:9px;color:#6b6a80;margin-top:3px">14:07</div>
+              </div>
+            </div>
+            <!-- input -->
+            <div style="position:absolute;bottom:0;left:0;right:0;padding:11px 14px;background:#100f18;border-top:1px solid #262433;display:flex;align-items:center;gap:10px">
+              <span style="color:#555;font-size:19px">📎</span>
+              <div style="flex:1;background:#1a1a24;border:1px solid #2a2a34;border-radius:20px;padding:9px 14px;color:#7a7890;font-size:12.5px">Escreve uma mensagem…</div>
+              <div style="width:38px;height:38px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px">↑</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. LISTA DE CONVERSAS -->
+      <div class="phone">
+        <div class="label">2 · Lista de conversas<small>com contexto de obra</small></div>
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <div style="padding:8px 18px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #262433">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--brand)"><path d="M4 4h16v12H7l-3 3z"/></svg>
+              <span class="mtitle" style="color:#fff;font-size:18px">Mensagens</span>
+              <span class="pill flat" style="background:var(--brand);font-size:11px;padding:2px 8px">3</span>
+            </div>
+            <!-- rows -->
+            <div style="padding:6px 0">
+              <!-- unread -->
+              <div style="display:flex;gap:12px;align-items:center;padding:12px 16px;background:rgba(244,98,31,.06)">
+                <div class="hex" style="width:46px;height:46px;background:#7B5EA7;font-size:17px">R</div>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;justify-content:space-between"><span class="mtitle" style="color:#fff;font-size:13.5px">Rita Fernandes</span><span style="color:var(--brand);font-size:10px;font-weight:700">14:07</span></div>
+                  <div style="color:#9a99ab;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📷 Foto · Pintura T2</div>
+                </div>
+                <span class="pill flat" style="background:var(--brand);font-size:10px;padding:2px 7px">2</span>
+              </div>
+              <!-- unread 2 -->
+              <div style="display:flex;gap:12px;align-items:center;padding:12px 16px;background:rgba(244,98,31,.06)">
+                <div class="hex" style="width:46px;height:46px;background:#2D7DD2;font-size:17px">J</div>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;justify-content:space-between"><span class="mtitle" style="color:#fff;font-size:13.5px">João Silva</span><span style="color:var(--brand);font-size:10px;font-weight:700">12:30</span></div>
+                  <div style="color:#9a99ab;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Combinado, até amanhã! · Canos moradia</div>
+                </div>
+                <span class="pill flat" style="background:var(--brand);font-size:10px;padding:2px 7px">1</span>
+              </div>
+              <!-- read -->
+              <div style="display:flex;gap:12px;align-items:center;padding:12px 16px">
+                <div class="hex" style="width:46px;height:46px;background:#3BB273;font-size:17px">A</div>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;justify-content:space-between"><span class="mtitle" style="color:#e9e8f0;font-size:13.5px">Ana Sousa</span><span style="color:#6b6a80;font-size:10px">ontem</span></div>
+                  <div style="color:#6b6a80;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Obrigada pela avaliação ⭐ · Telhado</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:center;padding:12px 16px">
+                <div class="hex" style="width:46px;height:46px;background:#B07D4F;font-size:17px">C</div>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;justify-content:space-between"><span class="mtitle" style="color:#e9e8f0;font-size:13.5px">Carlos Nunes</span><span style="color:#6b6a80;font-size:10px">seg</span></div>
+                  <div style="color:#6b6a80;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Enviei a proposta 💰 · Móveis cozinha</div>
+                </div>
+              </div>
+              <!-- arquivadas -->
+              <div style="padding:12px 16px;color:#6b6a80;font-size:11.5px;font-weight:700;font-family:var(--disp);display:flex;align-items:center;gap:6px;border-top:1px solid #1c1b26;margin-top:4px">🗄️ Arquivadas (5)</div>
+            </div>
+            <!-- bottom nav -->
+            <div class="bnav">
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8 7v11h-5v-6H9v6H4V9z"/></svg>Início</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>Obras</div>
+              <div class="it" style="opacity:0">·</div>
+              <div class="it on"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v12H7l-3 3z"/></svg>Chat</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>Perfil</div>
+            </div>
+            <div class="center-fab"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="#F4621F"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. NOTIFICAÇÕES -->
+      <div class="phone">
+        <div class="label">3 · Notificações<small>ícone por tipo · não-lidas</small></div>
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <div style="padding:8px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #262433">
+              <span class="mtitle" style="color:#fff;font-size:18px;flex:1">Notificações</span>
+              <span style="color:var(--brand);font-size:11px;font-weight:800;font-family:var(--disp)">Marcar todas</span>
+            </div>
+            <div style="padding:8px 0">
+              <!-- candidatura aceite (unread) -->
+              <div style="display:flex;gap:12px;padding:12px 16px;background:rgba(59,178,115,.08);border-left:3px solid #3BB273">
+                <div style="width:40px;height:40px;border-radius:12px;background:#3BB273;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 3px 0 #268a55;flex-shrink:0">✅</div>
+                <div style="flex:1"><div class="mtitle" style="color:#fff;font-size:13px">Candidatura aceite!</div><div style="color:#9a99ab;font-size:11.5px;line-height:1.4">João aceitou-te para “Substituição de canos — moradia”.</div><div style="color:#6b6a80;font-size:10px;margin-top:2px">há 5 min</div></div>
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--brand);margin-top:4px"></div>
+              </div>
+              <!-- nova mensagem (unread) -->
+              <div style="display:flex;gap:12px;padding:12px 16px;background:rgba(244,98,31,.06);border-left:3px solid var(--brand)">
+                <div style="width:40px;height:40px;border-radius:12px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 3px 0 var(--brand-d);flex-shrink:0">💬</div>
+                <div style="flex:1"><div class="mtitle" style="color:#fff;font-size:13px">Nova mensagem</div><div style="color:#9a99ab;font-size:11.5px;line-height:1.4">Rita: “Envio já uma foto do espaço 👇”</div><div style="color:#6b6a80;font-size:10px;margin-top:2px">há 18 min</div></div>
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--brand);margin-top:4px"></div>
+              </div>
+              <!-- PIN presença -->
+              <div style="display:flex;gap:12px;padding:12px 16px">
+                <div style="width:40px;height:40px;border-radius:12px;background:#F4C20D;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 3px 0 #c99a08;flex-shrink:0">🔑</div>
+                <div style="flex:1"><div class="mtitle" style="color:#e9e8f0;font-size:13px">PIN de presença gerado</div><div style="color:#8a889c;font-size:11.5px;line-height:1.4">Confirma a tua presença na obra em Setúbal.</div><div style="color:#6b6a80;font-size:10px;margin-top:2px">há 2 h</div></div>
+              </div>
+              <!-- avaliação -->
+              <div style="display:flex;gap:12px;padding:12px 16px">
+                <div style="width:40px;height:40px;border-radius:12px;background:#7B5EA7;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 3px 0 #5a4382;flex-shrink:0">⭐</div>
+                <div style="flex:1"><div class="mtitle" style="color:#e9e8f0;font-size:13px">Recebeste uma avaliação</div><div style="color:#8a889c;font-size:11.5px;line-height:1.4">Ana deu-te 5 estrelas. +40 XP!</div><div style="color:#6b6a80;font-size:10px;margin-top:2px">ontem</div></div>
+              </div>
+              <!-- XP -->
+              <div style="display:flex;gap:12px;padding:12px 16px">
+                <div style="width:40px;height:40px;border-radius:12px;background:#2D7DD2;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 3px 0 #1c5a9e;flex-shrink:0">🚀</div>
+                <div style="flex:1"><div class="mtitle" style="color:#e9e8f0;font-size:13px">Subiste de nível!</div><div style="color:#8a889c;font-size:11.5px;line-height:1.4">És agora <b style="color:#F4C20D">Profissional ⚡</b>.</div><div style="color:#6b6a80;font-size:10px;margin-top:2px">ontem</div></div>
+              </div>
+            </div>
+            <div class="bnav">
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8 7v11h-5v-6H9v6H4V9z"/></svg>Início</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>Obras</div>
+              <div class="it" style="opacity:0">·</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v12H7l-3 3z"/></svg>Chat</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>Perfil</div>
+            </div>
+            <div class="center-fab" style="background:var(--brand)">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6z"/><circle cx="12" cy="20" r="2"/></svg>
+              <span style="position:absolute;top:2px;right:6px;background:#E15554;color:#fff;font-size:9px;font-weight:800;border-radius:999px;padding:0 5px;border:2px solid #100f18">4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ ABA 2 — FLUXO EMPLOYER ============ -->
+  <section id="employer">
+    <div class="blockhead"><h2>Fluxo do empregador</h2><span class="rule calm">● Contenção — há dinheiro em jogo</span></div>
+    <p class="lead">Publicar uma obra e contratar mexe com orçamento e confiança. Aqui o estilo recua: fundo claro, um CTA por tela, o preço em destaque e a cor só como guia — nunca a competir com os dados.</p>
+    <div class="phones">
+
+      <!-- 4. PUBLICAR OBRA (wizard) -->
+      <div class="phone">
+        <div class="label">4 · Publicar obra<small>passo 3/4 · orçamento</small></div>
+        <div class="screen light">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <!-- header + progresso -->
+            <div style="padding:12px 18px 0;display:flex;align-items:center;gap:10px">
+              <div style="width:30px;height:30px;border-radius:9px;background:#efe9e0;display:flex;align-items:center;justify-content:center">←</div>
+              <span class="mtitle" style="font-size:15px">Publicar obra</span>
+            </div>
+            <div style="display:flex;gap:6px;padding:14px 18px 0">
+              <div style="flex:1;height:6px;border-radius:3px;background:var(--brand)"></div>
+              <div style="flex:1;height:6px;border-radius:3px;background:var(--brand)"></div>
+              <div style="flex:1;height:6px;border-radius:3px;background:var(--brand)"></div>
+              <div style="flex:1;height:6px;border-radius:3px;background:#e3ddd3"></div>
+            </div>
+            <div style="padding:16px 18px">
+              <div style="color:var(--muted);font-size:11px;font-weight:800;font-family:var(--disp);letter-spacing:.5px">PASSO 3 · ORÇAMENTO</div>
+              <div class="mtitle" style="font-size:20px;margin-top:2px">Quanto pagas?</div>
+              <!-- price_type toggle -->
+              <div style="display:flex;gap:8px;margin-top:14px">
+                <div style="flex:1;text-align:center;border:2px solid var(--brand);border-radius:12px;padding:9px 4px;background:#fff5ef;font-family:var(--disp);font-weight:800;font-size:12px;color:var(--brand-d)">Projeto</div>
+                <div style="flex:1;text-align:center;border:2px solid var(--line);border-radius:12px;padding:9px 4px;font-family:var(--disp);font-weight:700;font-size:12px;color:var(--muted)">Hora</div>
+                <div style="flex:1;text-align:center;border:2px solid var(--line);border-radius:12px;padding:9px 4px;font-family:var(--disp);font-weight:700;font-size:12px;color:var(--muted)">Negociável</div>
+              </div>
+              <!-- price input -->
+              <div style="margin-top:16px;border:2px solid var(--line);border-radius:16px;padding:16px;text-align:center;background:#fff">
+                <div style="color:var(--muted);font-size:11px;font-weight:700">Valor do projeto</div>
+                <div class="mtitle" style="font-size:38px;color:var(--ink);margin-top:2px">€820<span style="color:#cfc8bd">|</span></div>
+              </div>
+              <!-- sugestão -->
+              <div style="margin-top:14px;background:#eef7ff;border:2px solid #cfe6fb;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+                <div style="width:34px;height:34px;border-radius:10px;background:#7B5EA7;display:flex;align-items:center;justify-content:center;font-size:16px">🎨</div>
+                <div style="flex:1;font-size:12px;color:#33314a"><b>Pintura</b> costuma andar em <b>€750–€900</b> nesta zona.</div>
+                <div style="font-family:var(--disp);font-weight:800;font-size:12px;color:var(--c-blue);white-space:nowrap">Usar €820</div>
+              </div>
+            </div>
+            <div class="cta" style="position:absolute;left:18px;right:18px;bottom:20px">Rever e publicar &nbsp;→</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. GESTÃO DE CANDIDATOS -->
+      <div class="phone">
+        <div class="label">5 · Gestão de candidatos<small>aceitar / recusar</small></div>
+        <div class="screen light">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <div style="padding:12px 18px 0;display:flex;align-items:center;gap:10px">
+              <div style="width:30px;height:30px;border-radius:9px;background:#efe9e0;display:flex;align-items:center;justify-content:center">←</div>
+              <span class="mtitle" style="font-size:15px;flex:1">Candidatos</span>
+              <span class="pill flat" style="background:#7B5EA7;font-size:11px">3 novos</span>
+            </div>
+            <!-- obra context -->
+            <div style="margin:12px 16px 4px;display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:9px 12px;box-shadow:0 3px 0 var(--line)">
+              <span class="pill flat" style="background:#7B5EA7;font-size:10px">🎨 Pintura</span>
+              <span class="mtitle" style="font-size:12.5px;flex:1">Apartamento T2</span>
+              <span class="mtitle" style="font-size:13px;color:var(--ink)">€820</span>
+            </div>
+            <!-- candidato 1 -->
+            <div style="margin:12px 16px;background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 4px 0 var(--line)">
+              <div style="display:flex;gap:11px;align-items:center">
+                <div class="hex" style="width:44px;height:44px;background:#3BB273;font-size:16px">M</div>
+                <div style="flex:1">
+                  <div class="mtitle" style="font-size:14px">Miguel Costa</div>
+                  <div style="display:flex;gap:6px;margin-top:3px;align-items:center">
+                    <span class="pill flat" style="background:#F4C20D;color:#1a1830;font-size:10px">★ 4.9</span>
+                    <span style="font-size:10.5px;color:var(--muted)">Pintura · Isolamentos</span>
+                  </div>
+                </div>
+                <div style="text-align:right"><div style="font-size:9px;color:var(--muted)">proposta</div><div class="mtitle" style="font-size:16px;color:var(--ink)">€790</div></div>
+              </div>
+              <div style="margin-top:10px;background:#f7f4ef;border-radius:10px;padding:9px 11px;font-size:12px;color:#4a4860;font-style:italic">“Faço em 4 dias, tintas incluídas. Portefólio no perfil.”</div>
+              <div style="display:flex;gap:9px;margin-top:12px">
+                <div class="cta ghost" style="flex:1;padding:11px;font-size:13px">✕ Recusar</div>
+                <div class="cta" style="flex:1.4;padding:11px;font-size:13px;box-shadow:0 4px 0 var(--brand-d)">✓ Aceitar e contratar</div>
+              </div>
+            </div>
+            <!-- candidato 2 (compacto) -->
+            <div style="margin:0 16px;background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px 14px;box-shadow:0 4px 0 var(--line);display:flex;gap:11px;align-items:center">
+              <div class="hex" style="width:40px;height:40px;background:#2D7DD2;font-size:15px">P</div>
+              <div style="flex:1">
+                <div class="mtitle" style="font-size:13.5px">Pedro Alves <span class="pill flat" style="background:#F4C20D;color:#1a1830;font-size:9px;margin-left:2px">★ 4.6</span></div>
+                <div style="font-size:10.5px;color:var(--muted)">Aceita o preço · €820</div>
+              </div>
+              <div style="color:var(--brand);font-size:20px">›</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ ABA 3 — PRESENÇA & CONCLUSÃO ============ -->
+  <section id="presenca">
+    <div class="blockhead"><h2>Presença &amp; conclusão</h2><span class="rule calm">● PIN sóbrio</span><span class="rule full">● Celebração plena</span></div>
+    <p class="lead">O PIN de presença é um momento de confiança — limpo e legível. Já a obra concluída e a avaliação são momentos de recompensa — é aqui que a gamificação Kurzgesagt brilha.</p>
+    <div class="phones">
+
+      <!-- 6. PIN DE PRESENÇA -->
+      <div class="phone">
+        <div class="label">6 · PIN de presença<small>sóbrio · hexágono + 30s</small></div>
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <div style="text-align:center;padding:18px 20px 0">
+              <div style="color:#8a889c;font-size:12px;font-weight:700;font-family:var(--disp);letter-spacing:.5px">PRESENÇA DIÁRIA</div>
+              <div class="mtitle" style="color:#fff;font-size:19px;margin-top:2px">Mostra este código</div>
+              <div style="color:#8a889c;font-size:12px;margin-top:2px">O profissional insere para confirmar.</div>
+            </div>
+            <!-- hexágono PIN (só os dígitos dentro; labels fora para não cortar no clip) -->
+            <div style="display:flex;justify-content:center;margin-top:24px">
+              <div class="hex" style="width:212px;height:190px;background:linear-gradient(160deg,#F4621F,#c8430f);flex-direction:column;box-shadow:0 14px 40px rgba(244,98,31,.35)">
+                <div style="color:rgba(255,255,255,.8);font-size:10px;font-weight:800;letter-spacing:2px;font-family:var(--disp)">CÓDIGO</div>
+                <div style="font-family:var(--disp);font-weight:800;font-size:42px;letter-spacing:5px;margin-top:1px">482193</div>
+              </div>
+            </div>
+            <!-- countdown bar + caption -->
+            <div style="margin:22px 30px 0">
+              <div style="height:8px;background:#2b2937;border-radius:5px;overflow:hidden">
+                <div style="width:78%;height:100%;background:var(--brand);border-radius:5px"></div>
+              </div>
+              <div style="text-align:center;color:#8a889c;font-size:11px;font-weight:700;margin-top:8px">⏱ expira em 28s · gera um novo automaticamente</div>
+            </div>
+            <!-- obra info sóbria -->
+            <div style="margin:20px;background:#16151E;border:1px solid #2b2937;border-radius:16px;padding:14px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span class="pill flat" style="background:#2D7DD2;font-size:11px">💧 Canalização</span>
+                <span style="color:#6b6a80;font-size:11px;margin-left:auto">📍 Setúbal</span>
+              </div>
+              <div class="mtitle" style="color:#fff;font-size:14px;margin-top:8px">Substituição de canos — moradia</div>
+              <div style="color:#8a889c;font-size:12px;margin-top:2px">Profissional: João Silva · Dia 2 de 3</div>
+            </div>
+            <div class="cta ghost" style="margin:0 20px;background:#1E1D28;color:#b9b7cc;box-shadow:0 4px 0 #0b0a10;border-color:#2b2937">Gerar novo código</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. OBRA CONCLUÍDA / LEVEL-UP -->
+      <div class="phone">
+        <div class="label">7 · Obra concluída<small>estilo pleno · subir de nível</small></div>
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-pad" style="background:radial-gradient(120% 60% at 50% 0,#2a2350,#0E0D14 70%)">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <!-- estrelas -->
+            <svg viewBox="0 0 340 120" width="100%" height="110" style="position:absolute;top:26px;left:0"><g fill="#fff" opacity=".55"><circle cx="40" cy="30" r="1.6"/><circle cx="120" cy="18" r="2"/><circle cx="210" cy="40" r="1.4"/><circle cx="300" cy="24" r="2"/><circle cx="270" cy="80" r="1.4"/><circle cx="70" cy="70" r="1.6"/></g></svg>
+            <div style="text-align:center;padding:30px 24px 0;position:relative">
+              <!-- planeta + foguete -->
+              <svg width="150" height="150" viewBox="0 0 150 150" style="margin:0 auto;display:block">
+                <ellipse cx="75" cy="82" rx="70" ry="20" fill="none" stroke="#7B5EA7" stroke-width="3" opacity=".5" transform="rotate(-18 75 82)"/>
+                <circle cx="75" cy="78" r="40" fill="url(#pl)"/>
+                <defs><radialGradient id="pl" cx="38%" cy="32%"><stop offset="0" stop-color="#ffd07a"/><stop offset="1" stop-color="#e0940a"/></radialGradient></defs>
+                <circle cx="60" cy="70" r="6" fill="#c47a06" opacity=".5"/><circle cx="88" cy="90" r="8" fill="#c47a06" opacity=".4"/>
+                <!-- foguete -->
+                <g transform="translate(96 30) rotate(28)">
+                  <path d="M8 0C14 6 15 20 8 34C1 20 2 6 8 0Z" fill="#F4621F"/>
+                  <circle cx="8" cy="13" r="4" fill="#cdeafe"/>
+                  <path d="M2 26 L-4 34 L4 30Z" fill="#c8430f"/><path d="M14 26 L20 34 L12 30Z" fill="#c8430f"/>
+                  <path d="M6 34 Q8 44 10 34Z" fill="#F4C20D"/>
+                </g>
+              </svg>
+              <div style="font-size:34px;margin-top:6px">🎉</div>
+              <div class="mtitle" style="color:#fff;font-size:24px;line-height:1.1;margin-top:4px">Obra concluída!</div>
+              <div style="color:#b9b7cc;font-size:13px;margin-top:4px">Substituição de canos — moradia</div>
+              <!-- XP ganho -->
+              <div style="margin-top:18px;display:inline-flex;align-items:center;gap:8px;background:rgba(244,194,13,.14);border:1px solid rgba(244,194,13,.4);border-radius:999px;padding:8px 18px">
+                <span style="font-size:18px">⚡</span><span class="mtitle" style="color:#F4C20D;font-size:18px">+150 XP</span>
+              </div>
+              <div style="color:#8a889c;font-size:11px;margin-top:6px">bónus 5× por 3 fotos-prova 📸</div>
+              <!-- level up -->
+              <div style="margin-top:20px;background:#16151E;border:1px solid #2b2937;border-radius:16px;padding:14px 16px">
+                <div style="color:#8a889c;font-size:11px;font-weight:700;font-family:var(--disp)">SUBISTE DE NÍVEL</div>
+                <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px">
+                  <span style="color:#6b6a80;font-family:var(--disp);font-weight:800;font-size:14px">📘 Aprendiz</span>
+                  <span style="color:var(--brand)">→</span>
+                  <span class="pill flat" style="background:linear-gradient(90deg,#F26522,#F4621F);font-size:14px;padding:6px 12px">⚡ Profissional</span>
+                </div>
+                <div style="height:12px;background:#2b2937;border-radius:7px;margin-top:12px;overflow:hidden;position:relative">
+                  <div style="width:32%;height:100%;background:linear-gradient(90deg,#F4621F,#ff8a4c);border-radius:7px"></div>
+                </div>
+                <div style="color:#8a889c;font-size:10.5px;margin-top:5px">5.150 XP · próximo nível (Especialista): 15.000</div>
+              </div>
+            </div>
+            <div class="cta" style="position:absolute;left:20px;right:20px;bottom:20px">Ver o meu perfil &nbsp;→</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. AVALIAÇÃO (CompletionModal) -->
+      <div class="phone">
+        <div class="label">8 · Avaliação<small>estrelas · qualidades · fotos</small></div>
+        <div class="screen light">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <div style="padding:14px 18px 0;text-align:center">
+              <div class="mtitle" style="font-size:19px">Avaliar o trabalho</div>
+              <div style="color:var(--muted);font-size:12px">João Silva · Canalização</div>
+            </div>
+            <!-- estrelas -->
+            <div style="text-align:center;margin-top:14px;font-size:32px;letter-spacing:4px;color:#F4C20D">★★★★<span style="color:#e3ddd3">★</span></div>
+            <!-- fotos prova -->
+            <div style="margin:16px 18px 0">
+              <div style="font-family:var(--disp);font-weight:700;font-size:12.5px">Fotos-prova <span style="color:#3BB273">(3 = 5× XP 🚀)</span></div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <div style="flex:1;aspect-ratio:1;border-radius:12px;background:linear-gradient(135deg,#2D7DD2,#25B8C4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">✓</div>
+                <div style="flex:1;aspect-ratio:1;border-radius:12px;background:linear-gradient(135deg,#3BB273,#8FBF3F);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">✓</div>
+                <div style="flex:1;aspect-ratio:1;border-radius:12px;border:2px dashed #cfc8bd;display:flex;align-items:center;justify-content:center;color:#b0a99d;font-size:22px">＋</div>
+              </div>
+            </div>
+            <!-- qualidades -->
+            <div style="margin:16px 18px 0">
+              <div style="font-family:var(--disp);font-weight:700;font-size:12.5px;margin-bottom:8px">Qualidades</div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px">
+                <span class="pill flat" style="background:#3BB273;font-size:11px">✓ Pontual</span>
+                <span class="pill flat" style="background:#2D7DD2;font-size:11px">✓ Profissional</span>
+                <span class="pill flat" style="background:#fff;color:var(--muted);border:1.5px solid var(--line);font-size:11px">Limpo</span>
+                <span class="pill flat" style="background:#fff;color:var(--muted);border:1.5px solid var(--line);font-size:11px">Comunicativo</span>
+              </div>
+            </div>
+            <!-- XP preview -->
+            <div style="margin:16px 18px 0;display:flex;gap:10px">
+              <div style="flex:1;background:#eef7ff;border:2px solid #cfe6fb;border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted);font-weight:700">Para si</div><div class="mtitle" style="color:var(--c-blue);font-size:16px">+150 XP</div></div>
+              <div style="flex:1;background:#fff5ef;border:2px solid #ffd9c4;border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted);font-weight:700">Para o João</div><div class="mtitle" style="color:var(--brand-d);font-size:16px">+25 XP</div></div>
+            </div>
+            <div class="cta" style="position:absolute;left:18px;right:18px;bottom:20px">Concluir obra &nbsp;→</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ ABA 4 — NAVEGAÇÃO & DESCOBERTA ============ -->
+  <section id="nav">
+    <div class="blockhead"><h2>Navegação &amp; descoberta</h2><span class="rule full">● Cor guia a leitura</span><span class="rule calm">● Preço limpo</span></div>
+    <p class="lead">Alternativa ao mapa: encontrar obras por lista, filtrar e ver o detalhe. A cor de categoria organiza a leitura de relance; o preço, por estar perto do dinheiro, mantém-se sóbrio e grande.</p>
+    <div class="phones">
+
+      <!-- 9. LISTA DE OBRAS -->
+      <div class="phone">
+        <div class="label">9 · Lista de obras<small>alternativa ao mapa</small></div>
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <div style="padding:8px 16px 6px;display:flex;align-items:center;gap:8px">
+              <span class="mtitle" style="color:#fff;font-size:18px;flex:1">142 obras perto</span>
+              <span class="pill flat" style="background:#1E1D28;color:#b9b7cc;border:1px solid #2b2937;font-size:11px">🗺️ Mapa</span>
+            </div>
+            <!-- chips -->
+            <div style="display:flex;gap:7px;padding:2px 16px 10px;overflow:hidden">
+              <span class="pill" style="background:var(--brand);font-size:11px">Todas</span>
+              <span class="pill" style="background:#2D7DD2;font-size:11px">💧 Canaliz.</span>
+              <span class="pill" style="background:#7B5EA7;font-size:11px">🎨 Pintura</span>
+            </div>
+            <!-- cards -->
+            <div style="padding:0 16px;display:flex;flex-direction:column;gap:10px">
+              <!-- card 1 -->
+              <div style="background:#16151E;border:1px solid #2b2937;border-radius:16px;overflow:hidden;display:flex">
+                <div style="width:6px;background:#7B5EA7"></div>
+                <div style="flex:1;padding:12px 12px 12px 11px">
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span class="pill flat" style="background:#7B5EA7;font-size:10px">🎨 Pintura</span>
+                    <span class="pill flat" style="background:rgba(59,178,115,.18);color:#3BB273;font-size:10px">🟢 Disponível</span>
+                  </div>
+                  <div class="mtitle" style="color:#fff;font-size:14px;margin-top:7px">Pintura de apartamento T2</div>
+                  <div style="display:flex;align-items:center;margin-top:6px"><span style="color:#8a889c;font-size:11px;flex:1">📍 Lisboa · 2,1 km</span><span class="mtitle" style="color:var(--brand-2);font-size:17px">€820</span></div>
+                </div>
+              </div>
+              <!-- card 2 urgente -->
+              <div style="background:#16151E;border:1px solid #2b2937;border-radius:16px;overflow:hidden;display:flex">
+                <div style="width:6px;background:#2D7DD2"></div>
+                <div style="flex:1;padding:12px 12px 12px 11px">
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span class="pill flat" style="background:#2D7DD2;font-size:10px">💧 Canalização</span>
+                    <span class="pill flat" style="background:#E15554;font-size:10px">🔥 Urgente</span>
+                  </div>
+                  <div class="mtitle" style="color:#fff;font-size:14px;margin-top:7px">Substituição de canos — moradia</div>
+                  <div style="display:flex;align-items:center;margin-top:6px"><span style="color:#8a889c;font-size:11px;flex:1">📍 Setúbal · 8 km</span><span class="mtitle" style="color:var(--brand-2);font-size:17px">€1.850</span></div>
+                </div>
+              </div>
+              <!-- card 3 -->
+              <div style="background:#16151E;border:1px solid #2b2937;border-radius:16px;overflow:hidden;display:flex">
+                <div style="width:6px;background:#E15554"></div>
+                <div style="flex:1;padding:12px 12px 12px 11px">
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span class="pill flat" style="background:#E15554;font-size:10px">🏠 Telhados</span>
+                    <span class="pill flat" style="background:rgba(45,125,210,.2);color:#5aa0e6;font-size:10px">🔵 Em curso</span>
+                  </div>
+                  <div class="mtitle" style="color:#fff;font-size:14px;margin-top:7px">Reparação de telhado</div>
+                  <div style="display:flex;align-items:center;margin-top:6px"><span style="color:#8a889c;font-size:11px;flex:1">📍 Porto · 3,4 km</span><span class="mtitle" style="color:var(--brand-2);font-size:17px">€38/h</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="bnav">
+              <div class="it on"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8 7v11h-5v-6H9v6H4V9z"/></svg>Início</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>Obras</div>
+              <div class="it" style="opacity:0">·</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v12H7l-3 3z"/></svg>Chat</div>
+              <div class="it"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>Perfil</div>
+            </div>
+            <div class="center-fab"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="#F4621F"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. DETALHE DE OBRA -->
+      <div class="phone">
+        <div class="label">10 · Detalhe de obra<small>preço limpo · card do empregador</small></div>
+        <div class="screen light">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <!-- faixa de categoria -->
+            <div style="height:8px;background:#2D7DD2"></div>
+            <div style="padding:14px 18px 0">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span class="pill flat" style="background:#2D7DD2;font-size:11px">💧 Canalização</span>
+                <span class="pill flat" style="background:rgba(59,178,115,.16);color:#238a56;font-size:11px">🟢 Disponível</span>
+                <span class="pill flat" style="background:#fdecec;color:#c0392b;font-size:11px">🔥 Urgente</span>
+              </div>
+              <div class="mtitle" style="font-size:19px;margin-top:10px;line-height:1.2">Substituição de canos — moradia</div>
+              <div style="color:var(--muted);font-size:12px;margin-top:3px">📍 Setúbal · a 8 km de ti · há 2 dias · 👁 34</div>
+              <!-- preço grande sóbrio -->
+              <div style="margin-top:12px;border:2px solid var(--line);border-radius:16px;padding:14px 16px;background:#fff;display:flex;align-items:baseline;gap:8px;box-shadow:0 4px 0 var(--line)">
+                <span class="mtitle" style="font-size:30px;color:var(--ink)">€1.850</span>
+                <span style="color:var(--muted);font-size:12px">preço fixo</span>
+              </div>
+              <!-- descrição -->
+              <div style="margin-top:12px;color:#4a4860;font-size:12.5px;line-height:1.5">Substituição completa da canalização de água numa moradia T3. Material incluído. Preferência para início imediato.</div>
+              <!-- card empregador -->
+              <div style="margin-top:14px;background:#f7f4ef;border-radius:14px;padding:12px;display:flex;align-items:center;gap:11px">
+                <div class="hex" style="width:42px;height:42px;background:#2D7DD2;font-size:15px">J</div>
+                <div style="flex:1">
+                  <div class="mtitle" style="font-size:13.5px;display:flex;align-items:center;gap:5px">João Silva <svg width="14" height="14" viewBox="0 0 24 24" fill="#3BB273"><path d="M12 2l3 2 3.5-.5L19 7l2.5 2-1 3.4L21 16l-3 1-1.5 3-3.5-1-3.5 1L8 17l-3-1 .5-3.6L4 9l2.5-2 .5-3.5L10.5 4z"/><path d="M9.5 12.5l1.8 1.8 3.7-3.8" stroke="#fff" stroke-width="2" fill="none"/></svg></div>
+                  <div style="font-size:11px;color:var(--muted)">⭐ 4.7 · Setúbal · Verificado</div>
+                </div>
+                <div style="border:1.5px solid var(--brand);border-radius:10px;padding:6px 10px;color:var(--brand);font-size:11px;font-weight:800;font-family:var(--disp)">💬 Chat</div>
+              </div>
+            </div>
+            <div class="cta" style="position:absolute;left:18px;right:18px;bottom:20px">Candidatar-me &nbsp;→</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. PESQUISA & FILTROS -->
+      <div class="phone">
+        <div class="label">11 · Pesquisa &amp; filtros<small>+ empty-state</small></div>
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-pad">
+            <div class="stbar"><span>9:41</span><span>▲ ▮▮</span></div>
+            <!-- busca -->
+            <div style="padding:8px 16px 0">
+              <div style="background:#fff;border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.25)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6a80" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+                <span style="color:#1a1830;font-size:13px;font-weight:600;flex:1">jardim</span>
+                <span style="color:#9a99ab;font-size:16px">✕</span>
+              </div>
+            </div>
+            <!-- filtros -->
+            <div style="padding:12px 16px 0">
+              <div style="display:flex;align-items:center;gap:6px"><span class="mtitle" style="color:#fff;font-size:13px;flex:1">Categorias</span><span style="color:var(--brand);font-size:11px;font-weight:800;font-family:var(--disp)">Limpar</span></div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:8px">
+                <span class="pill flat" style="background:#F4C20D;color:#1a1830;font-size:11px">⚡ Eletricidade</span>
+                <span class="pill flat" style="background:#2D7DD2;font-size:11px">💧 Canalização</span>
+                <span class="pill flat" style="background:#1E1D28;color:#8a889c;border:1px solid #2b2937;font-size:11px">🎨 Pintura</span>
+                <span class="pill flat" style="background:#1E1D28;color:#8a889c;border:1px solid #2b2937;font-size:11px">🧱 Alvenaria</span>
+                <span class="pill flat" style="background:#1E1D28;color:#8a889c;border:1px solid #2b2937;font-size:11px">🪚 Carpintaria</span>
+                <span class="pill flat" style="background:#1E1D28;color:#8a889c;border:1px solid #2b2937;font-size:11px">❄️ Climatização</span>
+              </div>
+              <div style="margin-top:16px"><span class="mtitle" style="color:#fff;font-size:13px">Preço · até €2.000</span>
+                <div style="height:6px;background:#2b2937;border-radius:4px;margin-top:10px;position:relative">
+                  <div style="position:absolute;left:0;width:62%;height:100%;background:var(--brand);border-radius:4px"></div>
+                  <div style="position:absolute;left:60%;top:-6px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>
+                </div>
+              </div>
+            </div>
+            <!-- empty state -->
+            <div style="text-align:center;padding:26px 24px 0">
+              <svg width="120" height="96" viewBox="0 0 120 96" style="margin:0 auto;display:block">
+                <ellipse cx="60" cy="86" rx="42" ry="7" fill="#1E1D28"/>
+                <circle cx="60" cy="40" r="30" fill="none" stroke="#2b2937" stroke-width="7"/>
+                <line x1="82" y1="62" x2="104" y2="84" stroke="#2b2937" stroke-width="8" stroke-linecap="round"/>
+                <circle cx="60" cy="40" r="20" fill="#16151E"/>
+                <text x="60" y="47" text-anchor="middle" font-size="20">🔍</text>
+                <circle cx="30" cy="20" r="2" fill="#7B5EA7"/><circle cx="96" cy="26" r="2.4" fill="#F4C20D"/>
+              </svg>
+              <div class="mtitle" style="color:#fff;font-size:16px;margin-top:10px">Nada por aqui… ainda</div>
+              <div style="color:#8a889c;font-size:12px;margin-top:4px;line-height:1.5">Não há obras de <b>jardim</b> nesta zona. Alarga o raio ou tira um filtro.</div>
+            </div>
+            <div class="cta" style="position:absolute;left:16px;right:16px;bottom:18px">Ver 142 obras &nbsp;→</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Segunda leva de mockups — mesmo sistema visual da direção Kurzgesagt aprovada (<code>docs/kandu-design-kurzgesagt.html</code>). HTML/CSS/SVG puro, sem imagens externas. Telas e dados baseados na leitura do app real (<code>Chat.jsx</code>, <code>NewJob.jsx</code>, <code>Applications.jsx</code>, <code>MyJobs.jsx</code>, <code>Scan.jsx</code>, <code>Notifications.jsx</code>, <code>components/dashboard/JobModal.jsx</code>, <code>lib/xp.js</code>). Não altera o app.
+</footer>
+
+<script>
+  var tabs = document.querySelectorAll('#tabs button');
+  var secs = document.querySelectorAll('main section');
+  function activate(id){
+    tabs.forEach(function(x){x.classList.toggle('active',x.getAttribute('data-tab')===id);});
+    secs.forEach(function(s){s.classList.toggle('active',s.id===id);});
+  }
+  tabs.forEach(function(b){ b.addEventListener('click', function(){
+    activate(b.getAttribute('data-tab'));
+    window.scrollTo({top:0,behavior:'smooth'});
+  });});
+  var q=(location.search.match(/[?&]tab=([a-z]+)/)||[])[1];
+  if(q) activate(q);
+</script>
+</body>
+</html>
