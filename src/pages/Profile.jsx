@@ -4,6 +4,7 @@ import { useLanguage, SUPPORTED_LANGUAGES } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { supabase } from "@/api/supabaseClient";
+import { Application, Job, User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Edit2, LogOut, MapPin, Briefcase, Award, Phone, Globe } from "lucide-react";
@@ -29,6 +30,7 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [canSeeContact, setCanSeeContact] = useState(false);
   const [activeTab, setActiveTab] = useState("info");
   const avatarInputRef = useRef(null);
 
@@ -43,6 +45,38 @@ export default function Profile() {
   const border = "var(--hair)";
 
   useEffect(() => { loadUser(); }, [viewingUserId]);
+
+  // Os contactos de outro utilizador só ficam visíveis depois de existir uma
+  // candidatura aceite entre os dois (#67)
+  useEffect(() => {
+    if (isOwnProfile || !user?.id) { setCanSeeContact(isOwnProfile); return; }
+    let cancelled = false;
+
+    const check = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const meId = session?.user?.id;
+        if (!meId) return;
+        const me = await User.me();
+
+        // Um dos dois é o profissional; o outro tem de ser o dono da obra
+        const workerId = me?.user_type === "worker" ? meId : user.id;
+        const employerId = me?.user_type === "worker" ? user.id : meId;
+
+        const [acceptedApps, employerJobs] = await Promise.all([
+          Application.filter({ worker_id: workerId, status: "accepted" }),
+          Job.filter({ employer_id: employerId }),
+        ]);
+        const jobIds = new Set(employerJobs.map(j => j.id));
+        if (!cancelled) setCanSeeContact(acceptedApps.some(a => jobIds.has(a.job_id)));
+      } catch (err) {
+        console.error("Contact visibility check failed:", err);
+      }
+    };
+
+    check();
+    return () => { cancelled = true; };
+  }, [isOwnProfile, user?.id]);
 
   const loadUser = async () => {
     setLoading(true);
@@ -301,8 +335,16 @@ export default function Profile() {
                 </div>
               </div>
             )}
+            {!isOwnProfile && !canSeeContact && (
+              <div style={{ background: "var(--surface2)", borderRadius: 14, border: `1px solid ${border}`, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 16 }}>🔒</span>
+                <p style={{ color: subtext, fontSize: 12, margin: 0, lineHeight: 1.5 }}>
+                  {t(lang, "contactHiddenNotice", "Os contactos ficam visíveis depois de a candidatura ser aceite.")}
+                </p>
+              </div>
+            )}
             {[
-              { icon: <Phone size={14}/>, label: "Telefone", value: user.phone },
+              { icon: <Phone size={14}/>, label: "Telefone", value: canSeeContact ? user.phone : null },
               { icon: <Globe size={14}/>, label: "Idioma", value: user.language },
               { icon: <Briefcase size={14}/>, label: "Experiência", value: user.experience_years ? `${user.experience_years} anos` : null },
               { icon: <Award size={14}/>, label: "Nível", value: user.level },
@@ -320,6 +362,10 @@ export default function Profile() {
                 <button onClick={handleChangeProfile}
                   style={{ padding: "12px", background: surface, border: `1px solid ${border}`, borderRadius: 12, color: subtext, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>
                   🔄 Mudar tipo de perfil
+                </button>
+                <button onClick={() => navigate(createPageUrl("Reports"))}
+                  style={{ padding: "12px", background: surface, border: `1px solid ${border}`, borderRadius: 12, color: subtext, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>
+                  🛡️ {t(lang, "reportsTitle", "Denúncias")}
                 </button>
                 <div style={{ background: "var(--surface2)", borderRadius: 14, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)", padding: 14, border: `1px solid ${border}` }}>
                   <p style={{ color: subtext, fontSize: 12, margin: "0 0 10px", fontWeight: 600 }}>Idioma da app</p>

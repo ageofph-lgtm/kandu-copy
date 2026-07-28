@@ -7,6 +7,7 @@ import { MapPin } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import LoadingScreen from "@/components/LoadingScreen";
+import { toast } from "sonner";
 
 // ─── Card de candidato (para o employer aprovar/recusar) ─────────────────────
 function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, text, subtext, border }) {
@@ -149,8 +150,10 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
 }
 
 // ─── Card de candidatura do worker (só o status, sem PIN/QR) ─────────────────
-function WorkerAppCard({ app, job, isDark, surface, text, subtext, border }) {
+function WorkerAppCard({ app, job, isDark, surface, text, subtext, border, onReload }) {
   const { lang } = useLanguage();
+  const navigate = useNavigate();
+  const [withdrawing, setWithdrawing] = useState(false);
   const statusMap = {
     pending:  { color: "#F59E0B", label: `⏳ ${t(lang, "pendingStatus", "Pendente")}` },
     accepted: { color: "#22C55E", label: `✅ ${t(lang, "acceptedGoToJobs", "Aceite — vai a Trabalhos")}` },
@@ -184,6 +187,37 @@ function WorkerAppCard({ app, job, isDark, surface, text, subtext, border }) {
         <p style={{ color: subtext, fontSize: 12, margin: "10px 0 0" }}>
           {t(lang, "inProgress", "Em andamento")}.  <strong style={{ color: "#FF6600" }}>{t(lang, "myJobs", "Os Meus Trabalhos")}</strong> {t(lang, "toConfirmPresenceAndFinish", "para confirmar presença e finalizar.")}
         </p>
+      )}
+
+      {/* Retirar candidatura enquanto está pendente (#41) */}
+      {app.status === "pending" && (
+        <button
+          onClick={async () => {
+            if (withdrawing) return;
+            if (!window.confirm(t(lang, "confirmWithdraw", "Retirar esta candidatura?"))) return;
+            setWithdrawing(true);
+            try {
+              await Application.delete(app.id);
+              toast.success(t(lang, "applicationWithdrawn", "Candidatura retirada."));
+              onReload?.();
+            } catch (err) {
+              console.error("Withdraw failed:", err);
+              toast.error(t(lang, "withdrawError", "Não foi possível retirar a candidatura."));
+              setWithdrawing(false);
+            }
+          }}
+          style={{ display: "block", marginTop: 12, background: "transparent", border: `1px solid ${border}`, borderRadius: 10, padding: "8px 14px", color: subtext, fontSize: 12, fontWeight: 600, cursor: withdrawing ? "not-allowed" : "pointer" }}>
+          {withdrawing ? t(lang, "sending", "A retirar...") : `✕ ${t(lang, "withdrawApplication", "Retirar candidatura")}`}
+        </button>
+      )}
+
+      {/* Depois de recusada, pode candidatar-se outra vez se a obra reabrir (#110) */}
+      {app.status === "rejected" && job?.status === "open" && (
+        <button
+          onClick={() => navigate(createPageUrl("Home"))}
+          style={{ display: "block", marginTop: 12, background: "#FF6600", border: "none", borderRadius: 10, padding: "9px 14px", color: "#FFF", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+          ↻ {t(lang, "sendNewProposal", "Enviar nova proposta")}
+        </button>
       )}
     </div>
   );
@@ -356,7 +390,7 @@ export default function Applications() {
           </div>
         ) : isWorker ? (
           filtered.map(app => (
-            <WorkerAppCard key={app.id} app={app} job={jobs[app.job_id]}
+            <WorkerAppCard key={app.id} app={app} job={jobs[app.job_id]} onReload={loadData}
               isDark={isDark} surface={surface} text={text} subtext={subtext} border={border} />
           ))
         ) : (

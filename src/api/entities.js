@@ -317,6 +317,50 @@ export const Rating = {
   },
 };
 
+// ─── REPORT (denúncias / reclamações) ─────────────────
+export const Report = {
+  async filter(params = {}) {
+    let q = supabase.from("reports").select("*").order("created_at", { ascending: false });
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) q = q.eq(k, v);
+    });
+    const { data, error } = await q;
+    if (error) throw error;
+    return normList(data);
+  },
+
+  async list(order = "-created_at") {
+    const ascending = !order.startsWith("-");
+    const col = order.replace(/^-/, "");
+    const { data, error } = await supabase.from("reports").select("*").order(col, { ascending });
+    if (error) throw error;
+    return normList(data);
+  },
+
+  async create(payload) {
+    const session = await getSession();
+    const { data, error } = await supabase.from("reports").insert({
+      id: crypto.randomUUID(),
+      ...payload,
+      reporter_id: payload.reporter_id || session?.user?.id,
+      status: payload.status || "open",
+      created_at: new Date().toISOString(),
+    }).select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+
+  async update(id, updates) {
+    const { data, error } = await supabase
+      .from("reports")
+      .update(updates)
+      .eq("id", id)
+      .select().single();
+    if (error) throw error;
+    return norm(data);
+  },
+};
+
 // ─── BLACKLIST ────────────────────────────────────────
 export const Blacklist = {
   async list(order = "-created_at") {

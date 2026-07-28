@@ -18,6 +18,12 @@ import { t } from "@/components/utils/translations";
 import { useLanguage } from "@/lib/LanguageContext";
 import "leaflet/dist/leaflet.css";
 import { Toaster } from "@/components/ui/sonner";
+import GdprConsent from "@/components/GdprConsent";
+
+// Consentimento RGPD por utilizador (#87)
+const GDPR_KEY = "kandu_gdpr_accepted";
+// Sessão termina após 30 min sem actividade (#85)
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 
 const workerNavigationItems = [
   { title: "home", icon: MapPin, url: createPageUrl("Home") },
@@ -55,6 +61,7 @@ export default function Layout({ children }) {
   const { lang } = useLanguage();
   const [user, setUser] = useState(null);
   const [unreadNotifications, setUnreadNotifications] = useState({ chat: 0, applications: 0 });
+  const [gdprAccepted, setGdprAccepted] = useState(true);
   const prevAppCount = React.useRef(0);
 
   // Solicitar permissão de notificações push ao montar
@@ -229,6 +236,42 @@ export default function Layout({ children }) {
     prevUnreadRef.current = total;
   }, [unreadNotifications]);
 
+  // ── Consentimento RGPD — obrigatório antes de usar a app (#87) ──
+  useEffect(() => {
+    if (!user) { setGdprAccepted(true); return; }
+    if (user.gdpr_accepted_at) { setGdprAccepted(true); return; }
+    setGdprAccepted(localStorage.getItem(`${GDPR_KEY}_${user.id}`) === "true");
+  }, [user]);
+
+  const handleGdprAccept = async () => {
+    if (!user) return;
+    localStorage.setItem(`${GDPR_KEY}_${user.id}`, "true");
+    setGdprAccepted(true);
+    // A coluna pode não existir — o consentimento local chega para o bloqueio
+    await UserEntity.update(user.id, { gdpr_accepted_at: new Date().toISOString() }).catch(() => {});
+  };
+
+  // ── Sessão expira por inactividade (#85) ──
+  useEffect(() => {
+    if (!user) return;
+    let timer;
+    const logout = async () => {
+      await supabase.auth.signOut();
+      navigate(createPageUrl("Welcome"));
+    };
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(logout, SESSION_TIMEOUT_MS);
+    };
+    const events = ["mousedown", "keydown", "touchstart", "scroll", "visibilitychange"];
+    events.forEach(evt => window.addEventListener(evt, reset, { passive: true }));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach(evt => window.removeEventListener(evt, reset));
+    };
+  }, [user, navigate]);
+
   // Páginas sem layout
   if (
     location.pathname === createPageUrl("SetupProfile") ||
@@ -237,6 +280,11 @@ export default function Layout({ children }) {
     location.pathname === createPageUrl("DevPicker")
   ) {
     return children;
+  }
+
+  // O ecrã de consentimento cobre a app e não tem forma de ser fechado
+  if (user && !gdprAccepted) {
+    return <GdprConsent open onAccept={handleGdprAccept} />;
   }
 
   return (

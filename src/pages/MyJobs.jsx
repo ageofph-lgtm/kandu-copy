@@ -433,6 +433,15 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
                   )}
                 </div>
 
+                {/* Reportar falta de comparência do profissional (#14) */}
+                {job.worker_id && (
+                  <button
+                    onClick={() => navigate(`${createPageUrl("Reports")}?type=no_show&jobId=${job.id}&reportedId=${job.worker_id}`)}
+                    style={{ width: "100%", marginTop: 10, background: "transparent", border: "1px solid #FCA5A5", borderRadius: 12, padding: "10px", color: "#DC2626", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+                    🚫 {t(lang, "reportNoShowCta", "Reportar falta de comparência")}
+                  </button>
+                )}
+
                 {/* PIN Finalizar (employer digita o PIN que o worker enviou) */}
                 <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14 }}>
                   <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>🏁 {t(lang, "finishJob", "Finalizar Obra")}</p>
@@ -743,6 +752,13 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                     </>
                   )}
                 </div>
+
+                {/* Reportar problema com o empregador (#14/#28) */}
+                <button
+                  onClick={() => navigate(`${createPageUrl("Reports")}?jobId=${job.id}&reportedId=${job.employer_id || ""}`)}
+                  style={{ width: "100%", marginTop: 10, background: "transparent", border: "1px solid #FCA5A5", borderRadius: 12, padding: "10px", color: "#DC2626", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+                  🚩 {t(lang, "reportProblemCta", "Reportar problema")}
+                </button>
               </>
             )}
           </div>

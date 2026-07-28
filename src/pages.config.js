@@ -56,6 +56,7 @@ import MyJobs from './pages/MyJobs';
 import NewJob from './pages/NewJob';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
+import Reports from './pages/Reports';
 import Scan from './pages/Scan';
 import SetupProfile from './pages/SetupProfile';
 import Welcome from './pages/Welcome';
@@ -75,6 +76,7 @@ export const PAGES = {
     "NewJob": NewJob,
     "Notifications": Notifications,
     "Profile": Profile,
+    "Reports": Reports,
     "Scan": Scan,
     "SetupProfile": SetupProfile,
     "Welcome": Welcome,

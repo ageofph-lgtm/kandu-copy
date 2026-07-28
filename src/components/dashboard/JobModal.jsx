@@ -20,6 +20,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [employer, setEmployer] = useState(null);
   const [alreadyApplied, setAlreadyApplied] = useState(false);
+  const [wasRejected, setWasRejected] = useState(false);
   const [checkingApplication, setCheckingApplication] = useState(false);
 
   useEffect(() => {
@@ -41,7 +42,10 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
         setCheckingApplication(true);
         try {
           const existing = await Application.filter({ job_id: job.id, worker_id: user.id });
-          setAlreadyApplied(existing.length > 0);
+          // Uma candidatura recusada não bloqueia — o profissional pode
+          // enviar uma nova proposta enquanto a obra estiver aberta (#110)
+          setAlreadyApplied(existing.some(a => a.status !== "rejected"));
+          setWasRejected(existing.length > 0 && existing.every(a => a.status === "rejected"));
         } catch {}
         setCheckingApplication(false);
       }
@@ -60,9 +64,11 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
 
     setIsSubmitting(true);
     try {
-      // guard against duplicate
+      // guard against duplicate — uma recusa anterior não conta
       const existing = await Application.filter({ job_id: job.id, worker_id: user.id });
-      if (existing.length > 0) { setAlreadyApplied(true); setStep("detail"); setIsSubmitting(false); return; }
+      if (existing.some(a => a.status !== "rejected")) {
+        setAlreadyApplied(true); setStep("detail"); setIsSubmitting(false); return;
+      }
 
       const payload = {
         job_id: job.id,
@@ -435,21 +441,42 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                       </div>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => setStep("apply")}
-                      style={{
-                        width: "100%", background: "#FF6600", color: "#FFF", border: "none",
-                        borderRadius: 14, padding: "16px", fontWeight: 800, fontSize: 17,
-                        cursor: "pointer", boxShadow: "0 6px 20px rgba(255,102,0,0.35)",
-                        transition: "transform 0.1s"
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
-                      onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-                    >
-                      {t(lang, "applyMe", "Candidatar-me")} →
-                    </button>
+                    <>
+                      {wasRejected && (
+                        <p style={{ margin: "0 0 10px", fontSize: 13, color: "#92400E", background: "#FEF3C7", border: "1px solid #FCD34D", borderRadius: 12, padding: "10px 12px" }}>
+                          {t(lang, "rejectedCanReapply", "A candidatura anterior foi recusada. Podes enviar uma nova proposta.")}
+                        </p>
+                      )}
+                      <button
+                        onClick={() => setStep("apply")}
+                        style={{
+                          width: "100%", background: "#FF6600", color: "#FFF", border: "none",
+                          borderRadius: 14, padding: "16px", fontWeight: 800, fontSize: 17,
+                          cursor: "pointer", boxShadow: "0 6px 20px rgba(255,102,0,0.35)",
+                          transition: "transform 0.1s"
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
+                        onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+                      >
+                        {wasRejected ? t(lang, "sendNewProposal", "Enviar nova proposta") : t(lang, "applyMe", "Candidatar-me")} →
+                      </button>
+                    </>
                   )}
                 </div>
+              )}
+
+              {/* Denunciar obra falsa (#16) */}
+              {isWorker && (
+                <button
+                  onClick={() => { onClose(); navigate(`${createPageUrl("Reports")}?type=fake_job&jobId=${job.id}&reportedId=${job.employer_id || ""}`); }}
+                  style={{
+                    width: "100%", marginTop: 12, background: "transparent",
+                    border: "1px solid #FCA5A5", borderRadius: 12, padding: "10px",
+                    color: "#DC2626", fontWeight: 600, fontSize: 13, cursor: "pointer"
+                  }}
+                >
+                  🚩 {t(lang, "reportFakeJobCta", "Denunciar obra falsa")}
+                </button>
               )}
 
               {isWorker && job.status !== "open" && (

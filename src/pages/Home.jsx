@@ -7,7 +7,8 @@ import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import MapView from "@/components/dashboard/MapView";
 import JobModal from "@/components/dashboard/JobModal";
-import { Search, List, SlidersHorizontal, X } from "lucide-react";
+import { Search, List, SlidersHorizontal, X, Star } from "lucide-react";
+import { getFavorites, toggleFavorite } from "@/lib/favorites";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -78,6 +79,8 @@ function WorkerHome({ user, isDark }) {
   const [radiusKm, setRadiusKm] = useState(null);
   const [sortBy, setSortBy] = useState("recent");
   const [employersById, setEmployersById] = useState({});
+  const [favorites, setFavorites] = useState(() => getFavorites(user.id));
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
 
   const text = "var(--text)";
   const subtext = "var(--text2)";
@@ -145,6 +148,7 @@ function WorkerHome({ user, isDark }) {
         j.category?.toLowerCase().includes(term)
       );
     }
+    if (onlyFavorites) f = f.filter(j => favorites.includes(j.id));
     // O raio só se aplica quando sabemos onde o utilizador está
     if (radiusKm && userLocation) {
       f = f.filter(j => {
@@ -168,7 +172,9 @@ function WorkerHome({ user, isDark }) {
     });
 
     setFilteredJobs(f);
-  }, [jobs, selectedCategory, searchTerm, radiusKm, sortBy, userLocation, employersById]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [jobs, selectedCategory, searchTerm, radiusKm, sortBy, userLocation, employersById, onlyFavorites, favorites]);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleToggleFavorite = (jobId) => setFavorites(toggleFavorite(user.id, jobId));
 
   const handleJobClick = async (job) => {
     try { await Job.update(job.id, { views: (job.views || 0) + 1 }); } catch {}
@@ -248,6 +254,14 @@ function WorkerHome({ user, isDark }) {
                 </button>
               ))}
             </div>
+
+            <button
+              onClick={() => setOnlyFavorites(v => !v)}
+              className={onlyFavorites ? "k-cat active" : "k-cat"}
+              style={{ marginBottom: 12 }}
+            >
+              ★ {t(lang, "onlySaved", "Só guardadas")} ({favorites.length})
+            </button>
 
             <p style={{ margin: "0 0 6px", fontSize: 11, color: subtext, fontWeight: 600 }}>
               {t(lang, "sortBy", "Ordenar por")}
@@ -361,9 +375,19 @@ function WorkerHome({ user, isDark }) {
                     </p>
                   )}
                 </div>
-                <p style={{ margin: 0, fontWeight: 800, color: "#FF6600", fontSize: 15, flexShrink: 0 }}>
-                  €{job.price}{job.price_type === "hourly" ? "/h" : ""}
-                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  <p style={{ margin: 0, fontWeight: 800, color: "#FF6600", fontSize: 15 }}>
+                    €{job.price}{job.price_type === "hourly" ? "/h" : ""}
+                  </p>
+                  {/* Guardar obra (#40) */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleToggleFavorite(job.id); }}
+                    aria-label={t(lang, "saveJob", "Guardar obra")}
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", color: favorites.includes(job.id) ? "#FBBF24" : subtext }}
+                  >
+                    <Star size={16} fill={favorites.includes(job.id) ? "#FBBF24" : "none"} />
+                  </button>
+                </div>
               </div>
             );
           })}

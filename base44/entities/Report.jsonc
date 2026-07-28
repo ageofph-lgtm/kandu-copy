@@ -1,0 +1,59 @@
+{
+  "name": "Report",
+  "type": "object",
+  "properties": {
+    "reporter_id": {
+      "type": "string",
+      "description": "ID de quem faz a denúncia"
+    },
+    "reported_id": {
+      "type": "string",
+      "description": "ID do utilizador denunciado (opcional em denúncias de obra)"
+    },
+    "job_id": {
+      "type": "string",
+      "description": "ID da obra associada à denúncia"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "no_show",
+        "fake_job",
+        "payment",
+        "behaviour",
+        "other"
+      ],
+      "description": "Motivo da denúncia"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descrição do que aconteceu"
+    },
+    "evidence_urls": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "URLs das provas carregadas (fotos, PDFs)"
+    },
+    "xp_penalty": {
+      "type": "number",
+      "default": 0,
+      "description": "XP retirado ao denunciado quando a denúncia é automática"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "reviewing",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "open",
+      "description": "Estado da análise da denúncia"
+    }
+  },
+  "required": [
+    "reporter_id",
+    "type",
+    "description"
+  ]
+}
