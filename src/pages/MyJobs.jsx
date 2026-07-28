@@ -161,6 +161,72 @@ const statusLabel = (lang, s) => t(lang, s.key, s.pt);
 // O anúncio só pode ser editado antes de a obra arrancar (#66)
 const EDITABLE_JOB_STATUSES = ["pending_employer", "open"];
 
+/** Data em que a obra foi dada como concluída (fallback: última actualização) */
+const completionDate = (job) =>
+  new Date(job.completed_at || job.updated_at || job.updated_date || job.created_at || 0);
+
+/** Ganhos do profissional por período, a partir das obras concluídas (#30/#11) */
+function earningsSummary(jobs) {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfToday.getDate() - ((startOfToday.getDay() + 6) % 7));  // segunda-feira
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const completed = jobs.filter(j => j.status === "completed");
+  const sum = (from) => completed
+    .filter(j => completionDate(j) >= from)
+    .reduce((total, j) => total + (Number(j.price) || 0), 0);
+
+  return {
+    today: sum(startOfToday),
+    week: sum(startOfWeek),
+    month: sum(startOfMonth),
+    total: completed.reduce((total, j) => total + (Number(j.price) || 0), 0),
+    count: completed.length,
+  };
+}
+
+// ─── Resumo de ganhos do profissional ─────────────────────────────────────────
+function EarningsPanel({ jobs, activeCount, text, subtext, border }) {
+  const { lang } = useLanguage();
+  const { today, week, month, total, count } = earningsSummary(jobs);
+  const money = (v) => `€${v.toLocaleString("pt-PT", { maximumFractionDigits: 0 })}`;
+
+  const cells = [
+    { label: t(lang, "earningsToday", "Hoje"), value: money(today) },
+    { label: t(lang, "earningsWeek", "Semana"), value: money(week) },
+    { label: t(lang, "earningsMonth", "Mês"), value: money(month) },
+  ];
+
+  return (
+    <div style={{ background: "var(--surface2)", borderRadius: 16, border: `1px solid ${border}`, padding: 16, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
+        <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: text }}>💶 {t(lang, "earnings", "Ganhos")}</p>
+        <span style={{ fontSize: 12, color: subtext }}>
+          {t(lang, "totalEarned", "Total")}: <strong style={{ color: "#22C55E" }}>{money(total)}</strong>
+        </span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+        {cells.map(cell => (
+          <div key={cell.label} style={{ background: "var(--base)", borderRadius: 12, padding: "10px 8px", textAlign: "center" }}>
+            <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: "#FF6600" }}>{cell.value}</p>
+            <p style={{ margin: "2px 0 0", fontSize: 11, color: subtext }}>{cell.label}</p>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 16, marginTop: 12 }}>
+        <span style={{ fontSize: 12, color: subtext }}>
+          🏁 {t(lang, "completedJobsCount", "{n} concluídas").replace("{n}", count)}
+        </span>
+        <span style={{ fontSize: 12, color: subtext }}>
+          🔨 {t(lang, "activeJobsCount", "{n} em curso").replace("{n}", activeCount)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ─── EMPLOYER JOB CARD ────────────────────────────────────────────────────────
 function EmployerJobCard({ job, applications, user, usersById = {}, onReload, isDark, surface, text, subtext, border }) {
   const { lang } = useLanguage();
@@ -747,22 +813,11 @@ export default function MyJobs() {
         ...appList.map(a => a.employer_id).filter(Boolean),
       ])];
       if (userIds.length) {
-        const userMap = {};
-        const fetchWithTimeout = (uid) => {
-          const ctrl = new AbortController();
-          const t = setTimeout(() => ctrl.abort(), 5000);
-          return fetch('/api/functions/getUserById', {
-            method: 'POST',
-            signal: ctrl.signal,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: uid })
-          })
-          .then(r => r.ok ? r.json() : null)
-          .then(data => { clearTimeout(t); if (data?.id) userMap[data.id] = data; })
-          .catch(() => clearTimeout(t));
-        };
-        await Promise.all(userIds.map(fetchWithTimeout));
-        setUsersById(userMap);
+        // Ler os utilizadores directamente do Supabase — o endpoint
+        // /api/functions/getUserById devolvia Unauthorized e o mapa ficava
+        // vazio, pelo que os nomes nunca apareciam nos cartões
+        const fetched = await Promise.all(userIds.map(uid => User.get(uid).catch(() => null)));
+        setUsersById(Object.fromEntries(fetched.filter(Boolean).map(u => [u.id, u])));
       }
     } catch(e) { console.error('loadData error:', e); }
     clearTimeout(safetyTimer);
@@ -842,6 +897,9 @@ export default function MyJobs() {
 
       {/* Cards */}
       <div style={{ padding: "16px 16px 0" }}>
+        {isWorker && (
+          <EarningsPanel jobs={jobs} activeCount={activeJobs.length} text={text} subtext={subtext} border={border} />
+        )}
         {currentData.length === 0 ? (
           <div style={{ background: "var(--surface2)", borderRadius: 16, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)", padding: "40px 24px", textAlign: "center" }}>
             <div style={{ fontSize: 44, marginBottom: 10 }}>{TABS.find(tabItem=>tabItem.id===tab)?.icon}</div>

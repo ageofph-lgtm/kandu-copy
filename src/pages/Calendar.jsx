@@ -5,7 +5,7 @@ import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 
 
-import { format, addDays, startOfWeek, isSameDay, parseISO, addWeeks, subWeeks } from "date-fns";
+import { format, addDays, startOfWeek, isSameDay, parseISO, addWeeks, subWeeks, startOfDay, isWithinInterval } from "date-fns";
 
 export default function Calendar() {
   const { isDark } = useTheme();
@@ -68,11 +68,17 @@ export default function Calendar() {
     return days;
   };
 
+  // A obra ocupa todos os dias entre o início e o fim, não só o dia de
+  // arranque — o calendário mostrava a obra num único dia (#200)
   const getJobsForDay = (date) => {
+    const day = startOfDay(date);
     return jobs.filter(job => {
       if (!job.start_date) return false;
       try {
-        return isSameDay(parseISO(job.start_date), date);
+        const start = startOfDay(parseISO(job.start_date));
+        const end = job.end_date ? startOfDay(parseISO(job.end_date)) : start;
+        if (end < start) return isSameDay(start, day);
+        return isWithinInterval(day, { start, end });
       } catch {
         return false;
       }
@@ -150,7 +156,10 @@ export default function Calendar() {
             <div style={{flex:1}}>
               <p style={{fontWeight:700,color:text,margin:"0 0 4px",fontSize:15}}>{job.title}</p>
               <p style={{color:subtext,fontSize:13,margin:0}}>{job.location} · €{job.price}{job.price_type==="hourly"?"/h":""}</p>
-              <p style={{color:"#AAAAAA",fontSize:12,margin:"4px 0 0"}}>{format(parseISO(job.start_date),"dd/MM/yyyy",{locale:dateLocale})}</p>
+              <p style={{color:"#AAAAAA",fontSize:12,margin:"4px 0 0"}}>
+                {format(parseISO(job.start_date),"dd/MM/yyyy",{locale:dateLocale})}
+                {job.end_date && ` → ${format(parseISO(job.end_date),"dd/MM/yyyy",{locale:dateLocale})}`}
+              </p>
             </div>
           </div>
         ))}

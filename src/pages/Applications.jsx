@@ -120,19 +120,30 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
         </p>
       )}
 
-      {/* Botões */}
-      <div style={{ display: "flex", gap: 10 }}>
-        <button onClick={handleReject} disabled={acting} style={{
-          flex: 1, background: "#EF444422", color: "#EF4444",
-          border: "1px solid #EF444444", borderRadius: 12,
-          padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
-        }}>✕ {t(lang, "reject", "Recusar")}</button>
-        <button onClick={handleAccept} disabled={acting} style={{
-          flex: 2, background: "#FF6600", color: "#FFF",
-          border: "none", borderRadius: 12,
-          padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
-        }}>✓ {t(lang, "acceptAndHire", "Aceitar e Contratar")}</button>
-      </div>
+      {/* Botões — só há decisão a tomar enquanto está pendente */}
+      {app.status === "pending" ? (
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={handleReject} disabled={acting} style={{
+            flex: 1, background: "#EF444422", color: "#EF4444",
+            border: "1px solid #EF444444", borderRadius: 12,
+            padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
+          }}>✕ {t(lang, "reject", "Recusar")}</button>
+          <button onClick={handleAccept} disabled={acting} style={{
+            flex: 2, background: "#FF6600", color: "#FFF",
+            border: "none", borderRadius: 12,
+            padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
+          }}>✓ {t(lang, "acceptAndHire", "Aceitar e Contratar")}</button>
+        </div>
+      ) : (
+        <span style={{
+          display: "inline-block", borderRadius: 20, padding: "5px 12px",
+          fontSize: 13, fontWeight: 700,
+          background: app.status === "accepted" ? "#22C55E22" : "#EF444422",
+          color: app.status === "accepted" ? "#22C55E" : "#EF4444",
+        }}>
+          {app.status === "accepted" ? `✅ ${t(lang, "accepted", "Aceite")}` : `✕ ${t(lang, "rejected", "Recusada")}`}
+        </span>
+      )}
     </div>
   );
 }
@@ -195,6 +206,7 @@ export default function Applications() {
   const [workers, setWorkers] = useState({});
   const [loading, setLoading] = useState(true);
   const [filter, setFilter]   = useState("all"); // "all" | job_id
+  const [statusFilter, setStatusFilter] = useState("pending"); // employer: pending | accepted | rejected | all
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -205,13 +217,14 @@ export default function Applications() {
       if (cu.user_type === "worker") {
         appList = await Application.filter({ worker_id: cu.id });
       } else {
-        // employer/admin — só candidaturas PENDENTES (não aceites nem rejeitadas)
+        // employer/admin — todas as candidaturas às suas obras. Antes só as
+        // pendentes eram carregadas e as aceites/recusadas desapareciam
+        // sem deixar registo (#29)
         const allJobs = await Job.filter({ employer_id: cu.id });
         const myJobIds = allJobs.map(j => j.id);
         if (myJobIds.length) {
           const all = await Application.list();
-          // Só pending — as aceites já estão em Trabalhos
-          appList = all.filter(a => myJobIds.includes(a.job_id) && a.status === "pending");
+          appList = all.filter(a => myJobIds.includes(a.job_id));
         }
       }
 
@@ -241,7 +254,18 @@ export default function Applications() {
     apps.map(a => a.job_id).filter(Boolean).map(id => [id, jobs[id]]).filter(([,j]) => j)
   ).values()];
 
-  const filtered = filter === "all" ? apps : apps.filter(a => a.job_id === filter);
+  const STATUS_FILTERS = [
+    { id: "pending",  label: t(lang, "pendingStatus", "Pendentes") },
+    { id: "accepted", label: t(lang, "accepted", "Aceites") },
+    { id: "rejected", label: t(lang, "rejected", "Recusadas") },
+    { id: "all",      label: t(lang, "all", "Todas") },
+  ];
+
+  const statusCount = (id) => (id === "all" ? apps.length : apps.filter(a => a.status === id).length);
+
+  const filtered = apps
+    .filter(a => (filter === "all" ? true : a.job_id === filter))
+    .filter(a => (isWorker || statusFilter === "all" ? true : a.status === statusFilter));
 
   if (loading) return <LoadingScreen />;
 
@@ -263,6 +287,26 @@ export default function Applications() {
           {t(lang, "applications", "Candidaturas")}
         </h1>
       </div>
+
+      {/* Filtro por estado (employer) — as aceites e recusadas deixaram de
+          desaparecer da lista (#29) */}
+      {!isWorker && (
+        <div style={{ padding: "12px 16px 0", overflowX: "auto" }}>
+          <div style={{ display: "flex", gap: 8, paddingBottom: 4 }}>
+            {STATUS_FILTERS.map(sf => (
+              <button key={sf.id} onClick={() => setStatusFilter(sf.id)} style={{
+                flexShrink: 0, padding: "8px 14px", borderRadius: 20,
+                border: `1px solid ${statusFilter === sf.id ? "#FF6600" : border}`,
+                background: statusFilter === sf.id ? "#FF6600" : "transparent",
+                color: statusFilter === sf.id ? "#FFF" : subtext,
+                fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap"
+              }}>
+                {sf.label} ({statusCount(sf.id)})
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Filtro por obra (employer) */}
       {!isWorker && myJobsWithApps.length > 1 && (
