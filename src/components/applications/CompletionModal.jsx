@@ -223,6 +223,35 @@ export default function CompletionModal({
       }).catch(() => {});
 
       if (data?.both_rated) {
+        // #78 — actualizar campo users.rating e total_reviews do rated_id
+        // com base nos dados devolvidos pela RPC (nova_media e novo_total_reviews).
+        // Se a RPC não devolver esses campos, recalcular via query ao cliente.
+        try {
+          if (data.new_rating != null && data.new_total_reviews != null) {
+            // A RPC devolve já os valores calculados — usar directamente
+            await supabase.from("users").update({
+              rating: data.new_rating,
+              total_reviews: data.new_total_reviews,
+            }).eq("id", otherUser.id);
+          } else {
+            // Fallback: calcular a média das reviews visíveis do rated_id
+            const { data: reviews } = await supabase
+              .from("ratings")
+              .select("score, rating")
+              .eq("rated_id", otherUser.id)
+              .eq("visible", true);
+            if (reviews && reviews.length > 0) {
+              const sum = reviews.reduce((acc, r) => acc + Number(r.score ?? r.rating ?? 0), 0);
+              const avg = Math.round((sum / reviews.length) * 10) / 10;
+              await supabase.from("users").update({
+                rating: avg,
+                total_reviews: reviews.length,
+              }).eq("id", otherUser.id);
+            }
+          }
+        } catch (ratingUpdateErr) {
+          console.warn("[#78] Falhou update de rating no utilizador:", ratingUpdateErr);
+        }
         setXpToast({ show: true, gained: data.my_xp_gain || 0, total: (currentUser.xp || 0) + (data.my_xp_gain || 0) });
       } else {
         toast.success(data?.message || "Avaliação registada. O XP é atribuído quando ambas as partes avaliarem.");

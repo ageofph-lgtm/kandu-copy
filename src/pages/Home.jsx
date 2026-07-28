@@ -329,6 +329,24 @@ function WorkerHome({ user, isDark }) {
             <p style={{ margin: "8px 0 6px", fontSize: 11, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: 0.6 }}>
               Raio de distância
             </p>
+            {/* #35 — banner visível quando localização não está disponível */}
+            {!userLocation && (
+              <div style={{
+                display: "flex", alignItems: "flex-start", gap: 8,
+                background: "#fffbeb", border: "1px solid #fbbf24",
+                borderRadius: 10, padding: "8px 10px", marginBottom: 8,
+              }}>
+                <span style={{ fontSize: 16, lineHeight: 1 }}>📍</span>
+                <div>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#92400e" }}>
+                    Localização não disponível
+                  </p>
+                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "#b45309", lineHeight: 1.4 }}>
+                    Permite o acesso à localização no browser para filtrar por raio e ver obras perto de ti.
+                  </p>
+                </div>
+              </div>
+            )}
             <div style={{ display: "flex", gap: 6 }}>
               {RADIUS_OPTIONS.map(opt => (
                 <button key={opt.value} onClick={() => setRadiusKm(opt.value)}
