@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { useState } from "react";
+import { isValidNIF, normalizeNIF } from "@/lib/nif";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { Button } from "@/components/ui/button";
@@ -132,8 +133,17 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
       return;
     }
 
-    onSave(formData);
+    // NIF é opcional, mas se for preenchido tem de ser válido (dígito de controlo)
+    if (formData.nif && !isValidNIF(formData.nif)) {
+      toast.error(t(lang, "invalidNif", "NIF inválido. Verifique os 9 dígitos."));
+      return;
+    }
+
+    onSave({ ...formData, nif: normalizeNIF(formData.nif) });
   };
+
+  const nifError = formData.nif && !isValidNIF(formData.nif);
+  const newClientNifError = newClient.nif && !isValidNIF(newClient.nif);
 
   return (
     <Card>
@@ -257,9 +267,17 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
                 <label className="block text-sm font-medium mb-2">NIF</label>
                 <Input
                   placeholder="123 456 789"
+                  inputMode="numeric"
+                  maxLength={11}
                   value={formData.nif}
                   onChange={(e) => handleChange("nif", e.target.value)}
+                  className={nifError ? "border-red-400 focus-visible:ring-red-400" : ""}
                 />
+                {nifError && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {t(lang, "invalidNif", "NIF inválido. Verifique os 9 dígitos.")}
+                  </p>
+                )}
               </div>
 
               {/* Clients Section — apenas para Cia */}
@@ -282,11 +300,23 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
                   <div className="space-y-2 mt-2">
                     <Input placeholder={t(lang, "clientNamePlaceholder", "Nome do cliente") + " *"} value={newClient.name} onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))} />
                     <Input placeholder={t(lang, "contactLabel", "Contacto")} value={newClient.contact} onChange={e => setNewClient(p => ({ ...p, contact: e.target.value }))} />
-                    <Input placeholder={t(lang, "clientNifPlaceholder", "NIF do cliente")} value={newClient.nif} onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))} />
-                    <Button type="button" variant="outline" className="w-full border-dashed border-purple-300 text-purple-600" disabled={!newClient.name}
+                    <Input
+                      placeholder={t(lang, "clientNifPlaceholder", "NIF do cliente")}
+                      inputMode="numeric"
+                      maxLength={11}
+                      value={newClient.nif}
+                      onChange={e => setNewClient(p => ({ ...p, nif: e.target.value }))}
+                      className={newClientNifError ? "border-red-400 focus-visible:ring-red-400" : ""}
+                    />
+                    {newClientNifError && (
+                      <p className="text-xs text-red-500">
+                        {t(lang, "invalidNif", "NIF inválido. Verifique os 9 dígitos.")}
+                      </p>
+                    )}
+                    <Button type="button" variant="outline" className="w-full border-dashed border-purple-300 text-purple-600" disabled={!newClient.name || !!newClientNifError}
                       onClick={() => {
-                        if (!newClient.name) return;
-                        handleChange('company_clients', [...formData.company_clients, { ...newClient }]);
+                        if (!newClient.name || newClientNifError) return;
+                        handleChange('company_clients', [...formData.company_clients, { ...newClient, nif: normalizeNIF(newClient.nif) }]);
                         setNewClient({ name: '', contact: '', nif: '' });
                       }}
                     >

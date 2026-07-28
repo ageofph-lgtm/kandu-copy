@@ -36,26 +36,32 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   // Estado do popover de credenciados
   const [showDev, setShowDev] = useState(false);
   const [devLoading, setDevLoading] = useState(null); // email do user a entrar
+
+  // Papel escolhido no Welcome ("worker" | "employer") — segue para o SetupProfile
+  const intendedRole = new URLSearchParams(window.location.search).get("role");
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
         const { data: profile } = await supabase
           .from("users").select("user_type").eq("id", session.user.id).maybeSingle();
-        const dest = profile?.user_type === "admin"
-          ? "AdminDashboard"
-          : profile?.user_type
-            ? "Home"
-            : "SetupProfile";
-        navigate(createPageUrl(dest), { replace: true });
+        if (profile?.user_type === "admin") {
+          navigate(createPageUrl("AdminDashboard"), { replace: true });
+        } else if (profile?.user_type) {
+          navigate(createPageUrl("Home"), { replace: true });
+        } else {
+          const query = intendedRole ? `?role=${intendedRole}` : "";
+          navigate(createPageUrl("SetupProfile") + query, { replace: true });
+        }
       }
     });
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, intendedRole]);
 
   const handleGoogle = async () => {
     setGoogleLoading(true);
@@ -73,20 +79,51 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    setNotice("");
+
+    if (password.length < 6) {
+      setError("A password tem de ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    setLoading(true);
     try {
       if (mode === "login") {
         const { error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) throw err;
+        // A navegação acontece no listener onAuthStateChange
       } else {
-        const { error: err } = await supabase.auth.signUp({ email, password });
+        const query = intendedRole ? `?role=${intendedRole}` : "";
+        const { data, error: err } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin + createPageUrl("SetupProfile") + query },
+        });
         if (err) throw err;
+
+        // Sem sessão = confirmação por email activa: o SIGNED_IN nunca chega,
+        // por isso temos de sair do estado "a processar" nós próprios.
+        if (!data?.session) {
+          setNotice("Conta criada. Confirma o teu email para entrares.");
+          setLoading(false);
+        }
       }
     } catch (err) {
       setError(err.message);
       setLoading(false);
     }
+  };
+
+  const handleResetPassword = async () => {
+    if (!email) { setError("Escreve o teu email primeiro."); return; }
+    setError("");
+    setNotice("");
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + createPageUrl("Login"),
+    });
+    if (err) setError(err.message);
+    else setNotice("Enviámos um email para repores a password.");
   };
 
   // Entrar como dev user — vai para o DevPicker
@@ -172,6 +209,12 @@ export default function Login() {
           </div>
         )}
 
+        {notice && (
+          <div style={{ color: "#4ade80", fontSize: 13, marginBottom: 12, padding: "10px 14px", background: "rgba(34,197,94,0.1)", borderRadius: 8, border: "1px solid rgba(34,197,94,0.3)" }}>
+            ✉️ {notice}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required
             style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #333", background: "#1a1a24", color: "#fff", fontFamily: "inherit", fontSize: 14, outline: "none" }} />
@@ -188,9 +231,18 @@ export default function Login() {
           </button>
         </form>
 
+        {mode === "login" && (
+          <p style={{ textAlign: "center", marginTop: 12, marginBottom: 0 }}>
+            <span onClick={handleResetPassword}
+              style={{ color: "#666", fontSize: 13, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>
+              Esqueceste a password?
+            </span>
+          </p>
+        )}
+
         <p style={{ textAlign: "center", marginTop: 18, color: "#666", fontSize: 14 }}>
           {mode === "login" ? "Não tens conta? " : "Já tens conta? "}
-          <span onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}
+          <span onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setNotice(""); }}
             style={{ color: "#F4621F", cursor: "pointer", fontWeight: 700 }}>
             {mode === "login" ? "Criar conta" : "Entrar"}
           </span>

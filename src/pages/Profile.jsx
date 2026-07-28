@@ -10,6 +10,9 @@ import { Edit2, LogOut, Star, MapPin, Briefcase, Award, Phone, Globe } from "luc
 import ProfileForm from "../components/profile/ProfileForm";
 import ReviewsSection from "../components/profile/ReviewsSection";
 
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
+
 export default function Profile() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
@@ -18,6 +21,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [activeTab, setActiveTab] = useState("info");
   const avatarInputRef = useRef(null);
 
@@ -78,21 +82,48 @@ export default function Profile() {
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
+    e.target.value = "";  // permite re-escolher o mesmo ficheiro
     if (!file) return;
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setUploadError("Formato inválido. Usa JPG, PNG ou WEBP.");
+      return;
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      setUploadError("Imagem demasiado grande (máx. 5 MB).");
+      return;
+    }
+
+    setUploadError("");
     setIsUploading(true);
     const preview = URL.createObjectURL(file);
     setUser(prev => ({ ...prev, avatar_url: preview }));
     try {
-      const ext = file.name.split(".").pop();
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
       const name = `avatars/${user.id}_${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("kandu-uploads").upload(name, file, { upsert: true });
+      const { error: upErr } = await supabase.storage
+        .from("kandu-uploads")
+        .upload(name, file, { upsert: true, contentType: file.type, cacheControl: "3600" });
       if (upErr) throw upErr;
+
       const { data: { publicUrl } } = supabase.storage.from("kandu-uploads").getPublicUrl(name);
-      await supabase.from("users").update({ avatar_url: publicUrl, updated_at: new Date().toISOString() }).eq("id", user.id);
-      setUser(prev => ({ ...prev, avatar_url: publicUrl }));
+      // Cache-busting: o browser/CDN pode ter a versão antiga em cache
+      const bustedUrl = `${publicUrl}?v=${Date.now()}`;
+
+      const { error: dbErr } = await supabase.from("users")
+        .update({ avatar_url: bustedUrl, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
+      if (dbErr) throw dbErr;
+
+      setUser(prev => ({ ...prev, avatar_url: bustedUrl }));
+    } catch (err) {
+      console.error("Avatar upload error:", err);
+      setUploadError("Não foi possível guardar a foto. Tenta novamente.");
+      await loadUser();
+    } finally {
       URL.revokeObjectURL(preview);
-    } catch (err) { console.error(err); await loadUser(); }
-    finally { setIsUploading(false); }
+      setIsUploading(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -132,7 +163,7 @@ export default function Profile() {
 
   return (
     <div style={{ background: bg, minHeight: "100vh", paddingBottom: 80 }}>
-      <input type="file" ref={avatarInputRef} onChange={handleAvatarUpload} style={{ display: "none" }} accept="image/*" />
+      <input type="file" ref={avatarInputRef} onChange={handleAvatarUpload} style={{ display: "none" }} accept="image/jpeg,image/png,image/webp" />
 
       {/* Header */}
       <div style={{ background: "var(--surface2)", padding: "50px 20px 24px", position: "relative" }}>
@@ -184,6 +215,10 @@ export default function Profile() {
             )}
           </div>
         </div>
+
+        {uploadError && (
+          <p style={{ color: "#ef4444", fontSize: 12, margin: "10px 0 0" }}>⚠️ {uploadError}</p>
+        )}
 
         {/* Stats */}
         <div style={{ display: "flex", gap: 12, marginTop: 20 }}>

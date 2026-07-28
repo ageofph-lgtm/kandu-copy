@@ -11,7 +11,6 @@ export default function SetupProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
   const [error, setError] = useState("");
 
   const profiles = [
@@ -29,9 +28,18 @@ export default function SetupProfile() {
     },
   ];
 
+  // Papel escolhido no Welcome (?role=worker|employer) fica pré-seleccionado
+  const [activeIndex, setActiveIndex] = useState(() => {
+    const role = new URLSearchParams(window.location.search).get("role");
+    const idx = profiles.findIndex(p => p.type === role);
+    return idx >= 0 ? idx : 0;
+  });
+
   useEffect(() => {
-    // Escutar auth state — apanha sessão mesmo após redirect
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    let cancelled = false;
+
+    const resolveSession = async (session) => {
+      if (cancelled) return;
       if (!session?.user) {
         setUser(null);
         setLoading(false);
@@ -44,22 +52,24 @@ export default function SetupProfile() {
         .select("user_type")
         .eq("id", authUser.id)
         .maybeSingle();
+      if (cancelled) return;
       if (profile?.user_type) {
         navigate(createPageUrl("Home"));
         return;
       }
       setUser(authUser);
       setLoading(false);
+    };
+
+    // Escutar auth state — apanha sessão mesmo após redirect (OAuth, magic link)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      resolveSession(session);
     });
 
-    // Verificar sessão imediatamente (não esperar pelo evento)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        setLoading(false);
-      }
-    });
+    // Resolver a sessão actual sem depender do evento chegar
+    supabase.auth.getSession().then(({ data: { session } }) => resolveSession(session));
 
-    return () => subscription.unsubscribe();
+    return () => { cancelled = true; subscription.unsubscribe(); };
   }, [navigate]);
 
   const handleConfirm = async () => {

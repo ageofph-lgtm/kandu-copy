@@ -117,7 +117,7 @@ export default function Welcome() {
       <div style={{ width: "100%", maxWidth: 400, display: "flex", flexDirection: "column", gap: 14, position: "relative", zIndex: 1 }}>
         {/* Sou Profissional */}
         <button
-          onClick={() => navigate(createPageUrl("Login"))}
+          onClick={() => navigate(createPageUrl("Login") + "?role=worker")}
           style={{
             width: "100%", padding: "17px 20px",
             background: "linear-gradient(135deg, #FFC489, #FF7A1A 42%, #E04E00)",
@@ -133,7 +133,7 @@ export default function Welcome() {
 
         {/* Sou Empregador */}
         <button
-          onClick={() => navigate(createPageUrl("Login"))}
+          onClick={() => navigate(createPageUrl("Login") + "?role=employer")}
           style={{
             width: "100%", padding: "17px 20px",
             background: "linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.055))",
