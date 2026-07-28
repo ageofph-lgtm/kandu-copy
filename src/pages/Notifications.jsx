@@ -130,23 +130,27 @@ export default function Notifications() {
   }, [loadData]);
 
   const handleMarkAsRead = async (notification) => {
+    if (notification.read) return;
+    // Actualização optimista — recarregar a página inteira fazia piscar o
+    // ecrã de loading e a notificação parecia não ficar lida
+    setNotifications(prev => prev.map(n => (n.id === notification.id ? { ...n, read: true } : n)));
     try {
       await Notification.update(notification.id, { read: true });
-      loadData(); // Recarregar para atualizar a visualização
     } catch (error) {
       console.error("Error marking notification as read:", error);
+      setNotifications(prev => prev.map(n => (n.id === notification.id ? { ...n, read: false } : n)));
     }
   };
 
   const handleMarkAllAsRead = async () => {
+    const unread = notifications.filter(n => !n.read);
+    if (!unread.length) return;
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     try {
-      const unreadNotifications = notifications.filter(n => !n.read);
-      for (const notification of unreadNotifications) {
-        await Notification.update(notification.id, { read: true });
-      }
-      loadData();
+      await Promise.all(unread.map(n => Notification.update(n.id, { read: true })));
     } catch (error) {
       console.error("Error marking all as read:", error);
+      loadData();
     }
   };
 

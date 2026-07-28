@@ -11,6 +11,38 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { Star, Camera, X, CheckCircle } from "lucide-react";
+import { supabase } from "@/api/supabaseClient";
+
+// Colunas garantidas na tabela users — usadas como fallback se um update
+// falhar por causa de uma coluna opcional que ainda não exista na BD
+const SAFE_USER_COLUMNS = ["rating", "xp", "completed_jobs", "total_jobs"];
+
+async function updateUserSafe(userId, updates) {
+  try {
+    await User.update(userId, updates);
+  } catch (err) {
+    const safe = Object.fromEntries(
+      Object.entries(updates).filter(([k]) => SAFE_USER_COLUMNS.includes(k))
+    );
+    if (!Object.keys(safe).length) throw err;
+    await User.update(userId, safe);
+  }
+}
+
+/** Soma XP a um utilizador lendo primeiro o valor actual */
+async function grantXP(userId, amount, { completedJob = false } = {}) {
+  if (!userId || amount <= 0) return;
+  const target = await User.get(userId).catch(() => null);
+  if (!target) return;
+
+  const updates = { xp: (target.xp || 0) + amount };
+  if (completedJob) {
+    const completed = (target.completed_jobs || 0) + 1;
+    updates.completed_jobs = completed;
+    updates.total_jobs = Math.max(target.total_jobs || 0, completed);
+  }
+  await updateUserSafe(userId, updates);
+}
 
 // Os valores `pt` são canónicos e é o que se guarda na base de dados;
 // a `key` serve apenas para a tradução na UI.
@@ -157,6 +189,31 @@ export default function CompletionModal({
 
   const photoCount = photos.filter(Boolean).length;
 
+  // Prova de trabalho: sobe as fotos para o storage e tenta guardá-las na obra.
+  // Não bloqueia a conclusão se o storage/coluna falhar.
+  const uploadProofPhotos = async () => {
+    const files = photos.filter(Boolean).map(p => p.file);
+    if (!files.length) return [];
+    try {
+      const urls = [];
+      for (const [i, file] of files.entries()) {
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+        const path = `proof/${job.id}/${currentUser.id}_${Date.now()}_${i}.${ext}`;
+        const { error } = await supabase.storage
+          .from("kandu-uploads")
+          .upload(path, file, { upsert: true, contentType: file.type });
+        if (error) throw error;
+        const { data: { publicUrl } } = supabase.storage.from("kandu-uploads").getPublicUrl(path);
+        urls.push(publicUrl);
+      }
+      await Job.update(job.id, { proof_photos: urls }).catch(() => {});
+      return urls;
+    } catch (err) {
+      console.error("Proof photo upload failed:", err);
+      return [];
+    }
+  };
+
   const handleQualityToggle = (quality) => {
     setSelectedQualities(prev =>
       prev.includes(quality)
@@ -178,49 +235,76 @@ export default function CompletionModal({
     setIsSubmitting(true);
 
     try {
-      // 1. Criar avaliação na tabela ratings
-      await Rating.create({
+      // 1. Criar avaliação. As qualidades são opcionais na BD — se a coluna
+      // não existir, grava-se a avaliação à mesma.
+      const ratingPayload = {
         job_id: job.id,
         rater_id: currentUser.id,
         rated_id: otherUser.id,
         score: rating,
         comment: comment.trim(),
+      };
+      try {
+        await Rating.create({ ...ratingPayload, qualities: selectedQualities });
+      } catch {
+        await Rating.create(ratingPayload);
+      }
+
+      // 2. Média do avaliado — tem de ser gravada no PERFIL DO AVALIADO.
+      // (updateMyUserData escrevia a média no próprio avaliador.)
+      const receivedRatings = await Rating.filter({ rated_id: otherUser.id });
+      if (receivedRatings.length > 0) {
+        const sum = receivedRatings.reduce((s, r) => s + (r.score ?? r.rating ?? 0), 0);
+        const avg = sum / receivedRatings.length;
+        await updateUserSafe(otherUser.id, {
+          rating: parseFloat(avg.toFixed(2)),
+          total_reviews: receivedRatings.length,
+        }).catch(err => console.error("Rating average update failed:", err));
+      }
+
+      // 3. Fotos de prova de trabalho — upload best-effort
+      if (isWorkerFlow && photoCount > 0) await uploadProofPhotos();
+
+      // 4. XP de participação do avaliador (inclui o bónus 5× de prova de
+      // trabalho). O XP que depende da nota recebida só é atribuído quando
+      // ambas as partes avaliarem — ver passo 5.
+      const selfXP = XP_EVENTS.job_completed_self * (isWorkerFlow && photoCount >= 3 ? 5 : 1);
+      await grantXP(currentUser.id, selfXP);
+
+      // 5. A obra só fica concluída — e o XP da avaliação só é atribuído —
+      // depois de as duas partes avaliarem.
+      const reciprocal = await Rating.filter({
+        job_id: job.id,
+        rater_id: otherUser.id,
+        rated_id: currentUser.id,
       });
+      const bothRated = reciprocal.length > 0;
 
-      // 2. Actualizar o score médio do utilizador avaliado
-      const allRatings = await Rating.filter({ rated_id: otherUser.id });
-      if (allRatings.length > 0) {
-        const avg = allRatings.reduce((s, r) => s + (r.score || r.rating || 0), 0) / allRatings.length;
-        await User.updateMyUserData({ rating: parseFloat(avg.toFixed(2)), total_reviews: allRatings.length }).catch(() =>
-          User.update(otherUser.id, { rating: parseFloat(avg.toFixed(2)), total_reviews: allRatings.length }).catch(() => {})
-        );
-      }
+      if (bothRated) {
+        const theirScore = reciprocal[0].score ?? reciprocal[0].rating ?? 0;
+        const price = job.price || 0;
+        await grantXP(otherUser.id, calcJobXP(rating, price), { completedJob: true });
+        await grantXP(currentUser.id, calcJobXP(theirScore, price), { completedJob: true });
 
-      // 3. Marcar a obra como concluída (só o employer ou quando ambos avaliaram)
-      const isEmployer = currentUser.user_type === "employer";
-      if (isEmployer) {
-        // Employer avaliou → obra concluída
         await Job.update(job.id, { status: "completed" });
+        if (application?.id) {
+          await Application.update(application.id, { status: "completed" }).catch(() => {});
+        }
       } else {
-        // Worker avaliou → marcar completed (já estava completed_by_employer)
-        await Job.update(job.id, { status: "completed" });
+        // Fica a aguardar a avaliação da outra parte
+        await Job.update(job.id, { status: "completed_by_employer" });
       }
 
-      // 4. Actualizar candidatura
-      if (application?.id) {
-        await Application.update(application.id, { status: "completed" }).catch(() => {});
-      }
+      setXpToast({ show: true, gained: selfXP, total: (currentUser.xp || 0) + selfXP });
 
-      // 5. XP — calcular e mostrar toast
-      const xpGained = calcJobXP(rating, job.price || 0, false);
-      setXpToast({ show: true, gained: xpGained, total: (currentUser.xp || 0) + xpGained });
-
-      // 6. Notificação para o utilizador avaliado
+      // 6. Notificação para a outra parte
       await Notification.create({
         user_id: otherUser.id,
         type: "new_review",
-        title: "⭐ Nova avaliação recebida!",
-        message: `Recebeste ${rating} estrela${rating !== 1 ? "s" : ""} por "${job.title}".`,
+        title: bothRated ? "⭐ Nova avaliação recebida!" : "✍️ Avaliação pendente",
+        message: bothRated
+          ? `A avaliação de "${job.title}" já está visível no teu perfil.`
+          : `${currentUser.full_name || "A outra parte"} avaliou "${job.title}". Avalia também para concluir a obra.`,
         related_id: job.id,
         read: false,
       }).catch(() => {});

@@ -16,17 +16,36 @@ function QualityBadge({ quality, lang }) {
   return <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{label}</span>;
 }
 
+// Uma avaliação só fica pública quando ambas as partes avaliarem — ou
+// passados 7 dias, para não ficar escondida se a outra parte nunca avaliar.
+const DISCLOSURE_DAYS = 7;
+const DISCLOSURE_MS = DISCLOSURE_DAYS * 24 * 60 * 60 * 1000;
+
 export default function ReviewsSection({ userId }) {
   const { lang } = useLanguage();
   const [ratings, setRatings] = useState([]);
+  const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const now = new Date();
-      const all = await Rating.filter({ rated_id: userId });
-      const visible = all;  // todos os ratings são visíveis
+      const [received, given] = await Promise.all([
+        Rating.filter({ rated_id: userId }),
+        Rating.filter({ rater_id: userId }),
+      ]);
+
+      // Avaliações que este utilizador já submeteu, por obra + avaliado
+      const givenKeys = new Set(given.map(r => `${r.job_id}:${r.rated_id}`));
+
+      const isDisclosed = (r) => {
+        if (givenKeys.has(`${r.job_id}:${r.rater_id}`)) return true;  // ambos avaliaram
+        const createdAt = new Date(r.created_at || r.created_date).getTime();
+        return Number.isFinite(createdAt) && Date.now() - createdAt > DISCLOSURE_MS;
+      };
+
+      const visible = received.filter(isDisclosed);
       setRatings(visible);
+      setPendingCount(received.length - visible.length);
       setLoading(false);
     };
     if (userId) load();
@@ -48,6 +67,15 @@ export default function ReviewsSection({ userId }) {
 
   return (
     <div className="space-y-3">
+      {pendingCount > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2">
+          <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+          <p className="text-xs text-amber-700">
+            {t(lang, "hiddenReviewsNotice", "{n} avaliação(ões) por revelar — ficam visíveis quando ambas as partes avaliarem.")
+              .replace("{n}", pendingCount)}
+          </p>
+        </div>
+      )}
       {ratings.map((r) => (
         <RatingCard key={r.id} rating={r} lang={lang} />
       ))}

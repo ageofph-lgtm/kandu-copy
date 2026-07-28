@@ -208,6 +208,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
       return;
     }
     setShowFinishPin(false);
+    toast.success(t(lang, "thanksJobCompleted", "Obrigado! Trabalho concluído."));
     const app = applications.find(a => a.job_id === job.id && a.status === "accepted");
     if (!app) {
       // sem candidatura aceite — finalizar directo
