@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { useState, useEffect, useCallback } from "react";
 import { Application, Job, Notification, User } from "@/api/entities";
 import { useTheme } from "@/lib/ThemeContext";
@@ -34,6 +35,37 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
       });
       onAccept();
     } catch (_) { setActing(false); }
+  };
+
+  // #110 — alternativa à recusa: propor outro valor ao profissional
+  const handleCounterOffer = async () => {
+    const raw = window.prompt(
+      `Contraproposta para ${worker?.full_name || "o profissional"}\n\n` +
+      `Pedido: €${app.proposed_price || job?.price}\nQual o teu valor (€)?`,
+      String(job?.price || "")
+    );
+    if (raw === null) return;
+    const value = parseFloat(raw);
+    if (!Number.isFinite(value) || value <= 0) { toast.error("Valor inválido."); return; }
+    setActing(true);
+    try {
+      await Application.update(app.id, {
+        counter_offer: value,
+        counter_offer_by: job?.employer_id,
+        counter_offer_status: "pending",
+      });
+      await Notification.create({
+        user_id: app.worker_id, type: "new_proposal",
+        title: "💰 Contraproposta recebida",
+        message: `O empregador propôs €${value} para "${job?.title}".`,
+        related_id: job?.id, read: false,
+      }).catch(() => {});
+      toast.success("Contraproposta enviada ✓");
+      onAccept();
+    } catch (e) {
+      toast.error("Erro ao enviar contraproposta: " + (e.message || ""));
+      setActing(false);
+    }
   };
 
   const handleReject = async () => {
@@ -120,6 +152,20 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
         </p>
       )}
 
+      {/* #110 — contraproposta em curso */}
+      {app.counter_offer && (
+        <p style={{
+          color: "#3B82F6", fontSize: 12, fontWeight: 600, background: "#3B82F615",
+          borderRadius: 8, padding: "8px 12px", margin: "0 0 12px"
+        }}>
+          💰 Contraproposta de €{app.counter_offer} — {
+            app.counter_offer_status === "accepted" ? "aceite pelo profissional"
+            : app.counter_offer_status === "rejected" ? "recusada"
+            : "à espera de resposta"
+          }
+        </p>
+      )}
+
       {/* Botões */}
       <div style={{ display: "flex", gap: 10 }}>
         <button onClick={handleReject} disabled={acting} style={{
@@ -127,6 +173,11 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
           border: "1px solid #EF444444", borderRadius: 12,
           padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
         }}>✕ {t(lang, "reject", "Recusar")}</button>
+        <button onClick={handleCounterOffer} disabled={acting} style={{
+          flex: 1, background: "#3B82F622", color: "#3B82F6",
+          border: "1px solid #3B82F644", borderRadius: 12,
+          padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
+        }}>💰 {t(lang, "counterOffer", "Contrapropor")}</button>
         <button onClick={handleAccept} disabled={acting} style={{
           flex: 2, background: "#FF6600", color: "#FFF",
           border: "none", borderRadius: 12,
@@ -138,7 +189,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
 }
 
 // ─── Card de candidatura do worker (só o status, sem PIN/QR) ─────────────────
-function WorkerAppCard({ app, job, isDark, surface, text, subtext, border }) {
+function WorkerAppCard({ app, job, isDark, surface, text, subtext, border, onWithdraw }) {
   const { lang } = useLanguage();
   const statusMap = {
     pending:  { color: "#F59E0B", label: `⏳ ${t(lang, "pendingStatus", "Pendente")}` },
@@ -174,6 +225,21 @@ function WorkerAppCard({ app, job, isDark, surface, text, subtext, border }) {
           {t(lang, "inProgress", "Em andamento")}.  <strong style={{ color: "#FF6600" }}>{t(lang, "myJobs", "Os Meus Trabalhos")}</strong> {t(lang, "toConfirmPresenceAndFinish", "para confirmar presença e finalizar.")}
         </p>
       )}
+
+      {/* #110 — contraproposta do empregador */}
+      {app.status === "pending" && app.counter_offer && app.counter_offer_status === "pending" && (
+        <p style={{ color: "#3B82F6", fontSize: 12, fontWeight: 600, background: "#3B82F615", borderRadius: 8, padding: "8px 12px", margin: "10px 0 0" }}>
+          💰 O empregador propôs €{app.counter_offer} — responde em <strong>Trabalho</strong>.
+        </p>
+      )}
+
+      {/* #41 — retirar candidatura antes da aceitação */}
+      {app.status === "pending" && onWithdraw && (
+        <button onClick={() => onWithdraw(app)}
+          style={{ width: "100%", marginTop: 12, background: "transparent", color: subtext, border: `1px solid ${border}`, borderRadius: 10, padding: "9px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+          ↩︎ {t(lang, "withdrawApplication", "Retirar candidatura")}
+        </button>
+      )}
     </div>
   );
 }
@@ -195,6 +261,18 @@ export default function Applications() {
   const [workers, setWorkers] = useState({});
   const [loading, setLoading] = useState(true);
   const [filter, setFilter]   = useState("all"); // "all" | job_id
+
+  // #41 — retirar candidatura antes de ser aceite
+  const handleWithdraw = async (app) => {
+    if (!window.confirm("Retirar a tua candidatura?\n\nPodes candidatar-te de novo enquanto o anúncio estiver aberto.")) return;
+    try {
+      await Application.delete(app.id);
+      setApps(prev => prev.filter(a => a.id !== app.id));
+      toast.success("Candidatura retirada.");
+    } catch (e) {
+      toast.error("Erro ao retirar candidatura: " + (e.message || ""));
+    }
+  };
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -312,7 +390,7 @@ export default function Applications() {
           </div>
         ) : isWorker ? (
           filtered.map(app => (
-            <WorkerAppCard key={app.id} app={app} job={jobs[app.job_id]}
+            <WorkerAppCard key={app.id} app={app} job={jobs[app.job_id]} onWithdraw={handleWithdraw}
               isDark={isDark} surface={surface} text={text} subtext={subtext} border={border} />
           ))
         ) : (

@@ -5,7 +5,7 @@ import { useLanguage, getDateLocale } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 
 
-import { format, addDays, startOfWeek, isSameDay, parseISO, addWeeks, subWeeks } from "date-fns";
+import { format, addDays, startOfWeek, isSameDay, parseISO, addWeeks, subWeeks, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 
 export default function Calendar() {
   const { isDark } = useTheme();
@@ -44,8 +44,8 @@ export default function Calendar() {
         jobList = await Job.filter({ worker_id: user.id });
       }
       
-      const jobsWithDates = jobList.filter(job => job.start_date);
-      setJobs(jobsWithDates);
+      // #200 — obras com qualquer data definida (início e/ou fim) entram no calendário
+      setJobs(jobList.filter(job => job.start_date || job.end_date));
     } catch (error) {
       console.error("Error loading jobs:", error);
     }
@@ -68,15 +68,38 @@ export default function Calendar() {
     return days;
   };
 
+  // #200 — a obra ocupa TODOS os dias entre início e fim, não só o dia de início.
+  const parse = (value) => {
+    if (!value) return null;
+    try { return parseISO(String(value).slice(0, 10)); } catch { return null; }
+  };
+
   const getJobsForDay = (date) => {
     return jobs.filter(job => {
-      if (!job.start_date) return false;
-      try {
-        return isSameDay(parseISO(job.start_date), date);
-      } catch {
-        return false;
+      const start = parse(job.start_date);
+      const end = parse(job.end_date);
+      if (!start && !end) return false;
+      if (start && end) {
+        try {
+          return isWithinInterval(date, { start: startOfDay(start), end: endOfDay(end) });
+        } catch {
+          return isSameDay(start, date);
+        }
       }
+      return isSameDay(start || end, date);
     });
+  };
+
+  /** Etiqueta do dia para uma obra: início, fim, ambos ou em curso. */
+  const dayRole = (job, date) => {
+    const start = parse(job.start_date);
+    const end = parse(job.end_date);
+    const isStart = start && isSameDay(start, date);
+    const isEnd = end && isSameDay(end, date);
+    if (isStart && isEnd) return { label: "Início e fim", color: "#A855F7" };
+    if (isStart) return { label: "Início", color: "#22C55E" };
+    if (isEnd) return { label: "Fim", color: "#EF4444" };
+    return { label: "Em curso", color: "#FF6600" };
   };
 
   const formatPrice = (price, type) => {
@@ -144,16 +167,29 @@ export default function Calendar() {
             <div style={{fontSize:48,marginBottom:12}}>📅</div>
             <p style={{color:subtext}}>{t(lang,"noEventsForDay","Sem eventos para este dia")}</p>
           </div>
-        ) : selectedDayJobs.map(job => (
-          <div key={job.id} style={{background:surface,borderRadius:14,padding:14,borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start"}}>
-            <span style={{fontSize:24}}>{job.status==="in_progress"?"🏗️":"📅"}</span>
-            <div style={{flex:1}}>
-              <p style={{fontWeight:700,color:text,margin:"0 0 4px",fontSize:15}}>{job.title}</p>
-              <p style={{color:subtext,fontSize:13,margin:0}}>{job.location} · €{job.price}{job.price_type==="hourly"?"/h":""}</p>
-              <p style={{color:"#AAAAAA",fontSize:12,margin:"4px 0 0"}}>{format(parseISO(job.start_date),"dd/MM/yyyy",{locale:dateLocale})}</p>
+        ) : selectedDayJobs.map(job => {
+          const role = dayRole(job, selectedDay);
+          const start = parse(job.start_date);
+          const end = parse(job.end_date);
+          return (
+            <div key={job.id} style={{background:surface,borderRadius:14,padding:14,borderLeft:`4px solid ${role.color}`,display:"flex",gap:12,alignItems:"flex-start"}}>
+              <span style={{fontSize:24}}>{job.status==="in_progress"?"🏗️":"📅"}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                  <p style={{fontWeight:700,color:text,margin:0,fontSize:15}}>{job.title}</p>
+                  <span style={{background:role.color+"22",color:role.color,borderRadius:20,padding:"2px 8px",fontSize:11,fontWeight:700,flexShrink:0}}>
+                    {role.label}
+                  </span>
+                </div>
+                <p style={{color:subtext,fontSize:13,margin:0}}>{job.location} · €{job.price}{job.price_type==="hourly"?"/h":""}</p>
+                <p style={{color:subtext,fontSize:12,margin:"4px 0 0"}}>
+                  {start ? format(start,"dd/MM/yyyy",{locale:dateLocale}) : "—"}
+                  {end ? ` → ${format(end,"dd/MM/yyyy",{locale:dateLocale})}` : ""}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Stats */}

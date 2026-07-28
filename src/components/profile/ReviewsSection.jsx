@@ -19,14 +19,16 @@ function QualityBadge({ quality, lang }) {
 export default function ReviewsSection({ userId }) {
   const { lang } = useLanguage();
   const [ratings, setRatings] = useState([]);
+  const [pending, setPending] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const now = new Date();
+      // #27 — uma avaliação só é pública depois de ambas as partes submeterem.
+      // O flag `visible` é activado pela função submit_job_rating no servidor.
       const all = await Rating.filter({ rated_id: userId });
-      const visible = all;  // todos os ratings são visíveis
-      setRatings(visible);
+      setRatings(all.filter(r => r.visible !== false));
+      setPending(all.filter(r => r.visible === false).length);
       setLoading(false);
     };
     if (userId) load();
@@ -48,6 +50,14 @@ export default function ReviewsSection({ userId }) {
 
   return (
     <div className="space-y-3">
+      {pending > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
+          <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-700">
+            {pending} avaliação(ões) por publicar — ficam visíveis quando ambas as partes avaliarem.
+          </p>
+        </div>
+      )}
       {ratings.map((r) => (
         <RatingCard key={r.id} rating={r} lang={lang} />
       ))}

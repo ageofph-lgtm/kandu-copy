@@ -1,6 +1,8 @@
 import { toast } from "sonner";
 import { Job, User } from "@/api/entities";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { UploadFile } from "@/api/integrations";
+import { requireFields, isValidDateRange, validateFile, resizeImage, IMAGE_MIME_TYPES } from "@/lib/validation";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -110,11 +112,19 @@ export default function NewJob() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [photos, setPhotos] = useState([]);          // #21 — fotos da área de trabalho
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const photoInputRef = useRef(null);
   const [formData, setFormData] = useState({
     title: "", category: "", categoryKey: "", description: "",
     location: "", start_date: "", end_date: "",
     price_type: "fixed", price: "", urgency: "medium"
   });
+
+  /** Mínimo de fotos da área de trabalho exigido pelo wireframe (#21). */
+  const MIN_JOB_PHOTOS = 3;
 
   useEffect(() => {
     const loadUser = async () => {
@@ -132,40 +142,143 @@ export default function NewJob() {
     loadUser();
   }, [navigate]);
 
-  const set = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
-
-  const canGoNext = () => {
-    if (step === 1) return formData.title.trim() && formData.category && formData.description.trim();
-    if (step === 2) return !!formData.location;
-    if (step === 3) return !!formData.price;
-    return true;
+  const set = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => (prev[field] ? { ...prev, [field]: undefined } : prev));
   };
 
-  // BUG FIX: status agora é "open" para aparecer na busca dos profissionais
+  // ── #19 / #1002 — validação real por passo ────────────────────────────────
+  // O botão "Próximo" avançava mesmo com campos obrigatórios por preencher
+  // (nomeadamente as datas, que apareciam marcadas como obrigatórias).
+  const validateStep = (targetStep = step) => {
+    let e = {};
+
+    if (targetStep === 1) {
+      e = requireFields(formData, [
+        { name: "title", label: "O título da obra", validate: v => v.trim().length < 5 ? "Título demasiado curto (mín. 5 caracteres)." : null },
+        { name: "category", label: "A categoria" },
+        { name: "description", label: "A descrição", validate: v => v.trim().length < 20 ? "Descreve o trabalho com pelo menos 20 caracteres." : null },
+      ]);
+    }
+
+    if (targetStep === 2) {
+      e = requireFields(formData, [
+        { name: "location", label: "A localização" },
+        { name: "start_date", label: "A data de início" },
+        { name: "end_date", label: "A data de fim" },
+      ]);
+      if (!e.end_date && !isValidDateRange(formData.start_date, formData.end_date)) {
+        e.end_date = "A data de fim não pode ser anterior à data de início.";
+      }
+      if (photos.length < MIN_JOB_PHOTOS) {
+        e.photos = `Adiciona pelo menos ${MIN_JOB_PHOTOS} fotos da área de trabalho (tens ${photos.length}).`;
+      }
+    }
+
+    if (targetStep === 3) {
+      e = requireFields(formData, [
+        { name: "price", label: "O valor", validate: v => (isNaN(parseFloat(v)) || parseFloat(v) <= 0) ? "Indica um valor válido." : null },
+      ]);
+    }
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const goNext = () => {
+    if (!validateStep()) {
+      toast.error("Preenche os campos obrigatórios assinalados.");
+      return;
+    }
+    setStep(s => s + 1);
+  };
+
+  // ── #21 — fotos da área de trabalho ───────────────────────────────────────
+  const handlePhotos = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (!files.length) return;
+    for (const file of files) {
+      const check = validateFile(file, { accept: IMAGE_MIME_TYPES });
+      if (!check.ok) { toast.error(check.error); return; }
+    }
+    setUploadingPhoto(true);
+    try {
+      const urls = [];
+      for (const file of files) {
+        const resized = await resizeImage(file, { maxSize: 1600, quality: 0.85 });
+        const { file_url } = await UploadFile({ file: resized });
+        urls.push(file_url);
+      }
+      setPhotos(prev => [...prev, ...urls]);
+      setErrors(prev => ({ ...prev, photos: undefined }));
+    } catch (err) {
+      toast.error("Erro ao enviar as fotos: " + (err.message || ""));
+    }
+    setUploadingPhoto(false);
+  };
+
+  const buildPayload = (status) => {
+    const coords = LOCATION_COORDS[formData.location] || { lat: 38.7223, lon: -9.1393 };
+    // categoryKey é só estado de UI — não pertence à entidade Job
+    const { categoryKey: _categoryKey, ...jobData } = formData;
+    return {
+      ...jobData,
+      price: parseFloat(formData.price) || 0,
+      employer_id: user.id,
+      latitude: coords.lat + (Math.random() - 0.5) * 0.005,
+      longitude: coords.lon + (Math.random() - 0.5) * 0.005,
+      views: 0,
+      status,
+      photos,
+      // strings vazias em campos date causam erro 22007 no Supabase
+      start_date: formData.start_date || null,
+      end_date: formData.end_date || null,
+      published_at: status === "open" ? new Date().toISOString() : null,
+    };
+  };
+
+  // #53 — guardar como rascunho antes de publicar
+  const handleSaveDraft = async () => {
+    if (!formData.title.trim()) {
+      toast.error("Dá pelo menos um título à obra para guardar o rascunho.");
+      return;
+    }
+    setSavingDraft(true);
+    try {
+      await Job.create(buildPayload("draft"));
+      toast.success("Rascunho guardado — encontra-o em Trabalho › Rascunhos.");
+      navigate(createPageUrl("MyJobs"));
+    } catch (error) {
+      console.error("Draft error:", error);
+      toast.error("Erro ao guardar rascunho: " + (error.message || ""));
+    }
+    setSavingDraft(false);
+  };
+
   const handleSubmit = async () => {
+    // Revalidar todos os passos — o utilizador pode ter recuado e limpado campos
+    for (const s of [1, 2, 3]) {
+      if (!validateStep(s)) { setShowConfirm(false); setStep(s); toast.error("Há campos obrigatórios por preencher."); return; }
+    }
     setShowConfirm(false);
     setIsSubmitting(true);
     try {
-      const coords = LOCATION_COORDS[formData.location];
-      // categoryKey é só estado de UI — não pertence à entidade Job
-      const { categoryKey: _categoryKey, ...jobData } = formData;
-      // FIX: strings vazias em campos date causam erro 22007 no Supabase
-      // Converter "" → null para start_date e end_date
-      await Job.create({
-        ...jobData,
-        price: parseFloat(formData.price),
-        employer_id: user.id,
-        latitude: coords.lat + (Math.random() - 0.5) * 0.005,
-        longitude: coords.lon + (Math.random() - 0.5) * 0.005,
-        views: 0,
-        status: "open",
-        start_date: formData.start_date || null,
-        end_date: formData.end_date || null,
-      });
+      await Job.create(buildPayload("open"));
+
+      // #64 — verificação de telemóvel após publicação do anúncio
+      if (!user.phone_verified) {
+        toast.warning(
+          "Obra publicada. Confirma o teu telemóvel no Perfil para que os profissionais possam confiar no anúncio.",
+          { duration: 8000 }
+        );
+      } else {
+        toast.success("Obra publicada ✓");
+      }
       navigate(createPageUrl("MyJobs"));
     } catch (error) {
       console.error("NewJob error:", error);
-      toast.error(t(lang,"errorPublishingJob","Erro ao publicar obra. Tente novamente."));
+      toast.error(t(lang,"errorPublishingJob","Erro ao publicar obra. Tente novamente.") + " " + (error.message || ""));
     }
     setIsSubmitting(false);
   };
@@ -175,7 +288,9 @@ export default function NewJob() {
   const selectedCat = CATEGORIES.find(c => c.pt === formData.category);
   const catIcon = selectedCat?.icon || "";
 
-  const inputStyle = {width:"100%",padding:14,background:surface,border:"2px solid #FF6600",borderRadius:12,color:text,boxSizing:"border-box",fontSize:15,outline:"none"};
+  const inputStyle = (invalid) => ({width:"100%",padding:14,background:surface,border:`2px solid ${invalid ? "#EF4444" : "#FF6600"}`,borderRadius:12,color:text,boxSizing:"border-box",fontSize:15,outline:"none"});
+  const FieldError = ({ name }) =>
+    errors[name] ? <p style={{color:"#EF4444",fontSize:12,margin:"6px 0 0",fontWeight:600}}>⚠️ {errors[name]}</p> : null;
   const labelStyle = {color:subtext,fontSize:13,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:8};
   const sectionStyle = {borderBottom:`1px solid ${isDark?"#222":"#EEEEEE"}`,padding:"16px 20px"};
 
@@ -226,10 +341,11 @@ export default function NewJob() {
         <>
           <div style={sectionStyle}>
             <label style={labelStyle}>{t(lang,"jobTitle","Título da Obra")}</label>
-            <input placeholder={t(lang,"jobTitlePlaceholder","Ex: Pintar apartamento T2")} value={formData.title} onChange={e => set("title",e.target.value)} style={inputStyle} />
+            <input placeholder={t(lang,"jobTitlePlaceholder","Ex: Pintar apartamento T2")} value={formData.title} onChange={e => set("title",e.target.value)} style={inputStyle(errors.title)} />
+            <FieldError name="title" />
           </div>
           <div style={sectionStyle}>
-            <label style={labelStyle}>{t(lang,"category")}</label>
+            <label style={labelStyle}>{t(lang,"category")} *</label>
             <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
               {CATEGORIES.map(cat => (
                 <button key={cat.pt} onClick={() => { set("category", cat.pt); set("categoryKey", cat.key); }}
@@ -238,11 +354,13 @@ export default function NewJob() {
                 </button>
               ))}
             </div>
+            <FieldError name="category" />
           </div>
           <div style={sectionStyle}>
             <label style={labelStyle}>{t(lang,"description")}</label>
             <textarea placeholder={t(lang,"jobDescriptionPlaceholder","Descreva em detalhe o trabalho a realizar...")} value={formData.description} onChange={e => set("description",e.target.value)}
-              style={{background:surface,border:"2px solid #FF6600",borderRadius:12,padding:14,color:text,resize:"none",height:100,width:"100%",boxSizing:"border-box",fontSize:15,outline:"none"}} />
+              style={{background:surface,border:`2px solid ${errors.description ? "#EF4444" : "#FF6600"}`,borderRadius:12,padding:14,color:text,resize:"none",height:100,width:"100%",boxSizing:"border-box",fontSize:15,outline:"none"}} />
+            <FieldError name="description" />
           </div>
         </>
       )}
@@ -276,19 +394,56 @@ export default function NewJob() {
                 </button>
               ))}
             </div>
+            <FieldError name="location" />
           </div>
 
           <div style={sectionStyle}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
               <div>
-                <label style={labelStyle}>{t(lang,"startDate")}</label>
-                <input type="date" value={formData.start_date} onChange={e => set("start_date",e.target.value)} style={{...inputStyle,colorScheme:isDark?"dark":"light"}} />
+                <label style={labelStyle}>{t(lang,"startDate","Data Início")} *</label>
+                <input type="date" value={formData.start_date} onChange={e => set("start_date",e.target.value)}
+                  min={new Date().toISOString().slice(0,10)}
+                  style={{...inputStyle(errors.start_date),colorScheme:isDark?"dark":"light"}} />
+                <FieldError name="start_date" />
               </div>
               <div>
-                <label style={labelStyle}>{t(lang,"endDate","Data Fim")}</label>
-                <input type="date" value={formData.end_date} onChange={e => set("end_date",e.target.value)} style={{...inputStyle,colorScheme:isDark?"dark":"light"}} />
+                <label style={labelStyle}>{t(lang,"endDate","Data Fim")} *</label>
+                <input type="date" value={formData.end_date} onChange={e => set("end_date",e.target.value)}
+                  min={formData.start_date || new Date().toISOString().slice(0,10)}
+                  style={{...inputStyle(errors.end_date),colorScheme:isDark?"dark":"light"}} />
+                <FieldError name="end_date" />
               </div>
             </div>
+          </div>
+
+          {/* #21 — fotos da área de trabalho (mínimo 3) */}
+          <div style={sectionStyle}>
+            <label style={labelStyle}>📷 {t(lang,"workAreaPhotos","Fotos da área de trabalho")} * ({photos.length}/{MIN_JOB_PHOTOS})</label>
+            <p style={{color:subtext,fontSize:13,margin:"0 0 12px"}}>
+              {t(lang,"workAreaPhotosHint","Fotos reais do local ajudam os profissionais a orçamentar com rigor.")}
+            </p>
+            <input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple
+              onChange={handlePhotos} style={{display:"none"}} />
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>
+              {photos.map((url,i) => (
+                <div key={url+i} style={{position:"relative",aspectRatio:"1",borderRadius:12,overflow:"hidden",background:surface}}>
+                  <img src={url} alt={`Área de trabalho ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                  <button type="button" onClick={() => setPhotos(prev => prev.filter((_,idx) => idx !== i))}
+                    aria-label="Remover foto"
+                    style={{position:"absolute",top:4,right:4,background:"#EF4444",border:"none",borderRadius:"50%",width:22,height:22,color:"#fff",cursor:"pointer",fontSize:12,lineHeight:1}}>
+                    ×
+                  </button>
+                </div>
+              ))}
+              {photos.length < 9 && (
+                <button type="button" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}
+                  style={{aspectRatio:"1",borderRadius:12,border:`2px dashed ${errors.photos ? "#EF4444" : "#FF6600"}`,background:"transparent",color:"#FF6600",cursor:uploadingPhoto?"wait":"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,fontSize:12,fontWeight:700}}>
+                  <span style={{fontSize:22}}>{uploadingPhoto ? "⏳" : "+"}</span>
+                  {uploadingPhoto ? "A enviar" : "Adicionar"}
+                </button>
+              )}
+            </div>
+            <FieldError name="photos" />
           </div>
 
           <div style={sectionStyle}>
@@ -318,7 +473,8 @@ export default function NewJob() {
             ))}
           </div>
           <label style={labelStyle}>{t(lang,"priceValue","Valor (€)")}{formData.price_type==='hourly'?` ${t(lang,"perHour","/ hora")}`:''}</label>
-          <input type="number" inputMode="numeric" placeholder="0" value={formData.price} onChange={e => set("price",e.target.value)} style={inputStyle} />
+          <input type="number" inputMode="numeric" min="1" placeholder="0" value={formData.price} onChange={e => set("price",e.target.value)} style={inputStyle(errors.price)} />
+          <FieldError name="price" />
           {priceSuggestion && (
             <div style={{background:"#FF660011",border:"1px solid #FF660033",borderRadius:10,padding:12,display:"flex",gap:8,marginTop:10,alignItems:"flex-start"}}>
               <span style={{color:"#FF6600",fontSize:16,flexShrink:0}}>💡</span>
@@ -370,8 +526,8 @@ export default function NewJob() {
           </button>
         )}
         {step < 4 ? (
-          <button onClick={() => canGoNext() && setStep(s => s+1)} disabled={!canGoNext()}
-            style={{flex:1,padding:"14px 0",background:canGoNext()?"#FF6600":"#333",border:"none",borderRadius:14,color:canGoNext()?"#FFF":"#555",fontWeight:700,fontSize:15,cursor:canGoNext()?"pointer":"not-allowed",transition:"background 0.2s"}}>
+          <button onClick={goNext}
+            style={{flex:1,padding:"14px 0",background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer",transition:"background 0.2s"}}>
             {t(lang,"nextStep","Próximo")} →
           </button>
         ) : (
@@ -380,6 +536,14 @@ export default function NewJob() {
             {isSubmitting ? t(lang,"publishing","A publicar...") : `🚀 ${t(lang,"publishJob","Publicar Obra")}`}
           </button>
         )}
+      </div>
+
+      {/* #53 — guardar como rascunho em qualquer altura */}
+      <div style={{padding:"0 20px 20px",display:"flex",justifyContent:"center"}}>
+        <button onClick={handleSaveDraft} disabled={savingDraft}
+          style={{background:"none",border:"none",color:subtext,fontSize:13,cursor:savingDraft?"wait":"pointer",textDecoration:"underline",textUnderlineOffset:3,fontFamily:"inherit"}}>
+          {savingDraft ? "A guardar rascunho..." : "💾 Guardar como rascunho"}
+        </button>
       </div>
     </div>
   );

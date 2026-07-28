@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { supabase } from "@/api/supabaseClient";
 import { useTheme } from "@/lib/ThemeContext";
-import { Search, SlidersHorizontal, X, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 
 const SKILLS = ["Alvenaria","Canalização","Carpintaria","Construção Civil","Electricidade","HVAC","Impermeabilização","Isolamentos","Jardinagem","Ladrilhador","Logística","Mecânica","Pavimentos","Pintura","Soldadura","Telhados"];
 const CITIES = ["Lisboa","Porto","Braga","Aveiro","Coimbra","Faro","Funchal","Cascais","Almada","Amadora","Loures","Odivelas","Santarém","Setúbal","Guimarães","Évora","Leiria"];

@@ -30,12 +30,16 @@ const DEV_USERS = [
 
 export default function Login() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState("login");
+  // "login" | "signup" | "reset" — o modo inicial vem do Welcome (?mode=signup)
+  const [mode, setMode] = useState(
+    () => new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "login"
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   // Estado do popover de credenciados
   const [showDev, setShowDev] = useState(false);
@@ -75,11 +79,24 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setNotice("");
     try {
+      if (mode === "reset") {
+        // #45 — recuperação de password por email
+        if (!email.trim()) throw new Error("Indica o email da tua conta.");
+        const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/Login`,
+        });
+        if (err) throw err;
+        setNotice("Enviámos um link de recuperação para " + email.trim() + ". Verifica a caixa de entrada (e o spam).");
+        setLoading(false);
+        return;
+      }
       if (mode === "login") {
         const { error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) throw err;
       } else {
+        if (password.length < 8) throw new Error("A password tem de ter pelo menos 8 caracteres.");
         const { error: err } = await supabase.auth.signUp({ email, password });
         if (err) throw err;
       }
@@ -136,10 +153,12 @@ export default function Login() {
         </div>
 
         <h1 style={{ textAlign: "center", color: "#fff", fontSize: 22, fontWeight: 700, margin: "0 0 6px" }}>
-          {mode === "login" ? "Bem-vindo de volta" : "Criar conta"}
+          {mode === "login" ? "Bem-vindo de volta" : mode === "signup" ? "Criar conta" : "Recuperar password"}
         </h1>
         <p style={{ textAlign: "center", color: "#666", fontSize: 13, margin: "0 0 24px" }}>
-          {mode === "login" ? "Entra na tua conta KANDU" : "Começa a usar o KANDU hoje"}
+          {mode === "login" ? "Entra na tua conta KANDU"
+            : mode === "signup" ? "Começa a usar o KANDU hoje"
+            : "Enviamos-te um link para definires uma nova password"}
         </p>
 
         {/* Google */}
@@ -172,11 +191,23 @@ export default function Login() {
           </div>
         )}
 
+        {notice && (
+          <div style={{ color: "#4ADE80", fontSize: 13, marginBottom: 12, padding: "10px 14px", background: "rgba(34,197,94,0.1)", borderRadius: 8, border: "1px solid rgba(34,197,94,0.3)" }}>
+            ✅ {notice}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required
             style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #333", background: "#1a1a24", color: "#fff", fontFamily: "inherit", fontSize: 14, outline: "none" }} />
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required
-            style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #333", background: "#1a1a24", color: "#fff", fontFamily: "inherit", fontSize: 14, outline: "none" }} />
+          {mode !== "reset" && (
+            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required
+              minLength={mode === "signup" ? 8 : undefined}
+              style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #333", background: "#1a1a24", color: "#fff", fontFamily: "inherit", fontSize: 14, outline: "none" }} />
+          )}
+          {mode === "signup" && (
+            <p style={{ color: "#555", fontSize: 11, margin: "-4px 0 0" }}>Mínimo 8 caracteres.</p>
+          )}
           <button type="submit" disabled={loading} style={{
             padding: "13px", borderRadius: 10, border: "none",
             background: loading ? "#555" : "linear-gradient(135deg, #F4621F, #d44a0a)",
@@ -184,13 +215,26 @@ export default function Login() {
             cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit",
             boxShadow: loading ? "none" : "0 4px 16px rgba(244,98,31,0.35)",
           }}>
-            {loading ? "⏳ A processar..." : mode === "login" ? "Entrar" : "Criar conta"}
+            {loading ? "⏳ A processar..."
+              : mode === "login" ? "Entrar"
+              : mode === "signup" ? "Criar conta"
+              : "Enviar link de recuperação"}
           </button>
         </form>
 
+        {/* #45 — recuperar password */}
+        {mode !== "reset" && (
+          <p style={{ textAlign: "center", marginTop: 12, fontSize: 13 }}>
+            <span onClick={() => { setMode("reset"); setError(""); setNotice(""); }}
+              style={{ color: "#8A909A", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>
+              Esqueci-me da password
+            </span>
+          </p>
+        )}
+
         <p style={{ textAlign: "center", marginTop: 18, color: "#666", fontSize: 14 }}>
-          {mode === "login" ? "Não tens conta? " : "Já tens conta? "}
-          <span onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}
+          {mode === "login" ? "Não tens conta? " : mode === "signup" ? "Já tens conta? " : ""}
+          <span onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setNotice(""); }}
             style={{ color: "#F4621F", cursor: "pointer", fontWeight: 700 }}>
             {mode === "login" ? "Criar conta" : "Entrar"}
           </span>

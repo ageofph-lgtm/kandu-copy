@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { useState } from "react";
+import { isValidNIF, isValidCompanyNIF, isValidPhonePT, normalizePhonePT, isCorporateEmail } from "@/lib/validation";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { Button } from "@/components/ui/button";
@@ -74,8 +75,11 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
     nif: user?.nif || "",
     skills: user?.skills || [],
     service_areas: user?.service_areas || [],
-    company_clients: user?.company_clients || []
+    company_clients: user?.company_clients || [],
+    experience_years: user?.experience_years ?? "",
+    hourly_rate: user?.hourly_rate ?? ""
   });
+  const [errors, setErrors] = useState({});
   const [newClient, setNewClient] = useState({ name: '', contact: '', nif: '' });
 
   const [newSkill, setNewSkill] = useState("");
@@ -83,6 +87,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => (prev[field] ? { ...prev, [field]: undefined } : prev));
   };
 
   const addSkill = () => {
@@ -119,21 +124,60 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
     }));
   };
 
+  // #1004 — a edição de perfil não validava NIF nem telemóvel.
+  const validate = () => {
+    const e = {};
+    const isCia = formData.user_type === "employer" && formData.employer_type === "cia";
+
+    if (!formData.user_type) e.user_type = t(lang, "selectUserTypeError", "Selecione o tipo de utilizador");
+    if (!formData.full_name?.trim()) e.full_name = t(lang, "enterNameError", "Introduza o seu nome");
+
+    if (formData.phone?.trim() && !isValidPhonePT(formData.phone)) {
+      e.phone = "Número de telemóvel inválido (ex: 912 345 678).";
+    }
+
+    if (formData.nif?.trim()) {
+      if (isCia && !isValidCompanyNIF(formData.nif)) e.nif = "NIF de empresa inválido (deve começar por 5, 6 ou 9).";
+      else if (!isValidNIF(formData.nif)) e.nif = "NIF inválido — verifica os 9 dígitos.";
+    } else if (formData.user_type === "employer") {
+      e.nif = "O NIF é obrigatório para empregadores.";
+    }
+
+    if (isCia) {
+      if (!formData.company?.trim()) e.company = "Indique o nome da empresa.";
+      // #18 — Cia Employer não pode usar email pessoal
+      if (user?.email && !isCorporateEmail(user.email)) {
+        e.company = "Contas Cia Employer exigem email com domínio próprio da empresa (não @gmail, @hotmail, …).";
+      }
+    }
+
+    if (formData.experience_years !== "" && Number(formData.experience_years) < 0) {
+      e.experience_years = "Valor inválido.";
+    }
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    if (!formData.user_type) {
-      toast.error(t(lang, "selectUserTypeError", "Por favor, selecione o tipo de utilizador"));
+
+    if (!validate()) {
+      toast.error("Corrija os campos assinalados antes de guardar.");
       return;
     }
 
-    if (!formData.full_name) {
-      toast.error(t(lang, "enterNameError", "Por favor, introduza o seu nome"));
-      return;
-    }
-
-    onSave(formData);
+    onSave({
+      ...formData,
+      phone: formData.phone ? normalizePhonePT(formData.phone) : null,
+      nif: formData.nif ? formData.nif.replace(/\s/g, "") : null,
+      experience_years: formData.experience_years === "" ? null : Number(formData.experience_years),
+      hourly_rate: formData.hourly_rate === "" ? null : Number(formData.hourly_rate),
+    });
   };
+
+  const ErrorText = ({ field }) =>
+    errors[field] ? <p className="text-xs text-red-500 mt-1">⚠️ {errors[field]}</p> : null;
 
   return (
     <Card>
@@ -185,6 +229,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
               value={formData.full_name}
               onChange={(e) => handleChange("full_name", e.target.value)}
             />
+            <ErrorText field="full_name" />
           </div>
 
           {/* Telefone */}
@@ -197,6 +242,7 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
               value={formData.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
             />
+            <ErrorText field="phone" />
           </div>
 
           {/* Cidade */}
@@ -251,15 +297,19 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
                   value={formData.company}
                   onChange={(e) => handleChange("company", e.target.value)}
                 />
+                <ErrorText field="company" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">NIF</label>
                 <Input
                   placeholder="123 456 789"
+                  inputMode="numeric"
+                  maxLength={11}
                   value={formData.nif}
-                  onChange={(e) => handleChange("nif", e.target.value)}
+                  onChange={(e) => handleChange("nif", e.target.value.replace(/[^\d\s]/g, ""))}
                 />
+                <ErrorText field="nif" />
               </div>
 
               {/* Clients Section — apenas para Cia */}
@@ -299,6 +349,32 @@ export default function ProfileForm({ user, onSave, onCancel, isFirstTime }) {
           )}
 
           {/* Campos específicos para profissionais */}
+          {formData.user_type === 'worker' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  {t(lang, "experienceYears", "Anos de experiência")}
+                </label>
+                <Input
+                  type="number" min="0" max="60" inputMode="numeric" placeholder="Ex: 5"
+                  value={formData.experience_years}
+                  onChange={(e) => handleChange("experience_years", e.target.value)}
+                />
+                <ErrorText field="experience_years" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  {t(lang, "hourlyRate", "Valor/hora (€)")}
+                </label>
+                <Input
+                  type="number" min="0" inputMode="numeric" placeholder="Ex: 18"
+                  value={formData.hourly_rate}
+                  onChange={(e) => handleChange("hourly_rate", e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
           {formData.user_type === 'worker' && (
             <div>
               <label className="block text-sm font-medium mb-2">

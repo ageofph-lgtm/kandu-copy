@@ -12,6 +12,41 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+
+/**
+ * Destino de cada notificação (Findings Common: "Notificação de trabalho ao
+ * clicar não abre"). A coluna `action_url` não existe na BD, por isso a rota é
+ * derivada do tipo + `related_id`.
+ */
+function notificationTarget(notification) {
+  const jobId = notification.related_id;
+  switch (notification.type) {
+    case "new_message":
+      return createPageUrl("Chat");
+    case "new_application":
+    case "new_proposal":
+    case "application_withdrawn":
+      return createPageUrl("Applications");
+    case "job_accepted":
+    case "job_rejected":
+    case "job_started":
+    case "job_completed":
+    case "job_ready_for_review":
+    case "pin_received":
+    case "pin_confirmed":
+    case "completion_pin":
+    case "attendance_confirmed":
+      return createPageUrl("MyJobs");
+    case "new_rating":
+    case "new_review":
+      return createPageUrl("Profile");
+    case "penalty":
+      return jobId ? `${createPageUrl("Complaints")}?jobId=${jobId}` : createPageUrl("Complaints");
+    default:
+      return createPageUrl("MyJobs");
+  }
+}
 
 function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   const navigate = useNavigate();
@@ -44,10 +79,8 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
   };
 
   const handleClick = () => {
-    if (!notification.read) {
-      onMarkAsRead(notification);
-    }
-    // action_url não existe na BD — navegação removida
+    if (!notification.read) onMarkAsRead(notification);
+    navigate(notificationTarget(notification));
   };
 
   return (
@@ -89,6 +122,7 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
 }
 
 export default function Notifications() {
+  const navigate = useNavigate();
   const { isDark } = useTheme();
   const { lang } = useLanguage();
   const bg = "var(--base)";
@@ -132,19 +166,25 @@ export default function Notifications() {
   const handleMarkAsRead = async (notification) => {
     try {
       await Notification.update(notification.id, { read: true });
-      loadData(); // Recarregar para atualizar a visualização
+      // Actualização optimista — o contador desce de imediato em vez de
+      // esperar pelo refetch (as notificações "não desapareciam ao clicar").
+      setNotifications(prev => prev.map(n => (n.id === notification.id ? { ...n, read: true } : n)));
     } catch (error) {
       console.error("Error marking notification as read:", error);
     }
   };
 
+  /** Clicar abre o ecrã correspondente e marca como lida. */
+  const handleOpen = async (notification) => {
+    if (!notification.read) await handleMarkAsRead(notification);
+    navigate(notificationTarget(notification));
+  };
+
   const handleMarkAllAsRead = async () => {
     try {
-      const unreadNotifications = notifications.filter(n => !n.read);
-      for (const notification of unreadNotifications) {
-        await Notification.update(notification.id, { read: true });
-      }
-      loadData();
+      const unread = notifications.filter(n => !n.read);
+      await Promise.all(unread.map(n => Notification.update(n.id, { read: true })));
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     } catch (error) {
       console.error("Error marking all as read:", error);
     }
@@ -157,7 +197,7 @@ export default function Notifications() {
 
     try {
       await Notification.delete(notification.id);
-      loadData();
+      setNotifications(prev => prev.filter(n => n.id !== notification.id));
     } catch (error) {
       console.error("Error deleting notification:", error);
       toast.error(t(lang,"errorDeletingNotification","Erro ao apagar notificação."));
@@ -223,7 +263,7 @@ export default function Notifications() {
           const {icon, bg} = getIcon(notif.type);
           return (
             <div key={notif.id}
-              onClick={() => { handleMarkAsRead(notif); }}
+              onClick={() => handleOpen(notif)}
               style={{background:surface,borderRadius:14,padding:"14px 16px",borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:notif.read?0.6:1}}>
               <div style={{width:40,height:40,borderRadius:12,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
                 {icon}
@@ -231,6 +271,7 @@ export default function Notifications() {
               <div style={{flex:1,minWidth:0}}>
                 <p style={{fontWeight:700,fontSize:14,color:text,margin:0}}>{notif.title}</p>
                 <p style={{color:subtext,fontSize:13,marginTop:2,lineHeight:1.4}}>{notif.message}</p>
+                <p style={{color:"#FF6600",fontSize:11,marginTop:6,fontWeight:700}}>Abrir →</p>
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flexShrink:0}}>
                 <span style={{color:subtext,fontSize:11}}>{getRelativeTime(notif.created_date)}</span>
