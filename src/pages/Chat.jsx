@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Application, ChatMessage, Job, Notification, User } from "@/api/entities";
+import { supabase } from "@/api/supabaseClient";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -18,6 +19,19 @@ function makeConvId(uid1, uid2, jobId) {
   return jobId ? `${pair}__${jobId}` : pair;
 }
 
+// Obras nestes estados já não aceitam mensagens novas
+const CLOSED_JOB_STATUSES = ["completed", "cancelled"];
+
+// Fallback quando o realtime não está activo na tabela chat_messages
+const POLL_INTERVAL_MS = 8000;
+
+// Conversa sem actividade há 2 semanas fica inactiva (#76/#92)
+const INACTIVITY_DAYS = 14;
+const INACTIVITY_MS = INACTIVITY_DAYS * 24 * 60 * 60 * 1000;
+
+// Assinatura de uma lista de mensagens — permite detectar mudanças reais
+const signature = (msgs) => (msgs || []).map(m => `${m.id}:${m.read ? 1 : 0}`).join("|");
+
 export default function Chat() {
   const { isDark } = useTheme();
   const { lang } = useLanguage();
@@ -31,8 +45,32 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [applicationStatus, setApplicationStatus] = useState(null);
   const openedFromParam = useRef(false);
   const urlParamHandled = useRef(false);
+  // Referências usadas pelo refresh do realtime/polling — evitam re-subscrever
+  const selectedConversationRef = useRef(null);
+  const userRef = useRef(null);
+
+  const isJobClosed = !!selectedJob && CLOSED_JOB_STATUSES.includes(selectedJob.status);
+
+  // Antes de a candidatura ser aceite só é permitida uma mensagem de contacto
+  const contactAccepted = applicationStatus === "accepted";
+  const ownMessageCount = messages.filter(m => m.sender_id === user?.id).length;
+  const reachedIntroLimit = !contactAccepted && ownMessageCount >= 1;
+
+  const lastMessageAt = messages.length ? new Date(messages[messages.length - 1].created_at) : null;
+  const isInactive = !!lastMessageAt && Date.now() - lastMessageAt.getTime() > INACTIVITY_MS;
+
+  // Uma única razão de bloqueio, por ordem de prioridade
+  const blockedReason = isJobClosed
+    ? t(lang, "chatClosedJob", "Esta obra já terminou. O chat está fechado.")
+    : isInactive
+      ? t(lang, "chatInactive", "Conversa inactiva há mais de 2 semanas. Foi arquivada.")
+      : reachedIntroLimit
+        ? t(lang, "chatIntroLimit", "Só podes enviar uma mensagem até a candidatura ser aceite.")
+        : null;
 
   const loadUser = useCallback(async () => {
     try { const u = await User.me(); setUser(u); return u; }
@@ -125,7 +163,9 @@ export default function Chat() {
         msgs = [...asSender, ...asReceiver];
       }
       msgs.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-      setMessages(msgs);
+      // Só actualizar o estado se algo mudou — o polling corre a cada 8s e
+      // um novo array faria a lista fazer scroll/re-traduzir sem necessidade
+      setMessages(prev => (signature(prev) === signature(msgs) ? prev : msgs));
 
       // Marcar como lidas
       const unread = msgs.filter(m => !m.read && m.receiver_id === currentUser.id);
@@ -137,6 +177,10 @@ export default function Chat() {
 
   const handleSendMessage = async (text, attachment) => {
     if (!user || !selectedConversation || !text.trim()) return;
+    if (blockedReason) {
+      toast.error(blockedReason);
+      return;
+    }
     try {
       const payload = {
         job_id: selectedConversation.job_id || null,
@@ -173,6 +217,60 @@ export default function Chat() {
   useEffect(() => {
     if (selectedConversation && user) loadMessages(selectedConversation, user);
   }, [selectedConversation, user, loadMessages]);
+
+  useEffect(() => { selectedConversationRef.current = selectedConversation; }, [selectedConversation]);
+  useEffect(() => { userRef.current = user; }, [user]);
+
+  // Sincronização de mensagens novas sem refresh da página:
+  // realtime do Supabase quando disponível, com polling como rede de segurança.
+  useEffect(() => {
+    if (!user) return;
+
+    const refresh = () => {
+      const currentUser = userRef.current;
+      if (!currentUser) return;
+      loadConversations(currentUser);
+      if (selectedConversationRef.current) {
+        loadMessages(selectedConversationRef.current, currentUser);
+      }
+    };
+
+    const channel = supabase
+      .channel(`chat-messages-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chat_messages", filter: `receiver_id=eq.${user.id}` },
+        refresh
+      )
+      .subscribe();
+
+    const interval = setInterval(refresh, POLL_INTERVAL_MS);
+
+    return () => { clearInterval(interval); supabase.removeChannel(channel); };
+  }, [user, loadConversations, loadMessages]);
+
+  // Estado da obra associada à conversa — chat fecha quando a obra termina (#24)
+  // e a candidatura diz se o contacto já foi aceite (limite de 1 mensagem, #23)
+  useEffect(() => {
+    let cancelled = false;
+    const jobId = selectedConversation?.job_id;
+    if (!jobId) { setSelectedJob(null); setApplicationStatus(null); return; }
+
+    Job.get(jobId)
+      .then(job => { if (!cancelled) setSelectedJob(job); })
+      .catch(() => { if (!cancelled) setSelectedJob(null); });
+
+    Application.filter({ job_id: jobId })
+      .then(apps => {
+        if (cancelled) return;
+        const otherId = selectedConversation.other_user_id || selectedConversation.other_user?.id;
+        const mine = apps.find(a => a.worker_id === user?.id || a.worker_id === otherId);
+        setApplicationStatus(mine?.status || null);
+      })
+      .catch(() => { if (!cancelled) setApplicationStatus(null); });
+
+    return () => { cancelled = true; };
+  }, [selectedConversation, user]);
 
   // Abrir/iniciar conversa a partir de ?userId=... (ex.: botão "Contactar" no Perfil).
   useEffect(() => {
@@ -245,6 +343,9 @@ export default function Chat() {
             messages={messages}
             currentUser={user}
             onSend={handleSendMessage}
+            onBack={() => setSelectedConversation(null)}
+            job={selectedJob}
+            blockedReason={blockedReason}
             isDark={isDark}
             lang={lang}
           />

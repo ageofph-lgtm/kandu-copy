@@ -9,12 +9,16 @@ import { pt } from "date-fns/locale";
 import { useLanguage, translateText } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 
+// Limite de caracteres por mensagem (#72)
+const MAX_MESSAGE_CHARS = 500;
+
 export default function ChatWindow({
   conversation,
   messages,
   currentUser,
   onSend,
-  onBack
+  onBack,
+  blockedReason = null,
 }) {
   const { lang } = useLanguage();
   const navigate = useNavigate();
@@ -59,10 +63,9 @@ export default function ChatWindow({
 
   const handleSend = async () => {
     const text = newMessage.trim();
-    if (text) {
-      setNewMessage("");
-      await onSend(text);
-    }
+    if (!text || blockedReason) return;
+    setNewMessage("");
+    await onSend(text);
   };
 
   const handleKeyPress = (e) => {
@@ -74,7 +77,7 @@ export default function ChatWindow({
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file || blockedReason) return;
     setIsUploading(true);
     try {
       const { file_url } = await UploadFile({ file });
@@ -224,9 +227,17 @@ export default function ChatWindow({
                     </>
                   )}
                 </div>
-                {/* Timestamp */}
-                <div style={{fontSize:10,color:"#555",textAlign:isOwn?"right":"left",paddingInline:4}}>
-                  {formatMessageTime(message.created_at)}
+                {/* Timestamp + entregue/lida (#73) */}
+                <div style={{fontSize:10,color:"#555",textAlign:isOwn?"right":"left",paddingInline:4,display:"flex",gap:4,justifyContent:isOwn?"flex-end":"flex-start"}}>
+                  <span>{formatMessageTime(message.created_at)}</span>
+                  {isOwn && (
+                    <span
+                      title={message.read ? t(lang, "messageSeen", "Lida") : t(lang, "messageDelivered", "Entregue")}
+                      style={{color: message.read ? "#3B82F6" : "#555", fontWeight: 700}}
+                    >
+                      {message.read ? "✓✓" : "✓"}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -235,45 +246,64 @@ export default function ChatWindow({
         <div ref={messagesEndRef}/>
       </div>
 
-      {/* Input */}
-      <div style={{padding:"12px 16px",background:"#111",borderTop:"1px solid #222",display:"flex",alignItems:"center",gap:10}}>
-        <input
-          ref={fileInputRef} type="file" style={{display:"none"}}
-          onChange={handleFileUpload}
-          accept="image/*,.pdf,.doc,.docx"
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-          style={{background:"none",border:"none",color:"#555",cursor:"pointer",fontSize:20,padding:0,flexShrink:0,lineHeight:1}}
-        >
-          📎
-        </button>
-        <input
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder={t(lang, "typeMessage")}
-          style={{
-            flex:1, background:"#1a1a1a", border:"1px solid #2a2a2a",
-            borderRadius:20, padding:"10px 16px", color:"#fff",
-            fontSize:14, outline:"none", fontFamily:"inherit",
-          }}
-        />
-        <button
-          onClick={handleSend}
-          disabled={!newMessage.trim()}
-          style={{
-            background:newMessage.trim()?"#F4621F":"#222",
-            border:"none", borderRadius:"50%",
-            width:40, height:40, cursor:newMessage.trim()?"pointer":"default",
-            display:"flex", alignItems:"center", justifyContent:"center",
-            transition:"background 0.18s", flexShrink:0,
-          }}
-        >
-          <span style={{color:"#fff",fontSize:18,lineHeight:1}}>↑</span>
-        </button>
-      </div>
+      {/* Input — bloqueado quando a obra fecha, a conversa expira
+          ou já foi enviada a mensagem de contacto inicial */}
+      {blockedReason ? (
+        <div style={{padding:"14px 16px",background:"#111",borderTop:"1px solid #222",display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:16}}>🔒</span>
+          <p style={{color:"#888",fontSize:13,margin:0,lineHeight:1.4}}>{blockedReason}</p>
+        </div>
+      ) : (
+        <div style={{padding:"12px 16px",background:"#111",borderTop:"1px solid #222",display:"flex",alignItems:"center",gap:10}}>
+          <input
+            ref={fileInputRef} type="file" style={{display:"none"}}
+            onChange={handleFileUpload}
+            accept="image/*,.pdf,.doc,.docx"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            style={{background:"none",border:"none",color:"#555",cursor:"pointer",fontSize:20,padding:0,flexShrink:0,lineHeight:1}}
+          >
+            📎
+          </button>
+          <div style={{flex:1,position:"relative"}}>
+            <input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value.slice(0, MAX_MESSAGE_CHARS))}
+              onKeyPress={handleKeyPress}
+              maxLength={MAX_MESSAGE_CHARS}
+              placeholder={t(lang, "typeMessage")}
+              style={{
+                width:"100%", background:"#1a1a1a", border:"1px solid #2a2a2a",
+                borderRadius:20, padding:"10px 16px", color:"#fff",
+                fontSize:14, outline:"none", fontFamily:"inherit",
+              }}
+            />
+            {newMessage.length > MAX_MESSAGE_CHARS - 100 && (
+              <span style={{
+                position:"absolute", right:14, top:-16, fontSize:10,
+                color: newMessage.length >= MAX_MESSAGE_CHARS ? "#ef4444" : "#666",
+              }}>
+                {newMessage.length}/{MAX_MESSAGE_CHARS}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={handleSend}
+            disabled={!newMessage.trim()}
+            style={{
+              background:newMessage.trim()?"#F4621F":"#222",
+              border:"none", borderRadius:"50%",
+              width:40, height:40, cursor:newMessage.trim()?"pointer":"default",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              transition:"background 0.18s", flexShrink:0,
+            }}
+          >
+            <span style={{color:"#fff",fontSize:18,lineHeight:1}}>↑</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
