@@ -39,6 +39,16 @@ const DOCUMENT_TYPES = [
   { value: "outro", key: "docTypeOther", pt: "Outro", icon: "📎" },
 ];
 
+// Formatos aceites nos comprovativos (#39)
+const ALLOWED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
+const ALLOWED_DOC_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
+const MAX_DOC_BYTES = 10 * 1024 * 1024;
+
+function isAllowedDocument(file) {
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  return ALLOWED_DOC_TYPES.includes(file.type) || ALLOWED_DOC_EXTENSIONS.includes(ext);
+}
+
 function getDocIcon(type) {
   return DOCUMENT_TYPES.find(d => d.value === type)?.icon || "📎";
 }
@@ -57,9 +67,18 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
+    event.target.value = "";
     if (!file) return;
     if (!docName.trim()) { toast.error(t(lang, "docNameRequired", "Insira um nome para o documento")); return; }
     if (!docType) { toast.error(t(lang, "docTypeRequired", "Selecione o tipo de documento")); return; }
+    if (!isAllowedDocument(file)) {
+      toast.error(t(lang, "docFormatError", "Formato não suportado. Usa PDF, JPG ou PNG."));
+      return;
+    }
+    if (file.size > MAX_DOC_BYTES) {
+      toast.error(t(lang, "docTooLarge", "Ficheiro demasiado grande (máx. 10 MB)."));
+      return;
+    }
 
     setIsUploading(true);
     try {
@@ -146,7 +165,7 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
@@ -162,7 +181,7 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
                   )}
                 </Button>
                 <p className="text-xs text-gray-400 text-center">
-                  PDF, DOC, JPG, PNG — máx. 10MB
+                  PDF, JPG, PNG — máx. 10MB
                 </p>
               </div>
             </DialogContent>

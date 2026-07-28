@@ -348,7 +348,26 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
               <div style={{ background: "#F8F8F8", borderRadius: 14, padding: 16, marginBottom: 14 }}>
                 <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 13 }}>{t(lang, "description", "Descrição")}</p>
                 <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "#444" }}>{job.description}</p>
+                {(job.start_date || job.end_date) && (
+                  <p style={{ margin: "10px 0 0", fontSize: 12, color: "#888" }}>
+                    📅 {job.start_date ? format(new Date(job.start_date), "dd/MM/yyyy") : "—"}
+                    {job.end_date ? ` → ${format(new Date(job.end_date), "dd/MM/yyyy")}` : ""}
+                  </p>
+                )}
               </div>
+
+              {/* Fotos da zona de obra */}
+              {job.photos?.length > 0 && (
+                <div style={{ marginBottom: 14 }}>
+                  <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 13 }}>{t(lang, "areaPhotos", "Fotos da Zona de Obra")}</p>
+                  <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+                    {job.photos.map((url, i) => (
+                      <img key={i} src={url} alt="" onClick={() => window.open(url, "_blank")}
+                        style={{ width: 110, height: 110, objectFit: "cover", borderRadius: 12, flexShrink: 0, cursor: "pointer" }} />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {employer && (
                 <div
@@ -367,13 +386,20 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                         ? <img src={employer.avatar_url} style={{width:"100%",height:"100%",objectFit:"cover"}} alt="" />
                         : employer.full_name?.charAt(0) || "U"}
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ fontWeight: 700, fontSize: 14 }}>{employer.full_name || t(lang, "employer", "Empregador")}</span>
                         {employer.verified && <Shield size={14} color="#22c55e" />}
                       </div>
+                      {employer.company && (
+                        <span style={{ display: "block", fontSize: 12, color: "#555", fontWeight: 600 }}>
+                          🏢 {employer.company}
+                        </span>
+                      )}
                       <span style={{ fontSize: 12, color: "#888" }}>
-                        ⭐ {employer.rating || "N/A"} · {employer.city || "Portugal"}
+                        ⭐ {employer.rating ? Number(employer.rating).toFixed(1) : t(lang, "noRatingYet", "sem avaliações")}
+                        {" · "}{employer.city || "Portugal"}
+                        {" · "}{t(lang, "jobsPostedCount", "{n} obras").replace("{n}", employer.completed_jobs || 0)}
                       </span>
                     </div>
                     <span style={{fontSize:11,color:"#F4621F",fontWeight:600}}>Ver perfil →</span>

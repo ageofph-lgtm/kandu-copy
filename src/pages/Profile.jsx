@@ -6,12 +6,19 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { supabase } from "@/api/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Edit2, LogOut, Star, MapPin, Briefcase, Award, Phone, Globe } from "lucide-react";
+import { Edit2, LogOut, MapPin, Briefcase, Award, Phone, Globe } from "lucide-react";
 import ProfileForm from "../components/profile/ProfileForm";
 import ReviewsSection from "../components/profile/ReviewsSection";
+import DocumentsList from "../components/profile/DocumentsList";
+import PortfolioGallery from "../components/profile/PortfolioGallery";
+import { toast } from "sonner";
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
+
+// Campos sempre presentes na tabela users — usados como plano B se o update
+// completo falhar por causa de uma coluna opcional
+const CORE_PROFILE_FIELDS = ["full_name", "phone", "bio", "city", "user_type"];
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -72,12 +79,33 @@ export default function Profile() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
-      await supabase.from("users")
-        .update({ ...profileData, updated_at: new Date().toISOString() })
+
+      const save = (payload) => supabase.from("users")
+        .update({ ...payload, updated_at: new Date().toISOString() })
         .eq("id", session.user.id);
+
+      // O erro do update era ignorado: bastava uma coluna opcional não
+      // existir para o perfil inteiro (incluindo a bio) não gravar (#38)
+      let { error } = await save(profileData);
+      if (error) {
+        console.error("Profile update failed, retrying with core fields:", error);
+        const core = Object.fromEntries(
+          Object.entries(profileData).filter(([k]) => CORE_PROFILE_FIELDS.includes(k))
+        );
+        ({ error } = await save(core));
+      }
+      if (error) {
+        toast.error(t(lang, "profileSaveError", "Não foi possível guardar o perfil. Tenta novamente."));
+        return;
+      }
+
       await loadUser();
       setIsEditing(false);
-    } catch (e) { console.error(e); }
+      toast.success(t(lang, "profileUpdated", "Perfil actualizado."));
+    } catch (e) {
+      console.error(e);
+      toast.error("Não foi possível guardar o perfil. Tenta novamente.");
+    }
   };
 
   const handleAvatarUpload = async (e) => {
@@ -238,8 +266,9 @@ export default function Profile() {
       {/* Tabs */}
       <div style={{ display: "flex", borderBottom: `1px solid ${border}`, background: bg, position: "sticky", top: 0, zIndex: 5 }}>
         {[
-          { id: "info", label: "Informação" },
-          { id: "reviews", label: "Avaliações" },
+          { id: "info", label: t(lang, "information", "Informação") },
+          { id: "portfolio", label: t(lang, "portfolio", "Portfólio") },
+          { id: "reviews", label: t(lang, "reviews", "Avaliações") },
         ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             style={{ flex: 1, padding: "14px 8px", border: "none", background: "none", cursor: "pointer",
@@ -307,6 +336,22 @@ export default function Profile() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+        {activeTab === "portfolio" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ background: "var(--surface2)", borderRadius: 14, border: `1px solid ${border}`, padding: 16 }}>
+              <PortfolioGallery
+                images={user.portfolio_images || []}
+                onUpdate={loadUser}
+                canEdit={isOwnProfile}
+              />
+            </div>
+            <DocumentsList
+              documents={user.documents || []}
+              onUpdate={loadUser}
+              canEdit={isOwnProfile}
+            />
           </div>
         )}
         {activeTab === "reviews" && <ReviewsSection userId={user.id} isDark={isDark} />}

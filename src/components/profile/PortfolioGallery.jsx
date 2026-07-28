@@ -6,22 +6,40 @@ import { Plus, X, Upload, Image as ImageIcon, ExternalLink } from "lucide-react"
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 
+// Formatos aceites (#39) e mínimo recomendado de fotos de trabalho (#8)
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+const MIN_PORTFOLIO_IMAGES = 3;
+
 export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
   const { lang } = useLanguage();
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = React.useRef(null);
 
   const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) { toast.error(t(lang,"error")); return; }
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (!files.length) return;
+
+    const invalid = files.find(f => !ALLOWED_IMAGE_TYPES.includes(f.type));
+    if (invalid) {
+      toast.error(t(lang, "portfolioFormatError", "Formato não suportado. Usa JPG ou PNG."));
+      return;
+    }
+
     setIsUploading(true);
     try {
-      const { file_url } = await UploadFile({ file });
-      await User.updateMyUserData({ portfolio_images: [...images, file_url] });
+      const uploaded = [];
+      for (const file of files) {
+        const { file_url } = await UploadFile({ file });
+        uploaded.push(file_url);
+      }
+      await User.updateMyUserData({ portfolio_images: [...images, ...uploaded] });
       onUpdate();
       toast.success(t(lang,"success"));
-    } catch (e) { toast.error(t(lang,"error")); }
+    } catch (e) {
+      console.error("Portfolio upload failed:", e);
+      toast.error(t(lang,"error"));
+    }
     setIsUploading(false);
   };
 
@@ -42,7 +60,7 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
         </div>
         {canEdit && (
           <>
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" multiple onChange={handleFileUpload} className="hidden" />
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
@@ -55,6 +73,15 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
           </>
         )}
       </div>
+
+      {canEdit && images.length < MIN_PORTFOLIO_IMAGES && (
+        <div style={{ background:"#FEF3C7", border:"1px solid #FCD34D", borderRadius:10, padding:"8px 12px", marginBottom:12 }}>
+          <p style={{ margin:0, fontSize:12, color:"#92400E" }}>
+            {t(lang, "portfolioMinHint", "Adiciona pelo menos {min} fotos de trabalhos ({n}/{min}) para o teu perfil ficar completo.")
+              .replace(/{min}/g, MIN_PORTFOLIO_IMAGES).replace("{n}", images.length)}
+          </p>
+        </div>
+      )}
 
       {images.length === 0 ? (
         <div style={{ textAlign:"center", padding:"32px 0", color:"#aaa" }}>
