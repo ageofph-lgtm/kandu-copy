@@ -7,7 +7,7 @@ import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import MapView from "@/components/dashboard/MapView";
 import JobModal from "@/components/dashboard/JobModal";
-import { Search, List } from "lucide-react";
+import { Search, List, SlidersHorizontal, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -28,6 +28,22 @@ const CATEGORIES = [
   { key: "waterproofing", pt: "Impermeabilizador",icon: "💧" },
   { key: "plastering",    pt: "Estucador",       icon: "🏗️" },
   { key: "scaffolding",   pt: "Montador de Andaimes", icon: "🏛️" },
+];
+
+// Raios de pesquisa disponíveis (#35) — null = sem limite
+const RADIUS_OPTIONS = [
+  { value: 5,    labelKey: "radius5",   fallback: "5 km" },
+  { value: 20,   labelKey: "radius20",  fallback: "20 km" },
+  { value: 50,   labelKey: "radius50",  fallback: "50 km" },
+  { value: null, labelKey: "radiusAll", fallback: "Todas" },
+];
+
+// Ordenação dos resultados (#37)
+const SORT_OPTIONS = [
+  { value: "recent",   labelKey: "sortRecent",   fallback: "Mais recentes" },
+  { value: "price",    labelKey: "sortPrice",    fallback: "Melhor pago" },
+  { value: "distance", labelKey: "sortDistance", fallback: "Mais perto" },
+  { value: "employer", labelKey: "sortEmployer", fallback: "Empregador ⭐" },
 ];
 
 function haversine(lat1, lon1, lat2, lon2) {
@@ -58,6 +74,10 @@ function WorkerHome({ user, isDark }) {
   const [userLocation, setUserLocation] = useState(null);
   const [geoStatus, setGeoStatus] = useState("loading"); // "loading" | "ok" | "error"
   const [loading, setLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [radiusKm, setRadiusKm] = useState(null);
+  const [sortBy, setSortBy] = useState("recent");
+  const [employersById, setEmployersById] = useState({});
 
   const text = "var(--text)";
   const subtext = "var(--text2)";
@@ -95,7 +115,25 @@ function WorkerHome({ user, isDark }) {
       .catch(() => setLoading(false));
   }, []);
 
-  // ── Filtrar apenas por pesquisa + categoria (sem raio) ──
+  // ── Empregadores das obras listadas — para mostrar a reputação nos resultados ──
+  useEffect(() => {
+    const ids = [...new Set(jobs.map(j => j.employer_id).filter(Boolean))];
+    const missing = ids.filter(id => !employersById[id]);
+    if (!missing.length) return;
+    Promise.all(missing.map(id => User.get(id).catch(() => null)))
+      .then(list => {
+        const found = Object.fromEntries(list.filter(Boolean).map(u => [u.id, u]));
+        if (Object.keys(found).length) setEmployersById(prev => ({ ...prev, ...found }));
+      });
+  }, [jobs]);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  const distanceTo = (job) => (
+    userLocation && job.latitude && job.longitude
+      ? haversine(userLocation[0], userLocation[1], job.latitude, job.longitude)
+      : null
+  );
+
+  // ── Pesquisa + categoria + raio + ordenação ──
   useEffect(() => {
     let f = [...jobs];
     if (selectedCategory !== "ALL") f = f.filter(j => j.category === selectedCategory);
@@ -107,8 +145,30 @@ function WorkerHome({ user, isDark }) {
         j.category?.toLowerCase().includes(term)
       );
     }
+    // O raio só se aplica quando sabemos onde o utilizador está
+    if (radiusKm && userLocation) {
+      f = f.filter(j => {
+        const d = distanceTo(j);
+        return d === null || d <= radiusKm;
+      });
+    }
+
+    const employerRating = (j) => Number(employersById[j.employer_id]?.rating) || 0;
+    f.sort((a, b) => {
+      if (sortBy === "price") return (b.price || 0) - (a.price || 0);
+      if (sortBy === "employer") return employerRating(b) - employerRating(a);
+      if (sortBy === "distance") {
+        const da = distanceTo(a), db = distanceTo(b);
+        if (da === null && db === null) return 0;
+        if (da === null) return 1;
+        if (db === null) return -1;
+        return da - db;
+      }
+      return new Date(b.created_at || b.created_date) - new Date(a.created_at || a.created_date);
+    });
+
     setFilteredJobs(f);
-  }, [jobs, selectedCategory, searchTerm]);
+  }, [jobs, selectedCategory, searchTerm, radiusKm, sortBy, userLocation, employersById]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleJobClick = async (job) => {
     try { await Job.update(job.id, { views: (job.views || 0) + 1 }); } catch {}
@@ -141,20 +201,77 @@ function WorkerHome({ user, isDark }) {
 
       {/* ── SEARCH + CATEGORIAS (topo flutuante) ── */}
       <div style={{ position: "absolute", top: 16, left: 16, right: 16, zIndex: 20, display: "flex", flexDirection: "column", gap: 8 }}>
-        <div className="k-search">
-          <Search size={16} color="var(--or)" />
-          <input
-            placeholder={t(lang,"searchPlaceholder")}
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div className="k-search" style={{ flex: 1 }}>
+            <Search size={16} color="var(--or)" />
+            <input
+              placeholder={t(lang,"searchPlaceholder")}
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <button
+            onClick={() => setShowFilters(v => !v)}
+            className={showFilters || radiusKm || sortBy !== "recent" ? "k-pill k-pill-primary" : "k-pill k-pill-secondary"}
+            style={{ flexShrink: 0 }}
+          >
+            <SlidersHorizontal size={14} />
+          </button>
         </div>
+
+        {/* Barra de filtros — com botão de fechar (#1003) */}
+        {showFilters && (
+          <div style={{
+            background: surfaceAlpha, border: "1px solid var(--hair)", borderRadius: 16,
+            padding: "12px 14px", backdropFilter: "blur(12px)",
+            boxShadow: "0 8px 24px -12px var(--shadow)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={{ fontWeight: 700, fontSize: 13, color: text }}>{t(lang, "filters", "Filtros")}</span>
+              <button onClick={() => setShowFilters(false)} aria-label={t(lang, "close", "Fechar")}
+                style={{ background: "none", border: "none", cursor: "pointer", color: subtext, padding: 4, display: "flex" }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <p style={{ margin: "0 0 6px", fontSize: 11, color: subtext, fontWeight: 600 }}>
+              {t(lang, "searchRadius", "Raio de pesquisa")}
+              {!userLocation && ` · ${t(lang, "needsLocation", "requer localização")}`}
+            </p>
+            <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
+              {RADIUS_OPTIONS.map(opt => (
+                <button key={String(opt.value)} onClick={() => setRadiusKm(opt.value)}
+                  disabled={!userLocation && opt.value !== null}
+                  className={radiusKm === opt.value ? "k-cat active" : "k-cat"}
+                  style={{ opacity: !userLocation && opt.value !== null ? 0.4 : 1 }}>
+                  {t(lang, opt.labelKey, opt.fallback)}
+                </button>
+              ))}
+            </div>
+
+            <p style={{ margin: "0 0 6px", fontSize: 11, color: subtext, fontWeight: 600 }}>
+              {t(lang, "sortBy", "Ordenar por")}
+            </p>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {SORT_OPTIONS.map(opt => (
+                <button key={opt.value} onClick={() => setSortBy(opt.value)}
+                  disabled={opt.value === "distance" && !userLocation}
+                  className={sortBy === opt.value ? "k-cat active" : "k-cat"}
+                  style={{ opacity: opt.value === "distance" && !userLocation ? 0.4 : 1 }}>
+                  {t(lang, opt.labelKey, opt.fallback)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
           {CATEGORIES.map(cat => (
-            <button key={cat.pt} onClick={() => setSelectedCategory(cat.pt)} style={{
-              flexShrink: 0, padding: "5px 12px", borderRadius: 20, border: "none", cursor: "pointer",
-              className: selectedCategory === cat.pt ? "k-cat active" : "k-cat"
-            }}>
+            <button
+              key={cat.pt}
+              onClick={() => setSelectedCategory(cat.pt)}
+              className={selectedCategory === cat.pt ? "k-cat active" : "k-cat"}
+            >
               {t(lang, cat.key, cat.pt === "ALL" ? "Todas" : cat.pt)}
             </button>
           ))}
@@ -201,6 +318,13 @@ function WorkerHome({ user, isDark }) {
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 15,
         borderRadius: "24px 24px 0 0",
+        // A folha não tinha fundo: a lista aparecia por cima do mapa e o
+        // texto ficava ilegível em claro e em escuro
+        background: surfaceAlpha,
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        borderTop: "1px solid var(--hair)",
+        boxShadow: "0 -8px 32px -12px var(--shadow)",
         transform: showList ? "translateY(0)" : "translateY(100%)",
         transition: "transform 0.35s cubic-bezier(0.4,0,0.2,1)",
         maxHeight: "50vh", display: "flex", flexDirection: "column"
@@ -214,21 +338,28 @@ function WorkerHome({ user, isDark }) {
               {t(lang, "noJobsFound")}
             </p>
           ) : filteredJobs.map(job => {
-            const dist = userLocation && job.latitude && job.longitude
-              ? haversine(userLocation[0], userLocation[1], job.latitude, job.longitude)
-              : null;
+            const dist = distanceTo(job);
+            const employer = employersById[job.employer_id];
             return (
               <div
                 key={job.id}
                 onClick={() => { handleJobClick(job); setShowList(false); }}
                 className="k-job-card" style={{ marginBottom: 10, borderBottom: "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}
               >
-                <div style={{ flex: 1, marginRight: 10 }}>
+                <div style={{ flex: 1, marginRight: 10, minWidth: 0 }}>
                   <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: text }}>{job.title}</p>
                   <p style={{ margin: "2px 0 0", fontSize: 12, color: subtext }}>
                     {job.location} · {job.category}
                     {dist !== null && <span style={{ color: "#FF6600", fontWeight: 600 }}> · {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`}</span>}
                   </p>
+                  {employer && (
+                    <p style={{ margin: "2px 0 0", fontSize: 11, color: subtext }}>
+                      👤 {employer.full_name}
+                      {employer.rating
+                        ? ` · ⭐ ${Number(employer.rating).toFixed(1)}`
+                        : ` · ${t(lang, "noRatingYet", "sem avaliações")}`}
+                    </p>
+                  )}
                 </div>
                 <p style={{ margin: 0, fontWeight: 800, color: "#FF6600", fontSize: 15, flexShrink: 0 }}>
                   €{job.price}{job.price_type === "hourly" ? "/h" : ""}
