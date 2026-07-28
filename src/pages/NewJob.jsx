@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { Job, User } from "@/api/entities";
-import { useState, useEffect } from "react";
+import { supabase } from "@/api/supabaseClient";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -63,6 +64,12 @@ const STEP_LABELS = [
   { key: "stepReview", pt: "Revisão" },
 ];
 
+// Mínimo de fotos da zona de obra exigido no anúncio (#21)
+const MIN_AREA_PHOTOS = 3;
+
+// Estados em que a obra ainda pode ser editada pelo empregador (#66)
+const EDITABLE_STATUSES = ["pending_employer", "open"];
+
 // ─── Modal de Confirmação custom (substitui window.confirm) ───────────────────
 function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }) {
   const { lang } = useLanguage();
@@ -110,11 +117,17 @@ export default function NewJob() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [validationError, setValidationError] = useState("");
+  const [photos, setPhotos] = useState([]);   // { url } (já guardadas) | { file, preview }
+  const photoInputRef = useRef(null);
   const [formData, setFormData] = useState({
     title: "", category: "", categoryKey: "", description: "",
     location: "", start_date: "", end_date: "",
     price_type: "fixed", price: "", urgency: "medium"
   });
+
+  // ?jobId=... → editar um anúncio existente em vez de criar um novo (#54)
+  const editingJobId = new URLSearchParams(window.location.search).get("jobId");
 
   useEffect(() => {
     const loadUser = async () => {
@@ -132,36 +145,162 @@ export default function NewJob() {
     loadUser();
   }, [navigate]);
 
-  const set = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  useEffect(() => {
+    if (!editingJobId || !user) return;
+    Job.get(editingJobId).then(job => {
+      if (!job) return;
+      if (job.employer_id !== user.id && user.user_type !== "admin") {
+        toast.error(t(lang, "notYourJob", "Esta obra não é tua."));
+        navigate(createPageUrl("MyJobs"));
+        return;
+      }
+      // Depois de a obra arrancar, o anúncio deixa de poder ser alterado (#66)
+      if (!EDITABLE_STATUSES.includes(job.status)) {
+        toast.error(t(lang, "jobLockedAfterStart", "A obra já começou — o anúncio não pode ser editado."));
+        navigate(createPageUrl("MyJobs"));
+        return;
+      }
+      setFormData({
+        title: job.title || "",
+        category: job.category || "",
+        categoryKey: CATEGORY_KEYS.find(c => c.pt === job.category)?.key || "",
+        description: job.description || "",
+        location: job.location || "",
+        start_date: job.start_date || "",
+        end_date: job.end_date || "",
+        price_type: job.price_type || "fixed",
+        price: job.price != null ? String(job.price) : "",
+        urgency: job.urgency || "medium",
+      });
+      setPhotos((job.photos || []).map(url => ({ url })));
+    }).catch(err => {
+      console.error("Load job for edit failed:", err);
+      toast.error(t(lang, "errorLoadingJob", "Não foi possível carregar a obra."));
+    });
+  }, [editingJobId, user, navigate, lang]);
 
-  const canGoNext = () => {
-    if (step === 1) return formData.title.trim() && formData.category && formData.description.trim();
-    if (step === 2) return !!formData.location;
-    if (step === 3) return !!formData.price;
-    return true;
+  const set = (field, value) => { setValidationError(""); setFormData(prev => ({ ...prev, [field]: value })); };
+
+  const handlePhotoAdd = (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (!files.length) return;
+    setValidationError("");
+    setPhotos(prev => [...prev, ...files.map(file => ({ file, preview: URL.createObjectURL(file) }))]);
   };
 
-  // BUG FIX: status agora é "open" para aparecer na busca dos profissionais
-  const handleSubmit = async () => {
+  const handlePhotoRemove = (index) => {
+    setPhotos(prev => {
+      const removed = prev[index];
+      if (removed?.preview) URL.revokeObjectURL(removed.preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  // Mensagem concreta do que falta — o botão desactivado sem explicação
+  // deixava o empregador sem saber porque não avançava (#1002/#19)
+  const stepErrorFor = (s) => {
+    const step = s;
+    if (step === 1) {
+      if (!formData.title.trim()) return t(lang, "errTitleRequired", "Indica o título da obra.");
+      if (!formData.category) return t(lang, "errCategoryRequired", "Escolhe uma categoria.");
+      if (!formData.description.trim()) return t(lang, "errDescriptionRequired", "Descreve o trabalho a realizar.");
+    }
+    if (step === 2) {
+      if (!formData.location) return t(lang, "errLocationRequired", "Escolhe a localização da obra.");
+      if (!formData.start_date) return t(lang, "errStartDateRequired", "Indica a data de início.");
+      if (!formData.end_date) return t(lang, "errEndDateRequired", "Indica a data de fim.");
+      if (formData.end_date < formData.start_date) {
+        return t(lang, "errEndBeforeStart", "A data de fim não pode ser anterior à data de início.");
+      }
+      if (photos.length < MIN_AREA_PHOTOS) {
+        return t(lang, "errMinAreaPhotos", "Adiciona pelo menos {min} fotos da zona de obra ({n}/{min}).")
+          .replace(/{min}/g, MIN_AREA_PHOTOS).replace("{n}", photos.length);
+      }
+    }
+    if (step === 3) {
+      const price = parseFloat(formData.price);
+      if (!Number.isFinite(price) || price <= 0) {
+        return t(lang, "errPriceRequired", "Indica um valor válido para a obra.");
+      }
+    }
+    return null;
+  };
+
+  const stepError = () => stepErrorFor(step);
+
+  const handleNext = () => {
+    const err = stepError();
+    if (err) { setValidationError(err); return; }
+    setValidationError("");
+    setStep(s => s + 1);
+  };
+
+  /** Sobe as fotos novas e devolve a lista final de URLs */
+  const uploadPhotos = async () => {
+    const urls = [];
+    for (const [i, photo] of photos.entries()) {
+      if (photo.url) { urls.push(photo.url); continue; }
+      const ext = (photo.file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `jobs/${user.id}_${Date.now()}_${i}.${ext}`;
+      const { error } = await supabase.storage
+        .from("kandu-uploads")
+        .upload(path, photo.file, { upsert: true, contentType: photo.file.type });
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from("kandu-uploads").getPublicUrl(path);
+      urls.push(publicUrl);
+    }
+    return urls;
+  };
+
+  // status "open" = publicada e visível na busca; "pending_employer" = rascunho (#53)
+  const handleSubmit = async (status = "open") => {
     setShowConfirm(false);
+
+    // Um rascunho pode ficar incompleto, uma obra publicada não
+    if (status === "open") {
+      for (let s = 1; s <= 3; s++) {
+        const err = stepErrorFor(s);
+        if (err) { setStep(s); setValidationError(err); return; }
+      }
+    }
+
     setIsSubmitting(true);
     try {
       const coords = LOCATION_COORDS[formData.location];
       // categoryKey é só estado de UI — não pertence à entidade Job
       const { categoryKey: _categoryKey, ...jobData } = formData;
-      // FIX: strings vazias em campos date causam erro 22007 no Supabase
-      // Converter "" → null para start_date e end_date
-      await Job.create({
+      const photoUrls = await uploadPhotos();
+
+      const payload = {
         ...jobData,
-        price: parseFloat(formData.price),
+        price: parseFloat(formData.price) || 0,
         employer_id: user.id,
-        latitude: coords.lat + (Math.random() - 0.5) * 0.005,
-        longitude: coords.lon + (Math.random() - 0.5) * 0.005,
-        views: 0,
-        status: "open",
+        status,
+        // FIX: strings vazias em campos date causam erro 22007 no Supabase
         start_date: formData.start_date || null,
         end_date: formData.end_date || null,
-      });
+      };
+      if (coords) {
+        payload.latitude = coords.lat + (Math.random() - 0.5) * 0.005;
+        payload.longitude = coords.lon + (Math.random() - 0.5) * 0.005;
+      }
+
+      // A coluna das fotos pode ainda não existir na BD — se falhar, o
+      // anúncio é gravado na mesma (as fotos ficam no storage)
+      const save = (data) => (editingJobId ? Job.update(editingJobId, data) : Job.create({ ...data, views: 0 }));
+      try {
+        await save({ ...payload, photos: photoUrls });
+      } catch (photoErr) {
+        console.error("Saving job photos failed, saving without them:", photoErr);
+        await save(payload);
+      }
+
+      toast.success(
+        status === "open"
+          ? t(lang, "jobPublished", "Obra publicada!")
+          : t(lang, "draftSaved", "Rascunho guardado.")
+      );
       navigate(createPageUrl("MyJobs"));
     } catch (error) {
       console.error("NewJob error:", error);
@@ -188,7 +327,7 @@ export default function NewJob() {
       {showConfirm && (
         <ConfirmPublishModal
           job={formData}
-          onConfirm={handleSubmit}
+          onConfirm={() => handleSubmit("open")}
           onCancel={() => setShowConfirm(false)}
           isDark={isDark} text={text} subtext={subtext}
         />
@@ -206,7 +345,9 @@ export default function NewJob() {
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={() => navigate(-1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer",padding:0}}>←</button>
-          <h1 style={{fontWeight:700,color:text,flex:1,textAlign:"center",margin:0,fontSize:18}}>{t(lang,"jobTitle")}</h1>
+          <h1 style={{fontWeight:700,color:text,flex:1,textAlign:"center",margin:0,fontSize:18}}>
+            {editingJobId ? t(lang,"editJob","Editar Obra") : t(lang,"jobTitle")}
+          </h1>
           <span style={{width:22}} />
         </div>
       </div>
@@ -291,6 +432,33 @@ export default function NewJob() {
             </div>
           </div>
 
+          {/* Fotos da zona de obra (#21) */}
+          <div style={sectionStyle}>
+            <label style={labelStyle}>
+              📷 {t(lang,"areaPhotos","Fotos da Zona de Obra")} ({photos.length}/{MIN_AREA_PHOTOS})
+            </label>
+            <p style={{color:subtext,fontSize:13,margin:"0 0 12px"}}>
+              {t(lang,"areaPhotosHint","Mínimo de {min} fotos — ajuda os profissionais a orçamentar.").replace("{min}", MIN_AREA_PHOTOS)}
+            </p>
+            <input ref={photoInputRef} type="file" accept="image/*" multiple onChange={handlePhotoAdd} style={{display:"none"}} />
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+              {photos.map((photo, i) => (
+                <div key={i} style={{position:"relative",aspectRatio:"1",borderRadius:12,overflow:"hidden",border:"2px solid #22C55E"}}>
+                  <img src={photo.url || photo.preview} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                  <button onClick={() => handlePhotoRemove(i)}
+                    style={{position:"absolute",top:4,right:4,width:22,height:22,borderRadius:"50%",background:"#EF4444",border:"none",color:"#FFF",cursor:"pointer",fontSize:12,lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    ×
+                  </button>
+                </div>
+              ))}
+              <button onClick={() => photoInputRef.current?.click()}
+                style={{aspectRatio:"1",background:surface,border:`2px dashed ${photos.length < MIN_AREA_PHOTOS ? "#FF6600" : (isDark?"#444":"#DDD")}`,borderRadius:12,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,color:subtext}}>
+                <span style={{fontSize:22}}>＋</span>
+                <span style={{fontSize:11,fontWeight:600}}>{t(lang,"addPhoto","Adicionar")}</span>
+              </button>
+            </div>
+          </div>
+
           <div style={sectionStyle}>
             <label style={labelStyle}>{t(lang,"urgency","Urgência")}</label>
             <div style={{display:"flex",gap:8}}>
@@ -362,24 +530,38 @@ export default function NewJob() {
       )}
 
       {/* Navigation */}
-      <div style={{padding:"16px 20px",position:"sticky",bottom:0,background:bg,borderTop:`1px solid ${isDark?"#333":"#EEEEEE"}`,display:"flex",gap:12}}>
-        {step > 1 && (
-          <button onClick={() => setStep(s => s-1)}
-            style={{flex:1,padding:"14px 0",background:"transparent",border:`1px solid ${isDark?"#444":"#CCCCCC"}`,borderRadius:14,color:subtext,fontWeight:700,fontSize:15,cursor:"pointer"}}>
-            ← {t(lang,"previousStep","Anterior")}
-          </button>
+      <div style={{padding:"16px 20px",position:"sticky",bottom:0,background:bg,borderTop:`1px solid ${isDark?"#333":"#EEEEEE"}`,display:"flex",flexDirection:"column",gap:10}}>
+        {validationError && (
+          <div style={{background:"#EF444422",border:"1px solid #EF444455",borderRadius:10,padding:"10px 12px"}}>
+            <p style={{color:"#EF4444",fontSize:13,margin:0,fontWeight:600}}>⚠️ {validationError}</p>
+          </div>
         )}
-        {step < 4 ? (
-          <button onClick={() => canGoNext() && setStep(s => s+1)} disabled={!canGoNext()}
-            style={{flex:1,padding:"14px 0",background:canGoNext()?"#FF6600":"#333",border:"none",borderRadius:14,color:canGoNext()?"#FFF":"#555",fontWeight:700,fontSize:15,cursor:canGoNext()?"pointer":"not-allowed",transition:"background 0.2s"}}>
-            {t(lang,"nextStep","Próximo")} →
-          </button>
-        ) : (
-          <button onClick={() => setShowConfirm(true)} disabled={isSubmitting}
-            style={{flex:1,padding:"14px 0",background:isSubmitting?"#555":"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:15,cursor:isSubmitting?"not-allowed":"pointer"}}>
-            {isSubmitting ? t(lang,"publishing","A publicar...") : `🚀 ${t(lang,"publishJob","Publicar Obra")}`}
-          </button>
-        )}
+        <div style={{display:"flex",gap:12}}>
+          {step > 1 && (
+            <button onClick={() => { setValidationError(""); setStep(s => s-1); }}
+              style={{flex:1,padding:"14px 0",background:"transparent",border:`1px solid ${isDark?"#444":"#CCCCCC"}`,borderRadius:14,color:subtext,fontWeight:700,fontSize:15,cursor:"pointer"}}>
+              ← {t(lang,"previousStep","Anterior")}
+            </button>
+          )}
+          {step < 4 ? (
+            <button onClick={handleNext}
+              style={{flex:1,padding:"14px 0",background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer",transition:"background 0.2s"}}>
+              {t(lang,"nextStep","Próximo")} →
+            </button>
+          ) : (
+            <button onClick={() => setShowConfirm(true)} disabled={isSubmitting}
+              style={{flex:1,padding:"14px 0",background:isSubmitting?"#555":"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:15,cursor:isSubmitting?"not-allowed":"pointer"}}>
+              {isSubmitting
+                ? t(lang,"publishing","A publicar...")
+                : editingJobId ? `💾 ${t(lang,"saveChanges","Guardar Alterações")}` : `🚀 ${t(lang,"publishJob","Publicar Obra")}`}
+            </button>
+          )}
+        </div>
+        {/* Guardar como rascunho (#53) */}
+        <button onClick={() => handleSubmit("pending_employer")} disabled={isSubmitting || !formData.title.trim()}
+          style={{padding:"11px 0",background:"transparent",border:`1px solid ${isDark?"#444":"#CCCCCC"}`,borderRadius:12,color:subtext,fontWeight:600,fontSize:13,cursor:isSubmitting||!formData.title.trim()?"not-allowed":"pointer",opacity:isSubmitting||!formData.title.trim()?0.5:1}}>
+          💾 {t(lang,"saveDraft","Guardar como rascunho")}
+        </button>
       </div>
     </div>
   );

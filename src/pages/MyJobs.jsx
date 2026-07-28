@@ -5,7 +5,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import CompletionModal from "@/components/applications/CompletionModal";
 import { MapPin, Plus, ChevronDown, ChevronUp } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -158,6 +158,9 @@ const STATUS_MAP = {
 };
 const statusLabel = (lang, s) => t(lang, s.key, s.pt);
 
+// O anúncio só pode ser editado antes de a obra arrancar (#66)
+const EDITABLE_JOB_STATUSES = ["pending_employer", "open"];
+
 // ─── EMPLOYER JOB CARD ────────────────────────────────────────────────────────
 function EmployerJobCard({ job, applications, user, usersById = {}, onReload, isDark, surface, text, subtext, border }) {
   const { lang } = useLanguage();
@@ -295,7 +298,35 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
               </div>
             )}
 
+            {/* Detalhes do anúncio (#54) */}
+            <div style={{ background: isDark ? "#0D0D0D" : "#F9F9F9", borderRadius: 12, padding: 14, marginBottom: 12 }}>
+              <p style={{ color: subtext, fontSize: 13, margin: 0, lineHeight: 1.5 }}>{job.description}</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 10 }}>
+                <span style={{ color: subtext, fontSize: 12 }}>🏷️ {job.category}</span>
+                {job.start_date && (
+                  <span style={{ color: subtext, fontSize: 12 }}>
+                    📅 {format(parseISO(job.start_date), "dd/MM/yyyy")}
+                    {job.end_date ? ` → ${format(parseISO(job.end_date), "dd/MM/yyyy")}` : ""}
+                  </span>
+                )}
+              </div>
+              {job.photos?.length > 0 && (
+                <div style={{ display: "flex", gap: 6, marginTop: 10, overflowX: "auto" }}>
+                  {job.photos.map((url, i) => (
+                    <img key={i} src={url} alt="" style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Ações por estado */}
+            {EDITABLE_JOB_STATUSES.includes(job.status) && (
+              <button onClick={() => navigate(`${createPageUrl("NewJob")}?jobId=${job.id}`)}
+                style={{ width: "100%", background: "transparent", color: "#FF6600", border: "1px solid #FF660066", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 8 }}>
+                ✏️ {t(lang, "editJob", "Editar Obra")}
+              </button>
+            )}
+
             {job.status === "pending_employer" && (
               <button onClick={handlePublish}
                 style={{ width: "100%", background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 8 }}>
