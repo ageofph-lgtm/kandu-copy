@@ -7,7 +7,8 @@ import { format } from "date-fns";
 function ConversationItem({ conversation, onSelect, selectedId }) {
   const { lang } = useLanguage();
   const isSelected = selectedId === conversation.conversation_id;
-  const hasJobContext = !!conversation.job_context;
+  // Conversa ligada a um anúncio (vs. Direct Chat)
+  const hasJobContext = !!conversation.job_id;
 
   const formatLastMessageTime = (dateString) => {
     const date = new Date(dateString);
@@ -41,11 +42,15 @@ function ConversationItem({ conversation, onSelect, selectedId }) {
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
             <p style={{fontWeight:600,fontSize:14,color:"#FFF",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{conversation.other_user.full_name || t(lang, "userLabel", "Utilizador")}</p>
-            <span style={{fontSize:11,color:"#555",flexShrink:0,marginLeft:8}}>{formatLastMessageTime(conversation.last_message.created_at)}</span>
+            <span style={{fontSize:11,color:"#555",flexShrink:0,marginLeft:8}}>
+              {conversation.last_message ? formatLastMessageTime(conversation.last_message.created_at) : ""}
+            </span>
           </div>
-          {hasJobContext && <p style={{fontSize:11,color:"#FF6600",margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>📋 {conversation.job_context.job.title}</p>}
+          {hasJobContext && <p style={{fontSize:11,color:"#FF6600",margin:"0 0 2px"}}>📋 Obra</p>}
           <p style={{fontSize:13,color:"#666",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-            {conversation.last_message.attachment_url ? `📎 ${t(lang, "attachment", "Anexo")}` : truncateMessage(conversation.last_message.content)}
+            {!conversation.last_message ? "Nova conversa"
+              : conversation.last_message.attachment_url ? `📎 ${t(lang, "attachment", "Anexo")}`
+              : truncateMessage(conversation.last_message.content)}
           </p>
         </div>
       </div>
@@ -86,7 +91,7 @@ export default function ConversationList({ conversations, archivedConversations 
           >
             <span className="flex items-center gap-1">
               <Archive className="w-3 h-3" />
-              Arquivadas ({archivedConversations.length})
+              Arquivadas · sem atividade há 2 semanas ({archivedConversations.length})
             </span>
             {showArchived ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>

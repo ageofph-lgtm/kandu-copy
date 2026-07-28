@@ -1,5 +1,8 @@
 import { toast } from "sonner";
-import { Rating, User, Job, Application, Notification } from "@/api/entities";
+import { Notification } from "@/api/entities";
+import { supabase } from "@/api/supabaseClient";
+import { UploadFile } from "@/api/integrations";
+import { validateFile, IMAGE_MIME_TYPES, resizeImage } from "@/lib/validation";
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -178,58 +181,57 @@ export default function CompletionModal({
     setIsSubmitting(true);
 
     try {
-      // 1. Criar avaliação na tabela ratings
-      await Rating.create({
-        job_id: job.id,
-        rater_id: currentUser.id,
-        rated_id: otherUser.id,
-        score: rating,
-        comment: comment.trim(),
+      // #13 — prova de trabalho: enviar as fotos antes de submeter a avaliação
+      let photoUrls = [];
+      if (isWorkerFlow && photoCount > 0) {
+        const files = photos.filter(Boolean).map(p => p.file);
+        for (const file of files) {
+          const check = validateFile(file, { accept: IMAGE_MIME_TYPES });
+          if (!check.ok) { toast.error(check.error); setIsSubmitting(false); return; }
+        }
+        for (const file of files) {
+          const resized = await resizeImage(file, { maxSize: 1600, quality: 0.85 });
+          const { file_url } = await UploadFile({ file: resized });
+          photoUrls.push(file_url);
+        }
+      }
+
+      // FIX #12/#26/#27/#78 — toda a liquidação (avaliação + XP + fecho da obra)
+      // corre numa única transação no servidor. O XP só é atribuído quando as
+      // DUAS partes tiverem avaliado, o que elimina a race condition em que o
+      // employer recebia XP sem o profissional ter avaliado.
+      const { data, error } = await supabase.rpc("submit_job_rating", {
+        p_job_id: job.id,
+        p_rater_id: currentUser.id,
+        p_rated_id: otherUser.id,
+        p_score: rating,
+        p_comment: comment.trim(),
+        p_qualities: selectedQualities,
+        p_photos: photoUrls,
       });
+      if (error) throw error;
 
-      // 2. Actualizar o score médio do utilizador avaliado
-      const allRatings = await Rating.filter({ rated_id: otherUser.id });
-      if (allRatings.length > 0) {
-        const avg = allRatings.reduce((s, r) => s + (r.score || r.rating || 0), 0) / allRatings.length;
-        await User.updateMyUserData({ rating: parseFloat(avg.toFixed(2)), total_reviews: allRatings.length }).catch(() =>
-          User.update(otherUser.id, { rating: parseFloat(avg.toFixed(2)), total_reviews: allRatings.length }).catch(() => {})
-        );
-      }
-
-      // 3. Marcar a obra como concluída (só o employer ou quando ambos avaliaram)
-      const isEmployer = currentUser.user_type === "employer";
-      if (isEmployer) {
-        // Employer avaliou → obra concluída
-        await Job.update(job.id, { status: "completed" });
-      } else {
-        // Worker avaliou → marcar completed (já estava completed_by_employer)
-        await Job.update(job.id, { status: "completed" });
-      }
-
-      // 4. Actualizar candidatura
-      if (application?.id) {
-        await Application.update(application.id, { status: "completed" }).catch(() => {});
-      }
-
-      // 5. XP — calcular e mostrar toast
-      const xpGained = calcJobXP(rating, job.price || 0, false);
-      setXpToast({ show: true, gained: xpGained, total: (currentUser.xp || 0) + xpGained });
-
-      // 6. Notificação para o utilizador avaliado
       await Notification.create({
         user_id: otherUser.id,
         type: "new_review",
-        title: "⭐ Nova avaliação recebida!",
-        message: `Recebeste ${rating} estrela${rating !== 1 ? "s" : ""} por "${job.title}".`,
+        title: data?.both_rated ? "🏁 Obra concluída!" : "⭐ Avaliação recebida",
+        message: data?.both_rated
+          ? `A obra "${job.title}" foi concluída e o XP foi atribuído a ambos.`
+          : `Recebeste uma avaliação por "${job.title}". Avalia também para desbloquear o XP.`,
         related_id: job.id,
         read: false,
       }).catch(() => {});
 
-      onComplete();
+      if (data?.both_rated) {
+        setXpToast({ show: true, gained: data.my_xp_gain || 0, total: (currentUser.xp || 0) + (data.my_xp_gain || 0) });
+      } else {
+        toast.success(data?.message || "Avaliação registada. O XP é atribuído quando ambas as partes avaliarem.");
+        onComplete();
+      }
 
     } catch (error) {
       console.error("Error completing job:", error);
-      toast.error(t(lang, "completeJobError", "Erro ao finalizar trabalho:") + " " + error.message);
+      toast.error(t(lang, "completeJobError", "Erro ao finalizar trabalho:") + " " + (error.message || ""));
     }
 
     setIsSubmitting(false);
@@ -328,10 +330,14 @@ export default function CompletionModal({
 
             {/* XP Preview */}
             <div style={{background:"#22C55E11", border:"1px solid #22C55E33", borderRadius:12, padding:16}}>
-              <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:12}}>
+              <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:6}}>
                 <span style={{fontSize:16}}>⚡</span>
                 <span style={{fontWeight:700, color:"#22C55E", fontSize:14}}>{t(lang, "xpToAward", "XP a ser atribuído")}</span>
               </div>
+              <p style={{color:subtext, fontSize:11, margin:"0 0 12px", lineHeight:1.5}}>
+                🔒 O XP só é creditado quando <strong style={{color:text}}>ambas as partes</strong> avaliarem.
+                Até lá, a avaliação fica oculta para os dois.
+              </p>
               <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, textAlign:"center"}}>
                 <div style={{background:"#22C55E22", borderRadius:10, padding:"10px 0"}}>
                   <p style={{fontSize:11, color:subtext, margin:"0 0 4px"}}>{t(lang, "forUser", "Para {name}").replace("{name}", otherUser.full_name?.split(' ')[0] ?? "")}</p>

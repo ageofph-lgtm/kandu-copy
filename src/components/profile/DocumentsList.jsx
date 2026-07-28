@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { UploadFile } from "@/api/integrations";
-import { base44 } from "@/api/base44Client";
+import { validateFile, DOC_MIME_TYPES } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -61,6 +61,10 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
     if (!docName.trim()) { toast.error(t(lang, "docNameRequired", "Insira um nome para o documento")); return; }
     if (!docType) { toast.error(t(lang, "docTypeRequired", "Selecione o tipo de documento")); return; }
 
+    // #39 — só PDF, JPG e PNG são aceites para certificações/licenças
+    const check = validateFile(file, { accept: DOC_MIME_TYPES });
+    if (!check.ok) { toast.error(check.error); event.target.value = ""; return; }
+
     setIsUploading(true);
     try {
       const { file_url } = await UploadFile({ file });
@@ -75,16 +79,14 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
       const updated = [...documents, newDoc];
       await User.updateMyUserData({ documents: updated });
 
-      // Sync to Supabase
-      try { await base44.functions.invoke('syncCurrentUserToSupabase', {}); } catch(e) {}
-
       setShowDialog(false);
       setDocName("");
       setDocType("");
-      onUpdate();
+      toast.success("Documento adicionado ✓");
+      onUpdate(updated);
     } catch (error) {
       console.error("Erro ao fazer upload:", error);
-      toast.error(t(lang, "docUploadError", "Erro ao fazer upload do documento"));
+      toast.error((t(lang, "docUploadError", "Erro ao fazer upload do documento")) + ": " + (error.message || ""));
     }
     setIsUploading(false);
   };
@@ -93,8 +95,7 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
     if (!confirm(t(lang, "removeDocQuestion", "Remover este documento?"))) return;
     const updated = documents.filter((_, i) => i !== idx);
     await User.updateMyUserData({ documents: updated });
-    try { await base44.functions.invoke('syncCurrentUserToSupabase', {}); } catch(e) {}
-    onUpdate();
+    onUpdate(updated);
   };
 
   return (
@@ -146,7 +147,7 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  accept="application/pdf,image/jpeg,image/png"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
@@ -162,7 +163,7 @@ export default function DocumentsList({ documents = [], onUpdate, canEdit }) {
                   )}
                 </Button>
                 <p className="text-xs text-gray-400 text-center">
-                  PDF, DOC, JPG, PNG — máx. 10MB
+                  PDF, JPG ou PNG — máx. 8 MB
                 </p>
               </div>
             </DialogContent>

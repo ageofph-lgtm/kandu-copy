@@ -11,16 +11,20 @@ import {
   Calendar,
   FileText,
   Shield,
-  Bell
+  Bell,
+  LayoutDashboard
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { t } from "@/components/utils/translations";
 import { useLanguage } from "@/lib/LanguageContext";
 import "leaflet/dist/leaflet.css";
 import { Toaster } from "@/components/ui/sonner";
+import { useSessionTimeout } from "@/lib/useSessionTimeout";
+import { toast } from "sonner";
 
 const workerNavigationItems = [
   { title: "home", icon: MapPin, url: createPageUrl("Home") },
+  { title: "dashboard", icon: LayoutDashboard, url: createPageUrl("Dashboard") },
   { title: "myJobs", icon: FileText, url: createPageUrl("MyJobs") },
   { title: "applications", icon: FileText, url: createPageUrl("Applications") },
   { title: "calendar", icon: Calendar, url: createPageUrl("Calendar") },
@@ -31,6 +35,7 @@ const workerNavigationItems = [
 
 const employerNavigationItems = [
   { title: "home", icon: MapPin, url: createPageUrl("Home") },
+  { title: "dashboard", icon: LayoutDashboard, url: createPageUrl("Dashboard") },
   { title: "myJobs", icon: FileText, url: createPageUrl("MyJobs") },
   { title: "applications", icon: FileText, url: createPageUrl("Applications") },
   { title: "calendar", icon: Calendar, url: createPageUrl("Calendar") },
@@ -63,6 +68,12 @@ export default function Layout({ children }) {
       Notification.requestPermission();
     }
   }, []);
+
+  // #85 — logout automático após inatividade
+  useSessionTimeout(!!user, () => {
+    toast.info("Sessão terminada por inatividade. Faz login novamente.");
+    navigate(createPageUrl("Login"), { replace: true });
+  });
   const bg = isDark ? "var(--base)" : "var(--base2)";
   const surface = isDark ? "#2A2A2A" : "#F5F5F5";
   const text = "var(--text)";
@@ -169,23 +180,20 @@ export default function Layout({ children }) {
     }
   }, [navigate, location.pathname]);
 
-  const markApplicationNotificationsAsRead = useCallback(async () => {
+  // Marca como lidas as notificações da categoria correspondente ao ecrã aberto.
+  // Antes usava-se `type: { $in: [...] }`, que o adaptador Supabase traduz para
+  // um `.eq()` com um objecto — a query não devolvia nada e o badge nunca
+  // desaparecia ao navegar entre tabs.
+  const markCategoryAsRead = useCallback(async (types, key) => {
     if (!user) return;
     try {
-      const unreadAppNotifications = await Notification.filter({
-        user_id: user.id,
-        read: false,
-        type: { $in: ['new_application', 'new_proposal', 'job_accepted', 'job_rejected', 'job_completed', 'job_ready_for_review'] }
-      });
-
-      if (unreadAppNotifications.length > 0) {
-        for (const notif of unreadAppNotifications) {
-          await Notification.update(notif.id, { read: true });
-        }
-        setUnreadNotifications(prev => ({ ...prev, applications: 0 }));
-      }
+      const unread = await Notification.filter({ user_id: user.id, read: false });
+      const target = unread.filter(n => types.includes(n.type));
+      if (!target.length) return;
+      await Promise.all(target.map(n => Notification.update(n.id, { read: true })));
+      setUnreadNotifications(prev => ({ ...prev, [key]: 0 }));
     } catch (error) {
-      console.error("Error marking application notifications as read:", error);
+      console.error("Error marking notifications as read:", error);
     }
   }, [user]);
 
@@ -201,11 +209,23 @@ export default function Layout({ children }) {
     }
   }, [user, location.pathname, navigate]);
 
+  const APPLICATION_TYPES = React.useMemo(() => ([
+    'new_application', 'new_proposal', 'application_withdrawn',
+    'job_accepted', 'job_rejected', 'job_completed', 'job_ready_for_review',
+  ]), []);
+
   useEffect(() => {
-    if (location.pathname === createPageUrl("Applications")) {
-      markApplicationNotificationsAsRead();
+    if (location.pathname === createPageUrl("Applications") || location.pathname === createPageUrl("MyJobs")) {
+      markCategoryAsRead(APPLICATION_TYPES, "applications");
     }
-  }, [location.pathname, markApplicationNotificationsAsRead]);
+    if (location.pathname === createPageUrl("Chat")) {
+      markCategoryAsRead(['new_message'], "chat");
+    }
+    if (location.pathname === createPageUrl("Notifications")) {
+      markCategoryAsRead([...APPLICATION_TYPES, 'new_message'], "applications");
+      setUnreadNotifications({ chat: 0, applications: 0 });
+    }
+  }, [location.pathname, markCategoryAsRead, APPLICATION_TYPES]);
 
   // Som de notificação quando chegam novas notificações
   const prevUnreadRef = React.useRef(0);

@@ -3,7 +3,9 @@ import { Application, ChatMessage, Notification, User } from "@/api/entities";
 import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { MapPin, Clock, Eye, Shield, X, Trash2, CheckCircle, AlertCircle } from "lucide-react";
+import { MapPin, Clock, Eye, Shield, X, Trash2, CheckCircle, AlertCircle, Heart, Building2, BadgeCheck } from "lucide-react";
+import { toggleFavorite, isFavorite } from "@/lib/favorites";
+import { VERIFICATION_LEVELS, computeVerificationLevel } from "@/lib/verification";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -21,6 +23,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
   const [employer, setEmployer] = useState(null);
   const [alreadyApplied, setAlreadyApplied] = useState(false);
   const [checkingApplication, setCheckingApplication] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     // reset state when job changes
@@ -37,6 +40,9 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
           if (res.length > 0) setEmployer(res[0]);
         } catch {}
       }
+      if (user?.id) {
+        isFavorite(user.id, "job", job.id).then(setSaved).catch(() => {});
+      }
       if (user?.user_type === "worker") {
         setCheckingApplication(true);
         try {
@@ -49,7 +55,16 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
     fetchData();
   }, [job.id, user?.id]);
 
-  const createConversationId = (a, b) => [a, b].sort().join("_");
+  // #40 — guardar obra em "Trabalho › Guardados"
+  const handleToggleSaved = async () => {
+    try {
+      const next = await toggleFavorite(user.id, "job", job.id);
+      setSaved(next);
+      toast.success(next ? "Obra guardada ❤️" : "Removida dos guardados");
+    } catch (e) {
+      toast.error("Não foi possível guardar: " + (e.message || ""));
+    }
+  };
 
   const handleSubmit = async () => {
     if (!user || user.user_type !== "worker") return;
@@ -165,12 +180,20 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
             {step === "apply" ? t(lang, "application", "Candidatura") : step === "success" ? `✅ ${t(lang, "sent", "Enviado!")}` : job.title}
           </h2>
 
-          <button
-            onClick={onClose}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 8, color: "#666" }}
-          >
-            <X size={20} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {isWorker && step === "detail" && (
+              <button onClick={handleToggleSaved} aria-label={saved ? "Remover dos guardados" : "Guardar obra"}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 6px", lineHeight: 0 }}>
+                <Heart size={19} color={saved ? "#EF4444" : "#666"} fill={saved ? "#EF4444" : "none"} />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: 8, color: "#666" }}
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Corpo scrollável */}
@@ -350,46 +373,94 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
                 <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "#444" }}>{job.description}</p>
               </div>
 
-              {employer && (
-                <div
-                  onClick={() => navigate(`${createPageUrl("Profile")}?userId=${employer.id}`)}
-                  style={{ background: "#F8F8F8", borderRadius: 14, padding: 16, marginBottom: 14, cursor: "pointer", transition: "opacity 0.15s" }}
-                  onMouseEnter={e => e.currentTarget.style.opacity="0.8"}
-                  onMouseLeave={e => e.currentTarget.style.opacity="1"}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{
-                      width: 44, height: 44, borderRadius: "50%", background: "#F4621F",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      color: "#FFF", fontWeight: 800, fontSize: 18, flexShrink: 0, overflow: "hidden"
-                    }}>
-                      {employer.avatar_url
-                        ? <img src={employer.avatar_url} style={{width:"100%",height:"100%",objectFit:"cover"}} alt="" />
-                        : employer.full_name?.charAt(0) || "U"}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontWeight: 700, fontSize: 14 }}>{employer.full_name || t(lang, "employer", "Empregador")}</span>
-                        {employer.verified && <Shield size={14} color="#22c55e" />}
-                      </div>
-                      <span style={{ fontSize: 12, color: "#888" }}>
-                        ⭐ {employer.rating || "N/A"} · {employer.city || "Portugal"}
-                      </span>
-                    </div>
-                    <span style={{fontSize:11,color:"#F4621F",fontWeight:600}}>Ver perfil →</span>
-                    <button
-                      onClick={() => { onClose(); navigate(createPageUrl("Chat")); }}
-                      style={{
-                        background: "#FFF7F0", border: "1px solid #FFD0AA",
-                        borderRadius: 10, padding: "6px 12px", cursor: "pointer",
-                        fontSize: 12, fontWeight: 600, color: "#FF6600", flexShrink: 0
-                      }}
-                    >
-                      💬 {t(lang, "chat", "Chat")}
-                    </button>
+              {/* #21 — fotos da área de trabalho */}
+              {Array.isArray(job.photos) && job.photos.length > 0 && (
+                <div style={{ marginBottom: 14 }}>
+                  <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 13, color: "#111016" }}>
+                    📷 {t(lang, "workAreaPhotos", "Área de trabalho")}
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+                    {job.photos.map((url, i) => (
+                      <img key={url + i} src={url} alt={`Área de trabalho ${i + 1}`}
+                        onClick={() => window.open(url, "_blank")}
+                        style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 10, cursor: "pointer" }} />
+                    ))}
                   </div>
                 </div>
               )}
+
+              {employer && (() => {
+                // #51 — o profissional passa a ver os dados do Employer que o
+                // wireframe (slide 9) prevê: empresa, tipo, verificação e ranking.
+                const vLevel = computeVerificationLevel(employer);
+                const vInfo = VERIFICATION_LEVELS[vLevel];
+                return (
+                  <div style={{ background: "#F8F8F8", borderRadius: 14, padding: 16, marginBottom: 14 }}>
+                    <p style={{ margin: "0 0 10px", fontWeight: 700, fontSize: 13, color: "#111016" }}>
+                      {t(lang, "employer", "Empregador")}
+                    </p>
+                    <div
+                      onClick={() => navigate(`${createPageUrl("Profile")}?userId=${employer.id}`)}
+                      style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+                    >
+                      <div style={{
+                        width: 48, height: 48, borderRadius: "50%", background: "#F4621F",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        color: "#FFF", fontWeight: 800, fontSize: 18, flexShrink: 0, overflow: "hidden"
+                      }}>
+                        {employer.avatar_url
+                          ? <img src={employer.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="" />
+                          : employer.full_name?.charAt(0) || "U"}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                          <span style={{ fontWeight: 700, fontSize: 15 }}>{employer.full_name || t(lang, "employer", "Empregador")}</span>
+                          {employer.verified && <Shield size={14} color="#22c55e" />}
+                        </div>
+                        {employer.company && (
+                          <span style={{ fontSize: 12, color: "#666", display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                            <Building2 size={11} /> {employer.company}
+                            {employer.employer_type === "cia" ? " · Empresa registada" : " · Cliente particular"}
+                          </span>
+                        )}
+                        <span style={{ fontSize: 12, color: "#888" }}>
+                          ⭐ {employer.rating ? Number(employer.rating).toFixed(1) : "Sem avaliações"}
+                          {employer.total_reviews ? ` (${employer.total_reviews})` : ""} · {employer.city || "Portugal"}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: 11, color: "#F4621F", fontWeight: 600, flexShrink: 0 }}>Ver perfil →</span>
+                    </div>
+
+                    <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+                      <span style={{
+                        background: vInfo.color + "22", color: vInfo.color, borderRadius: 20,
+                        padding: "3px 10px", fontSize: 11, fontWeight: 700,
+                        display: "inline-flex", alignItems: "center", gap: 4
+                      }}>
+                        <BadgeCheck size={11} /> {vInfo.label}
+                      </span>
+                      <span style={{ background: "#EEE", color: "#555", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 600 }}>
+                        {employer.completed_jobs || 0} obras concluídas
+                      </span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onClose(); navigate(`${createPageUrl("Chat")}?userId=${employer.id}`); }}
+                        style={{
+                          marginLeft: "auto", background: "#FFF7F0", border: "1px solid #FFD0AA",
+                          borderRadius: 10, padding: "6px 12px", cursor: "pointer",
+                          fontSize: 12, fontWeight: 600, color: "#FF6600", flexShrink: 0
+                        }}
+                      >
+                        💬 {t(lang, "chat", "Chat")}
+                      </button>
+                    </div>
+
+                    {/* #67 — contactos protegidos até haver aceitação formal */}
+                    <p style={{ margin: "10px 0 0", fontSize: 11, color: "#999", lineHeight: 1.5 }}>
+                      🔒 Os contactos diretos ficam disponíveis depois de a candidatura ser aceite.
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* CTA Profissional */}
               {isWorker && job.status === "open" && (

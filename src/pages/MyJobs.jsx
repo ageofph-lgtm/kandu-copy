@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Application, Job, Notification, User } from "@/api/entities";
+import JobEditModal from "@/components/jobs/JobEditModal";
+import { listFavorites, toggleFavorite } from "@/lib/favorites";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import CompletionModal from "@/components/applications/CompletionModal";
-import { MapPin, Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, Plus, ChevronDown, ChevronUp, Pencil, Eye, Flag, Heart, Undo2 } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
@@ -149,6 +151,7 @@ function CompletionPinDisplay({ pin, countdown, isDark, employerName }) {
 // ─── STATUS pill ──────────────────────────────────────────────────────────────
 // labels guardados como chave i18n + fallback PT, traduzidos no render
 const STATUS_MAP = {
+  draft:                 { color: "#8A909A", key: "statusDraft", pt: "Rascunho" },
   pending_employer:      { color: "#F59E0B", key: "statusToPublish", pt: "A publicar" },
   open:                  { color: "#3B82F6", key: "statusPublished", pt: "Publicada" },
   in_progress:           { color: "#FF6600", key: "statusInProgress", pt: "Em Curso" },
@@ -167,6 +170,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
   const [finishPinInput, setFinishPinInput] = useState("");
   const [completion,     setCompletion]     = useState(null);
   const [otherUser, setOtherUser]   = useState(null);
+  const [editMode,  setEditMode]    = useState(null);   // "edit" | "view" | null
   const pinCountdown = useCountdown(showPin);
   const navigate = useNavigate();
   const pin = getDailyPin(job.id);
@@ -208,6 +212,8 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
       return;
     }
     setShowFinishPin(false);
+    // #75 — confirmação explícita depois do PIN correcto
+    toast.success(t(lang, "thankYouJobDone", "Obrigado. Trabalho concluído ✓"), { duration: 5000 });
     const app = applications.find(a => a.job_id === job.id && a.status === "accepted");
     if (!app) {
       // sem candidatura aceite — finalizar directo
@@ -234,8 +240,19 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
 
   const handlePublish = async () => {
     if (!window.confirm(t(lang, "publishJobQuestion", "Publicar esta obra?"))) return;
-    await Job.update(job.id, { status: "open" });
-    onReload();
+    try {
+      await Job.update(job.id, { status: "open", published_at: new Date().toISOString() });
+      toast.success("Obra publicada ✓");
+      onReload();
+    } catch (e) { toast.error("Erro ao publicar: " + (e.message || "")); }
+  };
+
+  // #66 — depois de o profissional iniciar, o anúncio deixa de ser editável
+  const canEdit = ["draft", "pending_employer", "open"].includes(job.status);
+
+  // #14 — denúncia de ausência do profissional
+  const handleNoShow = () => {
+    navigate(`${createPageUrl("Complaints")}?jobId=${job.id}`);
   };
 
   return (
@@ -294,7 +311,28 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
               </div>
             )}
 
+            {/* #54 — ver detalhes e editar anúncio */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+              <button onClick={() => setEditMode("view")}
+                style={{ flex: 1, background: "transparent", color: subtext, border: `1px solid ${border}`, borderRadius: 10, padding: "9px", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <Eye size={14} /> {t(lang, "viewDetails", "Ver detalhes")}
+              </button>
+              <button onClick={() => setEditMode(canEdit ? "edit" : "view")}
+                disabled={!canEdit}
+                title={canEdit ? undefined : "A obra já começou — o anúncio não pode ser alterado."}
+                style={{ flex: 1, background: canEdit ? "#FF660022" : "transparent", color: canEdit ? "#FF6600" : "#555", border: `1px solid ${canEdit ? "#FF660055" : border}`, borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: canEdit ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <Pencil size={14} /> {t(lang, "editJob", "Editar")}
+              </button>
+            </div>
+
             {/* Ações por estado */}
+            {job.status === "draft" && (
+              <button onClick={() => setEditMode("edit")}
+                style={{ width: "100%", background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 8 }}>
+                📝 {t(lang, "completeAndPublish", "Completar e publicar rascunho")}
+              </button>
+            )}
+
             {job.status === "pending_employer" && (
               <button onClick={handlePublish}
                 style={{ width: "100%", background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 8 }}>
@@ -363,11 +401,26 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
                     </>
                   )}
                 </div>
+
+                {/* #14 / #28 — denunciar ausência ou abrir reclamação */}
+                <button onClick={handleNoShow}
+                  style={{ width: "100%", marginTop: 10, background: "transparent", color: "#EF4444", border: "1px solid #EF444444", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <Flag size={14} /> {t(lang, "reportProblem", "Reportar ausência ou problema")}
+                </button>
               </>
             )}
           </div>
         )}
       </div>
+
+      {editMode && (
+        <JobEditModal
+          job={job}
+          mode={editMode}
+          onClose={() => setEditMode(null)}
+          onSaved={onReload}
+        />
+      )}
 
       {completion && completion.job && (
         <CompletionModal
@@ -414,6 +467,38 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
     } catch (_) { setActing(false); }
   };
 
+  // #110 — em vez de recusar, o employer pode enviar uma contraproposta
+  const handleCounterOffer = async () => {
+    const raw = window.prompt(
+      `Contraproposta para ${worker?.full_name || "o profissional"}\n\n` +
+      `Pedido: €${app.proposed_price || job.price}\nQual o teu valor (€)?`,
+      String(job.price || "")
+    );
+    if (raw === null) return;
+    const value = parseFloat(raw);
+    if (!Number.isFinite(value) || value <= 0) { toast.error("Valor inválido."); return; }
+
+    setActing(true);
+    try {
+      await Application.update(app.id, {
+        counter_offer: value,
+        counter_offer_by: job.employer_id,
+        counter_offer_status: "pending",
+      });
+      await Notification.create({
+        user_id: app.worker_id, type: "new_proposal",
+        title: "💰 Contraproposta recebida",
+        message: `O empregador propôs €${value} para "${job.title}". Vê em Trabalho › Candidaturas.`,
+        related_id: job.id, read: false,
+      });
+      toast.success("Contraproposta enviada ✓");
+      onReload();
+    } catch (e) {
+      toast.error("Erro ao enviar contraproposta: " + (e.message || ""));
+      setActing(false);
+    }
+  };
+
   return (
     <div style={{ background: isDark ? "#161616" : "#FFF", borderRadius: 10, padding: "10px 12px", border: `1px solid ${border}`, marginBottom: 8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
@@ -443,10 +528,19 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
           "{app.message.slice(0, 100)}{app.message.length > 100 ? "…" : ""}"
         </p>
       )}
+      {app.counter_offer && (
+        <p style={{ color: "#3B82F6", fontSize: 12, fontWeight: 600, background: "#3B82F615", borderRadius: 7, padding: "6px 10px", margin: "0 0 8px" }}>
+          💰 Contraproposta enviada: €{app.counter_offer} — {app.counter_offer_status === "accepted" ? "aceite" : "à espera de resposta"}
+        </p>
+      )}
       <div style={{ display: "flex", gap: 8 }}>
         <button onClick={handleReject} disabled={acting}
           style={{ flex: 1, background: "#EF444422", color: "#EF4444", border: "1px solid #EF444444", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
           ✕ {t(lang, "reject", "Recusar")}
+        </button>
+        <button onClick={handleCounterOffer} disabled={acting}
+          style={{ flex: 1, background: "#3B82F622", color: "#3B82F6", border: "1px solid #3B82F644", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+          💰 {t(lang, "counterOffer", "Contrapropor")}
         </button>
         <button onClick={handleAccept} disabled={acting}
           style={{ flex: 2, background: "#FF6600", color: "#FFF", border: "none", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
@@ -468,6 +562,8 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
   const [finishCountdown,setFinishCountdown]= useState(30);
   const [completion,     setCompletion]     = useState(null);
   const [employer, setEmployer]     = useState(null);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const navigate = useNavigate();
   const s = STATUS_MAP[job.status] || STATUS_MAP.cancelled;
   const expectedPin = getDailyPin(job.id);
   const completionPin = getCompletionPin(job.id);
@@ -519,6 +615,27 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
     } else {
       toast.error(t(lang, "pinIncorrectFromEmployer", "PIN incorreto. Pede ao empregador para mostrar o PIN correto."));
       setPinInput("");
+    }
+  };
+
+  // #41 — retirar candidatura antes de ser aceite
+  const handleWithdraw = async () => {
+    if (!application?.id) return;
+    if (!window.confirm("Retirar a tua candidatura a esta obra?\n\nPodes candidatar-te novamente enquanto o anúncio estiver aberto.")) return;
+    setWithdrawing(true);
+    try {
+      await Application.delete(application.id);
+      await Notification.create({
+        user_id: job.employer_id, type: "application_withdrawn",
+        title: "Candidatura retirada",
+        message: `${user.full_name || "Um profissional"} retirou a candidatura a "${job.title}".`,
+        related_id: job.id, read: false,
+      }).catch(() => {});
+      toast.success("Candidatura retirada.");
+      onReload();
+    } catch (e) {
+      toast.error("Erro ao retirar candidatura: " + (e.message || ""));
+      setWithdrawing(false);
     }
   };
 
@@ -581,10 +698,55 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
 
             {/* Estado: candidatura pendente */}
             {application?.status === "pending" && job.status === "open" && (
-              <div style={{ background: "#F59E0B22", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 18 }}>⏳</span>
-                <p style={{ color: "#F59E0B", fontWeight: 600, fontSize: 13, margin: 0 }}>{t(lang, "pendingApplicationWaiting", "Candidatura pendente — aguarda resposta")}</p>
-              </div>
+              <>
+                <div style={{ background: "#F59E0B22", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>⏳</span>
+                  <p style={{ color: "#F59E0B", fontWeight: 600, fontSize: 13, margin: 0 }}>{t(lang, "pendingApplicationWaiting", "Candidatura pendente — aguarda resposta")}</p>
+                </div>
+
+                {/* #110 — contraproposta do empregador */}
+                {application.counter_offer && application.counter_offer_status === "pending" && (
+                  <div style={{ background: "#3B82F615", border: "1px solid #3B82F644", borderRadius: 12, padding: "12px 14px", marginTop: 10 }}>
+                    <p style={{ color: "#3B82F6", fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>
+                      💰 O empregador propôs €{application.counter_offer}
+                    </p>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={async () => {
+                        try {
+                          await Application.update(application.id, { counter_offer_status: "rejected" });
+                          toast.info("Contraproposta recusada.");
+                          onReload();
+                        } catch (e) { toast.error(e.message || "Erro"); }
+                      }}
+                        style={{ flex: 1, background: "transparent", color: subtext, border: `1px solid ${border}`, borderRadius: 10, padding: "9px", fontSize: 13, cursor: "pointer" }}>
+                        Recusar
+                      </button>
+                      <button onClick={async () => {
+                        try {
+                          await Application.update(application.id, { counter_offer_status: "accepted", proposed_price: application.counter_offer });
+                          await Notification.create({
+                            user_id: job.employer_id, type: "new_proposal",
+                            title: "✅ Contraproposta aceite",
+                            message: `${user.full_name || "O profissional"} aceitou €${application.counter_offer} para "${job.title}".`,
+                            related_id: job.id, read: false,
+                          }).catch(() => {});
+                          toast.success("Contraproposta aceite ✓");
+                          onReload();
+                        } catch (e) { toast.error(e.message || "Erro"); }
+                      }}
+                        style={{ flex: 2, background: "#3B82F6", color: "#fff", border: "none", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                        Aceitar €{application.counter_offer}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* #41 — retirar candidatura */}
+                <button onClick={handleWithdraw} disabled={withdrawing}
+                  style={{ width: "100%", marginTop: 10, background: "transparent", color: subtext, border: `1px solid ${border}`, borderRadius: 12, padding: "10px", fontWeight: 600, fontSize: 13, cursor: withdrawing ? "wait" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <Undo2 size={14} /> {withdrawing ? "A retirar..." : t(lang, "withdrawApplication", "Retirar candidatura")}
+                </button>
+              </>
             )}
 
             {/* Estado: em curso */}
@@ -594,8 +756,10 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                 <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14, marginBottom: 10 }}>
                   <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>📍 {t(lang, "confirmPresence", "Confirmar Presença")}</p>
                   {pinOk ? (
-                    <div style={{ background: "#22C55E22", borderRadius: 10, padding: "12px", textAlign: "center" }}>
-                      <p style={{ color: "#22C55E", fontWeight: 700, fontSize: 14, margin: "0 0 2px" }}>✅ {t(lang, "presenceConfirmedToday", "Presença confirmada hoje!")}</p>
+                    <div style={{ background: "#22C55E22", borderRadius: 10, padding: "14px", textAlign: "center" }}>
+                      <p style={{ color: "#22C55E", fontWeight: 800, fontSize: 15, margin: "0 0 4px" }}>
+                        ✅ {t(lang, "thankYouWorkDone", "Obrigado. Presença registada!")}
+                      </p>
                       <p style={{ color: subtext, fontSize: 12, margin: 0 }}>{t(lang, "registeredAt", "Registado às")} {format(new Date(), "HH:mm")}</p>
                     </div>
                   ) : !showKeypad ? (
@@ -645,6 +809,12 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                     </>
                   )}
                 </div>
+
+                {/* #16 / #28 — denunciar anúncio falso ou abrir reclamação */}
+                <button onClick={() => navigate(`${createPageUrl("Complaints")}?jobId=${job.id}`)}
+                  style={{ width: "100%", marginTop: 10, background: "transparent", color: "#EF4444", border: "1px solid #EF444444", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <Flag size={14} /> {t(lang, "reportProblem", "Reportar problema com a obra")}
+                </button>
               </>
             )}
           </div>
@@ -660,6 +830,53 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
         />
       )}
     </>
+  );
+}
+
+// ─── Obra guardada (#40) ──────────────────────────────────────────────────────
+function SavedJobCard({ job, user, onReload, text, subtext, border }) {
+  const { lang } = useLanguage();
+  const navigate = useNavigate();
+  const [removing, setRemoving] = useState(false);
+  const s = STATUS_MAP[job.status] || STATUS_MAP.open;
+
+  const handleRemove = async () => {
+    setRemoving(true);
+    try {
+      await toggleFavorite(user.id, "job", job.id);
+      toast.success("Removida dos guardados");
+      onReload();
+    } catch (e) {
+      toast.error("Erro ao remover: " + (e.message || ""));
+      setRemoving(false);
+    }
+  };
+
+  return (
+    <div style={{ background: "var(--surface2)", borderRadius: 16, border: `1px solid ${border}`, borderLeft: `4px solid ${s.color}`, marginBottom: 12, padding: 16 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: "0 0 4px" }}>{job.title}</p>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12, color: subtext, display: "flex", alignItems: "center", gap: 3 }}>
+              <MapPin size={11} />{job.location}
+            </span>
+            <span style={{ color: "#FF6600", fontWeight: 800, fontSize: 14 }}>€{job.price}</span>
+            <span style={{ background: s.color + "22", color: s.color, borderRadius: 20, padding: "3px 9px", fontSize: 11, fontWeight: 700 }}>
+              {statusLabel(lang, s)}
+            </span>
+          </div>
+        </div>
+        <button onClick={handleRemove} disabled={removing} aria-label="Remover dos guardados"
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 2, flexShrink: 0, lineHeight: 0 }}>
+          <Heart size={20} color="#EF4444" fill="#EF4444" />
+        </button>
+      </div>
+      <button onClick={() => navigate(createPageUrl("Home"))}
+        style={{ width: "100%", marginTop: 12, background: "#FF660022", color: "#FF6600", border: "1px solid #FF660055", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+        Ver no mapa →
+      </button>
+    </div>
   );
 }
 
@@ -680,6 +897,7 @@ export default function MyJobs() {
   const [usersById,    setUsersById]    = useState({});
   const [loading,      setLoading]      = useState(true);
   const [tab,          setTab]          = useState("pending");
+  const [savedJobs,    setSavedJobs]    = useState([]);   // #40 — guardados
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -714,6 +932,13 @@ export default function MyJobs() {
         ...appList.map(a => a.worker_id).filter(Boolean),
         ...appList.map(a => a.employer_id).filter(Boolean),
       ])];
+      // #40 — obras guardadas (favoritos)
+      try {
+        const favs = await listFavorites(cu.id, "job");
+        const favJobs = await Promise.all(favs.map(f => Job.get(f.target_id).catch(() => null)));
+        setSavedJobs(favJobs.filter(Boolean));
+      } catch { setSavedJobs([]); }
+
       if (userIds.length) {
         const userMap = {};
         const fetchWithTimeout = (uid) => {
@@ -754,14 +979,24 @@ export default function MyJobs() {
     : jobs.filter(j => ["in_progress","completed_by_employer"].includes(j.status));
 
   const historyJobs = !user ? [] : jobs.filter(j => ["completed","cancelled"].includes(j.status));
+  const draftJobs   = !user ? [] : jobs.filter(j => j.status === "draft");
 
   const TABS = [
     { id: "pending", label: isWorker ? t(lang,"applications") : t(lang,"published","Publicadas"), icon: isWorker ? "📋" : "📢", count: pendingJobs.length },
     { id: "active",  label: t(lang,"statusInProgress","Em Curso"), icon: "🔨", count: activeJobs.length  },
+    // #53 — rascunhos (só fazem sentido para quem publica)
+    ...(isEmployer ? [{ id: "drafts", label: t(lang,"drafts","Rascunhos"), icon: "📝", count: draftJobs.length }] : []),
+    // #40 — guardados
+    { id: "saved",   label: t(lang,"saved","Guardados"), icon: "❤️", count: savedJobs.length },
     { id: "history", label: t(lang,"history","Histórico"), icon: "🏆", count: historyJobs.length },
   ];
 
-  const currentData = tab === "pending" ? pendingJobs : tab === "active" ? activeJobs : historyJobs;
+  const currentData =
+    tab === "pending" ? pendingJobs :
+    tab === "active"  ? activeJobs :
+    tab === "drafts"  ? draftJobs :
+    tab === "saved"   ? savedJobs :
+    historyJobs;
 
   if (loading) return <LoadingScreen />;
 
@@ -790,12 +1025,12 @@ export default function MyJobs() {
       </div>
 
       {/* Tab buttons grandes */}
-      <div style={{ padding: "16px 16px 0", display: "flex", gap: 10 }}>
+      <div style={{ padding: "16px 16px 0", display: "flex", gap: 8, overflowX: "auto" }}>
         {TABS.map(tabItem => {
           const active = tab === tabItem.id;
           return (
             <button key={tabItem.id} onClick={() => setTab(tabItem.id)}
-              style={{ flex: 1, padding: "14px 6px", borderRadius: 16, border: `2px solid ${active ? "#FF6600" : border}`,
+              style={{ flex: "1 0 auto", minWidth: 78, padding: "14px 6px", borderRadius: 16, border: `2px solid ${active ? "#FF6600" : border}`,
                 background: active ? "#FF6600" : surface, color: active ? "#FFF" : subtext, cursor: "pointer", textAlign: "center" }}>
               <div style={{ fontSize: 20, marginBottom: 3 }}>{tabItem.icon}</div>
               <div style={{ fontWeight: 700, fontSize: 12 }}>{tabItem.label}</div>
@@ -816,7 +1051,10 @@ export default function MyJobs() {
             <p style={{ color: subtext, fontWeight: 700, fontSize: 15, margin: "0 0 6px" }}>
               {tab === "pending"
                 ? (isWorker ? t(lang, "noPendingApplications", "Nenhuma candidatura pendente") : t(lang, "noPublishedJobs", "Nenhuma obra publicada"))
-                : tab === "active" ? t(lang, "noActiveJobs", "Nenhum trabalho em curso") : t(lang, "emptyHistory", "Histórico vazio")}
+                : tab === "active" ? t(lang, "noActiveJobs", "Nenhum trabalho em curso")
+                : tab === "drafts" ? t(lang, "noDrafts", "Nenhum rascunho guardado")
+                : tab === "saved"  ? t(lang, "noSaved", "Nada guardado ainda")
+                : t(lang, "emptyHistory", "Histórico vazio")}
             </p>
             {tab === "pending" && isWorker && (
               <button onClick={() => navigate(createPageUrl("Home"))}
@@ -831,6 +1069,11 @@ export default function MyJobs() {
               </button>
             )}
           </div>
+        ) : tab === "saved" ? (
+          currentData.map(job => (
+            <SavedJobCard key={job.id} job={job} user={user} onReload={loadData}
+              text={text} subtext={subtext} border={border} />
+          ))
         ) : isEmployer ? (
           currentData.map(job => (
             <EmployerJobCard key={job.id} job={job} applications={applications} user={user} usersById={usersById}
