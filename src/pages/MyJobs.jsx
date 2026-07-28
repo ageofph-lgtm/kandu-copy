@@ -800,7 +800,10 @@ export default function MyJobs() {
     // Timeout de segurança — garante que o loading nunca fica preso
     const safetyTimer = setTimeout(() => setLoading(false), 10000);
     try {
-      const cu = await User.me(); setUser(cu);
+      const cu = await User.me();
+      // Sem sessão não há nada para carregar — o Layout trata do redirect
+      if (!cu) { clearTimeout(safetyTimer); setLoading(false); return; }
+      setUser(cu);
       let jobList = [], appList = [];
 
       if (cu.user_type === "worker") {

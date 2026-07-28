@@ -245,7 +245,10 @@ export default function Applications() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const cu = await User.me(); setUser(cu);
+      const cu = await User.me();
+      // Sem sessão não há nada para carregar — o Layout trata do redirect
+      if (!cu) { setLoading(false); return; }
+      setUser(cu);
 
       let appList = [];
       if (cu.user_type === "worker") {
