@@ -64,7 +64,11 @@ export default function Login() {
   const handleGoogle = async () => {
     setGoogleLoading(true);
     setError("");
-    const redirectUrl = window.location.origin + "/login";
+    // Redirecionar para a raiz do site (Site URL no Supabase — sempre autorizada).
+    // A página Welcome detecta a sessão e encaminha. Antes usava "/login"
+    // (minúsculo) que não corresponde a nenhuma rota (a rota é /Login) e o
+    // utilizador ficava preso no PageNotFound após o OAuth.
+    const redirectUrl = window.location.origin;
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -73,6 +77,18 @@ export default function Login() {
       },
     });
     if (err) { setError(err.message); setGoogleLoading(false); }
+  };
+
+  // Navegação directa após login/signup com sessão — não depende só do
+  // listener onAuthStateChange, que pode atrasar-se e dar a sensação de
+  // "nada acontece" depois de submeter o formulário.
+  const navigateAfterAuth = async (authUser) => {
+    const { data: profile } = await supabase
+      .from("users").select("user_type").eq("id", authUser.id).maybeSingle();
+    const dest = profile?.user_type === "admin"
+      ? "AdminDashboard"
+      : profile?.user_type ? "Home" : "SetupProfile";
+    navigate(createPageUrl(dest), { replace: true });
   };
 
   const handleSubmit = async (e) => {
@@ -93,12 +109,23 @@ export default function Login() {
         return;
       }
       if (mode === "login") {
-        const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) throw err;
+        if (data?.user) await navigateAfterAuth(data.user);
       } else {
         if (password.length < 8) throw new Error("A password tem de ter pelo menos 8 caracteres.");
-        const { error: err } = await supabase.auth.signUp({ email, password });
+        const { data: signUpData, error: err } = await supabase.auth.signUp({ email, password });
         if (err) throw err;
+        // Confirmação por email activa (default Supabase) → sem sessão.
+        // Antes o botão ficava preso em "A processar..." para sempre.
+        if (!signUpData?.session) {
+          setNotice("Conta criada! Verifica o teu email para confirmar antes de entrar.");
+          setMode("login");
+          setPassword("");
+          setLoading(false);
+          return;
+        }
+        if (signUpData?.user) await navigateAfterAuth(signUpData.user);
       }
     } catch (err) {
       setError(err.message);
