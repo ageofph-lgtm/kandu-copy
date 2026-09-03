@@ -55,6 +55,8 @@
     "status": {
       "type": "string",
       "enum": [
+        "draft",
+        "pending_employer",
         "open",
         "in_progress",
         "completed_by_employer",
@@ -106,6 +108,44 @@
       ],
       "default": "medium",
       "description": "Urg\u00eancia da obra"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs das fotos da obra (m\u00ednimo 3 para publicar)"
+    },
+    "technical_documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "url"
+        ]
+      },
+      "description": "Documentos t\u00e9cnicos da obra"
+    },
+    "proof_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Fotos de prova de trabalho (proof of work)"
+    },
+    "is_blocked_by_complaint": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se a obra est\u00e1 bloqueada por reclama\u00e7\u00e3o"
     }
   },
   "required": [

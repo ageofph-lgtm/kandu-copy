@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import { Job, User } from "@/api/entities";
 import { useState, useEffect, useRef } from "react";
 import { UploadFile } from "@/api/integrations";
-import { requireFields, isValidDateRange, validateFile, resizeImage, IMAGE_MIME_TYPES } from "@/lib/validation";
+import { requireFields, isValidDateRange, validateFile, resizeImage, IMAGE_MIME_TYPES, DOC_MIME_TYPES } from "@/lib/validation";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -115,6 +115,9 @@ export default function NewJob() {
   const [errors, setErrors] = useState({});
   const [photos, setPhotos] = useState([]);          // #21 — fotos da área de trabalho
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [techDocs, setTechDocs] = useState([]);      // #22 — documentos técnicos
+  const [uploadingTechDoc, setUploadingTechDoc] = useState(false);
+  const techDocInputRef = useRef(null);
   const [savingDraft, setSavingDraft] = useState(false);
   const photoInputRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -218,6 +221,29 @@ export default function NewJob() {
     setUploadingPhoto(false);
   };
 
+  // ── #22 — documentos técnicos (plantas, projetos, esquemas) ────────────────
+  const handleTechDocs = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (!files.length) return;
+    for (const file of files) {
+      const check = validateFile(file, { accept: DOC_MIME_TYPES });
+      if (!check.ok) { toast.error(check.error); return; }
+    }
+    setUploadingTechDoc(true);
+    try {
+      const docs = [];
+      for (const file of files) {
+        const { file_url } = await UploadFile({ file });
+        docs.push({ name: file.name, url: file_url });
+      }
+      setTechDocs(prev => [...prev, ...docs]);
+    } catch (err) {
+      toast.error("Erro ao enviar documentos: " + (err.message || ""));
+    }
+    setUploadingTechDoc(false);
+  };
+
   const buildPayload = (status) => {
     const coords = LOCATION_COORDS[formData.location] || { lat: 38.7223, lon: -9.1393 };
     // categoryKey é só estado de UI — não pertence à entidade Job
@@ -231,6 +257,7 @@ export default function NewJob() {
       views: 0,
       status,
       photos,
+      technical_documents: techDocs,
       // strings vazias em campos date causam erro 22007 no Supabase
       start_date: formData.start_date || null,
       end_date: formData.end_date || null,
@@ -444,6 +471,34 @@ export default function NewJob() {
               )}
             </div>
             <FieldError name="photos" />
+          </div>
+
+          {/* #22 — documentos técnicos (opcional) */}
+          <div style={sectionStyle}>
+            <label style={labelStyle}>📎 {t(lang,"technicalDocuments","Documentos técnicos")}</label>
+            <p style={{color:subtext,fontSize:13,margin:"0 0 12px"}}>
+              {t(lang,"technicalDocsHint","Plantas, projetos, esquemas — opcional, mas ajuda o profissional a orçamentar com rigor.")}
+            </p>
+            <input ref={techDocInputRef} type="file" accept="application/pdf,image/jpeg,image/png" multiple
+              onChange={handleTechDocs} style={{display:"none"}} />
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {techDocs.map((doc,i) => (
+                <div key={doc.url+i} style={{display:"flex",alignItems:"center",gap:10,background:surface,borderRadius:10,padding:"10px 12px"}}>
+                  <span style={{fontSize:18}}>📎</span>
+                  <a href={doc.url} target="_blank" rel="noopener noreferrer"
+                    style={{flex:1,color:text,fontSize:13,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{doc.name}</a>
+                  <button type="button" onClick={() => setTechDocs(prev => prev.filter((_,idx) => idx !== i))}
+                    aria-label="Remover documento"
+                    style={{background:"#EF4444",border:"none",borderRadius:"50%",width:22,height:22,color:"#fff",cursor:"pointer",fontSize:12,lineHeight:1}}>
+                    ×
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={() => techDocInputRef.current?.click()} disabled={uploadingTechDoc}
+                style={{padding:"11px",border:`2px dashed ${errors.photos ? "#EF4444" : "#FF6600"}`,background:"transparent",color:"#FF6600",borderRadius:12,fontWeight:700,fontSize:13,cursor:uploadingTechDoc?"wait":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                {uploadingTechDoc ? "⏳ A enviar..." : "+ Adicionar documento"}
+              </button>
+            </div>
           </div>
 
           <div style={sectionStyle}>

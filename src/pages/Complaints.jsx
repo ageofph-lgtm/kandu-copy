@@ -161,7 +161,7 @@ export default function Complaints() {
               <p style={{ margin: 0, fontSize: 12, color: subtext, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.6 }}>Obra</p>
               <p style={{ margin: "4px 0 0", fontWeight: 700, color: "#FF6600", fontSize: 15 }}>{job.title}</p>
               <p style={{ margin: "2px 0 0", color: subtext, fontSize: 13 }}>📍 {job.location} · €{job.price}</p>
-              {job.blocked_by_complaint && (
+              {job.is_blocked_by_complaint && (
                 <p style={{ margin: "10px 0 0", color: "#F59E0B", fontSize: 12, fontWeight: 600 }}>
                   ⏸ Esta obra já está bloqueada para revisão do suporte.
                 </p>

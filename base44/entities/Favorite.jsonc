@@ -1,0 +1,27 @@
+{
+  "name": "Favorite",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID do utilizador que favorita"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "job",
+        "professional"
+      ],
+      "description": "Tipo do favorito"
+    },
+    "target_id": {
+      "type": "string",
+      "description": "ID do recurso favoritado"
+    }
+  },
+  "required": [
+    "user_id",
+    "target_type",
+    "target_id"
+  ]
+}

@@ -23,7 +23,9 @@
       "enum": [
         "pending",
         "accepted",
-        "rejected"
+        "rejected",
+        "withdrawn",
+        "in_progress"
       ],
       "default": "pending",
       "description": "Estado da candidatura"

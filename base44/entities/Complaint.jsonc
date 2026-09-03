@@ -1,0 +1,59 @@
+{
+  "name": "Complaint",
+  "type": "object",
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "description": "ID da obra relacionada"
+    },
+    "complainant_id": {
+      "type": "string",
+      "description": "ID de quem reclama"
+    },
+    "against_id": {
+      "type": "string",
+      "description": "ID de quem \u00e9 reclamado"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Motivo da reclama\u00e7\u00e3o"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o detalhada"
+    },
+    "evidence_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de evid\u00eancia (fotos, docs)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "under_review",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "open",
+      "description": "Estado da reclama\u00e7\u00e3o"
+    },
+    "resolution_note": {
+      "type": "string",
+      "description": "Nota de resolu\u00e7\u00e3o"
+    },
+    "penalty_applied": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se foi aplicada penaliza\u00e7\u00e3o"
+    }
+  },
+  "required": [
+    "job_id",
+    "complainant_id",
+    "against_id",
+    "reason"
+  ]
+}

@@ -108,7 +108,7 @@ function WorkerHome({ user, isDark }) {
       try {
         const all = await Job.list("-created_at");
         if (!alive) return;
-        const open = all.filter(j => j.status === "open" && !j.blocked_by_complaint);
+        const open = all.filter(j => j.status === "open" && !j.is_blocked_by_complaint);
         setJobs(open);
 
         const employerIds = [...new Set(open.map(j => j.employer_id).filter(Boolean))];
