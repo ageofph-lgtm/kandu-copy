@@ -73,6 +73,7 @@ function WorkerHome({ user, isDark }) {
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [radiusKm, setRadiusKm] = useState(0);
   const [sortBy, setSortBy] = useState("latest");
+  const [urgencyFilter, setUrgencyFilter] = useState("all"); // #31 — filtro de urgência
   const [showFilters, setShowFilters] = useState(false);
   const [view, setView] = useState("map");           // "map" | "list" — vista própria (#UX)
   const [favorites, setFavorites] = useState([]);
@@ -138,6 +139,8 @@ function WorkerHome({ user, isDark }) {
 
     let f = withDistance;
     if (selectedCategory !== "ALL") f = f.filter(j => j.category === selectedCategory);
+    // #31 — filtro de urgência
+    if (urgencyFilter !== "all") f = f.filter(j => j.urgency === urgencyFilter);
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -169,7 +172,7 @@ function WorkerHome({ user, isDark }) {
   }, [jobs, employersById, selectedCategory, searchTerm, radiusKm, sortBy, userLocation]);
 
   const activeFilterCount =
-    (selectedCategory !== "ALL" ? 1 : 0) + (radiusKm > 0 ? 1 : 0) + (sortBy !== "latest" ? 1 : 0);
+    (selectedCategory !== "ALL" ? 1 : 0) + (radiusKm > 0 ? 1 : 0) + (sortBy !== "latest" ? 1 : 0) + (urgencyFilter !== "all" ? 1 : 0);
 
   const handleJobClick = async (job) => {
     try { await Job.update(job.id, { views: (job.views || 0) + 1 }); } catch { /* contador é best-effort */ }
@@ -192,7 +195,7 @@ function WorkerHome({ user, isDark }) {
 
   if (loading) return <LoadingScreen />;
 
-  const resetFilters = () => { setSelectedCategory("ALL"); setRadiusKm(0); setSortBy("latest"); setSearchTerm(""); };
+  const resetFilters = () => { setSelectedCategory("ALL"); setRadiusKm(0); setSortBy("latest"); setSearchTerm(""); setUrgencyFilter("all"); };
 
   // ── Cartão de obra (usado na lista) — contraste corrigido para claro/escuro ──
   const JobRow = ({ job }) => {
@@ -321,6 +324,25 @@ function WorkerHome({ user, isDark }) {
                     color: selectedCategory === cat.pt ? "#fff" : "var(--text2)",
                   }}>
                   {cat.icon} {t(lang, cat.key, cat.pt === "ALL" ? "Todas" : cat.pt)}
+                </button>
+              ))}
+            </div>
+
+            {/* Urgência (#31) */}
+            <p style={{ margin: "12px 0 6px", fontSize: 11, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: 0.6 }}>
+              Urgência
+            </p>
+            <div style={{ display: "flex", gap: 6 }}>
+              {[{value:"all",label:"Todas"},{value:"low",label:"🟢 Baixa"},{value:"medium",label:"🟡 Média"},{value:"high",label:"🔴 Alta"}].map(u => (
+                <button key={u.value} onClick={() => setUrgencyFilter(u.value)}
+                  style={{
+                    flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 700,
+                    cursor: "pointer",
+                    border: `1px solid ${urgencyFilter === u.value ? "#FF6600" : "var(--hair)"}`,
+                    background: urgencyFilter === u.value ? "#FF6600" : "var(--surface)",
+                    color: urgencyFilter === u.value ? "#fff" : "var(--text2)",
+                  }}>
+                  {u.label}
                 </button>
               ))}
             </div>

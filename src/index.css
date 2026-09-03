@@ -472,6 +472,33 @@ html[data-theme="light"], body.light, .light {
   color: var(--or);
 }
 
+/* ── ACESSIBILIDADE (#83/#84) — aplicado via classes no <html> ── */
+html.a11y-font-small { font-size: 14px; }
+html.a11y-font-medium { font-size: 16px; }
+html.a11y-font-large { font-size: 19px; }
+
+html.a11y-contrast {
+  --text: #FFFFFF;
+  --text2: #E8E8E8;
+  --text3: #C0C0C0;
+  --hair: rgba(255,255,255,.45);
+  --hair2: rgba(255,255,255,.30);
+  --base: #000000;
+  --base2: #0A0A0A;
+  --surface: #0A0A0A;
+  --surface2: #141414;
+  --glass: rgba(255,255,255,.10);
+  --glass2: rgba(255,255,255,.16);
+  --edge-hi: rgba(255,255,255,.6);
+  --edge-lo: rgba(0,0,0,.7);
+}
+html.a11y-contrast .k-tile,
+html.a11y-contrast .k-job-card,
+html.a11y-contrast .k-search,
+html.a11y-contrast .k-nav {
+  border-width: 2px;
+}
+
 /* ── BODY BG ── */
 .k-bg {
   background:

@@ -53,6 +53,11 @@ const DEFAULT = { color: "#6b7280", svg: `<svg viewBox="0 0 24 24" fill="white" 
 const createJobIcon = (job) => {
   const cat = CATEGORY_MAP[job.category] || DEFAULT;
   const priceText = `€${job.price}${job.price_type === 'hourly' ? '/h' : ''}`;
+  // #20 — obras urgentes (urgency "high") ficam com borda vermelha + flame
+  const urgent = job.urgency === 'high';
+  const border = urgent ? '2px solid #EF4444' : '2px solid rgba(255,255,255,0.4)';
+  const glow = urgent ? '0 0 10px rgba(239,68,68,0.7), ' : '';
+  const flame = urgent ? `<span style="font-size:11px;line-height:1">🔥</span>` : '';
 
   const html = `
     <div style="
@@ -65,20 +70,21 @@ const createJobIcon = (job) => {
       gap:5px;
       font-weight:700;
       font-size:12px;
-      box-shadow:0 3px 8px rgba(0,0,0,0.28);
-      border:2px solid rgba(255,255,255,0.4);
+      box-shadow:${glow}0 3px 8px rgba(0,0,0,0.28);
+      border:${border};
       white-space:nowrap;
     ">
       ${cat.svg}
       <span>${priceText}</span>
+      ${flame}
     </div>
   `;
 
   return L.divIcon({
     html,
     className: '',
-    iconSize: L.point(90, 32),
-    iconAnchor: [45, 16]
+    iconSize: L.point(urgent ? 104 : 90, 32),
+    iconAnchor: [urgent ? 52 : 45, 16]
   });
 };
 

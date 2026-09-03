@@ -1,5 +1,7 @@
 import './App.css'
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import OfflineBanner from '@/components/OfflineBanner';
+import { applyA11y } from '@/lib/accessibility';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import { Toaster } from "@/components/ui/toaster"
@@ -60,6 +62,9 @@ function App() {
     () => !sessionStorage.getItem(SPLASH_KEY)
   );
 
+  // #83/#84 — aplicar preferências de acessibilidade no arranque
+  useEffect(() => { applyA11y(); }, []);
+
   return (
     <LanguageProvider>
     <ThemeProvider>
@@ -78,6 +83,7 @@ function App() {
             </div>
           </Router>
           <Toaster />
+          <OfflineBanner />
           <VisualEditAgent />
         </AuthProvider>
       </QueryClientProvider>
