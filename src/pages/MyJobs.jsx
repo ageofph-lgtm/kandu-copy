@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Application, Job, Notification, User } from "@/api/entities";
 import JobEditModal from "@/components/jobs/JobEditModal";
 import { listFavorites, toggleFavorite } from "@/lib/favorites";
+import { generateDailyPin, generateCompletionPin, isValidCompletionPin } from "@/lib/dailyPin";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
@@ -15,10 +16,8 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { toast } from "sonner";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
-function getDailyPin(jobId) {
-  if (!jobId) return "------";
-  return String(((jobId.charCodeAt(0) || 1) * 137 + new Date().getDate() * 31) % 900000 + 100000);
-}
+// PINs vêm de @/lib/dailyPin (implementação única e sem colisões). #S6/#M6
+const getDailyPin = generateDailyPin;
 
 function playPing() {
   try {
@@ -104,19 +103,8 @@ function PinKeypad({ value, onChange, isDark, surface, text, onConfirm }) {
   );
 }
 
-// ─── PIN de finalização (diferente do PIN de presença) ───────────────────────
-// Usa hora do dia + job.id para ser único por sessão de trabalho
-function getCompletionPin(jobId, hourOffset = 0) {
-  if (!jobId) return "------";
-  const hour = (new Date().getHours() + 24 + hourOffset) % 24;
-  return String(((jobId.charCodeAt(2) || 7) * 251 + (jobId.charCodeAt(4) || 3) * 97 + hour * 19) % 900000 + 100000);
-}
-
-// Aceita o PIN da hora atual ou da anterior — evita que a viragem de hora
-// entre o worker gerar o PIN e o employer o inserir invalide o código.
-function isValidCompletionPin(input, jobId) {
-  return input === getCompletionPin(jobId) || input === getCompletionPin(jobId, -1);
-}
+// PIN de finalização — também de @/lib/dailyPin (getCompletionPin/isValidCompletionPin importados). #S6/#M6
+const getCompletionPin = generateCompletionPin;
 
 // Display hexágono verde para PIN de finalização
 function CompletionPinDisplay({ pin, countdown, isDark, employerName }) {
@@ -940,21 +928,13 @@ export default function MyJobs() {
       } catch { setSavedJobs([]); }
 
       if (userIds.length) {
+        // #F8 — antes chamava /api/functions/getUserById (endpoint Base44 inexistente
+        // nesta app Supabase → 404 → nomes não apareciam). Agora lê direto da tabela.
         const userMap = {};
-        const fetchWithTimeout = (uid) => {
-          const ctrl = new AbortController();
-          const t = setTimeout(() => ctrl.abort(), 5000);
-          return fetch('/api/functions/getUserById', {
-            method: 'POST',
-            signal: ctrl.signal,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: uid })
-          })
-          .then(r => r.ok ? r.json() : null)
-          .then(data => { clearTimeout(t); if (data?.id) userMap[data.id] = data; })
-          .catch(() => clearTimeout(t));
-        };
-        await Promise.all(userIds.map(fetchWithTimeout));
+        try {
+          const rows = await Promise.all(userIds.map(id => User.get(id).catch(() => null)));
+          rows.filter(Boolean).forEach(u => { userMap[u.id] = u; });
+        } catch (e) { console.error("Erro ao carregar utilizadores:", e); }
         setUsersById(userMap);
       }
     } catch(e) { console.error('loadData error:', e); }

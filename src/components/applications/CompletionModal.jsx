@@ -235,13 +235,14 @@ export default function CompletionModal({
             }).eq("id", otherUser.id);
           } else {
             // Fallback: calcular a média das reviews visíveis do rated_id
+            // (a coluna é `score`; não existe `rating` na tabela ratings — #M4)
             const { data: reviews } = await supabase
               .from("ratings")
-              .select("score, rating")
+              .select("score")
               .eq("rated_id", otherUser.id)
               .eq("visible", true);
             if (reviews && reviews.length > 0) {
-              const sum = reviews.reduce((acc, r) => acc + Number(r.score ?? r.rating ?? 0), 0);
+              const sum = reviews.reduce((acc, r) => acc + Number(r.score ?? 0), 0);
               const avg = Math.round((sum / reviews.length) * 10) / 10;
               await supabase.from("users").update({
                 rating: avg,

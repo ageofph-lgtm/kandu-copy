@@ -7,6 +7,7 @@ import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useLocation, useNavigate } from "react-router-dom";
 import CompletionModal from "../components/applications/CompletionModal";
+import { generateDailyPin } from "@/lib/dailyPin";
 
 export default function ScanPage() {
   const navigate = useNavigate();
@@ -83,9 +84,7 @@ export default function ScanPage() {
     return () => clearInterval(timer);
   }, [activeView]);
 
-  const dailyPin = job
-    ? String(((job.id?.charCodeAt(0) || 1) * 137 + new Date().getDate() * 31) % 900000 + 100000)
-    : "------";
+  const dailyPin = job ? generateDailyPin(job.id) : "------";
 
   const handleKey = (k) => {
     if (k === "del") { setPinInput(p => p.slice(0, -1)); return; }

@@ -169,7 +169,7 @@ function WorkerHome({ user, isDark }) {
       sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }
     return sorted;
-  }, [jobs, employersById, selectedCategory, searchTerm, radiusKm, sortBy, userLocation]);
+  }, [jobs, employersById, selectedCategory, searchTerm, radiusKm, sortBy, urgencyFilter, userLocation]);
 
   const activeFilterCount =
     (selectedCategory !== "ALL" ? 1 : 0) + (radiusKm > 0 ? 1 : 0) + (sortBy !== "latest" ? 1 : 0) + (urgencyFilter !== "all" ? 1 : 0);

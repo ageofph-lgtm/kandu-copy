@@ -139,7 +139,9 @@ export default function Workers() {
       let q = supabase
         .from("users")
         .select("*", { count: "exact" })
-        .eq("user_type", "worker");
+        .eq("user_type", "worker")
+        // #F6 — não mostrar contas desativadas/eliminadas na pesquisa
+        .eq("status", "active");
 
       // Filtros textuais
       if (f.search.trim()) {
