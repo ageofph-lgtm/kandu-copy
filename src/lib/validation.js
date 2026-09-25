@@ -3,22 +3,31 @@
 // telemóvel PT, rejeição de domínios pessoais para Employers CIA e validação
 // de formato de ficheiro nos uploads.
 
-/** Domínios de email pessoais recusados para contas Cia Employer (#18) */
-export const PERSONAL_EMAIL_DOMAINS = [
-  "gmail.com", "hotmail.com", "yahoo.com", "outlook.com",
-  "live.com", "icloud.com", "aol.com", "sapo.pt", "mail.com",
+/**
+ * Domínios de email pessoais/gratuitos recusados para contas Cia Employer (#18).
+ * Comparamos pelo rótulo de 2.º nível (ex.: "outlook" em outlook.pt E em outlook.com),
+ * por isso a lista não precisa de enumerar cada TLD.
+ */
+export const FREE_EMAIL_PROVIDERS = [
+  "gmail", "googlemail", "hotmail", "outlook", "live", "msn", "yahoo", "ymail",
+  "icloud", "me", "mac", "aol", "sapo", "mail", "gmx", "proton", "protonmail",
+  "clix", "iol", "netcabo", "zonmail", "vodafone",
 ];
+// Mantido por compatibilidade com imports existentes
+export const PERSONAL_EMAIL_DOMAINS = FREE_EMAIL_PROVIDERS.map(p => `${p}.com`);
 
 /**
- * NIF português: 9 dígitos + algoritmo de dígito de controlo (módulo 11).
- * O primeiro dígito identifica o tipo de contribuinte.
+ * NIF português: 9 dígitos + dígito de controlo (módulo 11) + prefixo válido.
+ * Prefixos válidos (AT): 1,2,3 (singular), 5 (colectiva), 6 (público),
+ * 8 (empresário nome individual), 9 (irregular/condomínio); e ainda os prefixos
+ * de dois dígitos 45,70,71,72,74,75,77,79,90,91,98,99.
  */
+const NIF_PREFIX_2 = new Set(["45","70","71","72","74","75","77","79","90","91","98","99"]);
+const NIF_PREFIX_1 = new Set(["1","2","3","5","6","8","9"]);
 export function isValidNIF(nif) {
   const digits = String(nif || "").replace(/\s/g, "");
   if (!/^\d{9}$/.test(digits)) return false;
-
-  // Primeiro dígito válido: 1,2,3 (singular), 5 (colectiva), 6,8,9 (outros)
-  if (!"123456889".includes(digits[0])) return false;
+  if (!NIF_PREFIX_1.has(digits[0]) && !NIF_PREFIX_2.has(digits.slice(0, 2))) return false;
 
   let sum = 0;
   for (let i = 0; i < 8; i++) sum += Number(digits[i]) * (9 - i);
@@ -34,12 +43,13 @@ export function isValidCompanyNIF(nif) {
 }
 
 /**
- * Telemóvel português: 9 dígitos começados por 9 (móvel) ou 2 (fixo).
- * Aceita prefixo +351 / 00351 e espaços.
+ * Telemóvel português: 9 dígitos começados por 91/92/93/96 (gamas móveis reais).
+ * O campo é "telemóvel" e desbloqueia o estado Verificado (#3), por isso não
+ * aceitamos fixos (2xx) nem gamas inexistentes. Aceita prefixo +351/00351 e espaços.
  */
 export function isValidPhonePT(phone) {
   const digits = String(phone || "").replace(/[\s\-().]/g, "").replace(/^(\+351|00351)/, "");
-  return /^[92]\d{8}$/.test(digits);
+  return /^9[1236]\d{7}$/.test(digits);
 }
 
 /** Normaliza para o formato guardado na BD: +351XXXXXXXXX */
@@ -52,11 +62,14 @@ export function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email || "").trim());
 }
 
-/** Rejeita emails pessoais — obrigatório em contas Cia Employer (#18) */
+/** Rejeita emails pessoais/gratuitos — obrigatório em contas Cia Employer (#18) */
 export function isCorporateEmail(email) {
   if (!isValidEmail(email)) return false;
-  const domain = String(email).trim().toLowerCase().split("@")[1];
-  return !PERSONAL_EMAIL_DOMAINS.includes(domain);
+  const domain = String(email).trim().toLowerCase().split("@")[1] || "";
+  const labels = domain.split(".");
+  // rótulo de 2.º nível: "outlook" em outlook.pt e em outlook.com
+  const sld = labels.length >= 2 ? labels[labels.length - 2] : labels[0];
+  return !FREE_EMAIL_PROVIDERS.includes(sld);
 }
 
 // ── Uploads (#39) ────────────────────────────────────────────────────────────

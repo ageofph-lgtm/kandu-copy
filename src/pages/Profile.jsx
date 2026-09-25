@@ -141,10 +141,10 @@ export default function Profile() {
       const resized = await resizeImage(file, { maxSize: 512, quality: 0.9 });
       const name = `avatars/${user.id}_${Date.now()}.jpg`;
       const { error: upErr } = await supabase.storage
-        .from("kandu-uploads").upload(name, resized, { upsert: true, contentType: "image/jpeg" });
+        .from("kandu-files").upload(name, resized, { upsert: true, contentType: "image/jpeg" });
       if (upErr) throw upErr;
 
-      const { data: { publicUrl } } = supabase.storage.from("kandu-uploads").getPublicUrl(name);
+      const { data: { publicUrl } } = supabase.storage.from("kandu-files").getPublicUrl(name);
       // cache-buster: sem isto o <img> continuava a mostrar a foto anterior
       const busted = `${publicUrl}?t=${Date.now()}`;
 
@@ -179,9 +179,9 @@ export default function Profile() {
       const resized = await resizeImage(file, { maxSize: 400, quality: 0.92, mime: "image/png" });
       const name = `logos/${user.id}_${Date.now()}.png`;
       const { error: upErr } = await supabase.storage
-        .from("kandu-uploads").upload(name, resized, { upsert: true, contentType: "image/png" });
+        .from("kandu-files").upload(name, resized, { upsert: true, contentType: "image/png" });
       if (upErr) throw upErr;
-      const { data: { publicUrl } } = supabase.storage.from("kandu-uploads").getPublicUrl(name);
+      const { data: { publicUrl } } = supabase.storage.from("kandu-files").getPublicUrl(name);
       const busted = `${publicUrl}?t=${Date.now()}`;
       const { error: updErr } = await supabase.from("users")
         .update({ company_logo_url: busted, updated_at: new Date().toISOString() }).eq("id", user.id);

@@ -295,9 +295,11 @@ export default function Chat() {
           }
         }
       )
+      // #F7 — filtrar por mensagens ENVIADAS por mim (confirmações de leitura/entrega
+      // que o outro lado escreve). Sem filtro, o cliente recebia UPDATEs de toda a gente.
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "chat_messages" },
+        { event: "UPDATE", schema: "public", table: "chat_messages", filter: `sender_id=eq.${user.id}` },
         (payload) => {
           const msg = payload.new;
           setMessages(prev => prev.map(m => (m.id === msg.id ? { ...m, ...msg } : m)));

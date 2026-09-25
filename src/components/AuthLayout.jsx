@@ -1,4 +1,4 @@
-import React from "react";
+// (React import removido — JSX transform automático do React 18)
 
 export default function AuthLayout({ icon: Icon, title, subtitle, footer, children }) {
   return (

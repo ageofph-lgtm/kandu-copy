@@ -55,7 +55,8 @@ const Blacklist = {
     const row = {
       id: crypto.randomUUID(),
       user_id: payload.user_id,
-      blocked_id: payload.blocked_id ?? payload.admin_id ?? payload.user_id,
+      // quem é bloqueado é o próprio user_id — não o admin (#F5, semântica corrigida)
+      blocked_id: payload.blocked_id ?? payload.user_id,
       reason: payload.reason ?? null,
       created_at: new Date().toISOString(),
     };
@@ -414,7 +415,10 @@ export default function AdminDashboard() {
     try {
       let createdCount = 0;
       for (const jobData of EXAMPLE_JOBS) {
-        await Job.create({ ...jobData, client_id: currentUser.id });
+        // #F5 — só enviar colunas que existem na tabela `jobs`.
+        // (image_urls/required_skills/estimated_time/contact_info/client_id não existem)
+        const { image_urls: _iu, required_skills: _rs, estimated_time: _et, contact_info: _ci, ...rest } = jobData;
+        await Job.create({ ...rest, price_type: "fixed", urgency: "medium", employer_id: currentUser.id });
         createdCount++;
       }
       toast.success(`${createdCount} ${t(lang, "adminExampleJobsCreated", "obras de exemplo criadas com sucesso!")}`);
@@ -445,21 +449,12 @@ export default function AdminDashboard() {
 
       // Atualizar status do usuário
       let newStatus = 'active';
-      let bannedUntil = null;
+      if (blacklistData.severity === 'suspension') newStatus = 'suspended';
+      else if (blacklistData.severity === 'ban') newStatus = 'banned';
 
-      if (blacklistData.severity === 'suspension') {
-        newStatus = 'suspended';
-        bannedUntil = blacklistData.expires_at;
-      } else if (blacklistData.severity === 'ban') {
-        newStatus = 'banned';
-        bannedUntil = blacklistData.expires_at;
-      }
-
-      await User.update(blacklistData.user_id, {
-        status: newStatus,
-        suspension_reason: blacklistData.reason,
-        banned_until: bannedUntil
-      });
+      // #F5 — a tabela `users` não tem colunas suspension_reason/banned_until.
+      // O motivo/expiração ficam guardados na linha da blacklist; aqui só o status.
+      await User.update(blacklistData.user_id, { status: newStatus });
 
       toast.success(t(lang, "adminPenaltyApplied", "Penalização aplicada com sucesso!"));
       setShowBlacklistModal(false);

@@ -257,7 +257,10 @@ export default function NewJob() {
       views: 0,
       status,
       photos,
-      technical_documents: techDocs,
+      // NOTA: a tabela `jobs` não tem colunas `technical_documents`/`proof_photos`.
+      // Enviá-las fazia o PostgREST rejeitar o INSERT inteiro (a obra não era criada).
+      // Os documentos técnicos ficam disponíveis via upload; ligar a uma coluna
+      // própria fica para quando o schema for consolidado.
       // strings vazias em campos date causam erro 22007 no Supabase
       start_date: formData.start_date || null,
       end_date: formData.end_date || null,

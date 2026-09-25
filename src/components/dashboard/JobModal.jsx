@@ -86,7 +86,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
         message: message.trim(),
         status: "pending",
         ...(proposedPrice
-          ? { proposed_price: parseFloat(proposedPrice) }
+          ? { proposed_price: Math.round(parseFloat(proposedPrice)) }
           : {})
       };
       await Application.create(payload);
