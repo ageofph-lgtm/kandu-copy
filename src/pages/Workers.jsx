@@ -266,6 +266,15 @@ export default function Workers() {
       {showFilters && (
         <div style={{ background: isDark ? "#161520" : "#F0F0F0", borderBottom: `1px solid ${border}`, padding: "16px 16px", width: "100%", boxSizing: "border-box" }}>
 
+          {/* #1003 — cabeçalho com botão de fechar explícito */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <p style={{ color: text, fontSize: 15, fontWeight: 800, margin: 0 }}>Filtros</p>
+            <button onClick={() => setShowFilters(false)} aria-label="Fechar filtros"
+              style={{ background: surface, border: `1px solid ${border}`, borderRadius: 10, width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: text }}>
+              <X size={18} />
+            </button>
+          </div>
+
           {/* Sort */}
           <div style={{ marginBottom: 16 }}>
             <p style={{ color: subtext, fontSize: 12, fontWeight: 700, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 0.5 }}>Ordenar por</p>
@@ -356,15 +365,23 @@ export default function Workers() {
             </button>
           </div>
 
-          {/* Reset */}
-          {hasActiveFilters && (
-            <button onClick={resetFilters} style={{
-              width: "100%", padding: "11px", borderRadius: 12, border: "1px solid #444",
-              background: "transparent", color: "#EF4444", fontWeight: 700, fontSize: 14, cursor: "pointer",
+          {/* Ações — aplicar fecha o painel e mostra os resultados (#1003) */}
+          <div style={{ display: "flex", gap: 10 }}>
+            {hasActiveFilters && (
+              <button onClick={resetFilters} style={{
+                flex: 1, padding: "12px", borderRadius: 12, border: "1px solid #444",
+                background: "transparent", color: "#EF4444", fontWeight: 700, fontSize: 14, cursor: "pointer",
+              }}>
+                🗑️ Limpar
+              </button>
+            )}
+            <button onClick={() => setShowFilters(false)} style={{
+              flex: 2, padding: "12px", borderRadius: 12, border: "none",
+              background: "#F4621F", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
             }}>
-              🗑️ Limpar todos os filtros
+              Ver {total} {total === 1 ? "profissional" : "profissionais"}
             </button>
-          )}
+          </div>
         </div>
       )}
 

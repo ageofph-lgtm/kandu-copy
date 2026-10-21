@@ -4,7 +4,7 @@ import { Application, Job, Notification, User } from "@/api/entities";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
-import { MapPin } from "lucide-react";
+import { MapPin, MessageCircle } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -168,6 +168,13 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
 
       {/* Botões */}
       <div style={{ display: "flex", gap: 10 }}>
+        {/* #89/#90 — abrir o chat da obra com o candidato (1 msg até aceitar) */}
+        <button onClick={() => worker && navigate(`${createPageUrl("Chat")}?userId=${worker.id}&jobId=${app.job_id}`)}
+          disabled={!worker} aria-label="Mensagem" title="Mensagem" style={{
+          flex: "0 0 auto", background: "var(--surface2)", color: "#F4621F",
+          border: "1px solid #F4621F55", borderRadius: 12,
+          padding: "12px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center"
+        }}><MessageCircle size={16} /></button>
         <button onClick={handleReject} disabled={acting} style={{
           flex: 1, background: "#EF444422", color: "#EF4444",
           border: "1px solid #EF444444", borderRadius: 12,

@@ -18,7 +18,10 @@ function makeConvId(uid1, uid2, jobId) {
 }
 
 /** Estados de obra que fecham o chat (#24). */
-const CLOSED_JOB_STATUS = ["completed", "cancelled", "closed"];
+const CLOSED_JOB_STATUS = ["completed", "cancelled", "closed", "expired"];
+
+/** Estados de candidatura que contam como "aceite" (abre o chat sem limite). */
+const ACCEPTED_APP_STATUS = ["accepted", "in_progress", "completed"];
 
 /** Inatividade que arquiva a conversa (#76, #92). */
 export const CHAT_ARCHIVE_DAYS = 14;
@@ -198,25 +201,38 @@ export default function Chat() {
       };
     }
 
-    // Limite de mensagens antes da aceitação formal
-    const accepted = applications.some(a =>
-      (a.job_id === conv.job_id || !conv.job_id) &&
-      (a.worker_id === conv.other_user_id || a.worker_id === user.id) &&
-      (a.employer_id === conv.other_user_id || a.employer_id === user.id) &&
-      ["accepted", "completed"].includes(a.status)
-    );
-    if (!accepted) {
-      const mine = messages.filter(m => m.sender_id === user.id).length;
-      const theirs = messages.filter(m => m.sender_id !== user.id).length;
-      // Só bloqueia enquanto o outro lado não responder — evita spam sem
-      // impedir uma conversa genuína.
-      if (mine >= PRE_ACCEPT_MESSAGE_LIMIT && theirs === 0) {
+    // ── Limite de mensagens antes da aceitação (#88, #90, #91, #93) ──
+    // Obra: cada lado envia NO MÁXIMO 1 mensagem até a candidatura ser aceite
+    //   ("Aceitar e Contratar"). Antes bastava o outro lado responder para
+    //   abrir o chat, o que deixava enviar várias mensagens antes da aceitação.
+    // Direto (sem obra): a 1.ª mensagem é um convite; o chat abre quando o
+    //   outro lado responde (a resposta é a aceitação).
+    const mine = messages.filter(m => m.sender_id === user.id).length;
+    const theirs = messages.filter(m => m.sender_id !== user.id).length;
+
+    if (conv.job_id) {
+      const hired = job && job.worker_id && (job.worker_id === user.id || job.worker_id === conv.other_user_id);
+      const accepted = hired || applications.some(a =>
+        a.job_id === conv.job_id &&
+        [a.worker_id, a.employer_id].includes(user.id) &&
+        [a.worker_id, a.employer_id].includes(conv.other_user_id) &&
+        ACCEPTED_APP_STATUS.includes(a.status)
+      );
+      if (!accepted && mine >= PRE_ACCEPT_MESSAGE_LIMIT) {
         return {
           locked: true,
-          reason: "Só podes enviar 1 mensagem antes de a candidatura ser aceite. Aguarda a resposta.",
+          reason: theirs === 0
+            ? "Já enviaste a tua mensagem. Só podes enviar 1 mensagem até a candidatura ser aceite — aguarda a resposta."
+            : "Limite atingido: 1 mensagem por pessoa até a candidatura ser aceite. Depois de \"Aceitar e Contratar\" o chat abre sem limites.",
           softLimit: true,
         };
       }
+    } else if (mine >= PRE_ACCEPT_MESSAGE_LIMIT && theirs === 0) {
+      return {
+        locked: true,
+        reason: "Só podes enviar 1 mensagem até a outra pessoa responder. Aguarda a resposta.",
+        softLimit: true,
+      };
     }
 
     return { locked: false };
@@ -252,7 +268,16 @@ export default function Chat() {
       }).catch(() => {});
     } catch (err) {
       console.error("Erro ao enviar mensagem:", err);
-      toast.error("Erro ao enviar mensagem: " + (err.message || ""));
+      // Regras impostas pelo servidor (trigger enforce_chat_rules) → mensagem clara
+      const raw = String(err?.message || err?.details || "");
+      const friendly =
+        raw.includes("CHAT_LIMIT") ? raw.replace(/^.*CHAT_LIMIT:\s*/, "") :
+        raw.includes("CHAT_CLOSED") ? "Esta obra já terminou. O chat foi desativado." :
+        raw.includes("CHAT_ARCHIVED") ? `Conversa arquivada — sem atividade há mais de ${CHAT_ARCHIVE_DAYS} dias.` :
+        null;
+      toast.error(friendly || "Erro ao enviar mensagem: " + raw);
+      // Ressincronizar — o estado local pode estar desfasado do servidor
+      loadMessages(selectedConversation, user);
     }
   };
 
@@ -260,6 +285,11 @@ export default function Chat() {
 
   useEffect(() => {
     if (selectedConversation && user) loadMessages(selectedConversation, user);
+    // Conversa aberta a partir de ?jobId= ainda sem mensagens → carregar a obra
+    const jid = selectedConversation?.job_id;
+    if (jid && !jobsById[jid]) {
+      Job.get(jid).then(j => { if (j) setJobsById(prev => ({ ...prev, [j.id]: j })); }).catch(() => {});
+    }
   }, [selectedConversation?.conversation_id, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── #2000 · SINCRONIZAÇÃO EM TEMPO REAL ────────────────────────────────────
@@ -328,14 +358,16 @@ export default function Chat() {
   // Abrir/iniciar conversa a partir de ?userId=... (ex.: botão "Contactar")
   useEffect(() => {
     if (!user || loading || openedFromParam.current) return;
-    const targetId = new URLSearchParams(window.location.search).get("userId");
+    const params = new URLSearchParams(window.location.search);
+    const targetId = params.get("userId");
+    const targetJobId = params.get("jobId") || null;
     if (!targetId || targetId === user.id) return;
     openedFromParam.current = true;
 
     (async () => {
       try {
         const existing = [...conversations, ...archivedConversations].find(
-          (c) => c.other_user?.id === targetId
+          (c) => c.other_user?.id === targetId && (c.job_id || null) === targetJobId
         );
         if (existing) {
           setSelectedConversation(existing);
@@ -343,8 +375,8 @@ export default function Chat() {
           const [otherUser] = await User.filter({ id: targetId });
           if (otherUser) {
             setSelectedConversation({
-              conversation_id: [user.id, targetId].sort().join("_"),
-              job_id: null,
+              conversation_id: makeConvId(user.id, targetId, targetJobId),
+              job_id: targetJobId,
               other_user_id: targetId,
               other_user: otherUser,
               last_message: null,
@@ -358,10 +390,30 @@ export default function Chat() {
       } finally {
         const url = new URL(window.location.href);
         url.searchParams.delete("userId");
+        url.searchParams.delete("jobId");
         window.history.replaceState({}, "", url.toString());
       }
     })();
   }, [user, loading, conversations, archivedConversations]);
+
+  // #1005 — em mobile, o botão "voltar" (hardware/browser) deve fechar a
+  // conversa e mostrar a lista, não sair do Chat. Empilhamos um estado de
+  // histórico ao abrir e consumimo-lo no popstate.
+  const closeConversation = useCallback(() => { setSelectedConversation(null); setMessages([]); }, []);
+  const openConversation = useCallback((conv) => {
+    if (!conv) return;
+    if (!selectedRef.current) window.history.pushState({ kanduChat: true }, "");
+    setSelectedConversation(conv);
+  }, []);
+  useEffect(() => {
+    const onPop = () => { if (selectedRef.current) closeConversation(); };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [closeConversation]);
+  const handleBack = () => {
+    if (window.history.state?.kanduChat) window.history.back();
+    else closeConversation();
+  };
 
   if (loading) return <LoadingScreen />;
 
@@ -391,7 +443,7 @@ export default function Chat() {
             conversations={conversations}
             archivedConversations={archivedConversations}
             selectedId={selectedConversation?.conversation_id}
-            onSelect={setSelectedConversation}
+            onSelect={openConversation}
             isDark={isDark}
             lang={lang}
             currentUser={user}
@@ -405,7 +457,7 @@ export default function Chat() {
             messages={messages}
             currentUser={user}
             onSend={handleSendMessage}
-            onBack={() => { setSelectedConversation(null); setMessages([]); }}
+            onBack={handleBack}
             locked={chatState.locked}
             lockedReason={chatState.reason}
             isDark={isDark}

@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { toast } from "sonner";
 import {
-  Edit2, LogOut, MapPin, Briefcase, Award, Phone, Globe, Mail, Building2, Lock, Trash2,
+  Edit2, LogOut, MapPin, Briefcase, Award, Phone, Globe, Mail, Building2, Lock, Trash2, MessageCircle,
 } from "lucide-react";
 import ProfileForm from "../components/profile/ProfileForm";
 import ReviewsSection from "../components/profile/ReviewsSection";
@@ -299,6 +299,13 @@ export default function Profile() {
       <div style={{ background: surface, padding: "50px 20px 24px", position: "relative" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: text }}>←</button>
+          {/* #91/#93 — chat direto: não havia forma de iniciar conversa a partir do perfil */}
+          {!isOwnProfile && viewer && (
+            <button onClick={() => navigate(`${createPageUrl("Chat")}?userId=${user.id}`)} aria-label="Enviar mensagem"
+              style={{ padding: "8px 16px", background: OR, border: "none", borderRadius: 10, color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              <MessageCircle size={14} /> Mensagem
+            </button>
+          )}
           {isOwnProfile && (
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setIsEditing(true)}
@@ -452,7 +459,7 @@ export default function Profile() {
                   <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: 0 }}>Contactos protegidos</p>
                   <p style={{ color: subtext, fontSize: 12, margin: "2px 0 0", lineHeight: 1.5 }}>
                     O telemóvel e o email só ficam visíveis depois de a candidatura ser aceite.
-                    Até lá, usa o chat da plataforma.
+                    Até lá, usa o botão "Mensagem" no topo para falar pelo chat da plataforma.
                   </p>
                 </div>
               </div>
