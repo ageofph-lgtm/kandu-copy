@@ -132,7 +132,7 @@ export default function ThemePicker({ compact = false, align = "left" }) {
  * Grelha de temas (telemóvel): as quatro opções à vista, com amostra.
  * Vive em Perfil › Conta, junto do idioma, em vez de flutuar sobre a barra.
  */
-export function ThemeGrid() {
+export function ThemeGrid({ onPick } = {}) {
   const { theme, setTheme } = useTheme();
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -140,7 +140,7 @@ export function ThemeGrid() {
         const on = id === theme;
         const Icon = ICONS[id];
         return (
-          <button key={id} type="button" onClick={() => setTheme(id)} aria-pressed={on}
+          <button key={id} type="button" onClick={() => { setTheme(id); onPick && onPick(id); }} aria-pressed={on}
             style={{
               display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
               borderRadius: 14, cursor: "pointer", textAlign: "left",

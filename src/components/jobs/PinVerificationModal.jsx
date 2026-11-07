@@ -15,7 +15,7 @@ export default function PinVerificationModal({ onClose, onVerify, jobTitle }) {
 
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
-      <div style={{ background:"var(--bg-FFFFFF, #fff)", borderRadius:20, padding:24, width:"100%", maxWidth:360, boxShadow:"0 20px 60px rgba(0,0,0,0.3)" }}>
+      <div className="k-sheet" style={{ background:"var(--bg-FFFFFF, #fff)", borderRadius:20, padding:24, width:"100%", maxWidth:360, boxShadow:"0 20px 60px rgba(0,0,0,0.3)" }}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <div style={{ width:40, height:40, borderRadius:"50%", background:"var(--bg-FFF3E0, #FFF3E0)", display:"flex", alignItems:"center", justifyContent:"center" }}>

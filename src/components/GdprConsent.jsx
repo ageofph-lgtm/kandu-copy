@@ -15,7 +15,7 @@ export default function GdprConsent({ open, onAccept }) {
       display: "flex", alignItems: "center", justifyContent: "center",
       padding: "20px"
     }}>
-      <div style={{
+      <div className="k-sheet" style={{
         background: "var(--bg-1C1B22, #1C1B22)", borderRadius: 20, padding: "28px 24px",
         maxWidth: 420, width: "100%",
         border: "1px solid var(--bd-333333, #333)",

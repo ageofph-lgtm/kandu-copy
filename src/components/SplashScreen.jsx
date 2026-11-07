@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 // Logo branco sem fundo (ícone standalone)
-const LOGO = "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png";
+const LOGO = "/brand/kandu-icon-dark.png";
 const SPLASH_KEY = "kandu_splash_v2";
 
 /*

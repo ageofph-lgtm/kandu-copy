@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import KanduLogo from "@/components/KanduLogo";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import { SUPPORTED_LANGUAGES } from "@/lib/LanguageContext";
@@ -50,7 +51,7 @@ export default function Welcome() {
   // Loading spinner
   if (checking) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--bg-111016, #111016)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="k-auth" style={{ minHeight: "100vh", background: "var(--bg-111016, #111016)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: 48, height: 48, border: "3px solid var(--bd-F4621F, #F4621F)", borderTop: "3px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -60,7 +61,7 @@ export default function Welcome() {
   // Selector de idioma
   if (showLangPicker) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--bg-111016, #111016)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center", fontFamily: "'Chakra Petch', sans-serif" }}>
+      <div className="k-auth" style={{ minHeight: "100vh", background: "var(--bg-111016, #111016)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center", fontFamily: "'Chakra Petch', sans-serif" }}>
         <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--bg-F4621F, #F4621F)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 900, color: "var(--on-FFFFFF, #fff)", marginBottom: 28, boxShadow: "0 0 32px rgba(244,98,31,0.4)" }}>K</div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--fg-FFFFFF, #fff)", marginBottom: 8 }}>Choose your language</h1>
         <p style={{ fontSize: 13, color: "var(--fg-666666, #666)", marginBottom: 32, maxWidth: 280 }}>Escolha · Select · Seleccione · Choisissez</p>
@@ -82,7 +83,7 @@ export default function Welcome() {
 
   // Tela principal
   return (
-    <div style={{
+    <div className="k-auth" style={{
       minHeight: "100vh",
       background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), radial-gradient(800px 600px at 100% 0%, rgba(120,150,200,.06), transparent 55%), var(--bg-0B0C0E, #0B0C0E)",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
@@ -97,8 +98,7 @@ export default function Welcome() {
       }} />
 
       {/* Logo */}
-      <img
-        src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
+      <KanduLogo onDark
         style={{ height: 52, objectFit: "contain", position: "relative", zIndex: 1, marginBottom: 36 }}
         alt="KANDU"
       />

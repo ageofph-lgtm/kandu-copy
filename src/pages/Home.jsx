@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import KanduLogo from "@/components/KanduLogo";
 import { supabase } from "@/api/supabaseClient";
 import { Job, User } from "@/api/entities";
 import { useTheme } from "@/lib/ThemeContext";
@@ -297,7 +298,7 @@ function WorkerHome({ user, isDark }) {
 
         {/* ── PAINEL DE FILTROS (#1003: tem botão de fechar) ── */}
         {showFilters && (
-          <div style={{
+          <div className="k-sheet" style={{
             background: "var(--surface2)", border: "1px solid var(--hair)", borderRadius: 16,
             padding: 14, boxShadow: "0 12px 32px -18px var(--shadow)",
           }}>
@@ -550,8 +551,7 @@ function EmployerHome({ user }) {
               {t(lang, "whatDoYouNeed", "O que precisa?")}
             </p>
           </div>
-          <img
-            src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
+          <KanduLogo
             alt="KANDU"
             style={{ height: 48, objectFit: "contain", flexShrink: 0, maxWidth: 140 }}
           />

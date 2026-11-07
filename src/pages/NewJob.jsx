@@ -75,7 +75,7 @@ function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }
       position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:9999,
       display:"flex",alignItems:"center",justifyContent:"center",padding:20
     }}>
-      <div style={{background:bg,borderRadius:20,padding:24,maxWidth:360,width:"100%",border:"1px solid var(--bd-FF6600, #FF6600)"}}>
+      <div className="k-sheet" style={{background:bg,borderRadius:20,padding:24,maxWidth:360,width:"100%",border:"1px solid var(--bd-FF6600, #FF6600)"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <span style={{fontSize:40}}>🚀</span>
           <h2 style={{color:text,fontWeight:700,fontSize:18,margin:"10px 0 6px"}}>{t(lang,"jobTitle")}?</h2>
@@ -347,7 +347,7 @@ export default function NewJob() {
       {/* Top Bar */}
       <div style={{padding:"14px 20px 8px"}}>
         <div style={{display:"flex",justifyContent:"center",marginBottom:8}}>
-          <img src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"} alt="KANDU" style={{height:24,objectFit:"contain"}} />
+          <img src={isDark ? "/brand/kandu-wordmark-dark.png" : "/brand/kandu-wordmark-light.png"} alt="KANDU" style={{height:24,objectFit:"contain"}} />
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button onClick={() => navigate(-1)} style={{background:"none",border:"none",color:"var(--fg-FF6600, #FF6600)",fontSize:22,cursor:"pointer",padding:0}}>←</button>

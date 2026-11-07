@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import KanduLogo from "@/components/KanduLogo";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/api/supabaseClient";
 import { createPageUrl } from "@/utils";
@@ -152,7 +153,7 @@ export default function Login() {
   };
 
   return (
-    <div style={{
+    <div className="k-auth" style={{
       minHeight: "100vh",
       background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), radial-gradient(800px 600px at 100% 0%, rgba(120,150,200,.06), transparent 55%), var(--bg-0B0C0E, #0B0C0E)",
       display: "flex", alignItems: "center", justifyContent: "center",
@@ -166,15 +167,14 @@ export default function Login() {
       }} />
 
       {/* Card principal */}
-      <div style={{
+      <div className="k-auth-card" style={{
         background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
         borderRadius: 24, padding: "36px 32px", width: "100%", maxWidth: 420,
         backdropFilter: "blur(12px)", position: "relative", zIndex: 1,
       }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <img
-            src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
+          <KanduLogo onDark
             style={{ height: 56, objectFit: "contain" }} alt="KANDU"
           />
         </div>

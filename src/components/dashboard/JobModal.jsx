@@ -148,6 +148,7 @@ export default function JobModal({ job, user, onClose, onApply, onDelete, distan
 
       {/* Sheet */}
       <div
+        className="k-sheet"
         style={{
           position: "relative", zIndex: 1,
           background: "var(--bg-FFFFFF, #FFFFFF)", width: "100%", maxWidth: 540,
