@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage, SUPPORTED_LANGUAGES } from "@/lib/LanguageContext";
 import LoadingScreen from "@/components/LoadingScreen";
+import { ThemeGrid } from "@/components/ThemePicker";
 import { supabase } from "@/api/supabaseClient";
 import { Application } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
@@ -507,6 +508,11 @@ export default function Profile() {
         {activeTab === "account" && isOwnProfile && (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <VerificationPanel user={user} onUpdate={(patch) => setUser(prev => ({ ...prev, ...patch }))} />
+
+            <div style={cardStyle}>
+              <p style={{ color: subtext, fontSize: 12, margin: "0 0 10px", fontWeight: 600 }}>Tema</p>
+              <ThemeGrid />
+            </div>
 
             <div style={cardStyle}>
               <p style={{ color: subtext, fontSize: 12, margin: "0 0 10px", fontWeight: 600 }}>Idioma da app</p>

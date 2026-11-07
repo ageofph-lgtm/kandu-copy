@@ -328,10 +328,7 @@ export default function Layout({ children }) {
       </div>
 
       {/* Bottom Nav Mobile */}
-      <nav className="md:hidden k-nav" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>        <div style={{position:"absolute",top:-40,right:12,zIndex:51}}>
-          <ThemePicker compact align="right" />
-        </div>
-        <Link to={createPageUrl("Home")} className={`k-nav-item${location.pathname===createPageUrl("Home")?" active":""}`} style={{textDecoration:"none"}}>
+      <nav className="md:hidden k-nav" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>        <Link to={createPageUrl("Home")} className={`k-nav-item${location.pathname===createPageUrl("Home")?" active":""}`} style={{textDecoration:"none"}}>
           <MapPin size={22} />
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Home")?700:400}}>{t(lang,"home")}</span>
 

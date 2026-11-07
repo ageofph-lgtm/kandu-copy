@@ -221,10 +221,6 @@ html[data-theme="light"], body.light, .light {
 }
 
 
-/* Mapa — base OpenStreetMap (sem chave de API); o escuro sai de um filtro. */
-html[data-theme="dark"] .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(.92) contrast(.92) saturate(.55);
-}
 
 /* ── Pins do mapa (zoom-aware) ── */
 .k-pin {
@@ -664,10 +660,8 @@ html[data-theme^="ember"] .k-nav > a svg { width: 20px; height: 20px; }
 html[data-theme^="ember"] .k-nav > div:first-child { right: 0 !important; top: -46px !important; }
 
 /* ── Mapa quente (doc: sepia .25 saturate .9) ── */
-html[data-theme="ember-light"] .leaflet-tile-pane { filter: sepia(.25) saturate(.9) !important; }
-html[data-theme="ember-dark"] .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) sepia(.35) saturate(.75) brightness(.82) contrast(.95) !important;
-}
+/* o mapa fica claro em todos os temas; no Ember só aquece (sépia) */
+html[data-theme^="ember"] .leaflet-tile-pane { filter: sepia(.25) saturate(.9) !important; }
 html[data-theme^="ember"] .leaflet-container { background: transparent; }
 html[data-theme^="ember"] .leaflet-control-zoom a,
 html[data-theme^="ember"] .leaflet-control-attribution {
@@ -710,26 +704,51 @@ html[data-theme^="ember"] .k-em-carousel::-webkit-scrollbar { display: none; }
 html[data-theme^="ember"] .k-map-ctrl { bottom: 196px !important; }
 @media (min-width: 768px) { html[data-theme^="ember"] .k-map-ctrl { bottom: 132px !important; } }
 
-/* ── Pins: laranja sólido com aresta branca; preço em vidro com tinta ── */
+/* ── Pins: cor do tipo de anúncio em todos os temas; o Ember só lhes dá aresta branca ── */
 html[data-theme^="ember"] .k-pin {
-  background: var(--em-pri) !important;
-  box-shadow: 0 0 0 2px rgba(255,255,255,.7), 0 6px 14px -6px rgba(120,40,0,.55);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.85), 0 6px 14px -6px rgba(60,20,0,.55);
 }
-html[data-theme^="ember"] .k-pin svg { color: #fff; }
-html[data-theme^="ember"] .k-pin--urgent { box-shadow: 0 0 0 2.5px #EF4444, 0 0 0 4.5px rgba(255,255,255,.7); }
-html[data-theme^="ember"] .k-pin--active { box-shadow: 0 0 0 3px var(--em-ink), 0 6px 14px rgba(0,0,0,.4); }
-html[data-theme^="ember"] .k-pin-price {
-  background: var(--glass) !important; color: var(--em-ink) !important;
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 10px -4px rgba(0,0,0,.3), 0 0 0 1px var(--edge-hi);
-}
-
+html[data-theme^="ember"] .k-pin--urgent { box-shadow: 0 0 0 2.5px #EF4444, 0 0 0 4.5px rgba(255,255,255,.8); }
+html[data-theme^="ember"] .k-pin--active { box-shadow: 0 0 0 3px #1A1A1E, 0 6px 14px rgba(0,0,0,.4); }
+html[data-theme^="ember"] .k-pin-price { box-shadow: 0 4px 10px -4px rgba(0,0,0,.35), 0 0 0 1.5px rgba(255,255,255,.85); }
 
 /* Cabeçalho do empregador: no Ember deixa ver a luz em vez do bloco escuro */
 html[data-theme^="ember"] .k-em-hero { background: transparent !important; border-bottom: 0 !important; }
 html[data-theme="ember-light"] .k-em-hero h1 { color: var(--text) !important; }
 html[data-theme="ember-light"] .k-em-hero p { color: var(--text2) !important; }
 html[data-theme="ember-light"] .k-em-hero img { filter: brightness(0); opacity: .88; }
+
+
+/* Ember escuro: componentes que só tinham versão clara (bg-white, text-gray-*)
+   passam a carvão quente para não voltarem ao claro. */
+html[data-theme="ember-dark"] .bg-white { background-color: #1E1712 !important; }
+html[data-theme="ember-dark"] .bg-gray-50,
+html[data-theme="ember-dark"] .bg-gray-100 { background-color: #2A211B !important; }
+html[data-theme="ember-dark"] .bg-gray-200 { background-color: #3A2E26 !important; }
+html[data-theme="ember-dark"] .text-gray-900,
+html[data-theme="ember-dark"] .text-gray-800,
+html[data-theme="ember-dark"] .text-gray-700,
+html[data-theme="ember-dark"] .text-black { color: #F7EFE9 !important; }
+html[data-theme="ember-dark"] .text-gray-600,
+html[data-theme="ember-dark"] .text-gray-500 { color: #B09A8C !important; }
+html[data-theme="ember-dark"] .text-gray-400 { color: #7A6559 !important; }
+html[data-theme="ember-dark"] .border-gray-100,
+html[data-theme="ember-dark"] .border-gray-200,
+html[data-theme="ember-dark"] .border-gray-300 { border-color: rgba(255,255,255,.10) !important; }
+html[data-theme="ember-dark"] input,
+html[data-theme="ember-dark"] textarea,
+html[data-theme="ember-dark"] select { color-scheme: dark; }
+
+
+/* Ember escuro sobre o mapa claro: o vidro escurece para o texto creme ler bem */
+html[data-theme="ember-dark"] .k-em-card,
+html[data-theme="ember-dark"] .k-nav,
+html[data-theme="ember-dark"] .k-search,
+html[data-theme="ember-dark"] .k-iconbtn,
+html[data-theme="ember-dark"] .leaflet-control-zoom a,
+html[data-theme="ember-dark"] .leaflet-control-attribution {
+  background: rgba(30,23,18,.80) !important;
+}
 
 /* Ember · mapeamento das cores fixas (gerado). Nos temas Claro/Escuro
    estas variáveis não existem e cada cor mantém o valor original. */
@@ -765,14 +784,12 @@ html[data-theme="ember-light"] {
   --fg-555555: #7A5A4A;
   --fg-666666: #7A5A4A;
   --fg-6B7280: #7A5A4A;
-  --fg-78716C: #7A5A4A;
   --fg-888888: #7A5A4A;
   --fg-8A909A: #7A5A4A;
   --fg-999999: #7A5A4A;
   --fg-AAAAAA: #B89A8A;
   --fg-CCCCCC: #B89A8A;
   --fg-F4621F: #1A1A1E;
-  --fg-F97316: #1A1A1E;
   --fg-FF6600: #1A1A1E;
   --fg-FF9944: #1A1A1E;
   --on-FFFFFF: #FFFFFF;
@@ -786,6 +803,10 @@ html[data-theme="ember-dark"] {
   --bd-2A2A2A: rgba(255,255,255,.10);
   --bd-333333: rgba(255,255,255,.10);
   --bd-444444: rgba(255,255,255,.10);
+  --bd-CCCCCC: rgba(255,255,255,.12);
+  --bd-E5E5E5: rgba(255,255,255,.12);
+  --bd-EEEEEE: rgba(255,255,255,.12);
+  --bd-F0F0F0: rgba(255,255,255,.12);
   --bd-F4621F: #F7EFE9;
   --bd-FF6600: #F7EFE9;
   --bg-050505: rgba(255,236,224,.035);
@@ -804,22 +825,37 @@ html[data-theme="ember-dark"] {
   --bg-2A2A2A: rgba(255,236,224,.07);
   --bg-333333: rgba(255,236,224,.07);
   --bg-444444: rgba(255,236,224,.07);
+  --bg-555555: #3A2E26;
+  --bg-DDDDDD: #2A211B;
   --bg-E04E00: #F7EFE9;
+  --bg-E5E7EB: #2A211B;
+  --bg-EEEEEE: #1E1712;
+  --bg-F0F0F0: #1E1712;
+  --bg-F0FDF4: #1E1712;
   --bg-F4621F: #F7EFE9;
+  --bg-F5F5F5: #1E1712;
+  --bg-F8F8F8: #1E1712;
+  --bg-F9F9F9: #1E1712;
+  --bg-FAFAFA: #1E1712;
   --bg-FF6600: #F7EFE9;
   --bg-FF7A1A: #F7EFE9;
-  --fg-4B5563: #7A6559;
-  --fg-555555: #7A6559;
-  --fg-666666: #7A6559;
-  --fg-6B7280: #7A6559;
-  --fg-78716C: #7A6559;
-  --fg-888888: #7A6559;
+  --bg-FFF7F0: #1E1712;
+  --bg-FFFBEB: #1E1712;
+  --bg-FFFFFF: #1E1712;
+  --fg-111016: #F7EFE9;
+  --fg-111111: #F7EFE9;
+  --fg-444444: #F7EFE9;
+  --fg-4B5563: #9A8478;
+  --fg-555555: #9A8478;
+  --fg-666666: #9A8478;
+  --fg-6B7280: #9A8478;
+  --fg-888888: #9A8478;
   --fg-8A909A: #B09A8C;
   --fg-999999: #B09A8C;
   --fg-AAAAAA: #B09A8C;
   --fg-CCCCCC: #B09A8C;
+  --fg-F1F3F6: #F7EFE9;
   --fg-F4621F: #FFC7A3;
-  --fg-F97316: #FFC7A3;
   --fg-FF6600: #FFC7A3;
   --fg-FF9944: #FFC7A3;
   --fg-FFFFFF: #F7EFE9;

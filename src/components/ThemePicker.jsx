@@ -126,3 +126,36 @@ export default function ThemePicker({ compact = false, align = "left" }) {
     </div>
   );
 }
+
+
+/**
+ * Grelha de temas (telemóvel): as quatro opções à vista, com amostra.
+ * Vive em Perfil › Conta, junto do idioma, em vez de flutuar sobre a barra.
+ */
+export function ThemeGrid() {
+  const { theme, setTheme } = useTheme();
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+      {THEMES.map(id => {
+        const on = id === theme;
+        const Icon = ICONS[id];
+        return (
+          <button key={id} type="button" onClick={() => setTheme(id)} aria-pressed={on}
+            style={{
+              display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+              borderRadius: 14, cursor: "pointer", textAlign: "left",
+              background: "linear-gradient(180deg, var(--glass2), var(--glass))",
+              border: on ? "2px solid var(--or)" : "1px solid var(--hair)",
+              color: "var(--text)", fontWeight: on ? 800 : 600, fontSize: 13,
+            }}>
+            <span style={{ width: 26, height: 26, borderRadius: 8, flex: "none", background: SWATCH[id],
+              border: "1px solid rgba(128,128,128,.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon size={13} color={id.endsWith("dark") ? "#F7EFE9" : "#1A1A1E"} />
+            </span>
+            {THEME_META[id].label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
