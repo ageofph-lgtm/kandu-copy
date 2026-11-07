@@ -47,9 +47,9 @@ export default function AccessibilitySettings() {
             style={{
               flex: 1, padding: "10px 0", borderRadius: 10, fontSize: 13, fontWeight: 700,
               cursor: "pointer", fontFamily: "inherit",
-              border: `1px solid ${settings.fontScale === s ? "#FF6600" : "var(--hair)"}`,
-              background: settings.fontScale === s ? "#FF6600" : "var(--surface)",
-              color: settings.fontScale === s ? "#fff" : "var(--text2)",
+              border: `1px solid ${settings.fontScale === s ? "var(--bd-FF6600, #FF6600)" : "var(--hair)"}`,
+              background: settings.fontScale === s ? "var(--bg-FF6600, #FF6600)" : "var(--surface)",
+              color: settings.fontScale === s ? "var(--on-FFFFFF, #fff)" : "var(--text2)",
             }}>
             {scaleLabel(s)}
           </button>
@@ -61,7 +61,7 @@ export default function AccessibilitySettings() {
         style={{
           width: "100%", display: "flex", alignItems: "center", gap: 10,
           padding: "12px 14px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
-          border: `1px solid ${settings.highContrast ? "#FF6600" : "var(--hair)"}`,
+          border: `1px solid ${settings.highContrast ? "var(--bd-FF6600, #FF6600)" : "var(--hair)"}`,
           background: settings.highContrast ? "#FF660011" : "var(--surface)",
         }}>
         <Contrast size={18} color={settings.highContrast ? "#FF6600" : "var(--text2)"} />
@@ -70,12 +70,12 @@ export default function AccessibilitySettings() {
         </span>
         <span style={{
           width: 42, height: 24, borderRadius: 12, position: "relative", flexShrink: 0,
-          background: settings.highContrast ? "#FF6600" : "var(--hair)",
+          background: settings.highContrast ? "var(--bg-FF6600, #FF6600)" : "var(--hair)",
           transition: "background .15s",
         }}>
           <span style={{
             position: "absolute", top: 3, left: settings.highContrast ? 21 : 3,
-            width: 18, height: 18, borderRadius: "50%", background: "#fff",
+            width: 18, height: 18, borderRadius: "50%", background: "var(--bg-FFFFFF, #fff)",
             transition: "left .15s",
           }} />
         </span>

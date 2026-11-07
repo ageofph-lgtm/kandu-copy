@@ -22,8 +22,8 @@ const HEX_SEGMENTS = HEX_POINTS.map((p, i) => ({
 
 export default function LoadingScreen({ label }) {
   const { isDark } = useTheme();
-  const bg = isDark ? "#111016" : "#FFFFFF";
-  const textColor = isDark ? "#AAAAAA" : "#666666";
+  const bg = isDark ? "var(--bg-111016, #111016)" : "var(--bg-FFFFFF, #FFFFFF)";
+  const textColor = isDark ? "var(--fg-AAAAAA, #AAAAAA)" : "var(--fg-666666, #666666)";
   const logo = isDark ? LOGO_DARK : LOGO_LIGHT;
 
   const [activeSegment, setActiveSegment] = useState(0);

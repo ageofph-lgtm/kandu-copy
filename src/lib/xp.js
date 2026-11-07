@@ -3,7 +3,7 @@
 export const XP_LEVELS = [
   { name: "Novato",       min: 0,     max: 999,      color: "from-gray-400 to-gray-500",       emoji: "🔨" },
   { name: "Aprendiz",     min: 1000,  max: 4999,     color: "from-blue-400 to-blue-500",        emoji: "📘" },
-  { name: "Profissional", min: 5000,  max: 14999,    color: "from-[#F26522] to-orange-600",     emoji: "⚡" },
+  { name: "Profissional", min: 5000,  max: 14999,    color: "from-[var(--fg-F26522, #F26522)] to-orange-600",     emoji: "⚡" },
   { name: "Especialista", min: 15000, max: 39999,    color: "from-purple-500 to-purple-700",    emoji: "🏅" },
   { name: "Mestre",       min: 40000, max: Infinity, color: "from-yellow-400 to-yellow-600",    emoji: "👑" },
 ];

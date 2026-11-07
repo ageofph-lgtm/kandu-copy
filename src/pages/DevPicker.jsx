@@ -19,9 +19,9 @@ const DEV_EMAILS = [
 const SEED_PASSWORD = "Kandu2026!";
 
 const TYPE_CONFIG = {
-  worker:   { label: "Profissional", color: "#3b82f6", emoji: "👷" },
-  employer: { label: "Empregador",   color: "#F4621F", emoji: "💼" },
-  admin:    { label: "Admin",        color: "#8b5cf6", emoji: "🛡️" },
+  worker:   { label: "Profissional", color: "var(--fg-3B82F6, #3b82f6)", emoji: "👷" },
+  employer: { label: "Empregador",   color: "var(--fg-F4621F, #F4621F)", emoji: "💼" },
+  admin:    { label: "Admin",        color: "var(--fg-8B5CF6, #8b5cf6)", emoji: "🛡️" },
 };
 
 export default function DevPicker() {
@@ -150,8 +150,8 @@ export default function DevPicker() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #0a0a0f 0%, #111016 60%, #1a0a00 100%)",
-      color: "#fff",
+      background: "linear-gradient(135deg, var(--bg-0A0A0F, #0a0a0f) 0%, var(--bg-111016, #111016) 60%, var(--bg-1A0A00, #1a0a00) 100%)",
+      color: "var(--fg-FFFFFF, #fff)",
       fontFamily: "'Chakra Petch', 'Exo 2', sans-serif",
       padding: "24px 16px 80px",
     }}>
@@ -161,11 +161,11 @@ export default function DevPicker() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 28 }}>🧪</span>
-              <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#F4621F" }}>
+              <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "var(--fg-F4621F, #F4621F)" }}>
                 Dev Mode — Seletor de Utilizador
               </h1>
             </div>
-            <p style={{ margin: "4px 0 0", fontSize: 13, color: "#aaa" }}>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--fg-AAAAAA, #aaa)" }}>
               Escolhe um perfil para testar ou continua com a tua conta
               {callerEmail && <span style={{ color: "#F4621F55", marginLeft: 8 }}>({callerEmail})</span>}
             </p>
@@ -174,8 +174,8 @@ export default function DevPicker() {
             <button
               onClick={handleContinueAsOwn}
               style={{
-                padding: "10px 18px", borderRadius: 10, border: "2px solid #444",
-                background: "transparent", color: "#fff", cursor: "pointer",
+                padding: "10px 18px", borderRadius: 10, border: "2px solid var(--bd-444444, #444)",
+                background: "transparent", color: "var(--fg-FFFFFF, #fff)", cursor: "pointer",
                 fontFamily: "inherit", fontSize: 13, fontWeight: 600,
               }}
             >
@@ -185,9 +185,9 @@ export default function DevPicker() {
               onClick={handleEnterAsAdmin}
               disabled={!!impersonating}
               style={{
-                padding: "10px 18px", borderRadius: 10, border: "2px solid #8b5cf6",
-                background: impersonating === "admin" ? "#8b5cf6" : "rgba(139,92,246,0.15)",
-                color: "#c4b5fd", cursor: "pointer",
+                padding: "10px 18px", borderRadius: 10, border: "2px solid var(--bd-8B5CF6, #8b5cf6)",
+                background: impersonating === "admin" ? "var(--bg-8B5CF6, #8b5cf6)" : "rgba(139,92,246,0.15)",
+                color: "var(--fg-C4B5FD, #c4b5fd)", cursor: "pointer",
                 fontFamily: "inherit", fontSize: 13, fontWeight: 600,
               }}
             >
@@ -197,9 +197,9 @@ export default function DevPicker() {
         </div>
 
         {error && (
-          <div style={{ background: "rgba(239,68,68,0.15)", border: "1px solid #ef4444", borderRadius: 10, padding: "10px 16px", marginBottom: 16, color: "#f87171", fontSize: 13 }}>
+          <div style={{ background: "rgba(239,68,68,0.15)", border: "1px solid var(--bd-EF4444, #ef4444)", borderRadius: 10, padding: "10px 16px", marginBottom: 16, color: "var(--fg-F87171, #f87171)", fontSize: 13 }}>
             ⚠️ {error}
-            <button onClick={() => setError("")} style={{ marginLeft: 8, background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 13 }}>✕</button>
+            <button onClick={() => setError("")} style={{ marginLeft: 8, background: "none", border: "none", color: "var(--fg-F87171, #f87171)", cursor: "pointer", fontSize: 13 }}>✕</button>
           </div>
         )}
 
@@ -211,7 +211,7 @@ export default function DevPicker() {
             placeholder="🔍 Pesquisar nome, email ou cidade..."
             style={{
               flex: 1, minWidth: 200, padding: "10px 14px", borderRadius: 10,
-              border: "1.5px solid #333", background: "#1a1a24", color: "#fff",
+              border: "1.5px solid var(--bd-333333, #333)", background: "var(--bg-1A1A24, #1a1a24)", color: "var(--fg-FFFFFF, #fff)",
               fontFamily: "inherit", fontSize: 13, outline: "none",
             }}
           />
@@ -226,9 +226,9 @@ export default function DevPicker() {
               style={{
                 padding: "9px 16px", borderRadius: 10, cursor: "pointer",
                 fontFamily: "inherit", fontSize: 12, fontWeight: 600,
-                border: filter === f.key ? "2px solid #F4621F" : "2px solid #333",
+                border: filter === f.key ? "2px solid var(--bd-F4621F, #F4621F)" : "2px solid var(--bd-333333, #333)",
                 background: filter === f.key ? "rgba(244,98,31,0.2)" : "transparent",
-                color: filter === f.key ? "#F4621F" : "#aaa",
+                color: filter === f.key ? "var(--fg-F4621F, #F4621F)" : "var(--fg-AAAAAA, #aaa)",
               }}
             >
               {f.label}
@@ -239,7 +239,7 @@ export default function DevPicker() {
             style={{
               padding: "9px 14px", borderRadius: 10, cursor: "pointer",
               fontFamily: "inherit", fontSize: 12, fontWeight: 600,
-              border: "2px solid #333", background: "transparent", color: "#aaa",
+              border: "2px solid var(--bd-333333, #333)", background: "transparent", color: "var(--fg-AAAAAA, #aaa)",
             }}
           >
             🔄 Recarregar
@@ -247,22 +247,22 @@ export default function DevPicker() {
         </div>
 
         {/* Stats */}
-        <div style={{ fontSize: 12, color: "#555", marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: "var(--fg-555555, #555)", marginBottom: 12 }}>
           A mostrar {Math.min(paginated.length + page * PER_PAGE, filtered.length)} de {filtered.length} utilizadores
           {filtered.length !== users.length ? ` (filtrado de ${users.length})` : ""}
         </div>
 
         {/* Grid */}
         {loading ? (
-          <div style={{ textAlign: "center", padding: 60, color: "#555" }}>
+          <div style={{ textAlign: "center", padding: 60, color: "var(--fg-555555, #555)" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
             <div>A carregar utilizadores...</div>
           </div>
         ) : users.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 60, color: "#555" }}>
+          <div style={{ textAlign: "center", padding: 60, color: "var(--fg-555555, #555)" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>👻</div>
             <div>Nenhum utilizador encontrado</div>
-            <div style={{ fontSize: 12, marginTop: 8, color: "#444" }}>URL: {SUPABASE_URL}</div>
+            <div style={{ fontSize: 12, marginTop: 8, color: "var(--fg-444444, #444)" }}>URL: {SUPABASE_URL}</div>
           </div>
         ) : (
           <>
@@ -275,23 +275,23 @@ export default function DevPicker() {
                     key={user.id}
                     onClick={() => !impersonating && handleImpersonate(user)}
                     style={{
-                      background: isLoading ? `${cfg.color}22` : "rgba(255,255,255,0.04)",
-                      border: `1.5px solid ${isLoading ? cfg.color : "#2a2a3a"}`,
+                      background: isLoading ? `color-mix(in srgb, ${cfg.color} 13.33%, transparent)` : "rgba(255,255,255,0.04)",
+                      border: `1.5px solid ${isLoading ? cfg.color : "var(--bd-2A2A3A, #2a2a3a)"}`,
                       borderRadius: 14, padding: "14px 16px",
                       cursor: impersonating ? "not-allowed" : "pointer",
                       transition: "all 0.15s ease",
                       opacity: impersonating && !isLoading ? 0.5 : 1,
                       position: "relative", overflow: "hidden",
                     }}
-                    onMouseEnter={e => { if (!impersonating) { e.currentTarget.style.borderColor = cfg.color; e.currentTarget.style.background = `${cfg.color}11`; } }}
+                    onMouseEnter={e => { if (!impersonating) { e.currentTarget.style.borderColor = cfg.color; e.currentTarget.style.background = `color-mix(in srgb, ${cfg.color} 6.67%, transparent)`; } }}
                     onMouseLeave={e => { if (!impersonating) { e.currentTarget.style.borderColor = "#2a2a3a"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; } }}
                   >
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: cfg.color, borderRadius: "14px 14px 0 0" }} />
                     <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4 }}>
                       <div style={{
                         width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-                        background: `linear-gradient(135deg, ${cfg.color}44, ${cfg.color}22)`,
-                        border: `2px solid ${cfg.color}66`,
+                        background: `linear-gradient(135deg, color-mix(in srgb, ${cfg.color} 26.67%, transparent), color-mix(in srgb, ${cfg.color} 13.33%, transparent))`,
+                        border: `2px solid color-mix(in srgb, ${cfg.color} 40.00%, transparent)`,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontWeight: 800, fontSize: 18, color: cfg.color,
                         overflow: "hidden",
@@ -302,22 +302,22 @@ export default function DevPicker() {
                         }
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: "#fff", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: "var(--fg-FFFFFF, #fff)", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {isLoading ? "⏳ A entrar..." : user.full_name || user.email}
                         </div>
-                        <div style={{ fontSize: 11, color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <div style={{ fontSize: 11, color: "var(--fg-666666, #666)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {user.email}
                         </div>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
                       <span style={{
-                        background: `${cfg.color}22`, color: cfg.color,
+                        background: `color-mix(in srgb, ${cfg.color} 13.33%, transparent)`, color: cfg.color,
                         borderRadius: 6, padding: "3px 8px", fontSize: 11, fontWeight: 600
                       }}>
                         {cfg.emoji} {cfg.label}
                       </span>
-                      <div style={{ display: "flex", gap: 8, fontSize: 11, color: "#555" }}>
+                      <div style={{ display: "flex", gap: 8, fontSize: 11, color: "var(--fg-555555, #555)" }}>
                         {user.rating > 0 && <span>⭐ {user.rating?.toFixed(1)}</span>}
                         {user.city && <span>📍 {user.city}</span>}
                       </div>
@@ -331,14 +331,14 @@ export default function DevPicker() {
             {totalPages > 1 && (
               <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 20 }}>
                 <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-                  style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #333", background: "transparent", color: page === 0 ? "#444" : "#fff", cursor: page === 0 ? "default" : "pointer", fontFamily: "inherit" }}>
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--bd-333333, #333)", background: "transparent", color: page === 0 ? "var(--fg-444444, #444)" : "var(--fg-FFFFFF, #fff)", cursor: page === 0 ? "default" : "pointer", fontFamily: "inherit" }}>
                   ← Anterior
                 </button>
-                <span style={{ padding: "8px 16px", color: "#aaa", fontSize: 13 }}>
+                <span style={{ padding: "8px 16px", color: "var(--fg-AAAAAA, #aaa)", fontSize: 13 }}>
                   {page + 1} / {totalPages}
                 </span>
                 <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page === totalPages - 1}
-                  style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #333", background: "transparent", color: page === totalPages - 1 ? "#444" : "#fff", cursor: page === totalPages - 1 ? "default" : "pointer", fontFamily: "inherit" }}>
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--bd-333333, #333)", background: "transparent", color: page === totalPages - 1 ? "var(--fg-444444, #444)" : "var(--fg-FFFFFF, #fff)", cursor: page === totalPages - 1 ? "default" : "pointer", fontFamily: "inherit" }}>
                   Próxima →
                 </button>
               </div>

@@ -96,10 +96,10 @@ export default function Calendar() {
     const end = parse(job.end_date);
     const isStart = start && isSameDay(start, date);
     const isEnd = end && isSameDay(end, date);
-    if (isStart && isEnd) return { label: "Início e fim", color: "#A855F7" };
-    if (isStart) return { label: "Início", color: "#22C55E" };
-    if (isEnd) return { label: "Fim", color: "#EF4444" };
-    return { label: "Em curso", color: "#FF6600" };
+    if (isStart && isEnd) return { label: "Início e fim", color: "var(--fg-A855F7, #A855F7)" };
+    if (isStart) return { label: "Início", color: "var(--fg-22C55E, #22C55E)" };
+    if (isEnd) return { label: "Fim", color: "var(--fg-EF4444, #EF4444)" };
+    return { label: "Em curso", color: "var(--fg-FF6600, #FF6600)" };
   };
 
   const formatPrice = (price, type) => {
@@ -133,9 +133,9 @@ export default function Calendar() {
 
       {/* Week Nav */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 20px",marginBottom:12}}>
-        <button onClick={() => setCurrentWeek(subWeeks(currentWeek,1))} style={{background:surface,border:"none",borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#FF6600",fontSize:18}}>‹</button>
+        <button onClick={() => setCurrentWeek(subWeeks(currentWeek,1))} style={{background:surface,border:"none",borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--fg-FF6600, #FF6600)",fontSize:18}}>‹</button>
         <span style={{color:subtext,fontSize:13}}>{format(weekDays[0],"d MMM",{locale:dateLocale})} — {format(weekDays[6],"d MMM",{locale:dateLocale})}</span>
-        <button onClick={() => setCurrentWeek(addWeeks(currentWeek,1))} style={{background:surface,border:"none",borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#FF6600",fontSize:18}}>›</button>
+        <button onClick={() => setCurrentWeek(addWeeks(currentWeek,1))} style={{background:surface,border:"none",borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--fg-FF6600, #FF6600)",fontSize:18}}>›</button>
       </div>
 
       {/* Week Days Grid */}
@@ -147,10 +147,10 @@ export default function Calendar() {
           return (
             <div key={idx} onClick={() => setSelectedDay(day)} style={{display:"flex",flexDirection:"column",alignItems:"center",cursor:"pointer",gap:4}}>
               <span style={{fontSize:11,color:subtext,fontWeight:600}}>{format(day,"EEE",{locale:dateLocale}).toUpperCase()}</span>
-              <div style={{width:34,height:34,borderRadius:"50%",background:isToday||isSelected?"#FF6600":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:isToday||isSelected?700:400,color:isToday||isSelected?"#FFF":text,fontSize:14}}>
+              <div style={{width:34,height:34,borderRadius:"50%",background:isToday||isSelected?"var(--bg-FF6600, #FF6600)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:isToday||isSelected?700:400,color:isToday||isSelected?"var(--on-FFFFFF, #FFF)":text,fontSize:14}}>
                 {format(day,"d")}
               </div>
-              {hasDots && <div style={{width:6,height:6,borderRadius:"50%",background:"#FF6600"}} />}
+              {hasDots && <div style={{width:6,height:6,borderRadius:"50%",background:"var(--bg-FF6600, #FF6600)"}} />}
               {!hasDots && <div style={{width:6,height:6}} />}
             </div>
           );
@@ -177,7 +177,7 @@ export default function Calendar() {
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
                   <p style={{fontWeight:700,color:text,margin:0,fontSize:15}}>{job.title}</p>
-                  <span style={{background:role.color+"22",color:role.color,borderRadius:20,padding:"2px 8px",fontSize:11,fontWeight:700,flexShrink:0}}>
+                  <span style={{background:`color-mix(in srgb, ${role.color} 13.33%, transparent)`,color:role.color,borderRadius:20,padding:"2px 8px",fontSize:11,fontWeight:700,flexShrink:0}}>
                     {role.label}
                   </span>
                 </div>
@@ -195,15 +195,15 @@ export default function Calendar() {
       {/* Stats */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,padding:"20px 20px 0"}}>
         <div style={{background:surface,borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
-          <p style={{fontWeight:800,fontSize:18,color:"#FF6600",margin:0}}>{jobs.filter(j=>j.status==="open").length}</p>
+          <p style={{fontWeight:800,fontSize:18,color:"var(--fg-FF6600, #FF6600)",margin:0}}>{jobs.filter(j=>j.status==="open").length}</p>
           <p style={{color:subtext,fontSize:11,margin:0}}>{t(lang,"statsOpen","Abertas")}</p>
         </div>
         <div style={{background:surface,borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
-          <p style={{fontWeight:800,fontSize:18,color:"#FF6600",margin:0}}>{jobs.filter(j=>j.status==="in_progress").length}</p>
+          <p style={{fontWeight:800,fontSize:18,color:"var(--fg-FF6600, #FF6600)",margin:0}}>{jobs.filter(j=>j.status==="in_progress").length}</p>
           <p style={{color:subtext,fontSize:11,margin:0}}>{t(lang,"statsInProgress","Em Curso")}</p>
         </div>
         <div style={{background:surface,borderRadius:14,padding:"12px 8px",textAlign:"center"}}>
-          <p style={{fontWeight:800,fontSize:18,color:"#22C55E",margin:0}}>{jobs.filter(j=>j.status==="completed").length}</p>
+          <p style={{fontWeight:800,fontSize:18,color:"var(--fg-22C55E, #22C55E)",margin:0}}>{jobs.filter(j=>j.status==="completed").length}</p>
           <p style={{color:subtext,fontSize:11,margin:0}}>{t(lang,"statsCompleted","Concluídas")}</p>
         </div>
       </div>

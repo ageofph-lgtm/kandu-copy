@@ -19,7 +19,7 @@ import { VERIFICATION_LEVELS, computeVerificationLevel } from "@/lib/verificatio
 import { validateFile, resizeImage, IMAGE_MIME_TYPES } from "@/lib/validation";
 import { errorMessage } from "@/lib/net";
 
-const OR = "#F4621F";
+const OR = "var(--ac-F4621F, #F4621F)";
 
 /** Mascara o NIF — só o próprio vê o número completo (RGPD). */
 const maskNif = (nif) => (nif ? `••• ••• ${String(nif).slice(-3)}` : null);
@@ -252,7 +252,7 @@ export default function Profile() {
       <div style={{ textAlign: "center" }}>
         <p style={{ color: text, marginBottom: 16 }}>Perfil não encontrado</p>
         <button onClick={() => navigate(createPageUrl("Login"))}
-          style={{ padding: "12px 28px", background: OR, border: "none", borderRadius: 12, color: "#fff", fontWeight: 700, cursor: "pointer" }}>
+          style={{ padding: "12px 28px", background: OR, border: "none", borderRadius: 12, color: "var(--on-FFFFFF, #fff)", fontWeight: 700, cursor: "pointer" }}>
           Fazer Login
         </button>
       </div>
@@ -302,14 +302,14 @@ export default function Profile() {
           {/* #91/#93 — chat direto: não havia forma de iniciar conversa a partir do perfil */}
           {!isOwnProfile && viewer && (
             <button onClick={() => navigate(`${createPageUrl("Chat")}?userId=${user.id}`)} aria-label="Enviar mensagem"
-              style={{ padding: "8px 16px", background: OR, border: "none", borderRadius: 10, color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              style={{ padding: "8px 16px", background: OR, border: "none", borderRadius: 10, color: "var(--on-FFFFFF, #fff)", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
               <MessageCircle size={14} /> Mensagem
             </button>
           )}
           {isOwnProfile && (
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setIsEditing(true)}
-                style={{ padding: "8px 16px", background: OR, border: "none", borderRadius: 10, color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                style={{ padding: "8px 16px", background: OR, border: "none", borderRadius: 10, color: "var(--on-FFFFFF, #fff)", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
                 <Edit2 size={14} /> Editar
               </button>
               <button onClick={handleLogout} aria-label="Terminar sessão"
@@ -327,13 +327,13 @@ export default function Profile() {
               <img src={user.avatar_url} alt="Foto de perfil"
                 style={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover", border: `3px solid ${typeColor}` }} />
             ) : (
-              <div style={{ width: 80, height: 80, borderRadius: "50%", background: typeColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 900, color: "#fff", border: `3px solid ${typeColor}` }}>
+              <div style={{ width: 80, height: 80, borderRadius: "50%", background: typeColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 900, color: "var(--fg-FFFFFF, #fff)", border: `3px solid ${typeColor}` }}>
                 {initials}
               </div>
             )}
             {isOwnProfile && (
               <button onClick={() => avatarInputRef.current?.click()} disabled={isUploading} aria-label="Alterar foto"
-                style={{ position: "absolute", bottom: 0, right: 0, width: 26, height: 26, borderRadius: "50%", background: OR, border: `2px solid ${surface}`, cursor: isUploading ? "wait" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff" }}>
+                style={{ position: "absolute", bottom: 0, right: 0, width: 26, height: 26, borderRadius: "50%", background: OR, border: `2px solid ${surface}`, cursor: isUploading ? "wait" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "var(--on-FFFFFF, #fff)" }}>
                 {isUploading ? "⏳" : "📷"}
               </button>
             )}
@@ -343,11 +343,11 @@ export default function Profile() {
               {user.full_name || user.email}
             </h2>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
-              <span style={{ background: typeColor + "22", color: typeColor, padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+              <span style={{ background: `color-mix(in srgb, ${typeColor} 13.33%, transparent)`, color: typeColor, padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
                 {typeLabel}
               </span>
               {/* Badge de verificação (#1, #3) */}
-              <span style={{ background: vInfo.color + "22", color: vInfo.color, padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+              <span style={{ background: `color-mix(in srgb, ${vInfo.color} 13.33%, transparent)`, color: vInfo.color, padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
                 {vInfo.emoji} {isWorker ? vInfo.labelPro : vInfo.label}
               </span>
             </div>
@@ -403,7 +403,7 @@ export default function Profile() {
                   <div style={{ width: 56, height: 56, borderRadius: 12, background: bg, border: `1px solid ${border}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
                     {user.company_logo_url
                       ? <img src={user.company_logo_url} alt="Logótipo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                      : <Building2 size={22} color={subtext} />}
+                      : <Building2 size={22} style={{ color: subtext }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ color: text, fontSize: 15, fontWeight: 700, margin: 0 }}>{user.company || "—"}</p>
@@ -434,7 +434,7 @@ export default function Profile() {
                 <p style={{ color: subtext, fontSize: 12, marginBottom: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Competências</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {user.skills.map((s, i) => (
-                    <span key={i} style={{ background: OR + "22", color: OR, padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>{s}</span>
+                    <span key={i} style={{ background: `color-mix(in srgb, ${OR} 13.33%, transparent)`, color: OR, padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>{s}</span>
                   ))}
                 </div>
               </div>
@@ -454,7 +454,7 @@ export default function Profile() {
             {/* Contactos — protegidos até haver relação formal (#67) */}
             {!canSeeContacts ? (
               <div style={{ ...cardStyle, display: "flex", alignItems: "center", gap: 12 }}>
-                <Lock size={18} color={subtext} />
+                <Lock size={18} style={{ color: subtext }} />
                 <div>
                   <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: 0 }}>Contactos protegidos</p>
                   <p style={{ color: subtext, fontSize: 12, margin: "2px 0 0", lineHeight: 1.5 }}>
@@ -516,7 +516,7 @@ export default function Profile() {
                     style={{
                       padding: "6px 14px", borderRadius: 20, border: "none", cursor: "pointer",
                       background: lang === l.code ? OR : border,
-                      color: lang === l.code ? "#fff" : text, fontWeight: 600, fontSize: 13,
+                      color: lang === l.code ? "var(--on-FFFFFF, #fff)" : text, fontWeight: 600, fontSize: 13,
                     }}>
                     {l.flag || ""} {l.nativeName || l.label || l.name || l.code}
                   </button>
@@ -531,7 +531,7 @@ export default function Profile() {
 
             {/* #46 — desativação / eliminação e retenção de dados */}
             <div style={{ ...cardStyle, borderColor: "#EF444455" }}>
-              <p style={{ color: "#EF4444", fontSize: 12, margin: "0 0 6px", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Zona sensível</p>
+              <p style={{ color: "var(--fg-EF4444, #EF4444)", fontSize: 12, margin: "0 0 6px", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Zona sensível</p>
               <p style={{ color: subtext, fontSize: 12, margin: "0 0 12px", lineHeight: 1.5 }}>
                 Podes desativar temporariamente a conta ou eliminá-la. Ao eliminar, os dados de perfil
                 são anonimizados de imediato; o histórico de obras e faturação é conservado 5 anos por
@@ -543,7 +543,7 @@ export default function Profile() {
                   Desativar conta
                 </button>
                 <button onClick={handleDeleteAccount}
-                  style={{ flex: 1, padding: 11, background: "#EF444418", border: "1px solid #EF444455", borderRadius: 10, color: "#EF4444", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  style={{ flex: 1, padding: 11, background: "#EF444418", border: "1px solid #EF444455", borderRadius: 10, color: "var(--fg-EF4444, #EF4444)", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                   <Trash2 size={14} /> Eliminar conta
                 </button>
               </div>

@@ -10,10 +10,10 @@ import { COMPLAINT_TYPES, fileComplaint, listMyComplaints } from "@/lib/complain
 import { AlertTriangle, Upload, Loader2, ShieldAlert, ArrowLeft } from "lucide-react";
 
 const STATUS_LABEL = {
-  open:      { label: "Em análise",  color: "#F59E0B" },
-  reviewing: { label: "Em revisão",  color: "#3B82F6" },
-  resolved:  { label: "Resolvida",   color: "#22C55E" },
-  dismissed: { label: "Arquivada",   color: "#8A909A" },
+  open:      { label: "Em análise",  color: "var(--fg-F59E0B, #F59E0B)" },
+  reviewing: { label: "Em revisão",  color: "var(--fg-3B82F6, #3B82F6)" },
+  resolved:  { label: "Resolvida",   color: "var(--fg-22C55E, #22C55E)" },
+  dismissed: { label: "Arquivada",   color: "var(--fg-8A909A, #8A909A)" },
 };
 
 /**
@@ -127,7 +127,7 @@ export default function Complaints() {
     <div style={{ background: bg, minHeight: "100vh", paddingBottom: 90 }}>
       <div style={{ background: surface, borderBottom: `1px solid ${border}`, padding: "50px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={() => navigate(-1)} aria-label="Voltar"
-          style={{ background: "none", border: "none", color: "#FF6600", cursor: "pointer", padding: 0, display: "flex" }}>
+          style={{ background: "none", border: "none", color: "var(--fg-FF6600, #FF6600)", cursor: "pointer", padding: 0, display: "flex" }}>
           <ArrowLeft size={22} />
         </button>
         <div>
@@ -150,7 +150,7 @@ export default function Complaints() {
                 possa analisar. Abre a obra em <strong>Trabalho</strong> e usa o botão “Reclamar”.
               </p>
               <button onClick={() => navigate(createPageUrl("MyJobs"))}
-                style={{ marginTop: 12, background: "#FF6600", border: "none", borderRadius: 10, padding: "10px 18px", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                style={{ marginTop: 12, background: "var(--bg-FF6600, #FF6600)", border: "none", borderRadius: 10, padding: "10px 18px", color: "var(--on-FFFFFF, #fff)", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                 Ir para Trabalho
               </button>
             </div>
@@ -159,10 +159,10 @@ export default function Complaints() {
           <>
             <div style={{ ...card, borderColor: "#FF660055" }}>
               <p style={{ margin: 0, fontSize: 12, color: subtext, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.6 }}>Obra</p>
-              <p style={{ margin: "4px 0 0", fontWeight: 700, color: "#FF6600", fontSize: 15 }}>{job.title}</p>
+              <p style={{ margin: "4px 0 0", fontWeight: 700, color: "var(--fg-FF6600, #FF6600)", fontSize: 15 }}>{job.title}</p>
               <p style={{ margin: "2px 0 0", color: subtext, fontSize: 13 }}>📍 {job.location} · €{job.price}</p>
               {job.is_blocked_by_complaint && (
-                <p style={{ margin: "10px 0 0", color: "#F59E0B", fontSize: 12, fontWeight: 600 }}>
+                <p style={{ margin: "10px 0 0", color: "var(--fg-F59E0B, #F59E0B)", fontSize: 12, fontWeight: 600 }}>
                   ⏸ Esta obra já está bloqueada para revisão do suporte.
                 </p>
               )}
@@ -175,7 +175,7 @@ export default function Complaints() {
                   <button key={opt.value} onClick={() => setType(opt.value)}
                     style={{
                       textAlign: "left", padding: "12px 14px", borderRadius: 12, cursor: "pointer",
-                      border: `2px solid ${type === opt.value ? "#FF6600" : border}`,
+                      border: `2px solid ${type === opt.value ? "var(--bd-FF6600, #FF6600)" : border}`,
                       background: type === opt.value ? "#FF660011" : bg,
                       display: "flex", gap: 12, alignItems: "center", fontFamily: "inherit",
                     }}>
@@ -185,7 +185,7 @@ export default function Complaints() {
                       <p style={{ margin: "2px 0 0", fontSize: 12, color: subtext }}>{opt.description}</p>
                     </div>
                     {opt.penalty > 0 && (
-                      <span style={{ background: "#EF444422", color: "#EF4444", fontSize: 11, fontWeight: 800, padding: "3px 9px", borderRadius: 20, flexShrink: 0 }}>
+                      <span style={{ background: "#EF444422", color: "var(--fg-EF4444, #EF4444)", fontSize: 11, fontWeight: 800, padding: "3px 9px", borderRadius: 20, flexShrink: 0 }}>
                         −{opt.penalty} XP
                       </span>
                     )}
@@ -225,7 +225,7 @@ export default function Complaints() {
                     <span style={{ fontSize: 18 }}>📎</span>
                     <span style={{ flex: 1, fontSize: 13, color: text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{evidence.name}</span>
                     <button onClick={() => setEvidence(null)}
-                      style={{ background: "none", border: "none", color: "#EF4444", cursor: "pointer", fontSize: 13 }}>Remover</button>
+                      style={{ background: "none", border: "none", color: "var(--fg-EF4444, #EF4444)", cursor: "pointer", fontSize: 13 }}>Remover</button>
                   </div>
                 ) : (
                   <button onClick={() => fileRef.current?.click()} disabled={uploading}
@@ -238,7 +238,7 @@ export default function Complaints() {
 
               <div style={{ background: "#F59E0B15", border: "1px solid #F59E0B44", borderRadius: 10, padding: "10px 12px", display: "flex", gap: 8 }}>
                 <AlertTriangle size={16} color="#F59E0B" style={{ flexShrink: 0, marginTop: 1 }} />
-                <p style={{ margin: 0, fontSize: 12, color: "#F59E0B", lineHeight: 1.5 }}>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--fg-F59E0B, #F59E0B)", lineHeight: 1.5 }}>
                   Ao submeter, a obra fica <strong>bloqueada</strong> até o suporte analisar o caso.
                   Denúncias falsas podem levar a penalizações na tua própria conta.
                 </p>
@@ -247,7 +247,7 @@ export default function Complaints() {
               <button onClick={handleSubmit} disabled={submitting}
                 style={{
                   width: "100%", padding: 14, borderRadius: 12, border: "none",
-                  background: submitting ? "#555" : "#EF4444", color: "#fff",
+                  background: submitting ? "var(--bg-555555, #555)" : "var(--bg-EF4444, #EF4444)", color: "var(--fg-FFFFFF, #fff)",
                   fontWeight: 800, fontSize: 15, cursor: submitting ? "not-allowed" : "pointer",
                 }}>
                 {submitting ? "A submeter..." : "Submeter reclamação"}
@@ -273,7 +273,7 @@ export default function Complaints() {
                       {c.xp_penalty > 0 && ` · −${c.xp_penalty} XP aplicados`}
                     </p>
                   </div>
-                  <span style={{ background: st.color + "22", color: st.color, fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, height: "fit-content", flexShrink: 0 }}>
+                  <span style={{ background: `color-mix(in srgb, ${st.color} 13.33%, transparent)`, color: st.color, fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, height: "fit-content", flexShrink: 0 }}>
                     {st.label}
                   </span>
                 </div>

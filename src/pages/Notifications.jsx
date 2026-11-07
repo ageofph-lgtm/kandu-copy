@@ -96,7 +96,7 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
               <div className="flex items-center gap-2 mb-1">
                 <h4 style={{fontWeight:600,fontSize:14,color:text,margin:"0 0 2px"}}>{translatedTitle}</h4>
                 {!notification.read && (
-                  <span style={{width:8,height:8,borderRadius:"50%",background:"#FF6600",display:"inline-block",marginLeft:6,flexShrink:0}}></span>
+                  <span style={{width:8,height:8,borderRadius:"50%",background:"var(--bg-FF6600, #FF6600)",display:"inline-block",marginLeft:6,flexShrink:0}}></span>
                 )}
               </div>
               <p style={{fontSize:14,color:subtext,marginBottom:8}}>{translatedMessage}</p>
@@ -242,12 +242,12 @@ export default function Notifications() {
       <div style={{padding:"12px 20px",display:"flex",alignItems:"center",gap:12}}>
         <h1 style={{fontWeight:800,fontSize:32,color:text,margin:0,flex:1}}>{t(lang,"notifications")}</h1>
         {unreadNotifications.length > 0 && (
-          <div style={{width:28,height:28,borderRadius:"50%",background:"#FF6600",display:"flex",alignItems:"center",justifyContent:"center",color:"#FFF",fontWeight:700,fontSize:14}}>
+          <div style={{width:28,height:28,borderRadius:"50%",background:"var(--bg-FF6600, #FF6600)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--on-FFFFFF, #FFF)",fontWeight:700,fontSize:14}}>
             {unreadNotifications.length}
           </div>
         )}
         {unreadNotifications.length > 0 && (
-          <button onClick={handleMarkAllAsRead} style={{background:"none",border:"1px solid #FF660066",borderRadius:20,padding:"4px 12px",color:"#FF6600",fontSize:12,cursor:"pointer",fontWeight:600}}>{t(lang,"markReadShort","Lidas")}</button>
+          <button onClick={handleMarkAllAsRead} style={{background:"none",border:"1px solid #FF660066",borderRadius:20,padding:"4px 12px",color:"var(--fg-FF6600, #FF6600)",fontSize:12,cursor:"pointer",fontWeight:600}}>{t(lang,"markReadShort","Lidas")}</button>
         )}
       </div>
 
@@ -257,25 +257,25 @@ export default function Notifications() {
           <div style={{textAlign:"center",padding:"60px 20px"}}>
             <div style={{fontSize:48,marginBottom:12}}>🔔</div>
             <p style={{color:subtext,fontSize:15,fontWeight:600,margin:"0 0 6px"}}>{t(lang,"noNotifications","Sem notificações")}</p>
-            <p style={{color:"#555",fontSize:13,margin:0}}>{t(lang,"noNotificationsHint","Quando houver novidades, aparecem aqui")}</p>
+            <p style={{color:"var(--fg-555555, #555)",fontSize:13,margin:0}}>{t(lang,"noNotificationsHint","Quando houver novidades, aparecem aqui")}</p>
           </div>
         ) : notifications.map(notif => {
           const {icon, bg} = getIcon(notif.type);
           return (
             <div key={notif.id}
               onClick={() => handleOpen(notif)}
-              style={{background:surface,borderRadius:14,padding:"14px 16px",borderLeft:"4px solid #FF6600",display:"flex",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:notif.read?0.6:1}}>
+              style={{background:surface,borderRadius:14,padding:"14px 16px",borderLeft:"4px solid var(--bd-FF6600, #FF6600)",display:"flex",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:notif.read?0.6:1}}>
               <div style={{width:40,height:40,borderRadius:12,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
                 {icon}
               </div>
               <div style={{flex:1,minWidth:0}}>
                 <p style={{fontWeight:700,fontSize:14,color:text,margin:0}}>{notif.title}</p>
                 <p style={{color:subtext,fontSize:13,marginTop:2,lineHeight:1.4}}>{notif.message}</p>
-                <p style={{color:"#FF6600",fontSize:11,marginTop:6,fontWeight:700}}>Abrir →</p>
+                <p style={{color:"var(--fg-FF6600, #FF6600)",fontSize:11,marginTop:6,fontWeight:700}}>Abrir →</p>
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flexShrink:0}}>
                 <span style={{color:subtext,fontSize:11}}>{getRelativeTime(notif.created_date)}</span>
-                <button onClick={e => {e.stopPropagation(); handleDelete(notif);}} style={{background:"none",border:"none",color:"#555",cursor:"pointer",fontSize:14,padding:0}}>×</button>
+                <button onClick={e => {e.stopPropagation(); handleDelete(notif);}} style={{background:"none",border:"none",color:"var(--fg-555555, #555)",cursor:"pointer",fontSize:14,padding:0}}>×</button>
               </div>
             </div>
           );

@@ -427,7 +427,7 @@ export default function Chat() {
         <MessageCircle size={22} color="#F4621F" />
         <span style={{ fontWeight: 700, fontSize: 18 }}>{t(lang, "messages", "Mensagens")}</span>
         {unreadTotal > 0 && (
-          <span style={{ background: "#F4621F", color: "#fff", borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 700 }}>
+          <span style={{ background: "var(--bg-F4621F, #F4621F)", color: "var(--on-FFFFFF, #fff)", borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 700 }}>
             {unreadTotal}
           </span>
         )}

@@ -67,7 +67,7 @@ export default function SplashScreen({ onDone }) {
     <div style={{
       position: "fixed", inset: 0, zIndex: 9999,
       display: "flex", alignItems: "center", justifyContent: "center",
-      background: "#111016",
+      background: "var(--bg-111016, #111016)",
       animation: phase === "burst" ? "bgBurst 0.28s ease" : "none",
       opacity: phase === "fadeOut" ? 0 : 1,
       transition: phase === "fadeOut" ? "opacity 0.45s ease" : "none",

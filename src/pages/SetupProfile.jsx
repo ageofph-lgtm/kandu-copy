@@ -7,7 +7,7 @@ import {
   isValidNIF, isValidCompanyNIF, isValidPhonePT, normalizePhonePT, isCorporateEmail,
 } from "@/lib/validation";
 
-const OR = "#F4621F";
+const OR = "var(--ac-F4621F, #F4621F)";
 
 const PROFILES = [
   { type: "worker",   emoji: "⛑️", title: "Profissional", desc: "Candidate-se a obras e mostre as suas habilidades" },
@@ -17,18 +17,18 @@ const PROFILES = [
 // ── estilos partilhados ──────────────────────────────────────────────────────
 const page = {
   minHeight: "100vh",
-  background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), #0B0C0E",
+  background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), var(--bg-0B0C0E, #0B0C0E)",
   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
   padding: "40px 20px", fontFamily: "'Chakra Petch', sans-serif",
 };
 const field = (invalid) => ({
   width: "100%", padding: "12px 14px", borderRadius: 10,
-  border: `1.5px solid ${invalid ? "#ef4444" : "#333"}`,
-  background: "#1a1a24", color: "#fff", fontFamily: "inherit", fontSize: 14,
+  border: `1.5px solid ${invalid ? "var(--bd-EF4444, #ef4444)" : "var(--bd-333333, #333)"}`,
+  background: "var(--bg-1A1A24, #1a1a24)", color: "var(--fg-FFFFFF, #fff)", fontFamily: "inherit", fontSize: 14,
   outline: "none", boxSizing: "border-box",
 });
-const label = { display: "block", color: "#8A909A", fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.6 };
-const errText = { color: "#f87171", fontSize: 12, margin: "5px 0 0" };
+const label = { display: "block", color: "var(--fg-8A909A, #8A909A)", fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.6 };
+const errText = { color: "var(--fg-F87171, #f87171)", fontSize: 12, margin: "5px 0 0" };
 
 function Field({ id, title, hint, error, children }) {
   return (
@@ -37,7 +37,7 @@ function Field({ id, title, hint, error, children }) {
       {children}
       {error
         ? <p style={errText}>⚠️ {error}</p>
-        : hint ? <p style={{ color: "#555", fontSize: 11, margin: "5px 0 0" }}>{hint}</p> : null}
+        : hint ? <p style={{ color: "var(--fg-555555, #555)", fontSize: 11, margin: "5px 0 0" }}>{hint}</p> : null}
     </div>
   );
 }
@@ -179,9 +179,9 @@ export default function SetupProfile() {
   if (loading) {
     return (
       <div style={{ ...page, justifyContent: "center" }}>
-        <div style={{ textAlign: "center", color: "#FFF" }}>
+        <div style={{ textAlign: "center", color: "var(--fg-FFFFFF, #FFF)" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
-          <p style={{ color: "#AAA" }}>A verificar sessão...</p>
+          <p style={{ color: "var(--fg-AAAAAA, #AAA)" }}>A verificar sessão...</p>
         </div>
       </div>
     );
@@ -191,10 +191,10 @@ export default function SetupProfile() {
     return (
       <div style={page}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>🔒</div>
-        <h2 style={{ color: "#FFF", fontWeight: 800, marginBottom: 8 }}>Sessão não encontrada</h2>
-        <p style={{ color: "#AAA", marginBottom: 24 }}>Faz login para continuar</p>
+        <h2 style={{ color: "var(--fg-FFFFFF, #FFF)", fontWeight: 800, marginBottom: 8 }}>Sessão não encontrada</h2>
+        <p style={{ color: "var(--fg-AAAAAA, #AAA)", marginBottom: 24 }}>Faz login para continuar</p>
         <button onClick={() => navigate(createPageUrl("Login"))}
-          style={{ padding: "14px 40px", background: OR, border: "none", borderRadius: 13, color: "#FFF", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>
+          style={{ padding: "14px 40px", background: OR, border: "none", borderRadius: 13, color: "var(--on-FFFFFF, #FFF)", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>
           Ir para Login
         </button>
       </div>
@@ -209,33 +209,33 @@ export default function SetupProfile() {
           src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
           style={{ height: 56, objectFit: "contain", marginBottom: 28 }} alt="KANDU"
         />
-        <h2 style={{ color: "#FFF", fontWeight: 800, fontSize: 22, marginBottom: 6, textAlign: "center" }}>
+        <h2 style={{ color: "var(--fg-FFFFFF, #FFF)", fontWeight: 800, fontSize: 22, marginBottom: 6, textAlign: "center" }}>
           Como vais usar o KANDU?
         </h2>
-        <p style={{ color: "#888", fontSize: 13, marginBottom: 32, textAlign: "center" }}>{user.email}</p>
+        <p style={{ color: "var(--fg-888888, #888)", fontSize: 13, marginBottom: 32, textAlign: "center" }}>{user.email}</p>
 
         <div style={{ width: "100%", maxWidth: 420, display: "flex", flexDirection: "column", gap: 14, marginBottom: 32 }}>
           {PROFILES.map((p, idx) => (
             <div key={p.type} onClick={() => setActiveIndex(idx)}
               style={{
-                background: activeIndex === idx ? "#1f1d2b" : "#161520",
-                border: `2px solid ${activeIndex === idx ? OR : "#2a2836"}`,
+                background: activeIndex === idx ? "var(--bg-1F1D2B, #1f1d2b)" : "var(--bg-161520, #161520)",
+                border: `2px solid ${activeIndex === idx ? OR : "var(--bd-2A2836, #2a2836)"}`,
                 borderRadius: 16, padding: "20px 22px", display: "flex", alignItems: "center", gap: 18,
                 cursor: "pointer", transition: "all 0.15s",
                 boxShadow: activeIndex === idx ? "0 0 20px rgba(244,98,31,0.15)" : "none",
               }}>
               <span style={{ fontSize: 40 }}>{p.emoji}</span>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 17, color: "#FFF", marginBottom: 4 }}>{p.title}</div>
-                <div style={{ fontSize: 13, color: "#888" }}>{p.desc}</div>
+                <div style={{ fontWeight: 700, fontSize: 17, color: "var(--fg-FFFFFF, #FFF)", marginBottom: 4 }}>{p.title}</div>
+                <div style={{ fontSize: 13, color: "var(--fg-888888, #888)" }}>{p.desc}</div>
               </div>
               <div style={{
                 width: 22, height: 22, borderRadius: "50%",
-                border: `2px solid ${activeIndex === idx ? OR : "#444"}`,
+                border: `2px solid ${activeIndex === idx ? OR : "var(--bd-444444, #444)"}`,
                 background: activeIndex === idx ? OR : "transparent",
                 display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
               }}>
-                {activeIndex === idx && <span style={{ color: "#FFF", fontSize: 12, fontWeight: 900 }}>✓</span>}
+                {activeIndex === idx && <span style={{ color: "var(--fg-FFFFFF, #FFF)", fontSize: 12, fontWeight: 900 }}>✓</span>}
               </div>
             </div>
           ))}
@@ -244,7 +244,7 @@ export default function SetupProfile() {
         <button onClick={() => { setError(""); setStep(2); }}
           style={{
             width: "100%", maxWidth: 420, padding: 16, background: OR, border: "none",
-            borderRadius: 14, color: "#FFF", fontWeight: 700, fontSize: 17, cursor: "pointer",
+            borderRadius: 14, color: "var(--on-FFFFFF, #FFF)", fontWeight: 700, fontSize: 17, cursor: "pointer",
             boxShadow: "0 4px 20px rgba(244,98,31,0.3)",
           }}>
           Continuar como {PROFILES[activeIndex].title} →
@@ -262,17 +262,17 @@ export default function SetupProfile() {
           ← Voltar
         </button>
 
-        <h2 style={{ color: "#FFF", fontWeight: 800, fontSize: 22, margin: "0 0 6px" }}>
+        <h2 style={{ color: "var(--fg-FFFFFF, #FFF)", fontWeight: 800, fontSize: 22, margin: "0 0 6px" }}>
           {isEmployer ? "💼 Criar conta de Empregador" : "⛑️ Criar conta de Profissional"}
         </h2>
-        <p style={{ color: "#888", fontSize: 13, margin: "0 0 24px" }}>
+        <p style={{ color: "var(--fg-888888, #888)", fontSize: 13, margin: "0 0 24px" }}>
           {isEmployer
             ? "Estes dados são usados para validar a empresa e publicar anúncios."
             : "Estes dados são usados para te verificar e mostrar aos empregadores."}
         </p>
 
         {error && (
-          <div style={{ color: "#f87171", fontSize: 13, marginBottom: 16, padding: "10px 14px", background: "rgba(239,68,68,0.1)", borderRadius: 8, border: "1px solid rgba(239,68,68,0.3)" }}>
+          <div style={{ color: "var(--fg-F87171, #f87171)", fontSize: 13, marginBottom: 16, padding: "10px 14px", background: "rgba(239,68,68,0.1)", borderRadius: 8, border: "1px solid rgba(239,68,68,0.3)" }}>
             ⚠️ {error}
           </div>
         )}
@@ -287,12 +287,12 @@ export default function SetupProfile() {
                 <button key={opt.value} type="button" onClick={() => set("employer_type", opt.value)}
                   style={{
                     flex: 1, textAlign: "left", padding: "12px 14px", borderRadius: 12, cursor: "pointer",
-                    border: `2px solid ${form.employer_type === opt.value ? OR : "#2a2836"}`,
-                    background: form.employer_type === opt.value ? "#1f1d2b" : "#161520",
+                    border: `2px solid ${form.employer_type === opt.value ? OR : "var(--bd-2A2836, #2a2836)"}`,
+                    background: form.employer_type === opt.value ? "var(--bg-1F1D2B, #1f1d2b)" : "var(--bg-161520, #161520)",
                     fontFamily: "inherit",
                   }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#FFF" }}>{opt.label}</p>
-                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "#888" }}>{opt.desc}</p>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--fg-FFFFFF, #FFF)" }}>{opt.label}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--fg-888888, #888)" }}>{opt.desc}</p>
                 </button>
               ))}
             </div>
@@ -327,13 +327,13 @@ export default function SetupProfile() {
         {/* RGPD — bloqueia a criação da conta (#87) */}
         <label htmlFor="gdpr" style={{
           display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer",
-          background: "#161520", border: `1.5px solid ${errors.gdpr ? "#ef4444" : "#2a2836"}`,
+          background: "var(--bg-161520, #161520)", border: `1.5px solid ${errors.gdpr ? "var(--bd-EF4444, #ef4444)" : "var(--bd-2A2836, #2a2836)"}`,
           borderRadius: 12, padding: "12px 14px", margin: "6px 0 4px",
         }}>
           <input id="gdpr" type="checkbox" checked={form.gdpr}
             onChange={e => set("gdpr", e.target.checked)}
             style={{ width: 18, height: 18, accentColor: OR, marginTop: 1, flexShrink: 0 }} />
-          <span style={{ color: "#CCC", fontSize: 12, lineHeight: 1.5 }}>
+          <span style={{ color: "var(--fg-CCCCCC, #CCC)", fontSize: 12, lineHeight: 1.5 }}>
             Li e aceito os <strong style={{ color: OR }}>Termos de Utilização</strong> e a{" "}
             <strong style={{ color: OR }}>Política de Privacidade (RGPD)</strong>. Autorizo o tratamento
             dos meus dados para efeitos de intermediação de trabalho.
@@ -344,8 +344,8 @@ export default function SetupProfile() {
         <button onClick={handleConfirm} disabled={saving}
           style={{
             width: "100%", marginTop: 18, padding: 16,
-            background: saving ? "#555" : OR, border: "none", borderRadius: 14,
-            color: "#FFF", fontWeight: 700, fontSize: 17,
+            background: saving ? "var(--bg-555555, #555)" : OR, border: "none", borderRadius: 14,
+            color: "var(--on-FFFFFF, #FFF)", fontWeight: 700, fontSize: 17,
             cursor: saving ? "not-allowed" : "pointer",
             boxShadow: saving ? "none" : "0 4px 20px rgba(244,98,31,0.3)",
           }}>

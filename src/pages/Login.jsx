@@ -10,21 +10,21 @@ const DEV_USERS = [
     emoji: "👑",
     email: "ageofph@gmail.com",
     password: "Kandu2026!Dev",
-    color: "#F4621F",
+    color: "var(--fg-F4621F, #F4621F)",
   },
   {
     name: "Uri",
     emoji: "🚀",
     email: "urielramoss@gmail.com",
     password: "Kandu2026!Dev",
-    color: "#8b5cf6",
+    color: "var(--fg-8B5CF6, #8b5cf6)",
   },
   {
     name: "Luquinhas",
     emoji: "⚡",
     email: "lucasfelipesantos@gmail.com",
     password: "Kandu2026!Dev",
-    color: "#3b82f6",
+    color: "var(--fg-3B82F6, #3b82f6)",
   },
 ];
 
@@ -154,7 +154,7 @@ export default function Login() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), radial-gradient(800px 600px at 100% 0%, rgba(120,150,200,.06), transparent 55%), #0B0C0E",
+      background: "radial-gradient(900px 500px at 15% -8%, rgba(255,106,0,.13), transparent 55%), radial-gradient(800px 600px at 100% 0%, rgba(120,150,200,.06), transparent 55%), var(--bg-0B0C0E, #0B0C0E)",
       display: "flex", alignItems: "center", justifyContent: "center",
       padding: 20, fontFamily: "'Chakra Petch', sans-serif", position: "relative",
     }}>
@@ -179,10 +179,10 @@ export default function Login() {
           />
         </div>
 
-        <h1 style={{ textAlign: "center", color: "#fff", fontSize: 22, fontWeight: 700, margin: "0 0 6px" }}>
+        <h1 style={{ textAlign: "center", color: "var(--fg-FFFFFF, #fff)", fontSize: 22, fontWeight: 700, margin: "0 0 6px" }}>
           {mode === "login" ? "Bem-vindo de volta" : mode === "signup" ? "Criar conta" : "Recuperar password"}
         </h1>
-        <p style={{ textAlign: "center", color: "#666", fontSize: 13, margin: "0 0 24px" }}>
+        <p style={{ textAlign: "center", color: "var(--fg-666666, #666)", fontSize: 13, margin: "0 0 24px" }}>
           {mode === "login" ? "Entra na tua conta KANDU"
             : mode === "signup" ? "Começa a usar o KANDU hoje"
             : "Enviamos-te um link para definires uma nova password"}
@@ -192,7 +192,7 @@ export default function Login() {
         <button onClick={handleGoogle} disabled={googleLoading} style={{
           width: "100%", padding: "12px 16px", borderRadius: 12,
           border: "1px solid var(--hair)", background: "linear-gradient(180deg, var(--glass2), var(--glass))",
-          color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+          color: "var(--fg-FFFFFF, #fff)", display: "flex", alignItems: "center", justifyContent: "center",
           gap: 10, cursor: googleLoading ? "not-allowed" : "pointer",
           fontFamily: "inherit", fontSize: 14, fontWeight: 600, marginBottom: 16,
         }}>
@@ -207,38 +207,38 @@ export default function Login() {
 
         {/* Divider */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-          <div style={{ flex: 1, height: 1, background: "#2a2a3a" }} />
-          <span style={{ color: "#444", fontSize: 12 }}>ou</span>
-          <div style={{ flex: 1, height: 1, background: "#2a2a3a" }} />
+          <div style={{ flex: 1, height: 1, background: "var(--bg-2A2A3A, #2a2a3a)" }} />
+          <span style={{ color: "var(--fg-444444, #444)", fontSize: 12 }}>ou</span>
+          <div style={{ flex: 1, height: 1, background: "var(--bg-2A2A3A, #2a2a3a)" }} />
         </div>
 
         {error && (
-          <div style={{ color: "#f87171", fontSize: 13, marginBottom: 12, padding: "10px 14px", background: "rgba(239,68,68,0.1)", borderRadius: 8, border: "1px solid rgba(239,68,68,0.3)" }}>
+          <div style={{ color: "var(--fg-F87171, #f87171)", fontSize: 13, marginBottom: 12, padding: "10px 14px", background: "rgba(239,68,68,0.1)", borderRadius: 8, border: "1px solid rgba(239,68,68,0.3)" }}>
             ⚠️ {error}
           </div>
         )}
 
         {notice && (
-          <div style={{ color: "#4ADE80", fontSize: 13, marginBottom: 12, padding: "10px 14px", background: "rgba(34,197,94,0.1)", borderRadius: 8, border: "1px solid rgba(34,197,94,0.3)" }}>
+          <div style={{ color: "var(--fg-4ADE80, #4ADE80)", fontSize: 13, marginBottom: 12, padding: "10px 14px", background: "rgba(34,197,94,0.1)", borderRadius: 8, border: "1px solid rgba(34,197,94,0.3)" }}>
             ✅ {notice}
           </div>
         )}
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required
-            style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #333", background: "#1a1a24", color: "#fff", fontFamily: "inherit", fontSize: 14, outline: "none" }} />
+            style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid var(--bd-333333, #333)", background: "var(--bg-1A1A24, #1a1a24)", color: "var(--fg-FFFFFF, #fff)", fontFamily: "inherit", fontSize: 14, outline: "none" }} />
           {mode !== "reset" && (
             <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required
               minLength={mode === "signup" ? 8 : undefined}
-              style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #333", background: "#1a1a24", color: "#fff", fontFamily: "inherit", fontSize: 14, outline: "none" }} />
+              style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid var(--bd-333333, #333)", background: "var(--bg-1A1A24, #1a1a24)", color: "var(--fg-FFFFFF, #fff)", fontFamily: "inherit", fontSize: 14, outline: "none" }} />
           )}
           {mode === "signup" && (
-            <p style={{ color: "#555", fontSize: 11, margin: "-4px 0 0" }}>Mínimo 8 caracteres.</p>
+            <p style={{ color: "var(--fg-555555, #555)", fontSize: 11, margin: "-4px 0 0" }}>Mínimo 8 caracteres.</p>
           )}
           <button type="submit" disabled={loading} style={{
             padding: "13px", borderRadius: 10, border: "none",
-            background: loading ? "#555" : "linear-gradient(135deg, #F4621F, #d44a0a)",
-            color: "#fff", fontWeight: 700, fontSize: 15,
+            background: loading ? "var(--bg-555555, #555)" : "linear-gradient(135deg, var(--bg-F4621F, #F4621F), var(--bg-D44A0A, #d44a0a))",
+            color: "var(--on-FFFFFF, #fff)", fontWeight: 700, fontSize: 15,
             cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit",
             boxShadow: loading ? "none" : "0 4px 16px rgba(244,98,31,0.35)",
           }}>
@@ -253,29 +253,29 @@ export default function Login() {
         {mode !== "reset" && (
           <p style={{ textAlign: "center", marginTop: 12, fontSize: 13 }}>
             <span onClick={() => { setMode("reset"); setError(""); setNotice(""); }}
-              style={{ color: "#8A909A", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>
+              style={{ color: "var(--fg-8A909A, #8A909A)", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>
               Esqueci-me da password
             </span>
           </p>
         )}
 
-        <p style={{ textAlign: "center", marginTop: 18, color: "#666", fontSize: 14 }}>
+        <p style={{ textAlign: "center", marginTop: 18, color: "var(--fg-666666, #666)", fontSize: 14 }}>
           {mode === "login" ? "Não tens conta? " : mode === "signup" ? "Já tens conta? " : ""}
           <span onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setNotice(""); }}
-            style={{ color: "#F4621F", cursor: "pointer", fontWeight: 700 }}>
+            style={{ color: "var(--fg-F4621F, #F4621F)", cursor: "pointer", fontWeight: 700 }}>
             {mode === "login" ? "Criar conta" : "Entrar"}
           </span>
         </p>
 
         {/* ─── Botão Credenciados ─── */}
-        <div style={{ textAlign: "center", marginTop: 24, paddingTop: 16, borderTop: "1px solid #1e1e2e", position: "relative" }}>
+        <div style={{ textAlign: "center", marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--bd-1E1E2E, #1e1e2e)", position: "relative" }}>
           <button
             onClick={() => setShowDev(v => !v)}
             style={{
-              background: "none", border: "1px solid #2a2a3a", borderRadius: 8,
-              color: "#555", fontSize: 12, padding: "7px 18px", cursor: "pointer",
+              background: "none", border: "1px solid var(--bd-2A2A3A, #2a2a3a)", borderRadius: 8,
+              color: "var(--fg-555555, #555)", fontSize: 12, padding: "7px 18px", cursor: "pointer",
               fontFamily: "inherit", transition: "all 0.2s",
-              ...(showDev ? { borderColor: "#F4621F", color: "#F4621F" } : {}),
+              ...(showDev ? { borderColor: "var(--bd-F4621F, #F4621F)", color: "var(--fg-F4621F, #F4621F)" } : {}),
             }}
           >
             🔑 Credenciados
@@ -286,7 +286,7 @@ export default function Login() {
             <div style={{
               position: "absolute", bottom: "calc(100% + 10px)", left: "50%",
               transform: "translateX(-50%)",
-              background: "#13131a", border: "1.5px solid #2a2a3a",
+              background: "var(--bg-13131A, #13131a)", border: "1.5px solid var(--bd-2A2A3A, #2a2a3a)",
               borderRadius: 16, padding: "16px 14px",
               display: "flex", gap: 10, zIndex: 50,
               boxShadow: "0 -8px 32px rgba(0,0,0,0.6)",
@@ -295,8 +295,8 @@ export default function Login() {
               {/* seta do popover */}
               <div style={{
                 position: "absolute", bottom: -7, left: "50%", transform: "translateX(-50%)",
-                width: 12, height: 12, background: "#13131a",
-                border: "1.5px solid #2a2a3a", borderTop: "none", borderLeft: "none",
+                width: 12, height: 12, background: "var(--bg-13131A, #13131a)",
+                border: "1.5px solid var(--bd-2A2A3A, #2a2a3a)", borderTop: "none", borderLeft: "none",
                 rotate: "45deg",
               }} />
               {DEV_USERS.map(u => (
@@ -307,18 +307,18 @@ export default function Login() {
                   style={{
                     flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
                     gap: 6, padding: "12px 8px", borderRadius: 12,
-                    border: `1.5px solid ${devLoading === u.email ? u.color : "#2a2a3a"}`,
-                    background: devLoading === u.email ? `${u.color}22` : "rgba(255,255,255,0.03)",
+                    border: `1.5px solid ${devLoading === u.email ? u.color : "var(--bd-2A2A3A, #2a2a3a)"}`,
+                    background: devLoading === u.email ? `color-mix(in srgb, ${u.color} 13.33%, transparent)` : "rgba(255,255,255,0.03)",
                     cursor: devLoading ? "not-allowed" : "pointer",
                     fontFamily: "inherit", transition: "all 0.15s", opacity: devLoading && devLoading !== u.email ? 0.4 : 1,
                   }}
-                  onMouseEnter={e => { if (!devLoading) { e.currentTarget.style.borderColor = u.color; e.currentTarget.style.background = u.color + "22"; }}}
+                  onMouseEnter={e => { if (!devLoading) { e.currentTarget.style.borderColor = u.color; e.currentTarget.style.background = `color-mix(in srgb, ${u.color} 13.33%, transparent)`; }}}
                   onMouseLeave={e => { if (!devLoading && devLoading !== u.email) { e.currentTarget.style.borderColor = "#2a2a3a"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}}
                 >
                   <span style={{ fontSize: 26 }}>
                     {devLoading === u.email ? "⏳" : u.emoji}
                   </span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: devLoading === u.email ? u.color : "#ccc" }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: devLoading === u.email ? u.color : "var(--fg-CCCCCC, #ccc)" }}>
                     {devLoading === u.email ? "..." : u.name}
                   </span>
                 </button>

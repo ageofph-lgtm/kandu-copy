@@ -119,7 +119,7 @@ export default function VerificationPanel({ user, onUpdate }) {
             1 · Verificar telemóvel
           </span>
           {isVerified && (
-            <span style={{ marginLeft: "auto", background: "#22C55E22", color: "#22C55E", fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>
+            <span style={{ marginLeft: "auto", background: "#22C55E22", color: "var(--fg-22C55E, #22C55E)", fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>
               Confirmado
             </span>
           )}
@@ -131,7 +131,7 @@ export default function VerificationPanel({ user, onUpdate }) {
               value={phone} onChange={e => setPhone(e.target.value)} />
             {!otpSent ? (
               <button onClick={sendOtp}
-                style={{ background: "#3B82F6", color: "#fff", border: "none", borderRadius: 10, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                style={{ background: "var(--bg-3B82F6, #3B82F6)", color: "var(--fg-FFFFFF, #fff)", border: "none", borderRadius: 10, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                 Enviar código
               </button>
             ) : (
@@ -144,7 +144,7 @@ export default function VerificationPanel({ user, onUpdate }) {
                     Cancelar
                   </button>
                   <button onClick={confirmOtp} disabled={busy || otpInput.length < 6}
-                    style={{ flex: 2, background: otpInput.length === 6 ? "#22C55E" : "#333", color: "#fff", border: "none", borderRadius: 10, padding: "10px", fontWeight: 700, fontSize: 13, cursor: otpInput.length === 6 ? "pointer" : "not-allowed" }}>
+                    style={{ flex: 2, background: otpInput.length === 6 ? "var(--bg-22C55E, #22C55E)" : "var(--bg-333333, #333)", color: "var(--fg-FFFFFF, #fff)", border: "none", borderRadius: 10, padding: "10px", fontWeight: 700, fontSize: 13, cursor: otpInput.length === 6 ? "pointer" : "not-allowed" }}>
                     {busy ? "A confirmar..." : "Confirmar"}
                   </button>
                 </div>
@@ -165,7 +165,7 @@ export default function VerificationPanel({ user, onUpdate }) {
             2 · Documento de identidade
           </span>
           {isUltra && (
-            <span style={{ marginLeft: "auto", background: "#22C55E22", color: "#22C55E", fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>
+            <span style={{ marginLeft: "auto", background: "#22C55E22", color: "var(--fg-22C55E, #22C55E)", fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>
               Ultra Verificado
             </span>
           )}
@@ -184,7 +184,7 @@ export default function VerificationPanel({ user, onUpdate }) {
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 background: isVerified ? "#22C55E22" : "transparent",
-                color: isVerified ? "#22C55E" : "#555",
+                color: isVerified ? "var(--fg-22C55E, #22C55E)" : "var(--fg-555555, #555)",
                 border: `1px solid ${isVerified ? "#22C55E44" : "var(--hair)"}`,
                 borderRadius: 10, padding: "10px", fontWeight: 700, fontSize: 13,
                 cursor: isVerified && !uploading ? "pointer" : "not-allowed",

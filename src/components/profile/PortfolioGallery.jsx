@@ -69,7 +69,7 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <ImageIcon size={16} style={{ color: "#F26522" }} />
+          <ImageIcon size={16} style={{ color: "var(--fg-F26522, #F26522)" }} />
           <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text)" }}>
             {t(lang, "portfolio", "Portfólio")} ({images.length}/{MIN_PORTFOLIO_PHOTOS})
           </span>
@@ -80,7 +80,7 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
               onChange={handleFileUpload} style={{ display: "none" }} />
             <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
               style={{
-                display: "flex", alignItems: "center", gap: 6, background: "#F26522", color: "#fff",
+                display: "flex", alignItems: "center", gap: 6, background: "var(--bg-F26522, #F26522)", color: "var(--fg-FFFFFF, #fff)",
                 border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700,
                 cursor: isUploading ? "wait" : "pointer",
               }}>
@@ -96,7 +96,7 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
           background: "#F59E0B18", border: "1px solid #F59E0B44", borderRadius: 10,
           padding: "8px 12px", marginBottom: 10,
         }}>
-          <p style={{ margin: 0, color: "#F59E0B", fontSize: 12, fontWeight: 600 }}>
+          <p style={{ margin: 0, color: "var(--fg-F59E0B, #F59E0B)", fontSize: 12, fontWeight: 600 }}>
             📷 Adiciona mais {missing} foto(s) — o portfólio só fica completo com {MIN_PORTFOLIO_PHOTOS} fotos.
           </p>
         </div>
@@ -118,9 +118,9 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
               {canEdit && (
                 <button onClick={() => handleRemoveImage(url)} aria-label="Remover foto"
                   style={{
-                    position: "absolute", top: 4, right: 4, background: "#ef4444", border: "none",
+                    position: "absolute", top: 4, right: 4, background: "var(--bg-EF4444, #ef4444)", border: "none",
                     borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center",
-                    justifyContent: "center", cursor: "pointer", color: "#fff",
+                    justifyContent: "center", cursor: "pointer", color: "var(--fg-FFFFFF, #fff)",
                   }}>
                   <X size={11} />
                 </button>
@@ -129,7 +129,7 @@ export default function PortfolioGallery({ images = [], onUpdate, canEdit }) {
                 style={{
                   position: "absolute", bottom: 4, right: 4, background: "rgba(0,0,0,0.5)", border: "none",
                   borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center",
-                  justifyContent: "center", cursor: "pointer", color: "#fff",
+                  justifyContent: "center", cursor: "pointer", color: "var(--fg-FFFFFF, #fff)",
                 }}>
                 <ExternalLink size={11} />
               </button>

@@ -7,7 +7,7 @@ import {
   requireFields, isValidDateRange, validateFile, resizeImage, IMAGE_MIME_TYPES, DOC_MIME_TYPES,
 } from "@/lib/validation";
 
-const OR = "#FF6600";
+const OR = "var(--ac-FF6600, #FF6600)";
 
 const CATEGORIES = [
   "Pintura", "Eletricidade", "Canalização", "Alvenaria", "Azulejista", "Carpintaria",
@@ -142,12 +142,12 @@ export default function JobEditModal({ job, onClose, onSaved, mode = "edit" }) {
   const subtext = "var(--text2)", border = "var(--hair)";
   const input = (invalid) => ({
     width: "100%", padding: "11px 13px", borderRadius: 10,
-    border: `1.5px solid ${invalid ? "#EF4444" : border}`,
+    border: `1.5px solid ${invalid ? "var(--bd-EF4444, #EF4444)" : border}`,
     background: readOnly ? surface : bg, color: text, fontSize: 14,
     outline: "none", fontFamily: "inherit", boxSizing: "border-box",
   });
   const label = { display: "block", fontSize: 11, fontWeight: 700, color: subtext, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.6 };
-  const Err = ({ name }) => errors[name] ? <p style={{ color: "#EF4444", fontSize: 12, margin: "5px 0 0" }}>⚠️ {errors[name]}</p> : null;
+  const Err = ({ name }) => errors[name] ? <p style={{ color: "var(--fg-EF4444, #EF4444)", fontSize: 12, margin: "5px 0 0" }}>⚠️ {errors[name]}</p> : null;
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
@@ -169,7 +169,7 @@ export default function JobEditModal({ job, onClose, onSaved, mode = "edit" }) {
         {readOnly && (
           <div style={{ background: "#F59E0B15", borderBottom: "1px solid #F59E0B44", padding: "10px 20px", display: "flex", gap: 8, alignItems: "center" }}>
             {mode === "view" ? <Eye size={15} color="#F59E0B" /> : <Lock size={15} color="#F59E0B" />}
-            <p style={{ margin: 0, fontSize: 12, color: "#F59E0B", lineHeight: 1.5 }}>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--fg-F59E0B, #F59E0B)", lineHeight: 1.5 }}>
               {mode === "view"
                 ? "Modo de consulta."
                 : "O trabalho já começou — o anúncio não pode ser alterado. Fala com o profissional pelo chat para acertar detalhes."}
@@ -195,7 +195,7 @@ export default function JobEditModal({ job, onClose, onSaved, mode = "edit" }) {
                     cursor: readOnly ? "default" : "pointer",
                     border: `1px solid ${form.category === c ? OR : border}`,
                     background: form.category === c ? OR : "transparent",
-                    color: form.category === c ? "#fff" : subtext,
+                    color: form.category === c ? "var(--on-FFFFFF, #fff)" : subtext,
                   }}>
                   {c}
                 </button>
@@ -250,7 +250,7 @@ export default function JobEditModal({ job, onClose, onSaved, mode = "edit" }) {
                       cursor: readOnly ? "default" : "pointer",
                       border: `1px solid ${form.price_type === o.v ? OR : border}`,
                       background: form.price_type === o.v ? OR : "transparent",
-                      color: form.price_type === o.v ? "#fff" : subtext,
+                      color: form.price_type === o.v ? "var(--on-FFFFFF, #fff)" : subtext,
                     }}>
                     {o.l}
                   </button>
@@ -270,7 +270,7 @@ export default function JobEditModal({ job, onClose, onSaved, mode = "edit" }) {
                   {!readOnly && (
                     <button type="button" onClick={() => setPhotos(prev => prev.filter((_, idx) => idx !== i))}
                       aria-label="Remover foto"
-                      style={{ position: "absolute", top: 4, right: 4, background: "#EF4444", border: "none", borderRadius: "50%", width: 20, height: 20, color: "#fff", cursor: "pointer", fontSize: 12, lineHeight: 1 }}>
+                      style={{ position: "absolute", top: 4, right: 4, background: "var(--bg-EF4444, #EF4444)", border: "none", borderRadius: "50%", width: 20, height: 20, color: "var(--fg-FFFFFF, #fff)", cursor: "pointer", fontSize: 12, lineHeight: 1 }}>
                       ×
                     </button>
                   )}
@@ -278,7 +278,7 @@ export default function JobEditModal({ job, onClose, onSaved, mode = "edit" }) {
               ))}
               {!readOnly && photos.length < 9 && (
                 <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
-                  style={{ aspectRatio: "1", borderRadius: 10, border: `2px dashed ${errors.photos ? "#EF4444" : OR}`, background: "transparent", color: OR, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+                  style={{ aspectRatio: "1", borderRadius: 10, border: `2px dashed ${errors.photos ? "var(--bd-EF4444, #EF4444)" : OR}`, background: "transparent", color: OR, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
                   {uploading ? <Loader2 size={18} className="animate-spin" /> : "+"}
                 </button>
               )}
@@ -300,7 +300,7 @@ export default function JobEditModal({ job, onClose, onSaved, mode = "edit" }) {
                   {!readOnly && (
                     <button type="button" onClick={() => setTechDocs(prev => prev.filter((_, idx) => idx !== i))}
                       aria-label="Remover documento"
-                      style={{ background: "#EF4444", border: "none", borderRadius: "50%", width: 22, height: 22, color: "#fff", cursor: "pointer", fontSize: 12, lineHeight: 1 }}>
+                      style={{ background: "var(--bg-EF4444, #EF4444)", border: "none", borderRadius: "50%", width: 22, height: 22, color: "var(--fg-FFFFFF, #fff)", cursor: "pointer", fontSize: 12, lineHeight: 1 }}>
                       ×
                     </button>
                   )}
@@ -329,7 +329,7 @@ export default function JobEditModal({ job, onClose, onSaved, mode = "edit" }) {
               </button>
             )}
             <button onClick={() => save(job.status === "draft")} disabled={saving}
-              style={{ flex: 1, padding: 13, background: saving ? "#555" : OR, border: "none", borderRadius: 12, color: "#fff", fontWeight: 700, fontSize: 14, cursor: saving ? "not-allowed" : "pointer" }}>
+              style={{ flex: 1, padding: 13, background: saving ? "var(--bg-555555, #555)" : OR, border: "none", borderRadius: 12, color: "var(--on-FFFFFF, #fff)", fontWeight: 700, fontSize: 14, cursor: saving ? "not-allowed" : "pointer" }}>
               {saving ? "A guardar..." : job.status === "draft" ? "Publicar 🚀" : "Guardar ✓"}
             </button>
           </div>

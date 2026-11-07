@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import { getXPLevel } from "@/lib/xp";
 import { TrendingUp, Briefcase, Star, Calendar as CalIcon, ArrowLeft, Users } from "lucide-react";
 
-const OR = "#FF6600";
+const OR = "var(--ac-FF6600, #FF6600)";
 
 const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
 const daysAgo = (n) => { const x = startOfDay(new Date()); x.setDate(x.getDate() - n); return x; };
@@ -83,10 +83,10 @@ export default function Dashboard() {
     if (isWorker) return null;
     const byStatus = (s) => applications.filter(a => a.status === s);
     return [
-      { key: "pending",  label: "Por responder", desc: "Candidaturas à espera da tua decisão", items: byStatus("pending"),  color: "#F59E0B" },
-      { key: "accepted", label: "Aceites",       desc: "Profissionais a trabalhar contigo",    items: byStatus("accepted"), color: "#22C55E" },
-      { key: "rejected", label: "Recusadas",     desc: "Candidaturas que não seguiram",        items: byStatus("rejected"), color: "#8A909A" },
-      { key: "completed",label: "Concluídas",    desc: "Obras já finalizadas e avaliadas",     items: byStatus("completed"),color: "#3B82F6" },
+      { key: "pending",  label: "Por responder", desc: "Candidaturas à espera da tua decisão", items: byStatus("pending"),  color: "var(--fg-F59E0B, #F59E0B)" },
+      { key: "accepted", label: "Aceites",       desc: "Profissionais a trabalhar contigo",    items: byStatus("accepted"), color: "var(--fg-22C55E, #22C55E)" },
+      { key: "rejected", label: "Recusadas",     desc: "Candidaturas que não seguiram",        items: byStatus("rejected"), color: "var(--fg-8A909A, #8A909A)" },
+      { key: "completed",label: "Concluídas",    desc: "Obras já finalizadas e avaliadas",     items: byStatus("completed"),color: "var(--fg-3B82F6, #3B82F6)" },
     ];
   }, [applications, isWorker]);
 
@@ -96,10 +96,10 @@ export default function Dashboard() {
     const events = [];
     jobs.forEach(j => {
       if (j.start_date && new Date(j.start_date) >= now) {
-        events.push({ id: j.id + "-s", jobId: j.id, date: new Date(j.start_date), label: "Início", title: j.title, color: "#22C55E" });
+        events.push({ id: j.id + "-s", jobId: j.id, date: new Date(j.start_date), label: "Início", title: j.title, color: "var(--fg-22C55E, #22C55E)" });
       }
       if (j.end_date && new Date(j.end_date) >= now) {
-        events.push({ id: j.id + "-e", jobId: j.id, date: new Date(j.end_date), label: "Fim", title: j.title, color: "#EF4444" });
+        events.push({ id: j.id + "-e", jobId: j.id, date: new Date(j.end_date), label: "Fim", title: j.title, color: "var(--fg-EF4444, #EF4444)" });
       }
     });
     return events.sort((a, b) => a.date - b.date).slice(0, 8);
@@ -142,7 +142,7 @@ export default function Dashboard() {
         {/* #11 — ganhos / gastos por período */}
         <div style={card}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <TrendingUp size={17} color={OR} />
+            <TrendingUp size={17} style={{ color: OR }} />
             <span style={{ fontWeight: 800, fontSize: 15, color: text }}>
               {isWorker ? "Ganhos" : "Investimento em obras"}
             </span>
@@ -171,15 +171,15 @@ export default function Dashboard() {
         {/* Volume de obras */}
         <div style={card}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <Briefcase size={17} color={OR} />
+            <Briefcase size={17} style={{ color: OR }} />
             <span style={{ fontWeight: 800, fontSize: 15, color: text }}>Volume de obras</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {[
               { label: isWorker ? "Em curso" : "Em curso",       value: stats.active,          color: OR },
-              { label: "Aguarda avaliação",                      value: stats.awaiting,        color: "#A855F7" },
-              { label: isWorker ? "Candidaturas" : "Publicadas", value: isWorker ? applications.filter(a => a.status === "pending").length : stats.open, color: "#3B82F6" },
-              { label: "Concluídas",                             value: stats.allTime.count,   color: "#22C55E" },
+              { label: "Aguarda avaliação",                      value: stats.awaiting,        color: "var(--fg-A855F7, #A855F7)" },
+              { label: isWorker ? "Candidaturas" : "Publicadas", value: isWorker ? applications.filter(a => a.status === "pending").length : stats.open, color: "var(--fg-3B82F6, #3B82F6)" },
+              { label: "Concluídas",                             value: stats.allTime.count,   color: "var(--fg-22C55E, #22C55E)" },
             ].map(s => (
               <div key={s.label} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
@@ -196,7 +196,7 @@ export default function Dashboard() {
         {!isWorker && requestBuckets && (
           <div style={card}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <Users size={17} color={OR} />
+              <Users size={17} style={{ color: OR }} />
               <span style={{ fontWeight: 800, fontSize: 15, color: text }}>Requests (candidaturas)</span>
             </div>
             <p style={{ margin: "0 0 12px", fontSize: 12, color: subtext, lineHeight: 1.5 }}>
@@ -216,7 +216,7 @@ export default function Dashboard() {
                     <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: text }}>{b.label}</p>
                     <p style={{ margin: "2px 0 0", fontSize: 11, color: subtext }}>{b.desc}</p>
                   </div>
-                  <span style={{ background: b.color + "22", color: b.color, borderRadius: 20, padding: "3px 11px", fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
+                  <span style={{ background: `color-mix(in srgb, ${b.color} 13.33%, transparent)`, color: b.color, borderRadius: 20, padding: "3px 11px", fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
                     {b.items.length}
                   </span>
                 </button>
@@ -228,7 +228,7 @@ export default function Dashboard() {
         {/* Reputação */}
         <div style={card}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <Star size={17} color={OR} />
+            <Star size={17} style={{ color: OR }} />
             <span style={{ fontWeight: 800, fontSize: 15, color: text }}>Reputação</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
@@ -248,7 +248,7 @@ export default function Dashboard() {
         {/* #200 — próximas datas das obras */}
         <div style={card}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <CalIcon size={17} color={OR} />
+            <CalIcon size={17} style={{ color: OR }} />
             <span style={{ fontWeight: 800, fontSize: 15, color: text, flex: 1 }}>Próximas datas</span>
             <button onClick={() => navigate(createPageUrl("Calendar"))}
               style={{ background: "none", border: "none", color: OR, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
@@ -259,7 +259,7 @@ export default function Dashboard() {
             <p style={{ margin: 0, color: subtext, fontSize: 13 }}>Sem datas agendadas.</p>
           ) : upcoming.map(ev => (
             <div key={ev.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderTop: `1px solid ${border}` }}>
-              <span style={{ background: ev.color + "22", color: ev.color, borderRadius: 8, padding: "3px 9px", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+              <span style={{ background: `color-mix(in srgb, ${ev.color} 13.33%, transparent)`, color: ev.color, borderRadius: 8, padding: "3px 9px", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
                 {ev.label}
               </span>
               <span style={{ flex: 1, fontSize: 13, color: text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
