@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { supabase } from "@/api/supabaseClient";
 import { Job, User } from "@/api/entities";
 import { useTheme } from "@/lib/ThemeContext";
+import { categoryColor } from "@/lib/categoryColors";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -442,7 +443,7 @@ function WorkerHome({ user, isDark }) {
             <div className="k-em-carousel" aria-label="Obras perto de ti">
               {filteredJobs.slice(0, 15).map(job => (
                 <button key={job.id} type="button" className="k-em-card" onClick={() => handleJobClick(job)}>
-                  <span className="k-em-card__dot">{(job.category || "?").charAt(0)}</span>
+                  <span className="k-em-card__dot" style={{ background: categoryColor(job.category) }}>{(job.category || "?").charAt(0)}</span>
                   <span className="k-em-card__body">
                     <p className="k-em-card__t">{job.title}</p>
                     <p className="k-em-card__s">
