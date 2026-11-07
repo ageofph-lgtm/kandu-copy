@@ -986,8 +986,8 @@ export default function MyJobs() {
       <div style={{ background: surface, borderBottom: `1px solid ${border}`, padding: "50px 20px 14px" }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
           <img src={isDark
-            ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
-            : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"}
+            ? "/brand/kandu-wordmark-dark.png"
+            : "/brand/kandu-wordmark-light.png"}
             alt="KANDU" style={{ height: 24, objectFit: "contain" }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

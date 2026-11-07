@@ -235,7 +235,7 @@ export default function Notifications() {
     <div style={{background:bg,minHeight:"100vh",paddingBottom:80}}>
       {/* Logo topo */}
       <div style={{paddingTop:50,display:"flex",justifyContent:"center"}}>
-        <img src={isDark?"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png":"https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png"} style={{width:40, background:isDark?"white":"transparent", borderRadius:8, padding:isDark?2:0}} alt="" />
+        <img src={isDark?"/brand/kandu-icon-dark.png":"/brand/kandu-icon-light.png"} style={{width:40, background:isDark?"white":"transparent", borderRadius:8, padding:isDark?2:0}} alt="" />
       </div>
 
       {/* Título + badge */}

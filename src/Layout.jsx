@@ -3,7 +3,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Notification, User as UserEntity } from "@/api/entities";
 import { supabase } from "@/api/supabaseClient";
 import { useTheme } from "@/lib/ThemeContext";
-import ThemePicker from "@/components/ThemePicker";
+import ThemePicker, { ThemeGrid } from "@/components/ThemePicker";
+import { Sun, Moon, Flame } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   MapPin,
@@ -57,9 +58,11 @@ const adminNavigationItems = [
 export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark, toggleTheme, isEmber } = useTheme();
+  const ThemeNavIcon = isEmber ? Flame : (isDark ? Moon : Sun);
   const { lang } = useLanguage();
   const [user, setUser] = useState(null);
+  const [themeOpen, setThemeOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState({ chat: 0, applications: 0 });
   const prevAppCount = React.useRef(0);
 
@@ -81,11 +84,11 @@ export default function Layout({ children }) {
   const subtext = "var(--text2)";
   const border = "var(--hair)";
   const logoH = isDark
-    ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
-    : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png";
+    ? "/brand/kandu-wordmark-dark.png"
+    : "/brand/kandu-wordmark-light.png";
   const logoIcon = isDark
-    ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/f0a8b458b_Gemini_Generated_Image_nn24elnn24elnn24-Photoroom.png"
-    : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/06b6bd11a_Gemini_Generated_Image_4.png";
+    ? "/brand/kandu-icon-dark.png"
+    : "/brand/kandu-icon-light.png";
   const sidebarBg = isDark ? "var(--base)" : "var(--base2)";
   const bottomNavBg = "var(--base)";
 
@@ -378,7 +381,23 @@ export default function Layout({ children }) {
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Profile")?700:400}}>{t(lang,"profile")}</span>
 
         </Link>
+        <button type="button" onClick={() => setThemeOpen(o => !o)} aria-label="Tema" aria-expanded={themeOpen}
+          className={`k-nav-item${themeOpen ? " active" : ""}`}
+          style={{background:"none",border:"none",cursor:"pointer",font:"inherit"}}>
+          <ThemeNavIcon size={22} />
+          <span style={{fontSize:10,marginTop:2,fontWeight:themeOpen?700:400}}>Tema</span>
+        </button>
       </nav>
+      {themeOpen && (
+        <div className="md:hidden" style={{position:"fixed",inset:0,zIndex:60}} onClick={() => setThemeOpen(false)}>
+          <div className="k-sheet" onClick={e => e.stopPropagation()}
+            style={{position:"absolute",left:12,right:12,bottom:"calc(84px + env(safe-area-inset-bottom))",borderRadius:20,padding:14,
+                    background:"var(--bg-FFFFFF, var(--base))",border:"1px solid var(--hair)",boxShadow:"0 18px 50px -12px rgba(0,0,0,.45)"}}>
+            <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:"var(--text2)",textTransform:"uppercase",letterSpacing:.6}}>Tema</p>
+            <ThemeGrid onPick={() => setThemeOpen(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

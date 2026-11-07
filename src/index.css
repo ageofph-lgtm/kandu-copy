@@ -750,6 +750,64 @@ html[data-theme="ember-dark"] .leaflet-control-attribution {
   background: rgba(30,23,18,.80) !important;
 }
 
+
+/* ── Janelas que abrem (modais, folhas, filtros, menus) no Ember ──
+   O vidro das superfícies normais é translúcido demais para uma janela por
+   cima de conteúdo: aqui o vidro fica quase opaco, com desfoque forte. */
+html[data-theme="ember-light"] { --sheet: rgba(255,248,243,.94); --sheet-edge: rgba(255,255,255,.9); }
+html[data-theme="ember-dark"]  { --sheet: rgba(26,19,15,.95);    --sheet-edge: rgba(255,236,224,.12); }
+html[data-theme^="ember"] .k-sheet,
+html[data-theme^="ember"] [role="dialog"],
+html[data-theme^="ember"] [role="alertdialog"],
+html[data-theme^="ember"] [role="listbox"],
+html[data-theme^="ember"] [role="menu"],
+html[data-theme^="ember"] [data-radix-popper-content-wrapper] > * {
+  background: var(--sheet) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.5);
+  backdrop-filter: blur(28px) saturate(1.5);
+  border: 1px solid var(--sheet-edge) !important;
+  color: var(--text);
+}
+html[data-theme^="ember"] .k-sheet input,
+html[data-theme^="ember"] .k-sheet textarea,
+html[data-theme^="ember"] .k-sheet select,
+html[data-theme^="ember"] [role="dialog"] input,
+html[data-theme^="ember"] [role="dialog"] textarea {
+  background: var(--field, rgba(255,255,255,.7)) !important;
+  color: var(--text) !important;
+}
+html[data-theme="ember-light"] { --field: rgba(255,255,255,.85); }
+html[data-theme="ember-dark"]  { --field: rgba(255,236,224,.06); }
+html[data-theme^="ember"] .k-sheet input::placeholder,
+html[data-theme^="ember"] .k-sheet textarea::placeholder { color: var(--text3, #9A8478); opacity: 1; }
+
+
+/* ── Ecrãs de entrada (Login, Boas-vindas, Criar perfil) no Ember claro ──
+   Nos temas Titânio estes ecrãs são sempre escuros; no Ember claro passam a
+   pêssego com vidro, e o texto branco fixo vira tinta escura. */
+html[data-theme="ember-light"] .k-auth {
+  background: transparent !important;
+  --bg-0B0C0E: transparent; --bg-111016: transparent;
+  --bg-13131A: rgba(255,255,255,.62); --bg-1A1A24: rgba(255,255,255,.62);
+  --bg-161520: rgba(255,255,255,.62); --bg-1F1D2B: rgba(255,255,255,.72);
+  --bg-2A2A3A: rgba(255,255,255,.8);
+  --bd-2A2A3A: rgba(60,30,15,.12); --bd-2A2836: rgba(60,30,15,.12); --bd-333333: rgba(60,30,15,.12);
+  --fg-FFFFFF: #1F1410; --fg-F1F3F6: #1F1410; --fg-CCCCCC: #3D2A20;
+  --fg-AAAAAA: #6B5446; --fg-888888: #7A5A4A; --fg-8A909A: #7A5A4A;
+  --fg-666666: #8A6A58; --fg-555555: #8A6A58; --fg-444444: #9A8478;
+  color: #1F1410;
+}
+html[data-theme="ember-light"] .k-auth > div[style*="position: absolute"] { opacity: .06 !important; }
+html[data-theme="ember-light"] .k-auth-card,
+html[data-theme="ember-light"] .k-auth .k-sheet {
+  background: rgba(255,250,246,.72) !important;
+  border: 1px solid rgba(255,255,255,.9) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
+  box-shadow: 0 20px 50px -20px rgba(120,50,15,.35);
+}
+html[data-theme="ember-light"] .k-auth input { background: rgba(255,255,255,.85) !important; color: #1F1410 !important; border-color: rgba(60,30,15,.14) !important; }
+html[data-theme="ember-light"] .k-auth input::placeholder { color: #9A8478 !important; }
+
 /* Ember · mapeamento das cores fixas (gerado). Nos temas Claro/Escuro
    estas variáveis não existem e cada cor mantém o valor original. */
 html[data-theme="ember-light"] {

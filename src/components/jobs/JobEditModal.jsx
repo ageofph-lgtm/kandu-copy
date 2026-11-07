@@ -152,7 +152,7 @@ export default function JobEditModal({ job, onClose, onSaved, mode = "edit" }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.65)" }} onClick={onClose} />
-      <div style={{
+      <div className="k-sheet" style={{
         position: "relative", zIndex: 1, background: bg, width: "100%", maxWidth: 540,
         borderRadius: "20px 20px 0 0", maxHeight: "92vh", display: "flex", flexDirection: "column",
       }}>

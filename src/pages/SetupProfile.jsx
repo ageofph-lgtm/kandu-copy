@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import KanduLogo from "@/components/KanduLogo";
 import { supabase } from "@/api/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -189,7 +190,7 @@ export default function SetupProfile() {
 
   if (!user) {
     return (
-      <div style={page}>
+      <div className="k-auth" style={page}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>🔒</div>
         <h2 style={{ color: "var(--fg-FFFFFF, #FFF)", fontWeight: 800, marginBottom: 8 }}>Sessão não encontrada</h2>
         <p style={{ color: "var(--fg-AAAAAA, #AAA)", marginBottom: 24 }}>Faz login para continuar</p>
@@ -204,9 +205,8 @@ export default function SetupProfile() {
   // ── PASSO 1 — escolher tipo de perfil ──
   if (step === 1) {
     return (
-      <div style={page}>
-        <img
-          src="https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png"
+      <div className="k-auth" style={page}>
+        <KanduLogo onDark
           style={{ height: 56, objectFit: "contain", marginBottom: 28 }} alt="KANDU"
         />
         <h2 style={{ color: "var(--fg-FFFFFF, #FFF)", fontWeight: 800, fontSize: 22, marginBottom: 6, textAlign: "center" }}>
