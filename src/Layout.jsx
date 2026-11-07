@@ -76,7 +76,7 @@ export default function Layout({ children }) {
     navigate(createPageUrl("Login"), { replace: true });
   });
   const bg = isDark ? "var(--base)" : "var(--base2)";
-  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const surface = isDark ? "var(--bg-2A2A2A, #2A2A2A)" : "var(--bg-F5F5F5, #F5F5F5)";
   const text = "var(--text)";
   const subtext = "var(--text2)";
   const border = "var(--hair)";
@@ -309,7 +309,7 @@ export default function Layout({ children }) {
             </nav>
           </div>
           <div style={{borderTop:`1px solid ${border}`, padding:"12px 16px", display:"flex", alignItems:"center", gap:10}}>
-            <div style={{width:36, height:36, borderRadius:"50%", background:"#FF6600", display:"flex", alignItems:"center", justifyContent:"center", color:"#FFF", fontWeight:700, fontSize:16, flexShrink:0}}>
+            <div style={{width:36, height:36, borderRadius:"50%", background:"var(--bg-FF6600, #FF6600)", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--on-FFFFFF, #FFF)", fontWeight:700, fontSize:16, flexShrink:0}}>
               {user?.full_name?.charAt(0) || "U"}
             </div>
             <div>
@@ -341,7 +341,7 @@ export default function Layout({ children }) {
           <div style={{position:"relative"}}>
             <FileText size={22} />
             {unreadNotifications.applications > 0 && (
-              <span style={{position:"absolute",top:-6,right:-8,background:"#FF6600",color:"#FFF",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
+              <span style={{position:"absolute",top:-6,right:-8,background:"var(--bg-FF6600, #FF6600)",color:"var(--on-FFFFFF, #FFF)",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
                 {unreadNotifications.applications > 9 ? '9+' : unreadNotifications.applications}
               </span>
             )}
@@ -354,7 +354,7 @@ export default function Layout({ children }) {
           <div style={{position:"relative"}}>
             <Bell size={22} />
             {(unreadNotifications.applications + unreadNotifications.chat) > 0 && (
-              <span style={{position:"absolute",top:-6,right:-8,background:"#EF4444",color:"#FFF",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
+              <span style={{position:"absolute",top:-6,right:-8,background:"var(--bg-EF4444, #EF4444)",color:"var(--fg-FFFFFF, #FFF)",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
                 {(unreadNotifications.applications + unreadNotifications.chat) > 9 ? "9+" : (unreadNotifications.applications + unreadNotifications.chat)}
               </span>
             )}
@@ -362,11 +362,11 @@ export default function Layout({ children }) {
           <span style={{fontSize:10,marginTop:2}}>{t(lang,"notifications","Avisos")}</span>
         </Link>
 
-        <Link to={createPageUrl("Chat")} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Chat")?"#FF6600":"#AAAAAA",textDecoration:"none",flex:1,padding:"8px 0"}}>
+        <Link to={createPageUrl("Chat")} className={location.pathname===createPageUrl("Chat")?"active":""} style={{display:"flex",flexDirection:"column",alignItems:"center",color:location.pathname===createPageUrl("Chat")?"var(--fg-FF6600, #FF6600)":"var(--fg-AAAAAA, #AAAAAA)",textDecoration:"none",flex:1,padding:"8px 0"}}>
           <div style={{position:"relative"}}>
             <MessageCircle size={22} />
             {unreadNotifications.chat > 0 && (
-              <span style={{position:"absolute",top:-6,right:-8,background:"#FF6600",color:"#FFF",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
+              <span style={{position:"absolute",top:-6,right:-8,background:"var(--bg-FF6600, #FF6600)",color:"var(--on-FFFFFF, #FFF)",borderRadius:"50%",minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
                 {unreadNotifications.chat > 9 ? '9+' : unreadNotifications.chat}
               </span>
             )}

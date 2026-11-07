@@ -24,8 +24,8 @@ const DEFAULT_FILTERS = {
 function FilterChip({ label, active, onClick, color = "#F4621F" }) {
   return (
     <button onClick={onClick} style={{
-      padding: "6px 14px", borderRadius: 20, border: `1.5px solid ${active ? color : "#333"}`,
-      background: active ? color : "transparent", color: active ? "#fff" : "#aaa",
+      padding: "6px 14px", borderRadius: 20, border: `1.5px solid ${active ? color : "var(--bd-333333, #333)"}`,
+      background: active ? color : "transparent", color: active ? "var(--fg-FFFFFF, #fff)" : "var(--fg-AAAAAA, #aaa)",
       fontSize: 13, fontWeight: active ? 700 : 400, cursor: "pointer",
       transition: "all 0.15s", whiteSpace: "nowrap", flexShrink: 0,
     }}>{label}</button>
@@ -37,7 +37,7 @@ function WorkerCard({ worker, navigate, isDark }) {
   const cardBorder = "var(--hair)";
   const statBg = "var(--base)";
   const statText = "var(--text)";
-  const subC = isDark ? "#888" : "#666";
+  const subC = isDark ? "var(--fg-888888, #888)" : "var(--fg-666666, #666)";
   const initials = (worker.full_name || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
   const typeColor = "#F4621F";
   const xpLevel = worker.xp >= 5000 ? "Mestre" : worker.xp >= 2000 ? "Avançado" : worker.xp >= 500 ? "Intermédio" : "Iniciante";
@@ -59,7 +59,7 @@ function WorkerCard({ worker, navigate, isDark }) {
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{
           width: 54, height: 54, borderRadius: "50%", flexShrink: 0,
-          background: typeColor + "33", border: `2.5px solid ${typeColor}55`,
+          background: `color-mix(in srgb, ${typeColor} 20.00%, transparent)`, border: `2.5px solid color-mix(in srgb, ${typeColor} 33.33%, transparent)`,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 20, fontWeight: 900, color: typeColor, overflow: "hidden",
         }}>
@@ -72,13 +72,13 @@ function WorkerCard({ worker, navigate, isDark }) {
             <span style={{ fontWeight: 800, fontSize: 15, color: statText, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
               {worker.full_name || "Profissional"}
             </span>
-            {worker.verified && <span style={{ fontSize: 11, background: "#22c55e22", color: "#22c55e", padding: "1px 7px", borderRadius: 10, fontWeight: 700 }}>✓ Verificado</span>}
+            {worker.verified && <span style={{ fontSize: 11, background: "#22c55e22", color: "var(--fg-22C55E, #22c55e)", padding: "1px 7px", borderRadius: 10, fontWeight: 700 }}>✓ Verificado</span>}
           </div>
           {worker.city && <p style={{ margin: "3px 0 0", fontSize: 12, color: subC }}>📍 {worker.city}</p>}
         </div>
         {/* Rating destaque */}
         <div style={{ textAlign: "center", flexShrink: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: "#F59E0B" }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: "var(--fg-F59E0B, #F59E0B)" }}>
             {worker.rating ? Number(worker.rating).toFixed(1) : "—"}
           </div>
           <div style={{ fontSize: 10, color: subC }}>⭐ rating</div>
@@ -89,9 +89,9 @@ function WorkerCard({ worker, navigate, isDark }) {
       {worker.skills?.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {worker.skills.slice(0, 4).map((s, i) => (
-            <span key={i} style={{ background: "#F4621F18", color: "#F4621F", padding: "3px 10px", borderRadius: 12, fontSize: 12, fontWeight: 600 }}>{s}</span>
+            <span key={i} style={{ background: "#F4621F18", color: "var(--fg-F4621F, #F4621F)", padding: "3px 10px", borderRadius: 12, fontSize: 12, fontWeight: 600 }}>{s}</span>
           ))}
-          {worker.skills.length > 4 && <span style={{ color: "#666", fontSize: 12, padding: "3px 6px" }}>+{worker.skills.length - 4}</span>}
+          {worker.skills.length > 4 && <span style={{ color: "var(--fg-666666, #666)", fontSize: 12, padding: "3px 6px" }}>+{worker.skills.length - 4}</span>}
         </div>
       )}
 
@@ -109,13 +109,13 @@ function WorkerCard({ worker, navigate, isDark }) {
             <div style={{ fontSize: 10, color: subC, marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
-        <div style={{ flex: 1, background: "#111016", borderRadius: 10, padding: "7px 6px", textAlign: "center" }}>
+        <div style={{ flex: 1, background: "var(--bg-111016, #111016)", borderRadius: 10, padding: "7px 6px", textAlign: "center" }}>
           <div style={{ fontWeight: 800, fontSize: 14, color: levelColor }}>{xpLevel}</div>
           <div style={{ fontSize: 10, color: subC, marginTop: 2 }}>Nível</div>
         </div>
       </div>
 
-      <div style={{ fontSize: 12, color: "#F4621F", fontWeight: 600, textAlign: "right" }}>
+      <div style={{ fontSize: 12, color: "var(--fg-F4621F, #F4621F)", fontWeight: 600, textAlign: "right" }}>
         Ver perfil completo →
       </div>
     </div>
@@ -208,7 +208,7 @@ export default function Workers() {
   const surface = "var(--surface2)";
   const border = "var(--hair)";
   const text = "var(--text)";
-  const subtext = isDark ? "#888" : "#666666";
+  const subtext = isDark ? "var(--fg-888888, #888)" : "var(--fg-666666, #666666)";
 
   return (
     <div style={{ minHeight: "100vh", background: bg, paddingBottom: 80, overflowX: "hidden", width: "100%", boxSizing: "border-box" }}>
@@ -216,7 +216,7 @@ export default function Workers() {
       {/* Header */}
       <div style={{ background: surface, padding: "50px 16px 16px", borderBottom: `1px solid ${border}`, width: "100%", boxSizing: "border-box" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", color: "#F4621F", fontSize: 22, cursor: "pointer", padding: 0 }}>←</button>
+          <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", color: "var(--fg-F4621F, #F4621F)", fontSize: 22, cursor: "pointer", padding: 0 }}>←</button>
           <div style={{ flex: 1 }}>
             <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: text }}>🔍 Encontrar Profissionais</h1>
             <p style={{ margin: "4px 0 0", fontSize: 13, color: subtext }}>
@@ -227,15 +227,15 @@ export default function Workers() {
             onClick={() => setShowFilters(v => !v)}
             style={{
               padding: "9px 14px", borderRadius: 12, cursor: "pointer",
-              background: hasActiveFilters ? "#F4621F" : surface,
-              border: `1.5px solid ${hasActiveFilters ? "#F4621F" : border}`,
-              color: hasActiveFilters ? "#fff" : subtext,
+              background: hasActiveFilters ? "var(--bg-F4621F, #F4621F)" : surface,
+              border: `1.5px solid ${hasActiveFilters ? "var(--bd-F4621F, #F4621F)" : border}`,
+              color: hasActiveFilters ? "var(--on-FFFFFF, #fff)" : subtext,
               display: "flex", alignItems: "center", gap: 6, fontWeight: 600, fontSize: 13,
             }}
           >
             <SlidersHorizontal size={16} />
             Filtros
-            {hasActiveFilters && <span style={{ background: "#fff", color: "#F4621F", borderRadius: 10, fontSize: 11, fontWeight: 800, padding: "1px 6px" }}>
+            {hasActiveFilters && <span style={{ background: "var(--bg-FFFFFF, #fff)", color: "var(--fg-F4621F, #F4621F)", borderRadius: 10, fontSize: 11, fontWeight: 800, padding: "1px 6px" }}>
               {[filters.skills.length > 0, filters.city, filters.minRating > 0, filters.minXp > 0, filters.minExperience > 0, filters.level, filters.verified].filter(Boolean).length}
             </span>}
           </button>
@@ -243,7 +243,7 @@ export default function Workers() {
 
         {/* Search */}
         <div style={{ position: "relative" }}>
-          <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#555" }} />
+          <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--fg-555555, #555)" }} />
           <input
             value={filters.search}
             onChange={e => setFilter("search", e.target.value)}
@@ -255,7 +255,7 @@ export default function Workers() {
             }}
           />
           {filters.search && (
-            <button onClick={() => setFilter("search", "")} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#555" }}>
+            <button onClick={() => setFilter("search", "")} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--fg-555555, #555)" }}>
               <X size={15} />
             </button>
           )}
@@ -264,7 +264,7 @@ export default function Workers() {
 
       {/* Painel de filtros expandível */}
       {showFilters && (
-        <div style={{ background: isDark ? "#161520" : "#F0F0F0", borderBottom: `1px solid ${border}`, padding: "16px 16px", width: "100%", boxSizing: "border-box" }}>
+        <div style={{ background: isDark ? "var(--bg-161520, #161520)" : "var(--bg-F0F0F0, #F0F0F0)", borderBottom: `1px solid ${border}`, padding: "16px 16px", width: "100%", boxSizing: "border-box" }}>
 
           {/* #1003 — cabeçalho com botão de fechar explícito */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
@@ -356,9 +356,9 @@ export default function Workers() {
               onClick={() => setFilter("verified", !filters.verified)}
               style={{
                 padding: "8px 16px", borderRadius: 12, cursor: "pointer",
-                background: filters.verified ? "#22c55e" : surface,
-                border: `1.5px solid ${filters.verified ? "#22c55e" : border}`,
-                color: filters.verified ? "#fff" : subtext, fontWeight: 600, fontSize: 13,
+                background: filters.verified ? "var(--bg-22C55E, #22c55e)" : surface,
+                border: `1.5px solid ${filters.verified ? "var(--bd-22C55E, #22c55e)" : border}`,
+                color: filters.verified ? "var(--fg-FFFFFF, #fff)" : subtext, fontWeight: 600, fontSize: 13,
               }}
             >
               ✓ Apenas verificados
@@ -369,15 +369,15 @@ export default function Workers() {
           <div style={{ display: "flex", gap: 10 }}>
             {hasActiveFilters && (
               <button onClick={resetFilters} style={{
-                flex: 1, padding: "12px", borderRadius: 12, border: "1px solid #444",
-                background: "transparent", color: "#EF4444", fontWeight: 700, fontSize: 14, cursor: "pointer",
+                flex: 1, padding: "12px", borderRadius: 12, border: "1px solid var(--bd-444444, #444)",
+                background: "transparent", color: "var(--fg-EF4444, #EF4444)", fontWeight: 700, fontSize: 14, cursor: "pointer",
               }}>
                 🗑️ Limpar
               </button>
             )}
             <button onClick={() => setShowFilters(false)} style={{
               flex: 2, padding: "12px", borderRadius: 12, border: "none",
-              background: "#F4621F", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
+              background: "var(--bg-F4621F, #F4621F)", color: "var(--on-FFFFFF, #fff)", fontWeight: 700, fontSize: 14, cursor: "pointer",
             }}>
               Ver {total} {total === 1 ? "profissional" : "profissionais"}
             </button>
@@ -387,16 +387,16 @@ export default function Workers() {
 
       {/* Active filter pills (sempre visíveis) */}
       {hasActiveFilters && !showFilters && (
-        <div style={{ padding: "10px 16px", display: "flex", gap: 6, flexWrap: "wrap", background: isDark ? "#161520" : "#F0F0F0", borderBottom: `1px solid ${border}` }}>
+        <div style={{ padding: "10px 16px", display: "flex", gap: 6, flexWrap: "wrap", background: isDark ? "var(--bg-161520, #161520)" : "var(--bg-F0F0F0, #F0F0F0)", borderBottom: `1px solid ${border}` }}>
           {filters.skills.map(s => (
-            <span key={s} onClick={() => toggleSkill(s)} style={{ background: "#F4621F22", color: "#F4621F", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}>
+            <span key={s} onClick={() => toggleSkill(s)} style={{ background: "#F4621F22", color: "var(--fg-F4621F, #F4621F)", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}>
               {s} <X size={11} />
             </span>
           ))}
-          {filters.city && <span onClick={() => setFilter("city", "")} style={{ background: "#F4621F22", color: "#F4621F", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>📍 {filters.city} <X size={11} /></span>}
-          {filters.minRating > 0 && <span onClick={() => setFilter("minRating", 0)} style={{ background: "#F59E0B22", color: "#F59E0B", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>⭐ {filters.minRating}+ <X size={11} /></span>}
-          {filters.level && <span onClick={() => setFilter("level", "")} style={{ background: "#8B5CF622", color: "#8B5CF6", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>{filters.level} <X size={11} /></span>}
-          {filters.verified && <span onClick={() => setFilter("verified", false)} style={{ background: "#22c55e22", color: "#22c55e", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>✓ Verificado <X size={11} /></span>}
+          {filters.city && <span onClick={() => setFilter("city", "")} style={{ background: "#F4621F22", color: "var(--fg-F4621F, #F4621F)", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>📍 {filters.city} <X size={11} /></span>}
+          {filters.minRating > 0 && <span onClick={() => setFilter("minRating", 0)} style={{ background: "#F59E0B22", color: "var(--fg-F59E0B, #F59E0B)", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>⭐ {filters.minRating}+ <X size={11} /></span>}
+          {filters.level && <span onClick={() => setFilter("level", "")} style={{ background: "#8B5CF622", color: "var(--fg-8B5CF6, #8B5CF6)", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>{filters.level} <X size={11} /></span>}
+          {filters.verified && <span onClick={() => setFilter("verified", false)} style={{ background: "#22c55e22", color: "var(--fg-22C55E, #22c55e)", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>✓ Verificado <X size={11} /></span>}
         </div>
       )}
 
@@ -404,7 +404,7 @@ export default function Workers() {
       <div style={{ padding: "16px 16px 0", width: "100%", boxSizing: "border-box" }}>
         {loading && page === 0 ? (
           <div style={{ padding: "60px 0", textAlign: "center" }}>
-            <div style={{ width: 40, height: 40, border: "3px solid #F4621F", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
+            <div style={{ width: 40, height: 40, border: "3px solid var(--bd-F4621F, #F4621F)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             <p style={{ color: subtext, fontSize: 14 }}>A carregar profissionais...</p>
           </div>
@@ -413,7 +413,7 @@ export default function Workers() {
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
             <p style={{ color: text, fontWeight: 700, fontSize: 16 }}>Nenhum resultado</p>
             <p style={{ color: subtext, fontSize: 14, marginTop: 6 }}>Tenta ajustar os filtros</p>
-            <button onClick={resetFilters} style={{ marginTop: 16, padding: "10px 24px", background: "#F4621F", border: "none", borderRadius: 12, color: "#fff", fontWeight: 700, cursor: "pointer" }}>
+            <button onClick={resetFilters} style={{ marginTop: 16, padding: "10px 24px", background: "var(--bg-F4621F, #F4621F)", border: "none", borderRadius: 12, color: "var(--on-FFFFFF, #fff)", fontWeight: 700, cursor: "pointer" }}>
               Limpar filtros
             </button>
           </div>
@@ -428,7 +428,7 @@ export default function Workers() {
                 disabled={loading}
                 style={{
                   width: "100%", padding: "14px", borderRadius: 14, marginTop: 8, marginBottom: 16,
-                  border: "1.5px solid #333", background: "transparent", color: "#F4621F",
+                  border: "1.5px solid var(--bd-333333, #333)", background: "transparent", color: "var(--fg-F4621F, #F4621F)",
                   fontWeight: 700, fontSize: 14, cursor: "pointer",
                 }}
               >

@@ -221,114 +221,9 @@ html[data-theme="light"], body.light, .light {
 }
 
 
-/* ═══════════════════════════════════════════════════════
-   EMBER · Volume 3 do rebranding (E3) — a marca como luz
-   Claro: pêssego quente com manchas laranja, vidro quente,
-   controlos neutros quase pretos.
-   Escuro: paleta invertida — carvão quente com a mesma brasa.
-   Só tokens: nenhuma alteração de comportamento.
-   ══════════════════════════════════════════════════════*/
-html[data-theme="ember-light"] {
-  --base:     #FFD9C2;
-  --base2:    #FFF3EA;
-  --glass:    rgba(255,255,255,.58);
-  --glass2:   rgba(255,255,255,.76);
-  --text:     #1A1A1E;
-  --text2:    #6B5446;
-  --text3:    #9C8578;
-  --edge-hi:  rgba(255,255,255,.95);
-  --edge-lo:  rgba(150,80,40,.22);
-  --hair:     rgba(80,40,15,.14);
-  --hair2:    rgba(80,40,15,.07);
-  --shadow:   rgba(150,80,30,.30);
-  --brush:    rgba(120,60,20,.02);
-  --surface:  #FFE9DB;
-  --surface2: #FFFFFF;
-  --border:   rgba(80,40,15,.14);
-  /* acento: no Ember o preto é o controlo e o laranja é a luz */
-  --ember-ink: #1A1A1E;
-  --ember-glow: rgba(255,122,26,.42);
-  color-scheme: light;
-}
-
-html[data-theme="ember-dark"] {
-  --base:     #0B0806;
-  --base2:    #171210;
-  --glass:    rgba(255,255,255,.055);
-  --glass2:   rgba(255,255,255,.09);
-  --text:     #F7EFE9;
-  --text2:    #B09A8C;
-  --text3:    #7A6559;
-  --edge-hi:  rgba(255,255,255,.22);
-  --edge-lo:  rgba(0,0,0,.62);
-  --hair:     rgba(255,255,255,.10);
-  --hair2:    rgba(255,255,255,.05);
-  --shadow:   rgba(0,0,0,.76);
-  --brush:    rgba(255,255,255,.015);
-  --surface:  #171210;
-  --surface2: #221A16;
-  --border:   rgba(255,255,255,.10);
-  --ember-ink: #FFE9DB;
-  --ember-glow: rgba(255,106,0,.30);
-  color-scheme: dark;
-}
-
-/* Luz de fundo — as manchas do Ember vivem atrás do vidro,
-   por isso o blur dos tiles tem algo quente para refratar. */
-html[data-theme^="ember"] body {
-  background: var(--base2);
-}
-html[data-theme^="ember"] #root::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(720px 560px at 14% 4%,  var(--ember-glow), transparent 62%),
-    radial-gradient(560px 480px at 92% 18%, rgba(255,178,74,.34), transparent 64%),
-    radial-gradient(760px 700px at 58% 100%, rgba(255,138,76,.30), transparent 66%),
-    linear-gradient(160deg, #FFD6BE 0%, #FFF3EA 45%, #FFC8A6 100%);
-}
-html[data-theme="ember-dark"] #root::before {
-  background:
-    radial-gradient(720px 560px at 12% 2%,  rgba(255,106,0,.20), transparent 62%),
-    radial-gradient(560px 480px at 90% 16%, rgba(255,150,60,.14), transparent 64%),
-    radial-gradient(780px 700px at 62% 100%, rgba(255,90,20,.16), transparent 66%),
-    linear-gradient(170deg, #120C09 0%, #0B0806 55%, #170E09 100%);
-}
-
-/* O .k-bg passa a deixar ver a luz (mantém o resto igual) */
-html[data-theme^="ember"] .k-bg {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.05), transparent 30%),
-    transparent;
-}
-
-/* No Ember o botão principal é tinta preta sobre luz laranja */
-html[data-theme="ember-light"] .k-pill-primary,
-html[data-theme="ember-light"] .k-badge {
-  background: linear-gradient(180deg, #2A2A30, #1A1A1E);
-  color: #FFF3EA;
-  box-shadow: 0 8px 20px -10px rgba(26,26,30,.55), inset 0 1px 0 rgba(255,255,255,.18);
-}
-html[data-theme="ember-dark"] .k-pill-primary,
-html[data-theme="ember-dark"] .k-badge {
-  background: linear-gradient(135deg, #FFC489, #FF7A1A 42%, #E04E00);
-  color: #2a1402;
-}
-
-/* Mapa — base OpenStreetMap (sem chave de API).
-   O escuro sai de um filtro sobre os tiles claros: é o truque habitual
-   e evita depender de um fornecedor com chave. */
+/* Mapa — base OpenStreetMap (sem chave de API); o escuro sai de um filtro. */
 html[data-theme="dark"] .leaflet-tile-pane {
   filter: invert(1) hue-rotate(180deg) brightness(.92) contrast(.92) saturate(.55);
-}
-html[data-theme="ember-light"] .leaflet-tile-pane {
-  filter: sepia(.16) saturate(1.06) brightness(1.02);
-}
-html[data-theme="ember-dark"] .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(175deg) brightness(.88) contrast(.94) saturate(.5) sepia(.15);
 }
 
 /* ── Pins do mapa (zoom-aware) ── */
@@ -637,4 +532,296 @@ html.a11y-contrast .k-nav {
     radial-gradient(600px 360px at 50% -6%, color-mix(in srgb, var(--or) 10%, transparent), transparent 60%),
     linear-gradient(180deg, var(--base2), var(--base) 40%);
   min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════════
+   EMBER · Volume 3 do rebranding (E3) · "A marca como luz"
+   Fonte: KANDU_Rebrand_Vol3_LiquidGlass.html, secção E3.
+   - o laranja é a LUZ DE FUNDO (pêssego quente com manchas laranja)
+   - os controlos são neutros, quase pretos (#1A1A1E)
+   - vidro: rgba(255,255,255,.58), aresta branca .95, blur 16-20px
+   - pins laranja sólidos · navegação em ilha · mapa sépia
+   Ember escuro: troca de paleta (carvão quente, a mesma brasa,
+   controlos em tinta creme). Só pele: nenhuma lógica muda.
+   ══════════════════════════════════════════════════════*/
+html[data-theme="ember-light"] {
+  --base: transparent; --base2: transparent;
+  --glass: rgba(255,255,255,.58); --glass2: rgba(255,255,255,.40);
+  --text: #1A1A1E; --text2: #7A5A4A; --text3: #B89A8A;
+  --edge-hi: rgba(255,255,255,.95); --edge-lo: rgba(180,70,20,.16);
+  --hair: rgba(255,255,255,.80); --hair2: rgba(255,255,255,.45);
+  --shadow: rgba(180,70,20,.35); --brush: transparent;
+  --surface: rgba(255,255,255,.40); --surface2: rgba(255,255,255,.58);
+  --border: rgba(255,255,255,.80);
+  --anod: linear-gradient(180deg, #2A2A30, #1A1A1E);
+  --or: #1A1A1E;
+  --em-ink: #1A1A1E; --em-on: #FFFFFF; --em-pri: #F4621F; --em-blur: 18px;
+  --em-bg: linear-gradient(160deg, #FFD6BE 0%, #FFF3EA 45%, #FFC8A6 100%);
+  --em-b1: #F4621F; --em-b2: #FF8A4C; --em-b3: #FFB24A; --em-blob: 55%;
+  --em-blob2: 35%; --em-blob3: 45%;
+  --em-glass-shadow: 0 12px 32px -14px rgba(180,70,20,.35);
+  color-scheme: light;
+}
+html[data-theme="ember-dark"] {
+  --base: transparent; --base2: transparent;
+  --glass: rgba(255,236,224,.07); --glass2: rgba(255,236,224,.045);
+  --text: #F7EFE9; --text2: #B09A8C; --text3: #7A6559;
+  --edge-hi: rgba(255,220,200,.16); --edge-lo: rgba(0,0,0,.6);
+  --hair: rgba(255,255,255,.10); --hair2: rgba(255,255,255,.05);
+  --shadow: rgba(0,0,0,.7); --brush: transparent;
+  --surface: rgba(255,236,224,.045); --surface2: rgba(255,236,224,.07);
+  --border: rgba(255,255,255,.10);
+  --anod: linear-gradient(180deg, #FFF6EF, #F1E4DA);
+  --or: #F7EFE9;
+  --em-ink: #F7EFE9; --em-on: #1A1A1E; --em-pri: #F4621F; --em-blur: 18px;
+  --em-bg: linear-gradient(160deg, #2A1408 0%, #0E0A08 45%, #24110A 100%);
+  --em-b1: #F4621F; --em-b2: #B8410F; --em-b3: #FF8A4C; --em-blob: 38%;
+  --em-blob2: 26%; --em-blob3: 30%;
+  --em-glass-shadow: 0 14px 34px -14px rgba(0,0,0,.75);
+  color-scheme: dark;
+}
+
+/* ── Luz por trás do vidro: gradiente + três manchas ── */
+html[data-theme^="ember"] { background: var(--em-bg) fixed !important; }
+html[data-theme^="ember"] body {
+  background: transparent !important; color: var(--text);
+  font-family: Manrope, Inter, system-ui, sans-serif;
+}
+html[data-theme^="ember"] #root { position: relative; isolation: isolate; }
+html[data-theme^="ember"] #root::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(38vmax 38vmax at 4% 22%, color-mix(in srgb, var(--em-b1) var(--em-blob), transparent) 0%, transparent 62%),
+    radial-gradient(32vmax 32vmax at 100% 48%, color-mix(in srgb, var(--em-b2) var(--em-blob2), transparent) 0%, transparent 60%),
+    radial-gradient(40vmax 40vmax at 28% 104%, color-mix(in srgb, var(--em-b3) var(--em-blob3), transparent) 0%, transparent 62%);
+}
+html[data-theme^="ember"] .k-bg { background: transparent !important; }
+
+/* ── Vidro ── */
+html[data-theme^="ember"] .k-tile,
+html[data-theme^="ember"] .k-job-card,
+html[data-theme^="ember"] .k-hero,
+html[data-theme^="ember"] .k-search,
+html[data-theme^="ember"] .k-cat,
+html[data-theme^="ember"] .k-geo,
+html[data-theme^="ember"] .k-iconbtn,
+html[data-theme^="ember"] .k-pill-secondary {
+  background: var(--glass) !important;
+  border: 1px solid var(--edge-hi) !important;
+  backdrop-filter: saturate(140%) blur(var(--em-blur));
+  -webkit-backdrop-filter: saturate(140%) blur(var(--em-blur));
+  box-shadow: var(--em-glass-shadow), inset 0 1px 0 var(--edge-hi) !important;
+  color: var(--text);
+}
+html[data-theme^="ember"] .k-tile::before,
+html[data-theme^="ember"] .k-hero-face::after { display: none; }
+html[data-theme^="ember"] .k-search { border-radius: 999px; }
+html[data-theme^="ember"] .k-job-edge { background: var(--em-pri); box-shadow: none; }
+
+/* Controlos neutros: tinta preta (claro) / creme (escuro) */
+html[data-theme^="ember"] .k-pill-primary,
+html[data-theme^="ember"] .k-badge {
+  background: var(--em-ink) !important; color: var(--em-on) !important;
+  border: 0 !important; box-shadow: 0 10px 22px -10px rgba(0,0,0,.4) !important;
+}
+html[data-theme^="ember"] .k-seg {
+  background: var(--glass2); border: 1px solid var(--edge-hi);
+  backdrop-filter: blur(var(--em-blur)); -webkit-backdrop-filter: blur(var(--em-blur));
+  box-shadow: none;
+}
+html[data-theme^="ember"] .k-seg button.active,
+html[data-theme^="ember"] .k-cat.active {
+  background: var(--em-ink) !important; color: var(--em-on) !important;
+  box-shadow: 0 8px 18px -10px rgba(0,0,0,.45) !important;
+}
+
+/* ── Navegação em ILHA (telemóvel): só o activo mostra a etiqueta ── */
+html[data-theme^="ember"] .k-nav {
+  left: 50% !important; right: auto !important;
+  bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%);
+  width: max-content; max-width: 94%;
+  height: 54px; padding: 0 6px !important; gap: 2px;
+  border-radius: 999px; justify-content: center;
+  background: var(--glass) !important;
+  border: 1px solid var(--edge-hi) !important;
+  backdrop-filter: saturate(150%) blur(22px); -webkit-backdrop-filter: saturate(150%) blur(22px);
+  box-shadow: 0 14px 34px -14px rgba(0,0,0,.35), inset 0 1px 0 var(--edge-hi) !important;
+}
+html[data-theme^="ember"] .k-nav > a {
+  flex: none !important; flex-direction: row !important; gap: 6px !important;
+  height: 42px; padding: 0 11px !important; border-radius: 999px;
+  color: var(--text2) !important; align-items: center !important;
+}
+html[data-theme^="ember"] .k-nav > a > span:last-child { display: none; }
+html[data-theme^="ember"] .k-nav > a.active {
+  background: var(--em-ink) !important; color: var(--em-on) !important; padding: 0 14px !important;
+}
+html[data-theme^="ember"] .k-nav > a.active > span:last-child {
+  display: inline; margin: 0 !important; font-size: 12px !important; font-weight: 700 !important;
+}
+html[data-theme^="ember"] .k-nav > a svg { width: 20px; height: 20px; }
+html[data-theme^="ember"] .k-nav > div:first-child { right: 0 !important; top: -46px !important; }
+
+/* ── Mapa quente (doc: sepia .25 saturate .9) ── */
+html[data-theme="ember-light"] .leaflet-tile-pane { filter: sepia(.25) saturate(.9) !important; }
+html[data-theme="ember-dark"] .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) sepia(.35) saturate(.75) brightness(.82) contrast(.95) !important;
+}
+html[data-theme^="ember"] .leaflet-container { background: transparent; }
+html[data-theme^="ember"] .leaflet-control-zoom a,
+html[data-theme^="ember"] .leaflet-control-attribution {
+  background: var(--glass) !important; color: var(--text) !important;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-color: var(--edge-hi) !important;
+}
+
+/* ── Carrossel sobre o mapa (Início Ember) ── */
+.k-em-carousel { display: none; }
+html[data-theme^="ember"] .k-em-carousel {
+  display: flex; gap: 10px;
+  position: absolute; left: 0; right: 0; bottom: 84px; z-index: 21;
+  padding: 0 16px 6px;
+  overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+}
+html[data-theme^="ember"] .k-em-carousel::-webkit-scrollbar { display: none; }
+@media (min-width: 768px) { html[data-theme^="ember"] .k-em-carousel { bottom: 20px; } }
+.k-em-card {
+  flex: 0 0 78%; max-width: 300px; scroll-snap-align: start;
+  display: flex; gap: 12px; align-items: center; text-align: left;
+  padding: 12px 14px; border-radius: 18px; cursor: pointer;
+  background: var(--glass); color: var(--text);
+  border: 1px solid var(--edge-hi);
+  backdrop-filter: saturate(140%) blur(var(--em-blur));
+  -webkit-backdrop-filter: saturate(140%) blur(var(--em-blur));
+  box-shadow: var(--em-glass-shadow), inset 0 1px 0 var(--edge-hi);
+  font-family: inherit;
+}
+.k-em-card__dot {
+  flex: none; width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--em-pri); color: #fff; font-size: 17px;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.7);
+}
+.k-em-card__body { min-width: 0; flex: 1; }
+.k-em-card__t { margin: 0; font-weight: 800; font-size: 14px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.k-em-card__s { margin: 3px 0 0; font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.k-em-card__p { flex: none; font-weight: 800; font-size: 15px; color: var(--em-ink); }
+html[data-theme^="ember"] .k-map-ctrl { bottom: 196px !important; }
+@media (min-width: 768px) { html[data-theme^="ember"] .k-map-ctrl { bottom: 132px !important; } }
+
+/* ── Pins: laranja sólido com aresta branca; preço em vidro com tinta ── */
+html[data-theme^="ember"] .k-pin {
+  background: var(--em-pri) !important;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.7), 0 6px 14px -6px rgba(120,40,0,.55);
+}
+html[data-theme^="ember"] .k-pin svg { color: #fff; }
+html[data-theme^="ember"] .k-pin--urgent { box-shadow: 0 0 0 2.5px #EF4444, 0 0 0 4.5px rgba(255,255,255,.7); }
+html[data-theme^="ember"] .k-pin--active { box-shadow: 0 0 0 3px var(--em-ink), 0 6px 14px rgba(0,0,0,.4); }
+html[data-theme^="ember"] .k-pin-price {
+  background: var(--glass) !important; color: var(--em-ink) !important;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 10px -4px rgba(0,0,0,.3), 0 0 0 1px var(--edge-hi);
+}
+
+
+/* Cabeçalho do empregador: no Ember deixa ver a luz em vez do bloco escuro */
+html[data-theme^="ember"] .k-em-hero { background: transparent !important; border-bottom: 0 !important; }
+html[data-theme="ember-light"] .k-em-hero h1 { color: var(--text) !important; }
+html[data-theme="ember-light"] .k-em-hero p { color: var(--text2) !important; }
+html[data-theme="ember-light"] .k-em-hero img { filter: brightness(0); opacity: .88; }
+
+/* Ember · mapeamento das cores fixas (gerado). Nos temas Claro/Escuro
+   estas variáveis não existem e cada cor mantém o valor original. */
+html[data-theme="ember-light"] {
+  --ac-F4621F: #1A1A1E;
+  --ac-FF6600: #1A1A1E;
+  --bd-CCCCCC: rgba(255,255,255,.80);
+  --bd-E5E5E5: rgba(255,255,255,.80);
+  --bd-EEEEEE: rgba(255,255,255,.80);
+  --bd-F0F0F0: rgba(255,255,255,.80);
+  --bd-F4621F: #1A1A1E;
+  --bd-FF6600: #1A1A1E;
+  --bg-DDDDDD: rgba(255,255,255,.40);
+  --bg-E04E00: #1A1A1E;
+  --bg-E5E7EB: rgba(255,255,255,.40);
+  --bg-EEEEEE: rgba(255,255,255,.58);
+  --bg-F0F0F0: rgba(255,255,255,.58);
+  --bg-F0FDF4: rgba(255,255,255,.58);
+  --bg-F4621F: #1A1A1E;
+  --bg-F5F5F5: rgba(255,255,255,.58);
+  --bg-F8F8F8: rgba(255,255,255,.58);
+  --bg-F9F9F9: rgba(255,255,255,.58);
+  --bg-FAFAFA: rgba(255,255,255,.58);
+  --bg-FF6600: #1A1A1E;
+  --bg-FF7A1A: #1A1A1E;
+  --bg-FFF7F0: rgba(255,255,255,.58);
+  --bg-FFFBEB: rgba(255,255,255,.58);
+  --bg-FFFFFF: rgba(255,255,255,.58);
+  --fg-111016: #1A1A1E;
+  --fg-111111: #1A1A1E;
+  --fg-444444: #1A1A1E;
+  --fg-4B5563: #7A5A4A;
+  --fg-555555: #7A5A4A;
+  --fg-666666: #7A5A4A;
+  --fg-6B7280: #7A5A4A;
+  --fg-78716C: #7A5A4A;
+  --fg-888888: #7A5A4A;
+  --fg-8A909A: #7A5A4A;
+  --fg-999999: #7A5A4A;
+  --fg-AAAAAA: #B89A8A;
+  --fg-CCCCCC: #B89A8A;
+  --fg-F4621F: #1A1A1E;
+  --fg-F97316: #1A1A1E;
+  --fg-FF6600: #1A1A1E;
+  --fg-FF9944: #1A1A1E;
+  --on-FFFFFF: #FFFFFF;
+}
+
+html[data-theme="ember-dark"] {
+  --ac-F4621F: #F7EFE9;
+  --ac-FF6600: #F7EFE9;
+  --bd-222222: rgba(255,255,255,.10);
+  --bd-2A2836: rgba(255,255,255,.10);
+  --bd-2A2A2A: rgba(255,255,255,.10);
+  --bd-333333: rgba(255,255,255,.10);
+  --bd-444444: rgba(255,255,255,.10);
+  --bd-F4621F: #F7EFE9;
+  --bd-FF6600: #F7EFE9;
+  --bg-050505: rgba(255,236,224,.035);
+  --bg-0A0A0A: rgba(255,236,224,.035);
+  --bg-0A0A0F: rgba(255,236,224,.035);
+  --bg-0B0C0E: rgba(255,236,224,.035);
+  --bg-0D0D0D: rgba(255,236,224,.035);
+  --bg-111016: rgba(255,236,224,.035);
+  --bg-111111: rgba(255,236,224,.035);
+  --bg-13131A: rgba(255,236,224,.035);
+  --bg-161616: rgba(255,236,224,.035);
+  --bg-1A0A00: rgba(255,236,224,.035);
+  --bg-1A1A1A: rgba(255,236,224,.07);
+  --bg-1C1B22: rgba(255,236,224,.07);
+  --bg-222222: rgba(255,236,224,.07);
+  --bg-2A2A2A: rgba(255,236,224,.07);
+  --bg-333333: rgba(255,236,224,.07);
+  --bg-444444: rgba(255,236,224,.07);
+  --bg-E04E00: #F7EFE9;
+  --bg-F4621F: #F7EFE9;
+  --bg-FF6600: #F7EFE9;
+  --bg-FF7A1A: #F7EFE9;
+  --fg-4B5563: #7A6559;
+  --fg-555555: #7A6559;
+  --fg-666666: #7A6559;
+  --fg-6B7280: #7A6559;
+  --fg-78716C: #7A6559;
+  --fg-888888: #7A6559;
+  --fg-8A909A: #B09A8C;
+  --fg-999999: #B09A8C;
+  --fg-AAAAAA: #B09A8C;
+  --fg-CCCCCC: #B09A8C;
+  --fg-F4621F: #FFC7A3;
+  --fg-F97316: #FFC7A3;
+  --fg-FF6600: #FFC7A3;
+  --fg-FF9944: #FFC7A3;
+  --fg-FFFFFF: #F7EFE9;
+  --on-FFFFFF: #1A1A1E;
 }

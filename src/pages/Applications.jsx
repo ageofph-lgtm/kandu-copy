@@ -85,7 +85,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
   return (
     <div style={{
       background: "var(--surface2)", borderRadius: 16, border: "1px solid var(--hair)", boxShadow: "inset 0 1.5px 0 var(--edge-hi), 0 8px 24px -16px var(--shadow)",
-      border: `1px solid ${border}`, borderLeft: "4px solid #F59E0B",
+      border: `1px solid ${border}`, borderLeft: "4px solid var(--bd-F59E0B, #F59E0B)",
       padding: 16, marginBottom: 12
     }}>
       {/* Worker info — clicável → Profile */}
@@ -103,7 +103,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
           <div style={{
             width: 46, height: 46, borderRadius: "50%", flexShrink: 0,
             background: "#F4621F22", display: "flex", alignItems: "center",
-            justifyContent: "center", fontWeight: 800, fontSize: 20, color: "#F4621F",
+            justifyContent: "center", fontWeight: 800, fontSize: 20, color: "var(--fg-F4621F, #F4621F)",
             overflow: "hidden", border: "2px solid #F4621F44"
           }}>
             {worker?.avatar_url
@@ -113,7 +113,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>
               {worker?.full_name || t(lang, "worker", "Profissional")}
-              {worker && <span style={{fontSize:11,color:"#F4621F",marginLeft:6}}>ver perfil →</span>}
+              {worker && <span style={{fontSize:11,color:"var(--fg-F4621F, #F4621F)",marginLeft:6}}>ver perfil →</span>}
             </p>
             <p style={{ fontSize: 12, color: subtext, margin: "2px 0 0" }}>
               ⭐ {worker?.rating?.toFixed(1) || t(lang, "newLabel", "Novo")} · {worker?.skills?.slice(0,2).join(", ") || ""}
@@ -122,7 +122,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
           <p style={{ color: subtext, fontSize: 11, margin: 0 }}>{t(lang, "proposal", "Proposta")}</p>
-          <p style={{ color: "#F4621F", fontWeight: 800, fontSize: 18, margin: 0 }}>
+          <p style={{ color: "var(--fg-F4621F, #F4621F)", fontWeight: 800, fontSize: 18, margin: 0 }}>
             €{app.proposed_price || job?.price}
           </p>
         </div>
@@ -155,7 +155,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
       {/* #110 — contraproposta em curso */}
       {app.counter_offer && (
         <p style={{
-          color: "#3B82F6", fontSize: 12, fontWeight: 600, background: "#3B82F615",
+          color: "var(--fg-3B82F6, #3B82F6)", fontSize: 12, fontWeight: 600, background: "#3B82F615",
           borderRadius: 8, padding: "8px 12px", margin: "0 0 12px"
         }}>
           💰 Contraproposta de €{app.counter_offer} — {
@@ -171,22 +171,22 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
         {/* #89/#90 — abrir o chat da obra com o candidato (1 msg até aceitar) */}
         <button onClick={() => worker && navigate(`${createPageUrl("Chat")}?userId=${worker.id}&jobId=${app.job_id}`)}
           disabled={!worker} aria-label="Mensagem" title="Mensagem" style={{
-          flex: "0 0 auto", background: "var(--surface2)", color: "#F4621F",
+          flex: "0 0 auto", background: "var(--surface2)", color: "var(--fg-F4621F, #F4621F)",
           border: "1px solid #F4621F55", borderRadius: 12,
           padding: "12px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center"
         }}><MessageCircle size={16} /></button>
         <button onClick={handleReject} disabled={acting} style={{
-          flex: 1, background: "#EF444422", color: "#EF4444",
+          flex: 1, background: "#EF444422", color: "var(--fg-EF4444, #EF4444)",
           border: "1px solid #EF444444", borderRadius: 12,
           padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
         }}>✕ {t(lang, "reject", "Recusar")}</button>
         <button onClick={handleCounterOffer} disabled={acting} style={{
-          flex: 1, background: "#3B82F622", color: "#3B82F6",
+          flex: 1, background: "#3B82F622", color: "var(--fg-3B82F6, #3B82F6)",
           border: "1px solid #3B82F644", borderRadius: 12,
           padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
         }}>💰 {t(lang, "counterOffer", "Contrapropor")}</button>
         <button onClick={handleAccept} disabled={acting} style={{
-          flex: 2, background: "#FF6600", color: "#FFF",
+          flex: 2, background: "var(--bg-FF6600, #FF6600)", color: "var(--on-FFFFFF, #FFF)",
           border: "none", borderRadius: 12,
           padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer"
         }}>✓ {t(lang, "acceptAndHire", "Aceitar e Contratar")}</button>
@@ -199,11 +199,11 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
 function WorkerAppCard({ app, job, isDark, surface, text, subtext, border, onWithdraw }) {
   const { lang } = useLanguage();
   const statusMap = {
-    pending:  { color: "#F59E0B", label: `⏳ ${t(lang, "pendingStatus", "Pendente")}` },
-    accepted: { color: "#22C55E", label: `✅ ${t(lang, "acceptedGoToJobs", "Aceite — vai a Trabalhos")}` },
-    rejected: { color: "#EF4444", label: `✕ ${t(lang, "notSelected", "Não selecionado")}` },
+    pending:  { color: "var(--fg-F59E0B, #F59E0B)", label: `⏳ ${t(lang, "pendingStatus", "Pendente")}` },
+    accepted: { color: "var(--fg-22C55E, #22C55E)", label: `✅ ${t(lang, "acceptedGoToJobs", "Aceite — vai a Trabalhos")}` },
+    rejected: { color: "var(--fg-EF4444, #EF4444)", label: `✕ ${t(lang, "notSelected", "Não selecionado")}` },
   };
-  const s = statusMap[app.status] || { color: "#888", label: app.status };
+  const s = statusMap[app.status] || { color: "var(--fg-888888, #888)", label: app.status };
 
   return (
     <div style={{
@@ -218,24 +218,24 @@ function WorkerAppCard({ app, job, isDark, surface, text, subtext, border, onWit
             <MapPin size={11} />{job?.location}
           </p>
         </div>
-        <p style={{ color: "#FF6600", fontWeight: 800, fontSize: 17, margin: 0 }}>
+        <p style={{ color: "var(--fg-FF6600, #FF6600)", fontWeight: 800, fontSize: 17, margin: 0 }}>
           €{app.proposed_price || job?.price}
         </p>
       </div>
       <span style={{
-        background: s.color + "22", color: s.color,
+        background: `color-mix(in srgb, ${s.color} 13.33%, transparent)`, color: s.color,
         borderRadius: 20, padding: "5px 12px", fontSize: 13, fontWeight: 700
       }}>{s.label}</span>
 
       {app.status === "accepted" && (
         <p style={{ color: subtext, fontSize: 12, margin: "10px 0 0" }}>
-          {t(lang, "inProgress", "Em andamento")}.  <strong style={{ color: "#FF6600" }}>{t(lang, "myJobs", "Os Meus Trabalhos")}</strong> {t(lang, "toConfirmPresenceAndFinish", "para confirmar presença e finalizar.")}
+          {t(lang, "inProgress", "Em andamento")}.  <strong style={{ color: "var(--fg-FF6600, #FF6600)" }}>{t(lang, "myJobs", "Os Meus Trabalhos")}</strong> {t(lang, "toConfirmPresenceAndFinish", "para confirmar presença e finalizar.")}
         </p>
       )}
 
       {/* #110 — contraproposta do empregador */}
       {app.status === "pending" && app.counter_offer && app.counter_offer_status === "pending" && (
-        <p style={{ color: "#3B82F6", fontSize: 12, fontWeight: 600, background: "#3B82F615", borderRadius: 8, padding: "8px 12px", margin: "10px 0 0" }}>
+        <p style={{ color: "var(--fg-3B82F6, #3B82F6)", fontSize: 12, fontWeight: 600, background: "#3B82F615", borderRadius: 8, padding: "8px 12px", margin: "10px 0 0" }}>
           💰 O empregador propôs €{app.counter_offer} — responde em <strong>Trabalho</strong>.
         </p>
       )}
@@ -260,7 +260,7 @@ export default function Applications() {
   const surface = "var(--surface2)";
   const text    = "var(--text)";
   const subtext = "var(--text2)";
-  const border  = isDark ? "#2A2A2A" : "#E5E5E5";
+  const border = isDark ? "var(--bd-2A2A2A, #2A2A2A)" : "var(--bd-E5E5E5, #E5E5E5)";
 
   const [user,  setUser]  = useState(null);
   const [apps,  setApps]  = useState([]);
@@ -355,17 +355,17 @@ export default function Applications() {
           <div style={{ display: "flex", gap: 8, paddingBottom: 4 }}>
             <button onClick={() => setFilter("all")} style={{
               flexShrink: 0, padding: "8px 16px", borderRadius: 20,
-              border: `1px solid ${filter === "all" ? "#FF6600" : border}`,
-              background: filter === "all" ? "#FF6600" : "transparent",
-              color: filter === "all" ? "#FFF" : subtext,
+              border: `1px solid ${filter === "all" ? "var(--bd-FF6600, #FF6600)" : border}`,
+              background: filter === "all" ? "var(--bg-FF6600, #FF6600)" : "transparent",
+              color: filter === "all" ? "var(--on-FFFFFF, #FFF)" : subtext,
               fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap"
             }}>{t(lang, "all", "Todas")}</button>
             {myJobsWithApps.map(j => (
               <button key={j.id} onClick={() => setFilter(j.id)} style={{
                 flexShrink: 0, padding: "8px 16px", borderRadius: 20,
-                border: `1px solid ${filter === j.id ? "#FF6600" : border}`,
-                background: filter === j.id ? "#FF6600" : "transparent",
-                color: filter === j.id ? "#FFF" : subtext,
+                border: `1px solid ${filter === j.id ? "var(--bd-FF6600, #FF6600)" : border}`,
+                background: filter === j.id ? "var(--bg-FF6600, #FF6600)" : "transparent",
+                color: filter === j.id ? "var(--on-FFFFFF, #FFF)" : subtext,
                 fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap"
               }}>
                 {j.title?.slice(0, 20)}{j.title?.length > 20 ? "…" : ""}
@@ -390,7 +390,7 @@ export default function Applications() {
             </p>
             {isWorker && (
               <button onClick={() => navigate(createPageUrl("Home"))}
-                style={{ marginTop: 16, background: "#FF6600", border: "none", borderRadius: 12, padding: "12px 24px", color: "#FFF", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                style={{ marginTop: 16, background: "var(--bg-FF6600, #FF6600)", border: "none", borderRadius: 12, padding: "12px 24px", color: "var(--on-FFFFFF, #FFF)", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                 🗺️ {t(lang, "exploreJobs", "Explorar Obras")}
               </button>
             )}

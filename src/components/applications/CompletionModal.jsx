@@ -43,7 +43,7 @@ const EMPLOYER_QUALITIES = [
 function PhotoBox({ index, photo, onAdd, onRemove, isDark, text, subtext }) {
   const { lang } = useLanguage();
   const inputRef = useRef(null);
-  const surface = isDark ? "#2A2A2A" : "#F0F0F0";
+  const surface = isDark ? "var(--bg-2A2A2A, #2A2A2A)" : "var(--bg-F0F0F0, #F0F0F0)";
   const border = photo ? "#22C55E" : (isDark ? "#444" : "#DDDDDD");
 
   const handleFileChange = (e) => {
@@ -93,18 +93,18 @@ function PhotoBox({ index, photo, onAdd, onRemove, isDark, text, subtext }) {
               background: "rgba(0,0,0,0.3)", display: "flex",
               alignItems: "center", justifyContent: "center", borderRadius: 12
             }}>
-              <CheckCircle style={{ color: "#22C55E", width: 28, height: 28 }} />
+              <CheckCircle style={{ color: "var(--fg-22C55E, #22C55E)", width: 28, height: 28 }} />
             </div>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onRemove(index); }}
               style={{
                 position: "absolute", top: 4, right: 4,
-                background: "#EF4444", border: "none", borderRadius: "50%",
+                background: "var(--bg-EF4444, #EF4444)", border: "none", borderRadius: "50%",
                 width: 22, height: 22, cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center"
               }}>
-              <X style={{ color: "#FFF", width: 12, height: 12 }} />
+              <X style={{ color: "var(--fg-FFFFFF, #FFF)", width: 12, height: 12 }} />
             </button>
           </>
         ) : (
@@ -269,20 +269,20 @@ export default function CompletionModal({
 
   const isEmployerFlow = currentUser.user_type === 'employer';
   const { isDark } = useTheme();
-  const bg = isDark ? "#1A1A1A" : "#FFFFFF";
-  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
-  const border = isDark ? "#333333" : "#E5E5E5";
+  const bg = isDark ? "var(--bg-1A1A1A, #1A1A1A)" : "var(--bg-FFFFFF, #FFFFFF)";
+  const surface = isDark ? "var(--bg-2A2A2A, #2A2A2A)" : "var(--bg-F5F5F5, #F5F5F5)";
+  const text = isDark ? "var(--on-FFFFFF, #FFFFFF)" : "var(--fg-111016, #111016)";
+  const subtext = isDark ? "var(--fg-AAAAAA, #AAAAAA)" : "var(--fg-666666, #666666)";
+  const border = isDark ? "var(--bd-333333, #333333)" : "var(--bd-E5E5E5, #E5E5E5)";
 
   return (
     <>
       <XPGainToast xpGained={xpToast.gained} newXP={xpToast.total} show={xpToast.show} onDone={() => { setXpToast(prev => ({...prev, show:false})); onClose(); }} />
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent style={{background:bg, border:"1px solid #333", borderRadius:20, maxWidth:460, maxHeight:"90vh", overflowY:"auto", padding:0}}>
+        <DialogContent style={{background:bg, border:"1px solid var(--bd-333333, #333)", borderRadius:20, maxWidth:460, maxHeight:"90vh", overflowY:"auto", padding:0}}>
 
           {/* Header */}
-          <div style={{padding:"20px 20px 16px", borderBottom:"1px solid #333", display:"flex", alignItems:"center", gap:10}}>
+          <div style={{padding:"20px 20px 16px", borderBottom:"1px solid var(--bd-333333, #333)", display:"flex", alignItems:"center", gap:10}}>
             {isEmployerFlow ? <span style={{fontSize:20}}>🏆</span> : <span style={{fontSize:20}}>✏️</span>}
             <h2 style={{fontWeight:700, color:text, fontSize:16, margin:0}}>
               {isEmployerFlow ? t(lang, "finalizeAndRateWorker", "Finalizar e Avaliar Profissional") : t(lang, "rateEmployer", "Avaliar Empregador")}
@@ -293,7 +293,7 @@ export default function CompletionModal({
 
             {/* Info da obra */}
             <div style={{background:"#FF660011", border:"1px solid #FF660033", borderRadius:12, padding:14}}>
-              <p style={{fontWeight:700, color:"#FF6600", margin:"0 0 4px", fontSize:14}}>{job.title}</p>
+              <p style={{fontWeight:700, color:"var(--fg-FF6600, #FF6600)", margin:"0 0 4px", fontSize:14}}>{job.title}</p>
               <p style={{color:subtext, fontSize:13, margin:0}}>{t(lang, "evaluating", "A avaliar")}: <strong style={{color:text}}>{otherUser.full_name}</strong></p>
             </div>
 
@@ -305,7 +305,7 @@ export default function CompletionModal({
                     {t(lang, "proofPhotos", "Fotos de Prova")} ({photoCount}/3)
                   </label>
                   {photoCount === 3 && (
-                    <span style={{background:"#22C55E22", color:"#22C55E", fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20, border:"1px solid #22C55E44"}}>
+                    <span style={{background:"#22C55E22", color:"var(--fg-22C55E, #22C55E)", fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20, border:"1px solid #22C55E44"}}>
                       ⚡ {t(lang, "bonusUnlocked", "Bónus 5× XP desbloqueado!")}
                     </span>
                   )}
@@ -332,7 +332,7 @@ export default function CompletionModal({
                 {[1,2,3,4,5].map(star => (
                   <button key={star} type="button" onClick={() => setRating(star)}
                     style={{background:"none", border:"none", cursor:"pointer", padding:4}}>
-                    <Star style={{width:36, height:36, color:star<=rating?"#FBBF24":"#444", fill:star<=rating?"#FBBF24":"none"}} />
+                    <Star style={{width:36, height:36, color:star<=rating?"var(--fg-FBBF24, #FBBF24)":"var(--fg-444444, #444)", fill:star<=rating?"#FBBF24":"none"}} />
                   </button>
                 ))}
               </div>
@@ -344,7 +344,7 @@ export default function CompletionModal({
               <div style={{display:"flex", flexWrap:"wrap", gap:8}}>
                 {qualities.map(quality => (
                   <button key={quality.key} type="button" onClick={() => handleQualityToggle(quality.pt)}
-                    style={{padding:"6px 14px", borderRadius:20, border:`1px solid ${selectedQualities.includes(quality.pt)?"#FF6600":"#444"}`, background:selectedQualities.includes(quality.pt)?"#FF6600":"transparent", color:selectedQualities.includes(quality.pt)?"#FFF":"#AAAAAA", fontSize:13, cursor:"pointer", fontWeight:selectedQualities.includes(quality.pt)?700:400}}>
+                    style={{padding:"6px 14px", borderRadius:20, border:`1px solid ${selectedQualities.includes(quality.pt)?"var(--bd-FF6600, #FF6600)":"var(--bd-444444, #444)"}`, background:selectedQualities.includes(quality.pt)?"var(--bg-FF6600, #FF6600)":"transparent", color:selectedQualities.includes(quality.pt)?"var(--on-FFFFFF, #FFF)":"var(--fg-AAAAAA, #AAAAAA)", fontSize:13, cursor:"pointer", fontWeight:selectedQualities.includes(quality.pt)?700:400}}>
                     {t(lang, quality.key, quality.pt)}
                   </button>
                 ))}
@@ -355,14 +355,14 @@ export default function CompletionModal({
             <div>
               <label style={{color:subtext, fontSize:12, fontWeight:600, display:"block", marginBottom:8}}>{t(lang, "comment", "Comentário")} *</label>
               <textarea placeholder={t(lang, "describeExperiencePlaceholder", "Descreve como foi a experiência...")} value={comment} onChange={e => setComment(e.target.value)} rows={4}
-                style={{width:"100%", padding:"12px 14px", background:surface, border:"2px solid #FF6600", borderRadius:12, color:text, fontSize:14, outline:"none", resize:"vertical", fontFamily:"inherit", boxSizing:"border-box", colorScheme: isDark ? "dark" : "light"}} />
+                style={{width:"100%", padding:"12px 14px", background:surface, border:"2px solid var(--bd-FF6600, #FF6600)", borderRadius:12, color:text, fontSize:14, outline:"none", resize:"vertical", fontFamily:"inherit", boxSizing:"border-box", colorScheme: isDark ? "dark" : "light"}} />
             </div>
 
             {/* XP Preview */}
             <div style={{background:"#22C55E11", border:"1px solid #22C55E33", borderRadius:12, padding:16}}>
               <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:6}}>
                 <span style={{fontSize:16}}>⚡</span>
-                <span style={{fontWeight:700, color:"#22C55E", fontSize:14}}>{t(lang, "xpToAward", "XP a ser atribuído")}</span>
+                <span style={{fontWeight:700, color:"var(--fg-22C55E, #22C55E)", fontSize:14}}>{t(lang, "xpToAward", "XP a ser atribuído")}</span>
               </div>
               <p style={{color:subtext, fontSize:11, margin:"0 0 12px", lineHeight:1.5}}>
                 🔒 O XP só é creditado quando <strong style={{color:text}}>ambas as partes</strong> avaliarem.
@@ -371,11 +371,11 @@ export default function CompletionModal({
               <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, textAlign:"center"}}>
                 <div style={{background:"#22C55E22", borderRadius:10, padding:"10px 0"}}>
                   <p style={{fontSize:11, color:subtext, margin:"0 0 4px"}}>{t(lang, "forUser", "Para {name}").replace("{name}", otherUser.full_name?.split(' ')[0] ?? "")}</p>
-                  <p style={{fontWeight:800, fontSize:22, color:"#22C55E", margin:0}}>+{calcJobXP(rating, job.price || 0, false)} XP</p>
+                  <p style={{fontWeight:800, fontSize:22, color:"var(--fg-22C55E, #22C55E)", margin:0}}>+{calcJobXP(rating, job.price || 0, false)} XP</p>
                 </div>
                 <div style={{background:"#22C55E11", borderRadius:10, padding:"10px 0"}}>
                   <p style={{fontSize:11, color:subtext, margin:"0 0 4px"}}>{t(lang, "forYou", "Para si")}</p>
-                  <p style={{fontWeight:800, fontSize:22, color:"#22C55E", margin:0}}>
+                  <p style={{fontWeight:800, fontSize:22, color:"var(--fg-22C55E, #22C55E)", margin:0}}>
                     +{isWorkerFlow && photoCount >= 3
                       ? XP_EVENTS.job_completed_self * 5
                       : XP_EVENTS.job_completed_self} XP
@@ -384,7 +384,7 @@ export default function CompletionModal({
                 </div>
               </div>
               {isWorkerFlow && photoCount > 0 && photoCount < 3 && (
-                <p style={{color:"#F59E0B", fontSize:12, textAlign:"center", margin:"10px 0 0", fontWeight:600}}>
+                <p style={{color:"var(--fg-F59E0B, #F59E0B)", fontSize:12, textAlign:"center", margin:"10px 0 0", fontWeight:600}}>
                   📷 {t(lang, "addPhotosForBonus", "Adiciona {count} foto{plural} para desbloquear o bónus 5× XP!")
                     .replace("{count}", 3 - photoCount)
                     .replace("{plural}", 3 - photoCount > 1 ? "s" : "")}
@@ -395,11 +395,11 @@ export default function CompletionModal({
             {/* Botões */}
             <div style={{display:"flex", gap:12}}>
               <button type="button" onClick={onClose}
-                style={{flex:1, padding:"13px 0", background:"transparent", border:"1px solid #444", borderRadius:12, color:subtext, fontWeight:600, fontSize:14, cursor:"pointer"}}>
+                style={{flex:1, padding:"13px 0", background:"transparent", border:"1px solid var(--bd-444444, #444)", borderRadius:12, color:subtext, fontWeight:600, fontSize:14, cursor:"pointer"}}>
                 {t(lang, "cancel", "Cancelar")}
               </button>
               <button onClick={handleSubmit} disabled={isSubmitting || !comment.trim()}
-                style={{flex:1, padding:"13px 0", background:isSubmitting||!comment.trim()?"#333":"#22C55E", border:"none", borderRadius:12, color:isSubmitting||!comment.trim()?"#555":"#FFF", fontWeight:700, fontSize:14, cursor:isSubmitting||!comment.trim()?"not-allowed":"pointer"}}>
+                style={{flex:1, padding:"13px 0", background:isSubmitting||!comment.trim()?"var(--bg-333333, #333)":"var(--bg-22C55E, #22C55E)", border:"none", borderRadius:12, color:isSubmitting||!comment.trim()?"var(--fg-555555, #555)":"var(--fg-FFFFFF, #FFF)", fontWeight:700, fontSize:14, cursor:isSubmitting||!comment.trim()?"not-allowed":"pointer"}}>
                 {isSubmitting ? t(lang, "finalizing", "A finalizar...") : `${t(lang, "sendReview", "Enviar Avaliação")} ✓`}
               </button>
             </div>

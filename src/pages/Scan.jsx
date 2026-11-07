@@ -14,10 +14,10 @@ export default function ScanPage() {
   const location = useLocation();
   const { isDark } = useTheme();
   const { lang } = useLanguage();
-  const bg = isDark ? "#111016" : "#FFFFFF";
-  const surface = isDark ? "#1C1B22" : "#F5F5F5";
-  const text = isDark ? "#FFFFFF" : "#111016";
-  const subtext = isDark ? "#AAAAAA" : "#666666";
+  const bg = isDark ? "var(--bg-111016, #111016)" : "var(--bg-FFFFFF, #FFFFFF)";
+  const surface = isDark ? "var(--bg-1C1B22, #1C1B22)" : "var(--bg-F5F5F5, #F5F5F5)";
+  const text = isDark ? "var(--on-FFFFFF, #FFFFFF)" : "var(--fg-111016, #111016)";
+  const subtext = isDark ? "var(--fg-AAAAAA, #AAAAAA)" : "var(--fg-666666, #666666)";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -124,8 +124,8 @@ export default function ScanPage() {
     return (
       <div style={{ minHeight: "100vh", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, padding: 20 }}>
         <span style={{ fontSize: 40 }}>⚠️</span>
-        <p style={{ color: "#EF4444", textAlign: "center", fontWeight: 600 }}>{error}</p>
-        <button onClick={() => navigate(-1)} style={{ background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, cursor: "pointer" }}>{t(lang, "back", "Voltar")}</button>
+        <p style={{ color: "var(--fg-EF4444, #EF4444)", textAlign: "center", fontWeight: 600 }}>{error}</p>
+        <button onClick={() => navigate(-1)} style={{ background: "var(--bg-FF6600, #FF6600)", color: "var(--on-FFFFFF, #FFF)", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, cursor: "pointer" }}>{t(lang, "back", "Voltar")}</button>
       </div>
     );
   }
@@ -135,27 +135,27 @@ export default function ScanPage() {
 
       {/* Top Bar */}
       <div style={{ display: "flex", alignItems: "center", padding: "50px 20px 16px", gap: 12 }}>
-        <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", color: "#FF6600", fontSize: 22, fontWeight: 700, lineHeight: 1 }}>←</button>
+        <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--fg-FF6600, #FF6600)", fontSize: 22, fontWeight: 700, lineHeight: 1 }}>←</button>
         <span style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: 18, color: text }}>{t(lang, "validatePresence", "Validar Presença")}</span>
         <div style={{ width: 22 }} />
       </div>
 
       {/* Toggle */}
       <div style={{ display: "flex", gap: 8, margin: "0 20px 24px" }}>
-        <button onClick={() => { setActiveView("employer"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "employer" ? "#FF6600" : surface, color: activeView === "employer" ? "#FFF" : subtext }}>👷 {t(lang, "employer", "Empregador")}</button>
-        <button onClick={() => { setActiveView("professional"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "professional" ? "#FF6600" : surface, color: activeView === "professional" ? "#FFF" : subtext }}>🔧 {t(lang, "worker", "Profissional")}</button>
+        <button onClick={() => { setActiveView("employer"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "employer" ? "var(--bg-FF6600, #FF6600)" : surface, color: activeView === "employer" ? "var(--on-FFFFFF, #FFF)" : subtext }}>👷 {t(lang, "employer", "Empregador")}</button>
+        <button onClick={() => { setActiveView("professional"); setPinInput(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 20, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14, background: activeView === "professional" ? "var(--bg-FF6600, #FF6600)" : surface, color: activeView === "professional" ? "var(--on-FFFFFF, #FFF)" : subtext }}>🔧 {t(lang, "worker", "Profissional")}</button>
       </div>
 
       {activeView === "employer" ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0 20px", flex: 1 }}>
           <p style={{ color: subtext, fontSize: 14, marginBottom: 24, textAlign: "center" }}>{t(lang, "showCodeToWorker", "Mostra este código ao profissional")}</p>
-          <div style={{ width: 200, height: 200, clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)", background: "#111016", border: "4px solid #FF6600", boxShadow: "0 0 40px #FF660088", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 42, fontWeight: 900, color: "#FF6600", letterSpacing: 6 }}>{dailyPin}</span>
+          <div style={{ width: 200, height: 200, clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)", background: "var(--bg-111016, #111016)", border: "4px solid var(--bd-FF6600, #FF6600)", boxShadow: "0 0 40px #FF660088", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 42, fontWeight: 900, color: "var(--fg-FF6600, #FF6600)", letterSpacing: 6 }}>{dailyPin}</span>
           </div>
-          <p style={{ color: "#FF6600", fontWeight: 700, fontSize: 22, textAlign: "center", marginTop: 24 }}>⏱ {countdown}s</p>
-          <p style={{ color: "#AAAAAA", fontSize: 13, marginTop: 8 }}>{job?.title}</p>
+          <p style={{ color: "var(--fg-FF6600, #FF6600)", fontWeight: 700, fontSize: 22, textAlign: "center", marginTop: 24 }}>⏱ {countdown}s</p>
+          <p style={{ color: "var(--fg-AAAAAA, #AAAAAA)", fontSize: 13, marginTop: 8 }}>{job?.title}</p>
           {job?.actual_start_date && job?.status !== "completed" && (
-            <button onClick={handleCompleteJob} style={{ marginTop: 24, background: "#FF6600", color: "#FFF", border: "none", borderRadius: 14, padding: "14px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
+            <button onClick={handleCompleteJob} style={{ marginTop: 24, background: "var(--bg-FF6600, #FF6600)", color: "var(--on-FFFFFF, #FFF)", border: "none", borderRadius: 14, padding: "14px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
               🏆 {t(lang, "finalizeJob", "Finalizar Trabalho")}
             </button>
           )}
@@ -191,7 +191,7 @@ export default function ScanPage() {
         <button
           onClick={handleStartJob}
           disabled={pinInput.length < 6}
-          style={{ background: pinInput.length === 6 ? "#FF6600" : "#333", color: "#FFF", border: "none", borderRadius: 14, padding: 16, fontWeight: 700, fontSize: 16, margin: "0 20px 32px", cursor: pinInput.length === 6 ? "pointer" : "default", transition: "background 0.2s" }}>
+          style={{ background: pinInput.length === 6 ? "var(--bg-FF6600, #FF6600)" : "var(--bg-333333, #333)", color: "var(--on-FFFFFF, #FFF)", border: "none", borderRadius: 14, padding: 16, fontWeight: 700, fontSize: 16, margin: "0 20px 32px", cursor: pinInput.length === 6 ? "pointer" : "default", transition: "background 0.2s" }}>
           {t(lang, "confirmAndStart", "Confirmar e Iniciar")} ✓
         </button>
       )}

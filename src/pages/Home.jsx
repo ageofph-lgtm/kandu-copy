@@ -233,14 +233,14 @@ function WorkerHome({ user, isDark }) {
               </span>
             )}
             {job.urgency === "high" && (
-              <span style={{ background: "#EF444422", color: "#EF4444", borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 700 }}>
+              <span style={{ background: "#EF444422", color: "var(--fg-EF4444, #EF4444)", borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 700 }}>
                 🔥 Urgente
               </span>
             )}
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
-          <p style={{ margin: 0, fontWeight: 800, color: "#FF6600", fontSize: 17 }}>
+          <p style={{ margin: 0, fontWeight: 800, color: "var(--fg-FF6600, #FF6600)", fontSize: 17 }}>
             €{job.price}{job.price_type === "hourly" ? "/h" : ""}
           </p>
           <button
@@ -279,15 +279,15 @@ function WorkerHome({ user, isDark }) {
             aria-label="Filtros"
             style={{
               flexShrink: 0, width: 42, borderRadius: 12, cursor: "pointer", position: "relative",
-              border: `1px solid ${showFilters ? "#FF6600" : "var(--hair)"}`,
+              border: `1px solid ${showFilters ? "var(--bd-FF6600, #FF6600)" : "var(--hair)"}`,
               background: showFilters ? "#FF660022" : "var(--surface2)",
-              color: showFilters ? "#FF6600" : "var(--text2)",
+              color: showFilters ? "var(--fg-FF6600, #FF6600)" : "var(--text2)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
             <SlidersHorizontal size={17} />
             {activeFilterCount > 0 && (
-              <span style={{ position: "absolute", top: -5, right: -5, background: "#FF6600", color: "#fff", borderRadius: "50%", width: 17, height: 17, fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ position: "absolute", top: -5, right: -5, background: "var(--bg-FF6600, #FF6600)", color: "var(--on-FFFFFF, #fff)", borderRadius: "50%", width: 17, height: 17, fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {activeFilterCount}
               </span>
             )}
@@ -319,9 +319,9 @@ function WorkerHome({ user, isDark }) {
                 <button key={cat.pt} onClick={() => setSelectedCategory(cat.pt)}
                   style={{
                     flexShrink: 0, padding: "6px 12px", borderRadius: 20, cursor: "pointer", fontSize: 12, fontWeight: 600,
-                    border: `1px solid ${selectedCategory === cat.pt ? "#FF6600" : "var(--hair)"}`,
-                    background: selectedCategory === cat.pt ? "#FF6600" : "var(--surface)",
-                    color: selectedCategory === cat.pt ? "#fff" : "var(--text2)",
+                    border: `1px solid ${selectedCategory === cat.pt ? "var(--bd-FF6600, #FF6600)" : "var(--hair)"}`,
+                    background: selectedCategory === cat.pt ? "var(--bg-FF6600, #FF6600)" : "var(--surface)",
+                    color: selectedCategory === cat.pt ? "var(--on-FFFFFF, #fff)" : "var(--text2)",
                   }}>
                   {cat.icon} {t(lang, cat.key, cat.pt === "ALL" ? "Todas" : cat.pt)}
                 </button>
@@ -338,9 +338,9 @@ function WorkerHome({ user, isDark }) {
                   style={{
                     flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 700,
                     cursor: "pointer",
-                    border: `1px solid ${urgencyFilter === u.value ? "#FF6600" : "var(--hair)"}`,
-                    background: urgencyFilter === u.value ? "#FF6600" : "var(--surface)",
-                    color: urgencyFilter === u.value ? "#fff" : "var(--text2)",
+                    border: `1px solid ${urgencyFilter === u.value ? "var(--bd-FF6600, #FF6600)" : "var(--hair)"}`,
+                    background: urgencyFilter === u.value ? "var(--bg-FF6600, #FF6600)" : "var(--surface)",
+                    color: urgencyFilter === u.value ? "var(--on-FFFFFF, #fff)" : "var(--text2)",
                   }}>
                   {u.label}
                 </button>
@@ -355,15 +355,15 @@ function WorkerHome({ user, isDark }) {
             {!userLocation && (
               <div style={{
                 display: "flex", alignItems: "flex-start", gap: 8,
-                background: "#fffbeb", border: "1px solid #fbbf24",
+                background: "var(--bg-FFFBEB, #fffbeb)", border: "1px solid var(--bd-FBBF24, #fbbf24)",
                 borderRadius: 10, padding: "8px 10px", marginBottom: 8,
               }}>
                 <span style={{ fontSize: 16, lineHeight: 1 }}>📍</span>
                 <div>
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#92400e" }}>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "var(--fg-92400E, #92400e)" }}>
                     Localização não disponível
                   </p>
-                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "#b45309", lineHeight: 1.4 }}>
+                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--fg-B45309, #b45309)", lineHeight: 1.4 }}>
                     Permite o acesso à localização no browser para filtrar por raio e ver obras perto de ti.
                   </p>
                 </div>
@@ -378,9 +378,9 @@ function WorkerHome({ user, isDark }) {
                     flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 700,
                     cursor: opt.value > 0 && !userLocation ? "not-allowed" : "pointer",
                     opacity: opt.value > 0 && !userLocation ? 0.45 : 1,
-                    border: `1px solid ${radiusKm === opt.value ? "#FF6600" : "var(--hair)"}`,
-                    background: radiusKm === opt.value ? "#FF6600" : "var(--surface)",
-                    color: radiusKm === opt.value ? "#fff" : "var(--text2)",
+                    border: `1px solid ${radiusKm === opt.value ? "var(--bd-FF6600, #FF6600)" : "var(--hair)"}`,
+                    background: radiusKm === opt.value ? "var(--bg-FF6600, #FF6600)" : "var(--surface)",
+                    color: radiusKm === opt.value ? "var(--on-FFFFFF, #fff)" : "var(--text2)",
                   }}>
                   {opt.label}
                 </button>
@@ -399,9 +399,9 @@ function WorkerHome({ user, isDark }) {
                     padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 700,
                     cursor: opt.value === "distance" && !userLocation ? "not-allowed" : "pointer",
                     opacity: opt.value === "distance" && !userLocation ? 0.45 : 1,
-                    border: `1px solid ${sortBy === opt.value ? "#FF6600" : "var(--hair)"}`,
-                    background: sortBy === opt.value ? "#FF6600" : "var(--surface)",
-                    color: sortBy === opt.value ? "#fff" : "var(--text2)",
+                    border: `1px solid ${sortBy === opt.value ? "var(--bd-FF6600, #FF6600)" : "var(--hair)"}`,
+                    background: sortBy === opt.value ? "var(--bg-FF6600, #FF6600)" : "var(--surface)",
+                    color: sortBy === opt.value ? "var(--on-FFFFFF, #fff)" : "var(--text2)",
                   }}>
                   {opt.label}
                 </button>
@@ -423,19 +423,37 @@ function WorkerHome({ user, isDark }) {
             />
           </div>
 
-          <div style={{ position: "absolute", bottom: 80, left: 16, zIndex: 20 }}>
+          <div className="k-map-ctrl" style={{ position: "absolute", bottom: 80, left: 16, zIndex: 20 }}>
             <div className="k-geo" style={{
-              color: geoStatus === "ok" ? "#4ADE80" : geoStatus === "error" ? "#F87171" : "#FBBF24",
+              color: geoStatus === "ok" ? "var(--fg-4ADE80, #4ADE80)" : geoStatus === "error" ? "var(--fg-F87171, #F87171)" : "var(--fg-FBBF24, #FBBF24)",
             }}>
               <span style={{
                 width: 7, height: 7, borderRadius: "50%", flexShrink: 0,
-                background: geoStatus === "ok" ? "#16A34A" : geoStatus === "error" ? "#EF4444" : "#F59E0B",
+                background: geoStatus === "ok" ? "var(--bg-16A34A, #16A34A)" : geoStatus === "error" ? "var(--bg-EF4444, #EF4444)" : "var(--bg-F59E0B, #F59E0B)",
               }} />
               {geoStatus === "loading" ? t(lang, "locating", "A localizar...")
                 : geoStatus === "error" ? t(lang, "noLocation", "Sem localização")
                 : `📍 ${t(lang, "online", "Online")}`}
             </div>
           </div>
+
+          {/* Ember: carrossel de obras sobre o mapa (escondido nos outros temas via CSS) */}
+          {filteredJobs.length > 0 && (
+            <div className="k-em-carousel" aria-label="Obras perto de ti">
+              {filteredJobs.slice(0, 15).map(job => (
+                <button key={job.id} type="button" className="k-em-card" onClick={() => handleJobClick(job)}>
+                  <span className="k-em-card__dot">{(job.category || "?").charAt(0)}</span>
+                  <span className="k-em-card__body">
+                    <p className="k-em-card__t">{job.title}</p>
+                    <p className="k-em-card__s">
+                      {job.location}{job._distance !== null && job._distance !== undefined ? ` · ${fmtDist(job._distance)}` : ""}
+                    </p>
+                  </span>
+                  <span className="k-em-card__p">€{job.price}{job.price_type === "hourly" ? "/h" : ""}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </>
       )}
 
@@ -455,7 +473,7 @@ function WorkerHome({ user, isDark }) {
               <p style={{ color: "var(--text2)", fontSize: 13, margin: 0 }}>Experimenta alargar o raio ou limpar os filtros.</p>
               {activeFilterCount > 0 && (
                 <button onClick={resetFilters}
-                  style={{ marginTop: 14, background: "#FF6600", border: "none", borderRadius: 12, padding: "10px 20px", color: "#fff", fontWeight: 700, cursor: "pointer" }}>
+                  style={{ marginTop: 14, background: "var(--bg-FF6600, #FF6600)", border: "none", borderRadius: 12, padding: "10px 20px", color: "var(--on-FFFFFF, #fff)", fontWeight: 700, cursor: "pointer" }}>
                   Limpar filtros
                 </button>
               )}
@@ -465,7 +483,7 @@ function WorkerHome({ user, isDark }) {
       )}
 
       {/* ── CONTADOR + TOGGLE MAPA/LISTA ── */}
-      <div style={{
+      <div className="k-map-ctrl" style={{
         position: "absolute", bottom: 80, right: 16, zIndex: 20,
         display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6,
       }}>
@@ -516,18 +534,18 @@ function EmployerHome({ user }) {
 
   return (
     <div className="k-bg" style={{ minHeight: "100vh", paddingBottom: 80 }}>
-      <div style={{
+      <div className="k-em-hero" style={{
         padding: "32px 24px 28px",
-        background: "linear-gradient(180deg, #0d0f12 0%, #111318 100%)",
+        background: "linear-gradient(180deg, var(--bg-0D0F12, #0d0f12) 0%, var(--bg-111318, #111318) 100%)",
         borderBottom: "1px solid rgba(255,255,255,.08)",
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontSize: 13, color: "#FF9944", fontWeight: 600 }}>{t(lang, "welcome", "Bem-vindo")} 👋</p>
-            <h1 style={{ margin: "4px 0 6px", fontSize: 28, fontWeight: 900, color: "#FFFFFF", letterSpacing: -0.5 }}>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--fg-FF9944, #FF9944)", fontWeight: 600 }}>{t(lang, "welcome", "Bem-vindo")} 👋</p>
+            <h1 style={{ margin: "4px 0 6px", fontSize: 28, fontWeight: 900, color: "var(--fg-FFFFFF, #FFFFFF)", letterSpacing: -0.5 }}>
               {firstName}
             </h1>
-            <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#8A909A" }}>
+            <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "var(--fg-8A909A, #8A909A)" }}>
               {t(lang, "whatDoYouNeed", "O que precisa?")}
             </p>
           </div>
@@ -552,7 +570,7 @@ function EmployerHome({ user }) {
         <button onClick={() => navigate(createPageUrl("Workers"))}
           className="k-tile" style={{ width: "100%", border: "none", cursor: "pointer", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px" }}>
           <div style={{ textAlign: "left" }}>
-            <p style={{ margin: 0, fontSize: 13, color: "#F4621F", fontWeight: 700 }}>🔍 Novo</p>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--fg-F4621F, #F4621F)", fontWeight: 700 }}>🔍 Novo</p>
             <p style={{ margin: "4px 0 2px", fontSize: 19, fontWeight: 900, color: text }}>Encontrar Profissionais</p>
             <p style={{ margin: 0, fontSize: 12, color: subtext }}>Pesquisa por skill, rating, XP e mais</p>
           </div>

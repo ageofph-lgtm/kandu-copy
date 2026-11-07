@@ -69,29 +69,29 @@ const STEP_LABELS = [
 function ConfirmPublishModal({ job, onConfirm, onCancel, isDark, text, subtext }) {
   const { lang } = useLanguage();
   const bg = "var(--surface2)";
-  const surface = isDark ? "#2A2A2A" : "#F5F5F5";
+  const surface = isDark ? "var(--bg-2A2A2A, #2A2A2A)" : "var(--bg-F5F5F5, #F5F5F5)";
   return (
     <div style={{
       position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:9999,
       display:"flex",alignItems:"center",justifyContent:"center",padding:20
     }}>
-      <div style={{background:bg,borderRadius:20,padding:24,maxWidth:360,width:"100%",border:"1px solid #FF6600"}}>
+      <div style={{background:bg,borderRadius:20,padding:24,maxWidth:360,width:"100%",border:"1px solid var(--bd-FF6600, #FF6600)"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <span style={{fontSize:40}}>🚀</span>
           <h2 style={{color:text,fontWeight:700,fontSize:18,margin:"10px 0 6px"}}>{t(lang,"jobTitle")}?</h2>
           <p style={{color:subtext,fontSize:14,margin:0}}>{t(lang,"jobVisibleToAll","A obra ficará visível para todos os profissionais na plataforma.")}</p>
         </div>
         <div style={{background:surface,borderRadius:12,padding:14,marginBottom:20}}>
-          <p style={{fontWeight:700,color:"#FF6600",margin:"0 0 4px",fontSize:15}}>{job.title}</p>
+          <p style={{fontWeight:700,color:"var(--fg-FF6600, #FF6600)",margin:"0 0 4px",fontSize:15}}>{job.title}</p>
           <p style={{color:subtext,fontSize:13,margin:0}}>📍 {job.location} · 💶 €{job.price}</p>
         </div>
         <div style={{display:"flex",gap:10}}>
           <button onClick={onCancel}
-            style={{flex:1,padding:"12px 0",background:"transparent",border:"1px solid #444",borderRadius:12,color:subtext,fontWeight:600,fontSize:14,cursor:"pointer"}}>
+            style={{flex:1,padding:"12px 0",background:"transparent",border:"1px solid var(--bd-444444, #444)",borderRadius:12,color:subtext,fontWeight:600,fontSize:14,cursor:"pointer"}}>
             {t(lang,"review","Rever")}
           </button>
           <button onClick={onConfirm}
-            style={{flex:1,padding:"12px 0",background:"#FF6600",border:"none",borderRadius:12,color:"#FFF",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+            style={{flex:1,padding:"12px 0",background:"var(--bg-FF6600, #FF6600)",border:"none",borderRadius:12,color:"var(--on-FFFFFF, #FFF)",fontWeight:700,fontSize:14,cursor:"pointer"}}>
             {t(lang,"publish","Publicar")} ✓
           </button>
         </div>
@@ -318,11 +318,11 @@ export default function NewJob() {
   const selectedCat = CATEGORIES.find(c => c.pt === formData.category);
   const catIcon = selectedCat?.icon || "";
 
-  const inputStyle = (invalid) => ({width:"100%",padding:14,background:surface,border:`2px solid ${invalid ? "#EF4444" : "#FF6600"}`,borderRadius:12,color:text,boxSizing:"border-box",fontSize:15,outline:"none"});
+  const inputStyle = (invalid) => ({width:"100%",padding:14,background:surface,border:`2px solid ${invalid ? "var(--bd-EF4444, #EF4444)" : "var(--bd-FF6600, #FF6600)"}`,borderRadius:12,color:text,boxSizing:"border-box",fontSize:15,outline:"none"});
   const FieldError = ({ name }) =>
-    errors[name] ? <p style={{color:"#EF4444",fontSize:12,margin:"6px 0 0",fontWeight:600}}>⚠️ {errors[name]}</p> : null;
+    errors[name] ? <p style={{color:"var(--fg-EF4444, #EF4444)",fontSize:12,margin:"6px 0 0",fontWeight:600}}>⚠️ {errors[name]}</p> : null;
   const labelStyle = {color:subtext,fontSize:13,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:8};
-  const sectionStyle = {borderBottom:`1px solid ${isDark?"#222":"#EEEEEE"}`,padding:"16px 20px"};
+  const sectionStyle = {borderBottom:`1px solid ${isDark?"var(--bd-222222, #222)":"var(--bd-EEEEEE, #EEEEEE)"}`,padding:"16px 20px"};
 
   if (!user) {
     return <LoadingScreen label={t(lang,"loading")} />;
@@ -350,7 +350,7 @@ export default function NewJob() {
           <img src={isDark ? "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/90321a683_Gemini_Generated_Image_k4rh2gk4rh2gk4rh.png" : "https://media.base44.com/images/public/69c166ad19149fb0c07883cb/002158942_Gemini_Generated_Image_5.png"} alt="KANDU" style={{height:24,objectFit:"contain"}} />
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={() => navigate(-1)} style={{background:"none",border:"none",color:"#FF6600",fontSize:22,cursor:"pointer",padding:0}}>←</button>
+          <button onClick={() => navigate(-1)} style={{background:"none",border:"none",color:"var(--fg-FF6600, #FF6600)",fontSize:22,cursor:"pointer",padding:0}}>←</button>
           <h1 style={{fontWeight:700,color:text,flex:1,textAlign:"center",margin:0,fontSize:18}}>{t(lang,"jobTitle")}</h1>
           <span style={{width:22}} />
         </div>
@@ -360,10 +360,10 @@ export default function NewJob() {
       <div style={{padding:"8px 20px 16px"}}>
         <div style={{display:"flex",gap:6,marginBottom:6}}>
           {STEP_LABELS.map((label,i) => (
-            <div key={i} style={{flex:1,height:4,borderRadius:4,background:i<step?"#FF6600":i===step-1?"#FF6600":isDark?"#333":"#DDDDDD"}} />
+            <div key={i} style={{flex:1,height:4,borderRadius:4,background:i<step?"var(--bg-FF6600, #FF6600)":i===step-1?"var(--bg-FF6600, #FF6600)":isDark?"var(--bg-333333, #333)":"var(--bg-DDDDDD, #DDDDDD)"}} />
           ))}
         </div>
-        <p style={{color:subtext,fontSize:12,textAlign:"center"}}>{t(lang,"stepXofY","Passo {step} de {total}").replace("{step}", step).replace("{total}", STEP_LABELS.length)}: <strong style={{color:"#FF6600"}}>{t(lang, STEP_LABELS[step-1].key, STEP_LABELS[step-1].pt)}</strong></p>
+        <p style={{color:subtext,fontSize:12,textAlign:"center"}}>{t(lang,"stepXofY","Passo {step} de {total}").replace("{step}", step).replace("{total}", STEP_LABELS.length)}: <strong style={{color:"var(--fg-FF6600, #FF6600)"}}>{t(lang, STEP_LABELS[step-1].key, STEP_LABELS[step-1].pt)}</strong></p>
       </div>
 
       {/* Step 1: O Quê */}
@@ -379,7 +379,7 @@ export default function NewJob() {
             <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
               {CATEGORIES.map(cat => (
                 <button key={cat.pt} onClick={() => { set("category", cat.pt); set("categoryKey", cat.key); }}
-                  style={{background:formData.category===cat.pt?"#FF6600":surface,color:formData.category===cat.pt?"#FFF":subtext,borderRadius:20,padding:"8px 14px",border:"none",cursor:"pointer",fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
+                  style={{background:formData.category===cat.pt?"var(--bg-FF6600, #FF6600)":surface,color:formData.category===cat.pt?"var(--on-FFFFFF, #FFF)":subtext,borderRadius:20,padding:"8px 14px",border:"none",cursor:"pointer",fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
                   {cat.icon} {cat.name}
                 </button>
               ))}
@@ -389,7 +389,7 @@ export default function NewJob() {
           <div style={sectionStyle}>
             <label style={labelStyle}>{t(lang,"description")}</label>
             <textarea placeholder={t(lang,"jobDescriptionPlaceholder","Descreva em detalhe o trabalho a realizar...")} value={formData.description} onChange={e => set("description",e.target.value)}
-              style={{background:surface,border:`2px solid ${errors.description ? "#EF4444" : "#FF6600"}`,borderRadius:12,padding:14,color:text,resize:"none",height:100,width:"100%",boxSizing:"border-box",fontSize:15,outline:"none"}} />
+              style={{background:surface,border:`2px solid ${errors.description ? "var(--bd-EF4444, #EF4444)" : "var(--bd-FF6600, #FF6600)"}`,borderRadius:12,padding:14,color:text,resize:"none",height:100,width:"100%",boxSizing:"border-box",fontSize:15,outline:"none"}} />
             <FieldError name="description" />
           </div>
         </>
@@ -406,10 +406,10 @@ export default function NewJob() {
                 <button key={loc} onClick={() => set("location", loc)}
                   style={{
                     padding:"14px 16px",
-                    background:formData.location===loc?"#FF6600":surface,
+                    background:formData.location===loc?"var(--bg-FF6600, #FF6600)":surface,
                     border: formData.location===loc?"2px solid #FF6600":`2px solid ${isDark?"#333":"#DDDDDD"}`,
                     borderRadius:12,
-                    color:formData.location===loc?"#FFF":text,
+                    color:formData.location===loc?"var(--on-FFFFFF, #FFF)":text,
                     fontWeight:formData.location===loc?700:400,
                     fontSize:15,
                     cursor:"pointer",
@@ -460,14 +460,14 @@ export default function NewJob() {
                   <img src={url} alt={`Área de trabalho ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}} />
                   <button type="button" onClick={() => setPhotos(prev => prev.filter((_,idx) => idx !== i))}
                     aria-label="Remover foto"
-                    style={{position:"absolute",top:4,right:4,background:"#EF4444",border:"none",borderRadius:"50%",width:22,height:22,color:"#fff",cursor:"pointer",fontSize:12,lineHeight:1}}>
+                    style={{position:"absolute",top:4,right:4,background:"var(--bg-EF4444, #EF4444)",border:"none",borderRadius:"50%",width:22,height:22,color:"var(--fg-FFFFFF, #fff)",cursor:"pointer",fontSize:12,lineHeight:1}}>
                     ×
                   </button>
                 </div>
               ))}
               {photos.length < 9 && (
                 <button type="button" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}
-                  style={{aspectRatio:"1",borderRadius:12,border:`2px dashed ${errors.photos ? "#EF4444" : "#FF6600"}`,background:"transparent",color:"#FF6600",cursor:uploadingPhoto?"wait":"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,fontSize:12,fontWeight:700}}>
+                  style={{aspectRatio:"1",borderRadius:12,border:`2px dashed ${errors.photos ? "var(--bd-EF4444, #EF4444)" : "var(--bd-FF6600, #FF6600)"}`,background:"transparent",color:"var(--fg-FF6600, #FF6600)",cursor:uploadingPhoto?"wait":"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,fontSize:12,fontWeight:700}}>
                   <span style={{fontSize:22}}>{uploadingPhoto ? "⏳" : "+"}</span>
                   {uploadingPhoto ? "A enviar" : "Adicionar"}
                 </button>
@@ -492,13 +492,13 @@ export default function NewJob() {
                     style={{flex:1,color:text,fontSize:13,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{doc.name}</a>
                   <button type="button" onClick={() => setTechDocs(prev => prev.filter((_,idx) => idx !== i))}
                     aria-label="Remover documento"
-                    style={{background:"#EF4444",border:"none",borderRadius:"50%",width:22,height:22,color:"#fff",cursor:"pointer",fontSize:12,lineHeight:1}}>
+                    style={{background:"var(--bg-EF4444, #EF4444)",border:"none",borderRadius:"50%",width:22,height:22,color:"var(--fg-FFFFFF, #fff)",cursor:"pointer",fontSize:12,lineHeight:1}}>
                     ×
                   </button>
                 </div>
               ))}
               <button type="button" onClick={() => techDocInputRef.current?.click()} disabled={uploadingTechDoc}
-                style={{padding:"11px",border:`2px dashed ${errors.photos ? "#EF4444" : "#FF6600"}`,background:"transparent",color:"#FF6600",borderRadius:12,fontWeight:700,fontSize:13,cursor:uploadingTechDoc?"wait":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                style={{padding:"11px",border:`2px dashed ${errors.photos ? "var(--bd-EF4444, #EF4444)" : "var(--bd-FF6600, #FF6600)"}`,background:"transparent",color:"var(--fg-FF6600, #FF6600)",borderRadius:12,fontWeight:700,fontSize:13,cursor:uploadingTechDoc?"wait":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                 {uploadingTechDoc ? "⏳ A enviar..." : "+ Adicionar documento"}
               </button>
             </div>
@@ -509,7 +509,7 @@ export default function NewJob() {
             <div style={{display:"flex",gap:8}}>
               {[{value:'low',label:`🟢 ${t(lang,"urgencyLow","Baixa")}`},{value:'medium',label:`🟡 ${t(lang,"urgencyMedium","Média")}`},{value:'high',label:`🔴 ${t(lang,"urgencyHigh","Alta")}`}].map(u => (
                 <button key={u.value} onClick={() => set("urgency",u.value)}
-                  style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.urgency===u.value?"#FF6600":surface,color:formData.urgency===u.value?"#FFF":subtext}}>
+                  style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.urgency===u.value?"var(--bg-FF6600, #FF6600)":surface,color:formData.urgency===u.value?"var(--on-FFFFFF, #FFF)":subtext}}>
                   {u.label}
                 </button>
               ))}
@@ -525,7 +525,7 @@ export default function NewJob() {
           <div style={{display:"flex",gap:8,marginBottom:12}}>
             {[{value:'fixed',label:t(lang,"priceProject","Projeto")},{value:'hourly',label:t(lang,"priceHour","Hora")},{value:'negotiable',label:t(lang,"priceNegotiable","Negociável")}].map(pt => (
               <button key={pt.value} onClick={() => set("price_type",pt.value)}
-                style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.price_type===pt.value?"#FF6600":surface,color:formData.price_type===pt.value?"#FFF":subtext}}>
+                style={{flex:1,padding:"10px 0",borderRadius:20,border:"none",cursor:"pointer",fontWeight:600,fontSize:13,background:formData.price_type===pt.value?"var(--bg-FF6600, #FF6600)":surface,color:formData.price_type===pt.value?"var(--on-FFFFFF, #FFF)":subtext}}>
                 {pt.label}
               </button>
             ))}
@@ -535,12 +535,12 @@ export default function NewJob() {
           <FieldError name="price" />
           {priceSuggestion && (
             <div style={{background:"#FF660011",border:"1px solid #FF660033",borderRadius:10,padding:12,display:"flex",gap:8,marginTop:10,alignItems:"flex-start"}}>
-              <span style={{color:"#FF6600",fontSize:16,flexShrink:0}}>💡</span>
+              <span style={{color:"var(--fg-FF6600, #FF6600)",fontSize:16,flexShrink:0}}>💡</span>
               <div>
-                <p style={{color:"#FF6600",fontWeight:700,fontSize:13,margin:"0 0 4px"}}>{t(lang,"avgPriceFor","Preço médio para {category}").replace("{category}", selectedCat?.name || formData.category)}</p>
+                <p style={{color:"var(--fg-FF6600, #FF6600)",fontWeight:700,fontSize:13,margin:"0 0 4px"}}>{t(lang,"avgPriceFor","Preço médio para {category}").replace("{category}", selectedCat?.name || formData.category)}</p>
                 <p style={{color:subtext,fontSize:12,margin:0}}>{t(lang,"priceRangeHint","Mín: €{min} · Médio: €{avg} · Máx: €{max}").replace("{min}", priceSuggestion.min).replace("{avg}", priceSuggestion.avg).replace("{max}", priceSuggestion.max)}</p>
                 <button onClick={() => set("price", priceSuggestion.avg.toString())}
-                  style={{marginTop:6,background:"#FF6600",color:"#FFF",border:"none",borderRadius:8,padding:"4px 10px",fontSize:12,cursor:"pointer",fontWeight:600}}>
+                  style={{marginTop:6,background:"var(--bg-FF6600, #FF6600)",color:"var(--on-FFFFFF, #FFF)",border:"none",borderRadius:8,padding:"4px 10px",fontSize:12,cursor:"pointer",fontWeight:600}}>
                   {t(lang,"usePriceSuggestion","Usar €{price}").replace("{price}", priceSuggestion.avg)}
                 </button>
               </div>
@@ -553,7 +553,7 @@ export default function NewJob() {
       {step === 4 && (
         <div style={{padding:"16px 20px"}}>
           <div style={{background:surface,borderRadius:16,padding:20,border:"1px solid #FF660044"}}>
-            <p style={{color:"#FF6600",fontWeight:700,fontSize:14,margin:"0 0 16px",textTransform:"uppercase",letterSpacing:1}}>{t(lang,"jobSummary","Resumo da Obra")}</p>
+            <p style={{color:"var(--fg-FF6600, #FF6600)",fontWeight:700,fontSize:14,margin:"0 0 16px",textTransform:"uppercase",letterSpacing:1}}>{t(lang,"jobSummary","Resumo da Obra")}</p>
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {[
                 {label:t(lang,"title","Título"),value:formData.title},
@@ -562,9 +562,9 @@ export default function NewJob() {
                 {label:t(lang,"price"),value:`€${formData.price}${formData.price_type==='hourly'?'/h':''}`,highlight:true},
                 {label:t(lang,"urgency","Urgência"),value:formData.urgency==='low'?`🟢 ${t(lang,"urgencyLow","Baixa")}`:formData.urgency==='high'?`🔴 ${t(lang,"urgencyHigh","Alta")}`:`🟡 ${t(lang,"urgencyMedium","Média")}`},
               ].map(item => (
-                <div key={item.label} style={{borderBottom:`1px solid ${isDark?"#333":"#EEE"}`,paddingBottom:10}}>
+                <div key={item.label} style={{borderBottom:`1px solid ${isDark?"var(--bd-333333, #333)":"var(--bd-EEEEEE, #EEE)"}`,paddingBottom:10}}>
                   <p style={{color:subtext,fontSize:12,margin:"0 0 2px"}}>{item.label}</p>
-                  <p style={{color:item.highlight?"#FF6600":text,fontWeight:item.highlight?700:600,fontSize:15,margin:0}}>{item.value}</p>
+                  <p style={{color:item.highlight?"var(--fg-FF6600, #FF6600)":text,fontWeight:item.highlight?700:600,fontSize:15,margin:0}}>{item.value}</p>
                 </div>
               ))}
             </div>
@@ -576,21 +576,21 @@ export default function NewJob() {
       )}
 
       {/* Navigation */}
-      <div style={{padding:"16px 20px",position:"sticky",bottom:0,background:bg,borderTop:`1px solid ${isDark?"#333":"#EEEEEE"}`,display:"flex",gap:12}}>
+      <div style={{padding:"16px 20px",position:"sticky",bottom:0,background:bg,borderTop:`1px solid ${isDark?"var(--bd-333333, #333)":"var(--bd-EEEEEE, #EEEEEE)"}`,display:"flex",gap:12}}>
         {step > 1 && (
           <button onClick={() => setStep(s => s-1)}
-            style={{flex:1,padding:"14px 0",background:"transparent",border:`1px solid ${isDark?"#444":"#CCCCCC"}`,borderRadius:14,color:subtext,fontWeight:700,fontSize:15,cursor:"pointer"}}>
+            style={{flex:1,padding:"14px 0",background:"transparent",border:`1px solid ${isDark?"var(--bd-444444, #444)":"var(--bd-CCCCCC, #CCCCCC)"}`,borderRadius:14,color:subtext,fontWeight:700,fontSize:15,cursor:"pointer"}}>
             ← {t(lang,"previousStep","Anterior")}
           </button>
         )}
         {step < 4 ? (
           <button onClick={goNext}
-            style={{flex:1,padding:"14px 0",background:"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer",transition:"background 0.2s"}}>
+            style={{flex:1,padding:"14px 0",background:"var(--bg-FF6600, #FF6600)",border:"none",borderRadius:14,color:"var(--on-FFFFFF, #FFF)",fontWeight:700,fontSize:15,cursor:"pointer",transition:"background 0.2s"}}>
             {t(lang,"nextStep","Próximo")} →
           </button>
         ) : (
           <button onClick={() => setShowConfirm(true)} disabled={isSubmitting}
-            style={{flex:1,padding:"14px 0",background:isSubmitting?"#555":"#FF6600",border:"none",borderRadius:14,color:"#FFF",fontWeight:700,fontSize:15,cursor:isSubmitting?"not-allowed":"pointer"}}>
+            style={{flex:1,padding:"14px 0",background:isSubmitting?"var(--bg-555555, #555)":"var(--bg-FF6600, #FF6600)",border:"none",borderRadius:14,color:"var(--on-FFFFFF, #FFF)",fontWeight:700,fontSize:15,cursor:isSubmitting?"not-allowed":"pointer"}}>
             {isSubmitting ? t(lang,"publishing","A publicar...") : `🚀 ${t(lang,"publishJob","Publicar Obra")}`}
           </button>
         )}

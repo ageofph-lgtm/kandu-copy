@@ -47,8 +47,8 @@ export default function XPGainToast({ xpGained, newXP, show, onDone }) {
       pointerEvents:"none"
     }}>
       <div style={{
-        background:"#1A1A1A",
-        border:"2px solid #FF6600",
+        background:"var(--bg-1A1A1A, #1A1A1A)",
+        border:"2px solid var(--bd-FF6600, #FF6600)",
         borderRadius:20,
         padding:"16px 24px",
         display:"flex",
@@ -79,16 +79,16 @@ export default function XPGainToast({ xpGained, newXP, show, onDone }) {
         </div>
 
         <div>
-          <p style={{fontSize:11, color:"#AAAAAA", margin:"0 0 2px", textTransform:"uppercase", letterSpacing:1, fontWeight:600}}>{t(lang, "xpGainedLabel", "XP Ganho!")}</p>
+          <p style={{fontSize:11, color:"var(--fg-AAAAAA, #AAAAAA)", margin:"0 0 2px", textTransform:"uppercase", letterSpacing:1, fontWeight:600}}>{t(lang, "xpGainedLabel", "XP Ganho!")}</p>
           <p style={{
             fontSize:28,
             fontWeight:900,
-            color:"#FF6600",
+            color:"var(--fg-FF6600, #FF6600)",
             margin:"0 0 2px",
             lineHeight:1,
             textShadow:"0 0 12px rgba(255,102,0,0.5)"
           }}>+{xpGained}</p>
-          <p style={{fontSize:11, color:"#AAAAAA", margin:0}}>
+          <p style={{fontSize:11, color:"var(--fg-AAAAAA, #AAAAAA)", margin:0}}>
             {level.emoji} {level.name} · {newXP.toLocaleString()} XP total
           </p>
         </div>

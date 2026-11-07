@@ -26,28 +26,28 @@ function ConversationItem({ conversation, onSelect, selectedId }) {
   return (
     <div
       onClick={() => onSelect(conversation)}
-      style={{padding:"12px 16px",borderBottom:"1px solid #222",cursor:"pointer",background:isSelected?"#FF660022":"transparent",borderLeft:isSelected?"3px solid #FF6600":"3px solid transparent"}}
+      style={{padding:"12px 16px",borderBottom:"1px solid var(--bd-222222, #222)",cursor:"pointer",background:isSelected?"#FF660022":"transparent",borderLeft:isSelected?"3px solid var(--bd-FF6600, #FF6600)":"3px solid transparent"}}
     >
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         <div style={{position:"relative",flexShrink:0}}>
-          <div style={{width:48,height:48,borderRadius:"50%",background:hasJobContext?"#FF6600":"#444",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:700,color:"#FFF"}}>
+          <div style={{width:48,height:48,borderRadius:"50%",background:hasJobContext?"var(--bg-FF6600, #FF6600)":"var(--bg-444444, #444)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:700,color:"var(--on-FFFFFF, #FFF)"}}>
             {conversation.other_user.full_name?.charAt(0) || "?"}
           </div>
           {conversation.unread_count > 0 && (
-            <span style={{position:"absolute",top:-4,right:-4,background:"#FF6600",color:"#FFF",borderRadius:"50%",minWidth:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
+            <span style={{position:"absolute",top:-4,right:-4,background:"var(--bg-FF6600, #FF6600)",color:"var(--on-FFFFFF, #FFF)",borderRadius:"50%",minWidth:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>
               {conversation.unread_count > 9 ? '9+' : conversation.unread_count}
             </span>
           )}
         </div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
-            <p style={{fontWeight:600,fontSize:14,color:"#FFF",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{conversation.other_user.full_name || t(lang, "userLabel", "Utilizador")}</p>
-            <span style={{fontSize:11,color:"#555",flexShrink:0,marginLeft:8}}>
+            <p style={{fontWeight:600,fontSize:14,color:"var(--fg-FFFFFF, #FFF)",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{conversation.other_user.full_name || t(lang, "userLabel", "Utilizador")}</p>
+            <span style={{fontSize:11,color:"var(--fg-555555, #555)",flexShrink:0,marginLeft:8}}>
               {conversation.last_message ? formatLastMessageTime(conversation.last_message.created_at) : ""}
             </span>
           </div>
-          {hasJobContext && <p style={{fontSize:11,color:"#FF6600",margin:"0 0 2px"}}>📋 Obra</p>}
-          <p style={{fontSize:13,color:"#666",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+          {hasJobContext && <p style={{fontSize:11,color:"var(--fg-FF6600, #FF6600)",margin:"0 0 2px"}}>📋 Obra</p>}
+          <p style={{fontSize:13,color:"var(--fg-666666, #666)",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
             {!conversation.last_message ? "Nova conversa"
               : conversation.last_message.attachment_url ? `📎 ${t(lang, "attachment", "Anexo")}`
               : truncateMessage(conversation.last_message.content)}
@@ -65,8 +65,8 @@ export default function ConversationList({ conversations, archivedConversations 
     return (
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:200}}>
         <div style={{textAlign:"center"}}>
-          <p style={{color:"#555"}}>{t(lang,"noConversations")}</p>
-          <p style={{fontSize:12,color:"#444",marginTop:4}}>{t(lang,"noConversations")}</p>
+          <p style={{color:"var(--fg-555555, #555)"}}>{t(lang,"noConversations")}</p>
+          <p style={{fontSize:12,color:"var(--fg-444444, #444)",marginTop:4}}>{t(lang,"noConversations")}</p>
         </div>
       </div>
     );

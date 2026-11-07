@@ -94,8 +94,8 @@ function PinKeypad({ value, onChange, isDark, surface, text, onConfirm }) {
         )}
       </div>
       <button onClick={onConfirm} disabled={value.length < 6}
-        style={{ width: "100%", marginTop: 10, background: value.length === 6 ? "#FF6600" : "#333",
-          color: "#FFF", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14,
+        style={{ width: "100%", marginTop: 10, background: value.length === 6 ? "var(--bg-FF6600, #FF6600)" : "var(--bg-333333, #333)",
+          color: "var(--on-FFFFFF, #FFF)", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14,
           cursor: value.length === 6 ? "pointer" : "default", transition: "background 0.2s" }}>
         {t(lang, "confirmPresence", "Confirmar Presença")} ✓
       </button>
@@ -116,8 +116,8 @@ function CompletionPinDisplay({ pin, countdown, isDark, employerName }) {
         background: "#22C55E15", border: "1px solid #22C55E44",
         borderRadius: 12, padding: "10px 16px", width: "100%", textAlign: "center"
       }}>
-        <p style={{ color: "#22C55E", fontWeight: 700, fontSize: 13, margin: "0 0 4px" }}>✅ {t(lang, "completionPinGenerated", "PIN de Conclusão Gerado!")}</p>
-        <p style={{ color: isDark ? "#CCCCCC" : "#444", fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+        <p style={{ color: "var(--fg-22C55E, #22C55E)", fontWeight: 700, fontSize: 13, margin: "0 0 4px" }}>✅ {t(lang, "completionPinGenerated", "PIN de Conclusão Gerado!")}</p>
+        <p style={{ color: isDark ? "var(--fg-CCCCCC, #CCCCCC)" : "var(--fg-444444, #444)", fontSize: 13, margin: 0, lineHeight: 1.5 }}>
           {t(lang, "showCodeToClient", "Mostra este código a {name}. Ele vai inseri-lo no telemóvel dele para confirmar que a obra está concluída.")
             .replace("{name}", employerName || t(lang, "employer", "Empregador"))}
         </p>
@@ -125,13 +125,13 @@ function CompletionPinDisplay({ pin, countdown, isDark, employerName }) {
       <div style={{
         width: 150, height: 150,
         clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",
-        background: isDark ? "#050505" : "#0A1A0A",
+        background: isDark ? "var(--bg-050505, #050505)" : "var(--bg-0A1A0A, #0A1A0A)",
         boxShadow: "0 0 28px #22C55E77",
         display: "flex", alignItems: "center", justifyContent: "center"
       }}>
-        <span style={{ fontSize: 28, fontWeight: 900, color: "#22C55E", letterSpacing: 3 }}>{pin}</span>
+        <span style={{ fontSize: 28, fontWeight: 900, color: "var(--fg-22C55E, #22C55E)", letterSpacing: 3 }}>{pin}</span>
       </div>
-      <span style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>⏱ {countdown}s {t(lang, "remaining", "restantes")}</span>
+      <span style={{ color: "var(--fg-22C55E, #22C55E)", fontWeight: 700, fontSize: 14 }}>⏱ {countdown}s {t(lang, "remaining", "restantes")}</span>
     </div>
   );
 }
@@ -139,13 +139,13 @@ function CompletionPinDisplay({ pin, countdown, isDark, employerName }) {
 // ─── STATUS pill ──────────────────────────────────────────────────────────────
 // labels guardados como chave i18n + fallback PT, traduzidos no render
 const STATUS_MAP = {
-  draft:                 { color: "#8A909A", key: "statusDraft", pt: "Rascunho" },
-  pending_employer:      { color: "#F59E0B", key: "statusToPublish", pt: "A publicar" },
-  open:                  { color: "#3B82F6", key: "statusPublished", pt: "Publicada" },
-  in_progress:           { color: "#FF6600", key: "statusInProgress", pt: "Em Curso" },
-  completed_by_employer: { color: "#A855F7", key: "awaitingReview", pt: "Aguarda Avaliação" },
-  completed:             { color: "#22C55E", key: "completed", pt: "Concluída" },
-  cancelled:             { color: "#888",    key: "cancelled", pt: "Cancelada" },
+  draft:                 { color: "var(--fg-8A909A, #8A909A)", key: "statusDraft", pt: "Rascunho" },
+  pending_employer:      { color: "var(--fg-F59E0B, #F59E0B)", key: "statusToPublish", pt: "A publicar" },
+  open:                  { color: "var(--fg-3B82F6, #3B82F6)", key: "statusPublished", pt: "Publicada" },
+  in_progress:           { color: "var(--fg-FF6600, #FF6600)", key: "statusInProgress", pt: "Em Curso" },
+  completed_by_employer: { color: "var(--fg-A855F7, #A855F7)", key: "awaitingReview", pt: "Aguarda Avaliação" },
+  completed:             { color: "var(--fg-22C55E, #22C55E)", key: "completed", pt: "Concluída" },
+  cancelled:             { color: "var(--fg-888888, #888)",    key: "cancelled", pt: "Cancelada" },
 };
 const statusLabel = (lang, s) => t(lang, s.key, s.pt);
 
@@ -252,7 +252,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
               <p style={{ fontWeight: 700, fontSize: 15, color: text, margin: 0 }}>{job.title}</p>
               {pendingApps.length > 0 && (
-                <span style={{ background: "#FF6600", color: "#FFF", borderRadius: 10, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>
+                <span style={{ background: "var(--bg-FF6600, #FF6600)", color: "var(--on-FFFFFF, #FFF)", borderRadius: 10, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>
                   {pendingApps.length} {t(lang, "newBadge", "nova(s)")}
                 </span>
               )}
@@ -261,17 +261,17 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
               <span style={{ fontSize: 12, color: subtext, display: "flex", alignItems: "center", gap: 3 }}>
                 <MapPin size={11} />{job.location}
               </span>
-              <span style={{ color: "#FF6600", fontWeight: 800, fontSize: 14 }}>€{job.price}</span>
+              <span style={{ color: "var(--fg-FF6600, #FF6600)", fontWeight: 800, fontSize: 14 }}>€{job.price}</span>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ background: s.color + "22", color: s.color, borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>{statusLabel(lang, s)}</span>
+            <span style={{ background: `color-mix(in srgb, ${s.color} 13.33%, transparent)`, color: s.color, borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>{statusLabel(lang, s)}</span>
             {job.status === "completed_by_employer" && !expanded && (
-              <span style={{ background: "#A855F7", color: "#FFF", borderRadius: 10, padding: "3px 8px", fontSize: 11, fontWeight: 800, animation: "pulse 1.5s ease-in-out infinite" }}>
+              <span style={{ background: "var(--bg-A855F7, #A855F7)", color: "var(--fg-FFFFFF, #FFF)", borderRadius: 10, padding: "3px 8px", fontSize: 11, fontWeight: 800, animation: "pulse 1.5s ease-in-out infinite" }}>
                 ✍️
               </span>
             )}
-            {expanded ? <ChevronUp size={16} color={subtext} /> : <ChevronDown size={16} color={subtext} />}
+            {expanded ? <ChevronUp size={16} style={{ color: subtext }} /> : <ChevronDown size={16} style={{ color: subtext }} />}
           </div>
         </div>
 
@@ -279,7 +279,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
           <div style={{ padding: "0 16px 16px", borderTop: `1px solid ${border}` }}>
             {otherUser && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-                <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#FF660033", display: "flex", alignItems: "center", justifyContent: "center", color: "#FF6600", fontWeight: 700 }}>
+                <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#FF660033", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--fg-FF6600, #FF6600)", fontWeight: 700 }}>
                   {otherUser.full_name?.charAt(0) || "?"}
                 </div>
                 <div>
@@ -291,7 +291,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
 
             {/* Candidaturas pendentes inline */}
             {pendingApps.length > 0 && (
-              <div style={{ background: isDark ? "#0D0D0D" : "#F9F9F9", borderRadius: 12, padding: 14, marginBottom: 12 }}>
+              <div style={{ background: isDark ? "var(--bg-0D0D0D, #0D0D0D)" : "var(--bg-F9F9F9, #F9F9F9)", borderRadius: 12, padding: 14, marginBottom: 12 }}>
                 <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 10px" }}>👥 {t(lang,"applications")} ({pendingApps.length})</p>
                 {pendingApps.map(app => (
                   <AppMiniCard key={app.id} app={app} job={job} isDark={isDark} text={text} subtext={subtext} border={border} surface={surface} onReload={onReload} />
@@ -308,7 +308,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
               <button onClick={() => setEditMode(canEdit ? "edit" : "view")}
                 disabled={!canEdit}
                 title={canEdit ? undefined : "A obra já começou — o anúncio não pode ser alterado."}
-                style={{ flex: 1, background: canEdit ? "#FF660022" : "transparent", color: canEdit ? "#FF6600" : "#555", border: `1px solid ${canEdit ? "#FF660055" : border}`, borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: canEdit ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                style={{ flex: 1, background: canEdit ? "#FF660022" : "transparent", color: canEdit ? "var(--fg-FF6600, #FF6600)" : "var(--fg-555555, #555)", border: `1px solid ${canEdit ? "#FF660055" : border}`, borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: canEdit ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                 <Pencil size={14} /> {t(lang, "editJob", "Editar")}
               </button>
             </div>
@@ -316,14 +316,14 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
             {/* Ações por estado */}
             {job.status === "draft" && (
               <button onClick={() => setEditMode("edit")}
-                style={{ width: "100%", background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 8 }}>
+                style={{ width: "100%", background: "var(--bg-FF6600, #FF6600)", color: "var(--on-FFFFFF, #FFF)", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 8 }}>
                 📝 {t(lang, "completeAndPublish", "Completar e publicar rascunho")}
               </button>
             )}
 
             {job.status === "pending_employer" && (
               <button onClick={handlePublish}
-                style={{ width: "100%", background: "#FF6600", color: "#FFF", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 8 }}>
+                style={{ width: "100%", background: "var(--bg-FF6600, #FF6600)", color: "var(--on-FFFFFF, #FFF)", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 8 }}>
                 🚀 {t(lang, "publishJob", "Publicar Obra")}
               </button>
             )}
@@ -331,11 +331,11 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
             {job.status === "in_progress" && (
               <>
                 {/* PIN section */}
-                <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14, marginBottom: 10 }}>
+                <div style={{ background: isDark ? "var(--bg-0D0D0D, #0D0D0D)" : "var(--bg-F0F0F0, #F0F0F0)", borderRadius: 12, padding: 14, marginBottom: 10 }}>
                   <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>📍 {t(lang, "dailyPresence", "Presença Diária")}</p>
                   {!showPin ? (
                     <button onClick={handleSendPin}
-                      style={{ width: "100%", background: "#3B82F6", color: "#FFF", border: "none", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                      style={{ width: "100%", background: "var(--bg-3B82F6, #3B82F6)", color: "var(--fg-FFFFFF, #FFF)", border: "none", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                       {t(lang, "generatePinNotifyWorker", "Gerar PIN e Notificar Profissional")}
                     </button>
                   ) : (
@@ -345,13 +345,13 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
                         <div style={{
                           width: 140, height: 140,
                           clipPath: "polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)",
-                          background: isDark ? "#050505" : "#1A1A1A",
+                          background: isDark ? "var(--bg-050505, #050505)" : "var(--bg-1A1A1A, #1A1A1A)",
                           boxShadow: "0 0 28px #FF660077",
                           display: "flex", alignItems: "center", justifyContent: "center"
                         }}>
-                          <span style={{ fontSize: 26, fontWeight: 900, color: "#FF6600", letterSpacing: 2 }}>{pin}</span>
+                          <span style={{ fontSize: 26, fontWeight: 900, color: "var(--fg-FF6600, #FF6600)", letterSpacing: 2 }}>{pin}</span>
                         </div>
-                        <span style={{ color: "#FF6600", fontWeight: 700, fontSize: 15 }}>⏱ {pinCountdown}s</span>
+                        <span style={{ color: "var(--fg-FF6600, #FF6600)", fontWeight: 700, fontSize: 15 }}>⏱ {pinCountdown}s</span>
                       </div>
                       <button onClick={() => setShowPin(false)}
                         style={{ width: "100%", background: "transparent", color: subtext, border: `1px solid ${border}`, borderRadius: 10, padding: "8px", fontSize: 12, cursor: "pointer" }}>
@@ -362,18 +362,18 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
                 </div>
 
                 {/* PIN Finalizar (employer digita o PIN que o worker enviou) */}
-                <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14 }}>
+                <div style={{ background: isDark ? "var(--bg-0D0D0D, #0D0D0D)" : "var(--bg-F0F0F0, #F0F0F0)", borderRadius: 12, padding: 14 }}>
                   <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>🏁 {t(lang, "finishJob", "Finalizar Obra")}</p>
                   {!showFinishPin ? (
                     <button onClick={() => setShowFinishPin(true)}
-                      style={{ width: "100%", background: "#22C55E22", color: "#22C55E", border: "1px solid #22C55E44", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                      style={{ width: "100%", background: "#22C55E22", color: "var(--fg-22C55E, #22C55E)", border: "1px solid #22C55E44", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                       {t(lang, "enterCompletionPin", "Inserir PIN de Conclusão do Profissional")}
                     </button>
                   ) : (
                     <>
                       {/* UX FIX: instrução clara de onde vem o PIN */}
                       <div style={{ marginBottom: 10, background: "#22C55E15", border: "1px solid #22C55E40", borderRadius: 10, padding: "8px 12px" }}>
-                        <p style={{ color: "#22C55E", fontSize: 13, margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
+                        <p style={{ color: "var(--fg-22C55E, #22C55E)", fontSize: 13, margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
                           👉 {t(lang, "askWorkerForCode", "Pede ao profissional {name} o código de 6 dígitos que aparece no telemóvel dele.")
                             .replace("{name}", otherUser?.full_name || t(lang, "worker", "Profissional"))}
                         </p>
@@ -392,7 +392,7 @@ function EmployerJobCard({ job, applications, user, usersById = {}, onReload, is
 
                 {/* #14 / #28 — denunciar ausência ou abrir reclamação */}
                 <button onClick={handleNoShow}
-                  style={{ width: "100%", marginTop: 10, background: "transparent", color: "#EF4444", border: "1px solid #EF444444", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  style={{ width: "100%", marginTop: 10, background: "transparent", color: "var(--fg-EF4444, #EF4444)", border: "1px solid #EF444444", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                   <Flag size={14} /> {t(lang, "reportProblem", "Reportar ausência ou problema")}
                 </button>
               </>
@@ -488,7 +488,7 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
   };
 
   return (
-    <div style={{ background: isDark ? "#161616" : "#FFF", borderRadius: 10, padding: "10px 12px", border: `1px solid ${border}`, marginBottom: 8 }}>
+    <div style={{ background: isDark ? "var(--bg-161616, #161616)" : "var(--bg-FFFFFF, #FFF)", borderRadius: 10, padding: "10px 12px", border: `1px solid ${border}`, marginBottom: 8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
         <div
           onClick={() => worker && navigate(`${createPageUrl("Profile")}?userId=${worker.id}`)}
@@ -496,7 +496,7 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
           onMouseEnter={e => worker && (e.currentTarget.style.background = "rgba(244,98,31,0.08)")}
           onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
         >
-          <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#F4621F33", display: "flex", alignItems: "center", justifyContent: "center", color: "#F4621F", fontWeight: 700, fontSize: 15, flexShrink: 0, overflow: "hidden" }}>
+          <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#F4621F33", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--fg-F4621F, #F4621F)", fontWeight: 700, fontSize: 15, flexShrink: 0, overflow: "hidden" }}>
             {worker?.avatar_url
               ? <img src={worker.avatar_url} style={{width:"100%",height:"100%",objectFit:"cover"}} alt="" />
               : worker?.full_name?.charAt(0) || "?"}
@@ -504,34 +504,34 @@ function AppMiniCard({ app, job, isDark, text, subtext, border, surface, onReloa
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontWeight: 700, fontSize: 13, color: text, margin: 0 }}>
               {worker?.full_name || t(lang, "worker", "Profissional")}
-              {worker && <span style={{fontSize:10,color:"#F4621F",marginLeft:4}}>ver →</span>}
+              {worker && <span style={{fontSize:10,color:"var(--fg-F4621F, #F4621F)",marginLeft:4}}>ver →</span>}
             </p>
             <p style={{ fontSize: 11, color: subtext, margin: 0 }}>⭐ {worker?.rating?.toFixed(1) || t(lang, "newLabel", "Novo")}</p>
           </div>
         </div>
-        <p style={{ color: "#F4621F", fontWeight: 800, fontSize: 15, margin: 0, flexShrink: 0 }}>€{app.proposed_price || job.price}</p>
+        <p style={{ color: "var(--fg-F4621F, #F4621F)", fontWeight: 800, fontSize: 15, margin: 0, flexShrink: 0 }}>€{app.proposed_price || job.price}</p>
       </div>
       {app.message && (
-        <p style={{ color: subtext, fontSize: 12, fontStyle: "italic", background: isDark ? "#0A0A0A" : "#F5F5F5", borderRadius: 7, padding: "6px 10px", margin: "0 0 8px" }}>
+        <p style={{ color: subtext, fontSize: 12, fontStyle: "italic", background: isDark ? "var(--bg-0A0A0A, #0A0A0A)" : "var(--bg-F5F5F5, #F5F5F5)", borderRadius: 7, padding: "6px 10px", margin: "0 0 8px" }}>
           "{app.message.slice(0, 100)}{app.message.length > 100 ? "…" : ""}"
         </p>
       )}
       {app.counter_offer && (
-        <p style={{ color: "#3B82F6", fontSize: 12, fontWeight: 600, background: "#3B82F615", borderRadius: 7, padding: "6px 10px", margin: "0 0 8px" }}>
+        <p style={{ color: "var(--fg-3B82F6, #3B82F6)", fontSize: 12, fontWeight: 600, background: "#3B82F615", borderRadius: 7, padding: "6px 10px", margin: "0 0 8px" }}>
           💰 Contraproposta enviada: €{app.counter_offer} — {app.counter_offer_status === "accepted" ? "aceite" : "à espera de resposta"}
         </p>
       )}
       <div style={{ display: "flex", gap: 8 }}>
         <button onClick={handleReject} disabled={acting}
-          style={{ flex: 1, background: "#EF444422", color: "#EF4444", border: "1px solid #EF444444", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+          style={{ flex: 1, background: "#EF444422", color: "var(--fg-EF4444, #EF4444)", border: "1px solid #EF444444", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
           ✕ {t(lang, "reject", "Recusar")}
         </button>
         <button onClick={handleCounterOffer} disabled={acting}
-          style={{ flex: 1, background: "#3B82F622", color: "#3B82F6", border: "1px solid #3B82F644", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+          style={{ flex: 1, background: "#3B82F622", color: "var(--fg-3B82F6, #3B82F6)", border: "1px solid #3B82F644", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
           💰 {t(lang, "counterOffer", "Contrapropor")}
         </button>
         <button onClick={handleAccept} disabled={acting}
-          style={{ flex: 2, background: "#FF6600", color: "#FFF", border: "none", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+          style={{ flex: 2, background: "var(--bg-FF6600, #FF6600)", color: "var(--on-FFFFFF, #FFF)", border: "none", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
           ✓ {t(lang, "accept", "Aceitar")}
         </button>
       </div>
@@ -639,12 +639,12 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
               <span style={{ fontSize: 12, color: subtext, display: "flex", alignItems: "center", gap: 3 }}>
                 <MapPin size={11} />{job.location}
               </span>
-              <span style={{ color: "#FF6600", fontWeight: 800, fontSize: 13 }}>€{job.price}</span>
+              <span style={{ color: "var(--fg-FF6600, #FF6600)", fontWeight: 800, fontSize: 13 }}>€{job.price}</span>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ background: s.color + "22", color: s.color, borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>{statusLabel(lang, s)}</span>
-            {expanded ? <ChevronUp size={16} color={subtext} /> : <ChevronDown size={16} color={subtext} />}
+            <span style={{ background: `color-mix(in srgb, ${s.color} 13.33%, transparent)`, color: s.color, borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 700 }}>{statusLabel(lang, s)}</span>
+            {expanded ? <ChevronUp size={16} style={{ color: subtext }} /> : <ChevronDown size={16} style={{ color: subtext }} />}
           </div>
         </div>
 
@@ -661,7 +661,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                 }
                 setCompletion({ application, job, otherUser: resolvedEmployer });
               }}
-              style={{ width: "100%", background: "linear-gradient(135deg, #A855F7, #7C3AED)", color: "#FFF",
+              style={{ width: "100%", background: "linear-gradient(135deg, var(--bg-A855F7, #A855F7), var(--bg-7C3AED, #7C3AED))", color: "var(--fg-FFFFFF, #FFF)",
                 border: "none", borderRadius: 14, padding: "15px", fontWeight: 800, fontSize: 15,
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 boxShadow: "0 4px 20px #A855F744" }}>
@@ -674,7 +674,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
           <div style={{ padding: "0 16px 16px", borderTop: `1px solid ${border}` }}>
             {employer && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-                <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#3B82F622", display: "flex", alignItems: "center", justifyContent: "center", color: "#3B82F6", fontWeight: 700 }}>
+                <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#3B82F622", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--fg-3B82F6, #3B82F6)", fontWeight: 700 }}>
                   {employer.full_name?.charAt(0) || "?"}
                 </div>
                 <div>
@@ -689,13 +689,13 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
               <>
                 <div style={{ background: "#F59E0B22", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 18 }}>⏳</span>
-                  <p style={{ color: "#F59E0B", fontWeight: 600, fontSize: 13, margin: 0 }}>{t(lang, "pendingApplicationWaiting", "Candidatura pendente — aguarda resposta")}</p>
+                  <p style={{ color: "var(--fg-F59E0B, #F59E0B)", fontWeight: 600, fontSize: 13, margin: 0 }}>{t(lang, "pendingApplicationWaiting", "Candidatura pendente — aguarda resposta")}</p>
                 </div>
 
                 {/* #110 — contraproposta do empregador */}
                 {application.counter_offer && application.counter_offer_status === "pending" && (
                   <div style={{ background: "#3B82F615", border: "1px solid #3B82F644", borderRadius: 12, padding: "12px 14px", marginTop: 10 }}>
-                    <p style={{ color: "#3B82F6", fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>
+                    <p style={{ color: "var(--fg-3B82F6, #3B82F6)", fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>
                       💰 O empregador propôs €{application.counter_offer}
                     </p>
                     <div style={{ display: "flex", gap: 8 }}>
@@ -722,7 +722,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                           onReload();
                         } catch (e) { toast.error(e.message || "Erro"); }
                       }}
-                        style={{ flex: 2, background: "#3B82F6", color: "#fff", border: "none", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                        style={{ flex: 2, background: "var(--bg-3B82F6, #3B82F6)", color: "var(--fg-FFFFFF, #fff)", border: "none", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                         Aceitar €{application.counter_offer}
                       </button>
                     </div>
@@ -741,18 +741,18 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
             {job.status === "in_progress" && application?.status === "accepted" && (
               <>
                 {/* Confirmar presença */}
-                <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14, marginBottom: 10 }}>
+                <div style={{ background: isDark ? "var(--bg-0D0D0D, #0D0D0D)" : "var(--bg-F0F0F0, #F0F0F0)", borderRadius: 12, padding: 14, marginBottom: 10 }}>
                   <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>📍 {t(lang, "confirmPresence", "Confirmar Presença")}</p>
                   {pinOk ? (
                     <div style={{ background: "#22C55E22", borderRadius: 10, padding: "14px", textAlign: "center" }}>
-                      <p style={{ color: "#22C55E", fontWeight: 800, fontSize: 15, margin: "0 0 4px" }}>
+                      <p style={{ color: "var(--fg-22C55E, #22C55E)", fontWeight: 800, fontSize: 15, margin: "0 0 4px" }}>
                         ✅ {t(lang, "thankYouWorkDone", "Obrigado. Presença registada!")}
                       </p>
                       <p style={{ color: subtext, fontSize: 12, margin: 0 }}>{t(lang, "registeredAt", "Registado às")} {format(new Date(), "HH:mm")}</p>
                     </div>
                   ) : !showKeypad ? (
                     <button onClick={() => setShowKeypad(true)}
-                      style={{ width: "100%", background: "#3B82F622", color: "#3B82F6", border: "1px solid #3B82F644", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                      style={{ width: "100%", background: "#3B82F622", color: "var(--fg-3B82F6, #3B82F6)", border: "1px solid #3B82F644", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                       {t(lang, "enterEmployerPin", "Inserir PIN do Empregador")}
                     </button>
                   ) : (
@@ -767,7 +767,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                 </div>
 
                 {/* PIN de finalização (worker gera e envia ao employer) */}
-                <div style={{ background: isDark ? "#0D0D0D" : "#F0F0F0", borderRadius: 12, padding: 14 }}>
+                <div style={{ background: isDark ? "var(--bg-0D0D0D, #0D0D0D)" : "var(--bg-F0F0F0, #F0F0F0)", borderRadius: 12, padding: 14 }}>
                   <p style={{ color: text, fontWeight: 700, fontSize: 13, margin: "0 0 8px" }}>🏁 {t(lang, "finishJob", "Finalizar Obra")}</p>
                   {!showFinishPin ? (
                     <button onClick={async () => {
@@ -783,7 +783,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
                         sendBrowserPush("KANDU — Obra Concluída! 🏁", `PIN: ${completionPin} — "${job.title}". Insere no app para finalizar.`);
                       } catch(_) {}
                     }}
-                      style={{ width: "100%", background: "#22C55E22", color: "#22C55E", border: "1px solid #22C55E44", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                      style={{ width: "100%", background: "#22C55E22", color: "var(--fg-22C55E, #22C55E)", border: "1px solid #22C55E44", borderRadius: 12, padding: "11px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                       {t(lang, "generatePinNotifyEmployer", "Gerar PIN de Conclusão e Notificar Empregador")}
                     </button>
                   ) : (
@@ -800,7 +800,7 @@ function WorkerJobCard({ job, application, user, usersById = {}, onReload, isDar
 
                 {/* #16 / #28 — denunciar anúncio falso ou abrir reclamação */}
                 <button onClick={() => navigate(`${createPageUrl("Complaints")}?jobId=${job.id}`)}
-                  style={{ width: "100%", marginTop: 10, background: "transparent", color: "#EF4444", border: "1px solid #EF444444", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  style={{ width: "100%", marginTop: 10, background: "transparent", color: "var(--fg-EF4444, #EF4444)", border: "1px solid #EF444444", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                   <Flag size={14} /> {t(lang, "reportProblem", "Reportar problema com a obra")}
                 </button>
               </>
@@ -849,8 +849,8 @@ function SavedJobCard({ job, user, onReload, text, subtext, border }) {
             <span style={{ fontSize: 12, color: subtext, display: "flex", alignItems: "center", gap: 3 }}>
               <MapPin size={11} />{job.location}
             </span>
-            <span style={{ color: "#FF6600", fontWeight: 800, fontSize: 14 }}>€{job.price}</span>
-            <span style={{ background: s.color + "22", color: s.color, borderRadius: 20, padding: "3px 9px", fontSize: 11, fontWeight: 700 }}>
+            <span style={{ color: "var(--fg-FF6600, #FF6600)", fontWeight: 800, fontSize: 14 }}>€{job.price}</span>
+            <span style={{ background: `color-mix(in srgb, ${s.color} 13.33%, transparent)`, color: s.color, borderRadius: 20, padding: "3px 9px", fontSize: 11, fontWeight: 700 }}>
               {statusLabel(lang, s)}
             </span>
           </div>
@@ -861,7 +861,7 @@ function SavedJobCard({ job, user, onReload, text, subtext, border }) {
         </button>
       </div>
       <button onClick={() => navigate(createPageUrl("Home"))}
-        style={{ width: "100%", marginTop: 12, background: "#FF660022", color: "#FF6600", border: "1px solid #FF660055", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+        style={{ width: "100%", marginTop: 12, background: "#FF660022", color: "var(--fg-FF6600, #FF6600)", border: "1px solid #FF660055", borderRadius: 10, padding: "9px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
         Ver no mapa →
       </button>
     </div>
@@ -877,7 +877,7 @@ export default function MyJobs() {
   const surface = "var(--surface2)";
   const text    = "var(--text)";
   const subtext = "var(--text2)";
-  const border  = isDark ? "#2A2A2A" : "#E5E5E5";
+  const border = isDark ? "var(--bd-2A2A2A, #2A2A2A)" : "var(--bd-E5E5E5, #E5E5E5)";
 
   const [user,         setUser]         = useState(null);
   const [jobs,         setJobs]         = useState([]);
@@ -997,7 +997,7 @@ export default function MyJobs() {
           </div>
           {isEmployer && (
             <button onClick={() => navigate(createPageUrl("NewJob"))}
-              style={{ background: "#FF6600", border: "none", borderRadius: 50, padding: "10px 16px", color: "#FFF", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              style={{ background: "var(--bg-FF6600, #FF6600)", border: "none", borderRadius: 50, padding: "10px 16px", color: "var(--on-FFFFFF, #FFF)", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
               <Plus size={15} /> {t(lang, "publishJob", "Publicar Obra")}
             </button>
           )}
@@ -1010,12 +1010,12 @@ export default function MyJobs() {
           const active = tab === tabItem.id;
           return (
             <button key={tabItem.id} onClick={() => setTab(tabItem.id)}
-              style={{ flex: "1 0 auto", minWidth: 78, padding: "14px 6px", borderRadius: 16, border: `2px solid ${active ? "#FF6600" : border}`,
-                background: active ? "#FF6600" : surface, color: active ? "#FFF" : subtext, cursor: "pointer", textAlign: "center" }}>
+              style={{ flex: "1 0 auto", minWidth: 78, padding: "14px 6px", borderRadius: 16, border: `2px solid ${active ? "var(--bd-FF6600, #FF6600)" : border}`,
+                background: active ? "var(--bg-FF6600, #FF6600)" : surface, color: active ? "var(--on-FFFFFF, #FFF)" : subtext, cursor: "pointer", textAlign: "center" }}>
               <div style={{ fontSize: 20, marginBottom: 3 }}>{tabItem.icon}</div>
               <div style={{ fontWeight: 700, fontSize: 12 }}>{tabItem.label}</div>
               {tabItem.count > 0 && (
-                <div style={{ marginTop: 3, background: active ? "#FFF3" : "#FF660033", color: active ? "#FFF" : "#FF6600",
+                <div style={{ marginTop: 3, background: active ? "#FFF3" : "#FF660033", color: active ? "var(--fg-FFFFFF, #FFF)" : "var(--fg-FF6600, #FF6600)",
                   borderRadius: 10, padding: "2px 8px", fontSize: 11, fontWeight: 800, display: "inline-block" }}>{tabItem.count}</div>
               )}
             </button>
@@ -1038,13 +1038,13 @@ export default function MyJobs() {
             </p>
             {tab === "pending" && isWorker && (
               <button onClick={() => navigate(createPageUrl("Home"))}
-                style={{ background: "#FF6600", border: "none", borderRadius: 12, padding: "12px 24px", color: "#FFF", fontWeight: 700, fontSize: 14, cursor: "pointer", marginTop: 10 }}>
+                style={{ background: "var(--bg-FF6600, #FF6600)", border: "none", borderRadius: 12, padding: "12px 24px", color: "var(--on-FFFFFF, #FFF)", fontWeight: 700, fontSize: 14, cursor: "pointer", marginTop: 10 }}>
                 🗺️ {t(lang, "exploreJobs", "Explorar Obras")}
               </button>
             )}
             {tab === "pending" && isEmployer && (
               <button onClick={() => navigate(createPageUrl("NewJob"))}
-                style={{ background: "#FF6600", border: "none", borderRadius: 12, padding: "12px 24px", color: "#FFF", fontWeight: 700, fontSize: 14, cursor: "pointer", marginTop: 10 }}>
+                style={{ background: "var(--bg-FF6600, #FF6600)", border: "none", borderRadius: 12, padding: "12px 24px", color: "var(--on-FFFFFF, #FFF)", fontWeight: 700, fontSize: 14, cursor: "pointer", marginTop: 10 }}>
                 + {t(lang, "publishJob", "Publicar Obra")}
               </button>
             )}

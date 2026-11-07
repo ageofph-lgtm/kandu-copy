@@ -38,8 +38,8 @@ export default function OfflineBanner() {
         padding: "8px 12px",
         fontSize: 13,
         fontWeight: 700,
-        color: "#FFF",
-        background: online ? "#16A34A" : "#DC2626",
+        color: "var(--fg-FFFFFF, #FFF)",
+        background: online ? "var(--bg-16A34A, #16A34A)" : "var(--bg-DC2626, #DC2626)",
         boxShadow: "0 2px 8px rgba(0,0,0,.25)",
       }}
     >

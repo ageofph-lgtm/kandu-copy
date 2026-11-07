@@ -37,7 +37,7 @@ export default function UserChip({ user, size = "sm", showType = false, style = 
         width: s.avatar, height: s.avatar, borderRadius: "50%",
         background: typeColor, border: `2px solid ${typeColor}`,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: s.font, fontWeight: 800, color: "#fff",
+        fontSize: s.font, fontWeight: 800, color: "var(--fg-FFFFFF, #fff)",
         overflow: "hidden", flexShrink: 0
       }}>
         {user.avatar_url
@@ -47,16 +47,16 @@ export default function UserChip({ user, size = "sm", showType = false, style = 
       <div style={{ minWidth: 0 }}>
         <div style={{ fontWeight: 700, fontSize: s.nameFont, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {user.full_name || user.email}
-          {user.verified && <span style={{ marginLeft: 4, color: "#22c55e", fontSize: 11 }}>✓</span>}
+          {user.verified && <span style={{ marginLeft: 4, color: "var(--fg-22C55E, #22c55e)", fontSize: 11 }}>✓</span>}
         </div>
         {showType && (
           <div style={{ fontSize: 11, color: typeColor, fontWeight: 600, marginTop: 1 }}>{typeLabel}</div>
         )}
         {user.rating && (
-          <div style={{ fontSize: 11, color: "#888", marginTop: 1 }}>⭐ {Number(user.rating).toFixed(1)} · {user.city || "Portugal"}</div>
+          <div style={{ fontSize: 11, color: "var(--fg-888888, #888)", marginTop: 1 }}>⭐ {Number(user.rating).toFixed(1)} · {user.city || "Portugal"}</div>
         )}
       </div>
-      <span style={{ fontSize: 11, color: "#F4621F", fontWeight: 600, flexShrink: 0 }}>→</span>
+      <span style={{ fontSize: 11, color: "var(--fg-F4621F, #F4621F)", fontWeight: 600, flexShrink: 0 }}>→</span>
     </div>
   );
 }
