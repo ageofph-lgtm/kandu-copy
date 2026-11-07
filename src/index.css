@@ -318,9 +318,18 @@ html[data-theme="ember-dark"] .k-badge {
   color: #2a1402;
 }
 
-/* Mapa — tiles quentes no Ember, frios no Titânio */
-html[data-theme="ember-light"] .leaflet-tile-pane { filter: sepia(.18) saturate(1.08) contrast(.98); }
-html[data-theme="ember-dark"]  .leaflet-tile-pane { filter: sepia(.22) saturate(1.05) brightness(.9); }
+/* Mapa — base OpenStreetMap (sem chave de API).
+   O escuro sai de um filtro sobre os tiles claros: é o truque habitual
+   e evita depender de um fornecedor com chave. */
+html[data-theme="dark"] .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(.92) contrast(.92) saturate(.55);
+}
+html[data-theme="ember-light"] .leaflet-tile-pane {
+  filter: sepia(.16) saturate(1.06) brightness(1.02);
+}
+html[data-theme="ember-dark"] .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(175deg) brightness(.88) contrast(.94) saturate(.5) sepia(.15);
+}
 
 /* ── Pins do mapa (zoom-aware) ── */
 .k-pin {

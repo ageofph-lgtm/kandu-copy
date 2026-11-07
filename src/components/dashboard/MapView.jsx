@@ -138,13 +138,14 @@ export default function MapView({ jobs, onJobClick, center, userLocation, active
   const { isDark, theme } = useTheme();
   const [zoom, setZoom] = useState(13);
 
-  // Tiles: CARTO (o mesmo tipo de mapa limpo da referência), claro/escuro.
-  // No Ember a cor é ajustada por CSS (.leaflet-tile-pane).
+  // Tiles: OpenStreetMap (sem chave de API).
+  // As variantes escura/Ember são obtidas por filtro em .leaflet-tile-pane.
   const tile = useMemo(() => {
     const style = isDark ? 'dark_all' : 'light_all';
     return {
-      url: `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png`,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      url: `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`,
+      subdomains: 'abc',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     };
   }, [isDark, theme]);
 
@@ -169,7 +170,7 @@ export default function MapView({ jobs, onJobClick, center, userLocation, active
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%', zIndex: 0 }}
       >
-        <TileLayer attribution={tile.attribution} url={tile.url} />
+        <TileLayer attribution={tile.attribution} url={tile.url} subdomains={tile.subdomains} />
         <RecenterMap center={center} />
         <ZoomWatcher onChange={setZoom} />
 
