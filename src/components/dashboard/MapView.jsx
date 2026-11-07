@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { useTheme } from '@/lib/ThemeContext';
 
 /* ─────────────────────────────────────────
    Ícones SVG únicos e sugestivos por categoria
@@ -50,41 +51,52 @@ const CATEGORY_MAP = {
 
 const DEFAULT = { color: "#6b7280", svg: `<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><circle cx="12" cy="10" r="5"/><path d="M12 22l-5-8h10z"/></svg>` };
 
-const createJobIcon = (job) => {
+/* ── Pins ────────────────────────────────────────────────────────────
+   Antes: etiqueta fixa de 90x32 px com preço, igual em qualquer zoom,
+   o que enchia o mapa no telemóvel. Agora o pin é um círculo pequeno
+   que cresce com o zoom (como no Google Maps) e só mostra o preço
+   quando já há espaço para o ler (zoom >= 15).
+──────────────────────────────────────────────────────────────────── */
+const PIN_SIZE = (zoom) => {
+  if (zoom >= 17) return 32;
+  if (zoom >= 15) return 28;
+  if (zoom >= 13) return 24;
+  if (zoom >= 11) return 20;
+  return 16;
+};
+
+const createJobIcon = (job, zoom = 13, active = false) => {
   const cat = CATEGORY_MAP[job.category] || DEFAULT;
-  const priceText = `€${job.price}${job.price_type === 'hourly' ? '/h' : ''}`;
-  // #20 — obras urgentes (urgency "high") ficam com borda vermelha + flame
+  const size = PIN_SIZE(zoom);
   const urgent = job.urgency === 'high';
-  const border = urgent ? '2px solid #EF4444' : '2px solid rgba(255,255,255,0.4)';
-  const glow = urgent ? '0 0 10px rgba(239,68,68,0.7), ' : '';
-  const flame = urgent ? `<span style="font-size:11px;line-height:1">🔥</span>` : '';
+  const showPrice = zoom >= 15;
+  const glyph = Math.round(size * 0.58);
+  const priceText = `€${Math.round(Number(job.price) || 0)}${job.price_type === 'hourly' ? '/h' : ''}`;
 
-  const html = `
-    <div style="
-      background:${cat.color};
-      color:white;
-      padding:5px 10px 5px 7px;
-      border-radius:22px;
-      display:flex;
-      align-items:center;
-      gap:5px;
-      font-weight:700;
-      font-size:12px;
-      box-shadow:${glow}0 3px 8px rgba(0,0,0,0.28);
-      border:${border};
-      white-space:nowrap;
-    ">
-      ${cat.svg}
-      <span>${priceText}</span>
-      ${flame}
-    </div>
-  `;
+  const cls = ['k-pin', urgent ? 'k-pin--urgent' : '', active ? 'k-pin--active' : ''].join(' ').trim();
 
+  if (!showPrice) {
+    return L.divIcon({
+      html: `<div class="${cls}" style="--pin-color:${cat.color};width:${size}px;height:${size}px">
+               <svg viewBox="0 0 24 24" fill="#fff" width="${glyph}" height="${glyph}">${cat.svg.replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg>
+             </div>`,
+      className: 'k-pin-wrap',
+      iconSize: L.point(size, size),
+      iconAnchor: [size / 2, size / 2],
+      popupAnchor: [0, -size / 2],
+    });
+  }
+
+  const h = Math.round(size * 0.82);
   return L.divIcon({
-    html,
-    className: '',
-    iconSize: L.point(urgent ? 104 : 90, 32),
-    iconAnchor: [urgent ? 52 : 45, 16]
+    html: `<div class="k-pin-price" style="--pin-color:${cat.color}">
+             <svg viewBox="0 0 24 24" fill="#fff" width="${Math.round(h * 0.6)}" height="${Math.round(h * 0.6)}">${cat.svg.replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg>
+             <span>${priceText}</span>${urgent ? '<span>🔥</span>' : ''}
+           </div>`,
+    className: 'k-pin-wrap',
+    iconSize: L.point(70, h),
+    iconAnchor: [35, h / 2],
+    popupAnchor: [0, -h / 2],
   });
 };
 
@@ -102,6 +114,18 @@ const createUserIcon = () => L.divIcon({
   iconAnchor: [11, 11]
 });
 
+/* Mantém o pin sincronizado com o nível de zoom */
+function ZoomWatcher({ onChange }) {
+  const map = useMap();
+  useEffect(() => {
+    const push = () => onChange(map.getZoom());
+    push();
+    map.on('zoomend', push);
+    return () => { map.off('zoomend', push); };
+  }, [map, onChange]);
+  return null;
+}
+
 function RecenterMap({ center }) {
   const map = useMap();
   useEffect(() => {
@@ -110,7 +134,29 @@ function RecenterMap({ center }) {
   return null;
 }
 
-export default function MapView({ jobs, onJobClick, center, userLocation }) {
+export default function MapView({ jobs, onJobClick, center, userLocation, activeJobId }) {
+  const { isDark, theme } = useTheme();
+  const [zoom, setZoom] = useState(13);
+
+  // Tiles: CARTO (o mesmo tipo de mapa limpo da referência), claro/escuro.
+  // No Ember a cor é ajustada por CSS (.leaflet-tile-pane).
+  const tile = useMemo(() => {
+    const style = isDark ? 'dark_all' : 'light_all';
+    return {
+      url: `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png`,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    };
+  }, [isDark, theme]);
+
+  const icons = useMemo(() => {
+    const cache = {};
+    jobs.forEach(job => {
+      const key = `${job.id}|${job.category}|${job.urgency}|${job.price}|${job.price_type}|${zoom}|${activeJobId === job.id}`;
+      cache[job.id] = createJobIcon(job, zoom, activeJobId === job.id);
+    });
+    return cache;
+  }, [jobs, zoom, activeJobId]);
+
   if (typeof window === 'undefined') {
     return <div className="h-full w-full bg-gray-200 animate-pulse" />;
   }
@@ -123,25 +169,21 @@ export default function MapView({ jobs, onJobClick, center, userLocation }) {
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%', zIndex: 0 }}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer attribution={tile.attribution} url={tile.url} />
         <RecenterMap center={center} />
+        <ZoomWatcher onChange={setZoom} />
 
-        {/* Ponto do utilizador */}
         {userLocation && (
           <Marker position={userLocation} icon={createUserIcon()} />
         )}
 
-        {/* Marcadores das obras */}
         {jobs.map(job => {
           if (!job.latitude || !job.longitude) return null;
           return (
             <Marker
               key={job.id}
               position={[job.latitude, job.longitude]}
-              icon={createJobIcon(job)}
+              icon={icons[job.id]}
               eventHandlers={{ click: () => onJobClick(job) }}
             />
           );

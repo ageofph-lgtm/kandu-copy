@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Notification, User as UserEntity } from "@/api/entities";
 import { supabase } from "@/api/supabaseClient";
 import { useTheme } from "@/lib/ThemeContext";
+import ThemePicker from "@/components/ThemePicker";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   MapPin,
@@ -271,9 +272,7 @@ export default function Layout({ children }) {
               <img src={logoH} style={{height:36, maxWidth:160, objectFit:"contain"}} alt="KANDU" />
             </div>
             <div style={{padding:"8px",marginBottom:4}}>
-              <button onClick={toggleTheme} title={t(lang,"toggleTheme")} style={{background:"none",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",cursor:"pointer",fontSize:13,color:"#FF6600",fontWeight:600,whiteSpace:"nowrap",width:"100%"}}>
-                {isDark ? "☀️ Light" : "🌙 Dark"}
-              </button>
+              <ThemePicker />
             </div>
             <nav style={{flex:1, padding:"0 8px", display:"flex", flexDirection:"column", gap:4}}>
                 {navItems.map((item) => {
@@ -329,9 +328,9 @@ export default function Layout({ children }) {
       </div>
 
       {/* Bottom Nav Mobile */}
-      <nav className="md:hidden k-nav" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>        <button onClick={toggleTheme} style={{position:"absolute",top:-36,right:12,background:isDark?"#2A2A2A":"#F0F0F0",border:"1px solid #FF660055",borderRadius:20,padding:"4px 12px",fontSize:12,color:"#FF6600",fontWeight:700,cursor:"pointer",zIndex:51}}>
-          {isDark ? "☀️ Light" : "🌙 Dark"}
-        </button>
+      <nav className="md:hidden k-nav" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>        <div style={{position:"absolute",top:-40,right:12,zIndex:51}}>
+          <ThemePicker compact align="right" />
+        </div>
         <Link to={createPageUrl("Home")} className={`k-nav-item${location.pathname===createPageUrl("Home")?" active":""}`} style={{textDecoration:"none"}}>
           <MapPin size={22} />
           <span style={{fontSize:10,marginTop:2,fontWeight:location.pathname===createPageUrl("Home")?700:400}}>{t(lang,"home")}</span>

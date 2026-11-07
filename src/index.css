@@ -220,6 +220,129 @@ html[data-theme="light"], body.light, .light {
   --border:   rgba(20,25,35,.13);
 }
 
+
+/* ═══════════════════════════════════════════════════════
+   EMBER · Volume 3 do rebranding (E3) — a marca como luz
+   Claro: pêssego quente com manchas laranja, vidro quente,
+   controlos neutros quase pretos.
+   Escuro: paleta invertida — carvão quente com a mesma brasa.
+   Só tokens: nenhuma alteração de comportamento.
+   ══════════════════════════════════════════════════════*/
+html[data-theme="ember-light"] {
+  --base:     #FFD9C2;
+  --base2:    #FFF3EA;
+  --glass:    rgba(255,255,255,.58);
+  --glass2:   rgba(255,255,255,.76);
+  --text:     #1A1A1E;
+  --text2:    #6B5446;
+  --text3:    #9C8578;
+  --edge-hi:  rgba(255,255,255,.95);
+  --edge-lo:  rgba(150,80,40,.22);
+  --hair:     rgba(80,40,15,.14);
+  --hair2:    rgba(80,40,15,.07);
+  --shadow:   rgba(150,80,30,.30);
+  --brush:    rgba(120,60,20,.02);
+  --surface:  #FFE9DB;
+  --surface2: #FFFFFF;
+  --border:   rgba(80,40,15,.14);
+  /* acento: no Ember o preto é o controlo e o laranja é a luz */
+  --ember-ink: #1A1A1E;
+  --ember-glow: rgba(255,122,26,.42);
+  color-scheme: light;
+}
+
+html[data-theme="ember-dark"] {
+  --base:     #0B0806;
+  --base2:    #171210;
+  --glass:    rgba(255,255,255,.055);
+  --glass2:   rgba(255,255,255,.09);
+  --text:     #F7EFE9;
+  --text2:    #B09A8C;
+  --text3:    #7A6559;
+  --edge-hi:  rgba(255,255,255,.22);
+  --edge-lo:  rgba(0,0,0,.62);
+  --hair:     rgba(255,255,255,.10);
+  --hair2:    rgba(255,255,255,.05);
+  --shadow:   rgba(0,0,0,.76);
+  --brush:    rgba(255,255,255,.015);
+  --surface:  #171210;
+  --surface2: #221A16;
+  --border:   rgba(255,255,255,.10);
+  --ember-ink: #FFE9DB;
+  --ember-glow: rgba(255,106,0,.30);
+  color-scheme: dark;
+}
+
+/* Luz de fundo — as manchas do Ember vivem atrás do vidro,
+   por isso o blur dos tiles tem algo quente para refratar. */
+html[data-theme^="ember"] body {
+  background: var(--base2);
+}
+html[data-theme^="ember"] #root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(720px 560px at 14% 4%,  var(--ember-glow), transparent 62%),
+    radial-gradient(560px 480px at 92% 18%, rgba(255,178,74,.34), transparent 64%),
+    radial-gradient(760px 700px at 58% 100%, rgba(255,138,76,.30), transparent 66%),
+    linear-gradient(160deg, #FFD6BE 0%, #FFF3EA 45%, #FFC8A6 100%);
+}
+html[data-theme="ember-dark"] #root::before {
+  background:
+    radial-gradient(720px 560px at 12% 2%,  rgba(255,106,0,.20), transparent 62%),
+    radial-gradient(560px 480px at 90% 16%, rgba(255,150,60,.14), transparent 64%),
+    radial-gradient(780px 700px at 62% 100%, rgba(255,90,20,.16), transparent 66%),
+    linear-gradient(170deg, #120C09 0%, #0B0806 55%, #170E09 100%);
+}
+
+/* O .k-bg passa a deixar ver a luz (mantém o resto igual) */
+html[data-theme^="ember"] .k-bg {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), transparent 30%),
+    transparent;
+}
+
+/* No Ember o botão principal é tinta preta sobre luz laranja */
+html[data-theme="ember-light"] .k-pill-primary,
+html[data-theme="ember-light"] .k-badge {
+  background: linear-gradient(180deg, #2A2A30, #1A1A1E);
+  color: #FFF3EA;
+  box-shadow: 0 8px 20px -10px rgba(26,26,30,.55), inset 0 1px 0 rgba(255,255,255,.18);
+}
+html[data-theme="ember-dark"] .k-pill-primary,
+html[data-theme="ember-dark"] .k-badge {
+  background: linear-gradient(135deg, #FFC489, #FF7A1A 42%, #E04E00);
+  color: #2a1402;
+}
+
+/* Mapa — tiles quentes no Ember, frios no Titânio */
+html[data-theme="ember-light"] .leaflet-tile-pane { filter: sepia(.18) saturate(1.08) contrast(.98); }
+html[data-theme="ember-dark"]  .leaflet-tile-pane { filter: sepia(.22) saturate(1.05) brightness(.9); }
+
+/* ── Pins do mapa (zoom-aware) ── */
+.k-pin {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  background: var(--pin-color, #6b7280);
+  box-shadow: 0 2px 6px rgba(0,0,0,.28), 0 0 0 2px rgba(255,255,255,.55);
+  transition: width .16s ease, height .16s ease, box-shadow .16s ease;
+  overflow: hidden;
+}
+.k-pin--urgent { box-shadow: 0 0 0 2.5px #EF4444, 0 2px 8px rgba(239,68,68,.55); }
+.k-pin--active { box-shadow: 0 0 0 3px #1A1A1E, 0 4px 12px rgba(0,0,0,.45); }
+.k-pin svg { display: block; }
+.k-pin-price {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 7px; border-radius: 999px;
+  background: var(--pin-color, #6b7280); color: #fff;
+  font: 700 11px/1.2 system-ui, sans-serif;
+  box-shadow: 0 2px 6px rgba(0,0,0,.28), 0 0 0 1.5px rgba(255,255,255,.55);
+  white-space: nowrap;
+}
+
 /* ── TILE — chamfered glass card ── */
 .k-tile {
   position: relative;
