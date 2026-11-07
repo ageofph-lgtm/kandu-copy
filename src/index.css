@@ -716,7 +716,7 @@ html[data-theme^="ember"] .k-pin-price { box-shadow: 0 4px 10px -4px rgba(0,0,0,
 html[data-theme^="ember"] .k-em-hero { background: transparent !important; border-bottom: 0 !important; }
 html[data-theme="ember-light"] .k-em-hero h1 { color: var(--text) !important; }
 html[data-theme="ember-light"] .k-em-hero p { color: var(--text2) !important; }
-html[data-theme="ember-light"] .k-em-hero img { filter: brightness(0); opacity: .88; }
+html[data-theme="ember-light"] .k-em-hero img:not([src^="/brand/"]) { filter: brightness(0); opacity: .88; }
 
 
 /* Ember escuro: componentes que só tinham versão clara (bg-white, text-gray-*)
