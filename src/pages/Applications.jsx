@@ -196,7 +196,7 @@ function CandidateCard({ app, job, worker, onAccept, onReject, isDark, surface, 
 }
 
 // ─── Card de candidatura do worker (só o status, sem PIN/QR) ─────────────────
-function WorkerAppCard({ app, job, isDark, surface, text, subtext, border, onWithdraw }) {
+function WorkerAppCard({ app, job, user, isDark, surface, text, subtext, border, onWithdraw, onReload }) {
   const { lang } = useLanguage();
   const statusMap = {
     pending:  { color: "var(--fg-F59E0B, #F59E0B)", label: `⏳ ${t(lang, "pendingStatus", "Pendente")}` },
@@ -204,6 +204,46 @@ function WorkerAppCard({ app, job, isDark, surface, text, subtext, border, onWit
     rejected: { color: "var(--fg-EF4444, #EF4444)", label: `✕ ${t(lang, "notSelected", "Não selecionado")}` },
   };
   const s = statusMap[app.status] || { color: "var(--fg-888888, #888)", label: app.status };
+  const navigate = useNavigate();
+  const [acting, setActing] = useState(false);
+  const myPrice  = app.proposed_price || job?.price;
+
+  // #110 — responder à contraproposta do empregador aqui mesmo.
+  // Antes só era possível em Trabalho, o que parecia um beco sem saída:
+  // a candidatura ficava "pendente" à espera de uma resposta que não
+  // se conseguia dar nesta página.
+  const respondCounterOffer = async (accept) => {
+    if (acting) return;
+    setActing(true);
+    try {
+      if (accept) {
+        await Application.update(app.id, {
+          counter_offer_status: "accepted",
+          proposed_price: app.counter_offer,
+        });
+        await Notification.create({
+          user_id: job?.employer_id || app.employer_id, type: "new_proposal",
+          title: "✅ Contraproposta aceite",
+          message: `${user?.full_name || "O profissional"} aceitou €${app.counter_offer} para "${job?.title}". Falta confirmares a contratação.`,
+          related_id: job?.id, read: false,
+        }).catch(() => {});
+        toast.success(`Aceitaste €${app.counter_offer}. Falta o empregador confirmar a contratação.`);
+      } else {
+        await Application.update(app.id, { counter_offer_status: "rejected" });
+        await Notification.create({
+          user_id: job?.employer_id || app.employer_id, type: "new_proposal",
+          title: "Contraproposta recusada",
+          message: `${user?.full_name || "O profissional"} recusou €${app.counter_offer} para "${job?.title}". Mantém-se o pedido de €${myPrice}.`,
+          related_id: job?.id, read: false,
+        }).catch(() => {});
+        toast.info(`Recusaste a proposta. Mantém-se o teu valor: €${myPrice}.`);
+      }
+      onReload && await onReload();
+    } catch (e) {
+      toast.error("Erro ao responder: " + (e.message || ""));
+    }
+    setActing(false);
+  };
 
   return (
     <div style={{
@@ -233,11 +273,52 @@ function WorkerAppCard({ app, job, isDark, surface, text, subtext, border, onWit
         </p>
       )}
 
-      {/* #110 — contraproposta do empregador */}
-      {app.status === "pending" && app.counter_offer && app.counter_offer_status === "pending" && (
-        <p style={{ color: "var(--fg-3B82F6, #3B82F6)", fontSize: 12, fontWeight: 600, background: "#3B82F615", borderRadius: 8, padding: "8px 12px", margin: "10px 0 0" }}>
-          💰 O empregador propôs €{app.counter_offer} — responde em <strong>Trabalho</strong>.
+      {/* Estado claro do que está a acontecer (sem contraproposta) */}
+      {app.status === "pending" && !app.counter_offer && (
+        <p style={{ color: subtext, fontSize: 12, margin: "10px 0 0" }}>
+          {t(lang, "waitingEmployerReply", "À espera da resposta do empregador. Podes retirar a candidatura enquanto o anúncio estiver aberto.")}
         </p>
+      )}
+
+      {/* #110 — contraproposta do empregador: responder aqui */}
+      {app.status === "pending" && app.counter_offer && (
+        <div style={{ marginTop: 10, background: "#3B82F615", border: "1px solid #3B82F644", borderRadius: 12, padding: "12px 14px" }}>
+          <p style={{ color: "var(--fg-3B82F6, #3B82F6)", fontWeight: 700, fontSize: 13, margin: 0 }}>
+            💰 O empregador propôs €{app.counter_offer}
+          </p>
+          <p style={{ color: subtext, fontSize: 12, margin: "4px 0 0" }}>
+            {t(lang, "yourRequest", "O teu pedido")}: €{myPrice}
+          </p>
+
+          {(!app.counter_offer_status || app.counter_offer_status === "pending") ? (
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <button onClick={() => respondCounterOffer(false)} disabled={acting}
+                style={{ flex: 1, background: "var(--surface2)", color: subtext, border: `1px solid ${border}`, borderRadius: 10, padding: "10px", fontWeight: 600, fontSize: 13, cursor: acting ? "wait" : "pointer" }}>
+                {t(lang, "decline", "Recusar")}
+              </button>
+              <button onClick={() => respondCounterOffer(true)} disabled={acting}
+                style={{ flex: 2, background: "var(--bg-3B82F6, #3B82F6)", color: "var(--fg-FFFFFF, #FFF)", border: "none", borderRadius: 10, padding: "10px", fontWeight: 700, fontSize: 13, cursor: acting ? "wait" : "pointer" }}>
+                {acting ? "…" : `✓ ${t(lang, "accept", "Aceitar")} €${app.counter_offer}`}
+              </button>
+            </div>
+          ) : app.counter_offer_status === "accepted" ? (
+            <p style={{ color: "var(--fg-22C55E, #22C55E)", fontSize: 12, fontWeight: 600, margin: "8px 0 0" }}>
+              ✓ {t(lang, "counterAcceptedWaitingEmployer", "Aceitaste esta proposta. Falta o empregador confirmar a contratação.")}
+            </p>
+          ) : (
+            <p style={{ color: subtext, fontSize: 12, margin: "8px 0 0" }}>
+              {t(lang, "counterDeclined", "Recusaste esta proposta. Mantém-se o teu valor.")}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Atalho para a obra, onde ficam o chat e a confirmação */}
+      {app.status === "pending" && (
+        <button onClick={() => navigate(createPageUrl("MyJobs"))}
+          style={{ width: "100%", marginTop: 10, background: "transparent", color: "var(--fg-FF6600, #FF6600)", border: "none", padding: "6px 0", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+          {t(lang, "openInJobs", "Ver a obra em Trabalho")} →
+        </button>
       )}
 
       {/* #41 — retirar candidatura antes da aceitação */}
@@ -397,7 +478,7 @@ export default function Applications() {
           </div>
         ) : isWorker ? (
           filtered.map(app => (
-            <WorkerAppCard key={app.id} app={app} job={jobs[app.job_id]} onWithdraw={handleWithdraw}
+            <WorkerAppCard key={app.id} app={app} job={jobs[app.job_id]} user={user} onWithdraw={handleWithdraw} onReload={loadData}
               isDark={isDark} surface={surface} text={text} subtext={subtext} border={border} />
           ))
         ) : (
