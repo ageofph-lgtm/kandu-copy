@@ -16,6 +16,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import SplashScreen from '@/components/SplashScreen';
 import LoadingScreen from '@/components/LoadingScreen';
+import OAuthConsent from '@/pages/OAuthConsent';
 
 const SPLASH_KEY = "kandu_splash_v2";
 
@@ -52,6 +53,7 @@ const AuthenticatedApp = ({ splashActive }) => {
           <LayoutWrapper currentPageName={path}><Page /></LayoutWrapper>
         } />
       ))}
+      <Route path="/oauth/consent" element={<OAuthConsent />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
