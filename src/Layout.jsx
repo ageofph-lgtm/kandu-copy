@@ -22,6 +22,8 @@ import { useLanguage } from "@/lib/LanguageContext";
 import "leaflet/dist/leaflet.css";
 import { Toaster } from "@/components/ui/sonner";
 import { useSessionTimeout } from "@/lib/useSessionTimeout";
+import { sincronizarPush } from "@/lib/push";
+import PushPrompt from "@/components/PushPrompt";
 import { toast } from "sonner";
 
 const workerNavigationItems = [
@@ -66,12 +68,16 @@ export default function Layout({ children }) {
   const [unreadNotifications, setUnreadNotifications] = useState({ chat: 0, applications: 0 });
   const prevAppCount = React.useRef(0);
 
-  // Solicitar permissão de notificações push ao montar
+  // Web Push — clicar numa notificação nativa abre o ecrã certo (mensagem do sw.js)
   useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }, []);
+    if (!("serviceWorker" in navigator)) return;
+    const onMessage = (event) => {
+      if (event.data?.type !== "kandu_open_link" || !event.data?.link) return;
+      navigate(event.data.link);
+    };
+    navigator.serviceWorker.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+  }, [navigate]);
 
   // #85 — logout automático após inatividade
   useSessionTimeout(!!user, () => {
@@ -106,6 +112,8 @@ export default function Layout({ children }) {
       const userData = await UserEntity.me();
       if (!userData) throw new Error("User not found");
       setUser(userData);
+      // liga este aparelho à conta que está a ser usada (sem perguntar nada)
+      sincronizarPush();
 
       const allNotifications = await Notification.filter({
         user_id: userData.id,
@@ -326,6 +334,7 @@ export default function Layout({ children }) {
       {/* Main content */}
       <div className="md:pl-64" style={{display:"flex", flexDirection:"column", flex:1}}>
         <main style={{flex:1, paddingBottom:80}}>
+          <PushPrompt />
           {children}
         </main>
       </div>

@@ -6,6 +6,7 @@ import { useTheme } from "@/lib/ThemeContext";
 import { categoryColor } from "@/lib/categoryColors";
 import { useLanguage } from "@/lib/LanguageContext";
 import { t } from "@/components/utils/translations";
+import { tPush } from "@/components/utils/pushTranslations";
 import LoadingScreen from "@/components/LoadingScreen";
 import MapView from "@/components/dashboard/MapView";
 import JobModal from "@/components/dashboard/JobModal";
@@ -67,6 +68,7 @@ const fmtDist = (d) => (d == null ? null : d < 1 ? `${Math.round(d * 1000)} m` :
 ───────────────────────────*/
 function WorkerHome({ user, isDark }) {
   const { lang } = useLanguage();
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [employersById, setEmployersById] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
@@ -181,6 +183,22 @@ function WorkerHome({ user, isDark }) {
     setSelectedJobDistance(job._distance ?? null);
     setSelectedJob({ ...job, views: (job.views || 0) + 1 });
   };
+
+  // Deep link das notificações (?job=<id>) — abre a obra e limpa o parâmetro
+  const deepLinkAberto = useRef(false);
+  useEffect(() => {
+    if (loading || deepLinkAberto.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const jobId = params.get("job");
+    if (!jobId) return;
+    deepLinkAberto.current = true;
+    const job = jobs.find(j => j.id === jobId);
+    if (job) handleJobClick(job);
+    else toast.info(tPush(lang, "jobUnavailable"));
+    params.delete("job");
+    const query = params.toString();
+    navigate(`${window.location.pathname}${query ? `?${query}` : ""}`, { replace: true });
+  }, [loading, jobs]);
 
   const handleToggleFavorite = async (jobId) => {
     try {

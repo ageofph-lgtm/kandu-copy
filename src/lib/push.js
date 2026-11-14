@@ -113,11 +113,15 @@ export async function ativarPush() {
   }
 }
 
+let tentouSync = false;
+
 /**
  * Sem perguntar nada: se a permissão já está dada, garante a subscrição e
  * volta a ligar o aparelho à conta em uso (uma vez por sessão).
  */
 export async function sincronizarPush() {
+  if (tentouSync) return;
+  tentouSync = true;
   if (!suportaPush() || pushDesligado()) return;
   if (Notification.permission !== "granted") return;
   if (sessionStorage.getItem(SYNC_KEY) === "1") return;

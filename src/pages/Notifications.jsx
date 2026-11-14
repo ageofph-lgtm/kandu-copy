@@ -43,6 +43,8 @@ function notificationTarget(notification) {
       return createPageUrl("Profile");
     case "penalty":
       return jobId ? `${createPageUrl("Complaints")}?jobId=${jobId}` : createPageUrl("Complaints");
+    case "job_match":
+      return `${createPageUrl("Home")}?job=${jobId}`;
     default:
       return createPageUrl("MyJobs");
   }
@@ -73,6 +75,8 @@ function NotificationCard({ notification, onMarkAsRead, onDelete }) {
         return '🚀';
       case 'job_completed':
         return '🎉';
+      case 'job_match':
+        return '🔨';
       default:
         return '🔔';
     }
@@ -213,6 +217,7 @@ export default function Notifications() {
       case 'new_message': return {icon:'💬', bg:'#33333355'};
       case 'job_accepted': return {icon:'✅', bg:'#22C55E22'};
       case 'job_rejected': return {icon:'❌', bg:'#EF444422'};
+      case 'job_match': return {icon:'🔨', bg:'#F4621F22'};
       default: return {icon:'📍', bg:'#FF660022'};
     }
   };

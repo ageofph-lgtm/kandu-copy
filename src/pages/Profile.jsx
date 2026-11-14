@@ -15,6 +15,7 @@ import ProfileForm from "../components/profile/ProfileForm";
 import ReviewsSection from "../components/profile/ReviewsSection";
 import PortfolioGallery from "../components/profile/PortfolioGallery";
 import DocumentsList from "../components/profile/DocumentsList";
+import PushSettings from "@/components/profile/PushSettings";
 import VerificationPanel from "../components/profile/VerificationPanel";
 import { VERIFICATION_LEVELS, computeVerificationLevel } from "@/lib/verification";
 import { validateFile, resizeImage, IMAGE_MIME_TYPES } from "@/lib/validation";
@@ -513,6 +514,8 @@ export default function Profile() {
               <p style={{ color: subtext, fontSize: 12, margin: "0 0 10px", fontWeight: 600 }}>Tema</p>
               <ThemeGrid />
             </div>
+
+            <PushSettings />
 
             <div style={cardStyle}>
               <p style={{ color: subtext, fontSize: 12, margin: "0 0 10px", fontWeight: 600 }}>Idioma da app</p>
