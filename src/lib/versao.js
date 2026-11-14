@@ -122,7 +122,7 @@ export function vigiarVersao(aoDetetar) {
     if (!publicada || publicada === atual) return;
 
     const recente = marca?.alvo === publicada && Date.now() - (marca?.quando || 0) < JANELA_AUTO;
-    const podeSozinho = (arranque || !interagiu) && !recente;
+    const podeSozinho = arranque && !interagiu && !recente;
 
     if (podeSozinho) {
       gravarMarca(publicada);
