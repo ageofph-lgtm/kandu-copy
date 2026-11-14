@@ -24,6 +24,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { useSessionTimeout } from "@/lib/useSessionTimeout";
 import { sincronizarPush } from "@/lib/push";
 import PushPrompt from "@/components/PushPrompt";
+import AvisoAtualizacao from "@/components/AvisoAtualizacao";
+import { atualizarBadge } from "@/lib/appBadge";
 import { toast } from "sonner";
 
 const workerNavigationItems = [
@@ -269,6 +271,19 @@ export default function Layout({ children }) {
     prevUnreadRef.current = total;
   }, [unreadNotifications]);
 
+  // Bolinha no ícone do app (telemóvel) — o mesmo número do sino/contador
+  useEffect(() => {
+    const total = unreadNotifications.applications + unreadNotifications.chat;
+    atualizarBadge(total);
+    // Sem nada por ler: fecha também as notificações do sistema
+    if (total === 0 && "serviceWorker" in navigator) {
+      navigator.serviceWorker.ready
+        .then(reg => reg.getNotifications())
+        .then(ns => ns.forEach(n => n.close()))
+        .catch(() => {});
+    }
+  }, [unreadNotifications]);
+
   // Páginas sem layout
   if (
     location.pathname === createPageUrl("SetupProfile") ||
@@ -276,7 +291,12 @@ export default function Layout({ children }) {
     location.pathname === createPageUrl("Login") ||
     location.pathname === createPageUrl("DevPicker")
   ) {
-    return children;
+    return (
+      <>
+        {children}
+        <AvisoAtualizacao />
+      </>
+    );
   }
 
   return (
@@ -415,6 +435,8 @@ export default function Layout({ children }) {
           </div>
         </div>
       )}
+
+      <AvisoAtualizacao />
     </div>
   );
 }
