@@ -20,6 +20,7 @@ import VerificationPanel from "../components/profile/VerificationPanel";
 import { VERIFICATION_LEVELS, computeVerificationLevel } from "@/lib/verification";
 import { validateFile, resizeImage, IMAGE_MIME_TYPES } from "@/lib/validation";
 import { errorMessage } from "@/lib/net";
+import { limparPushNoLogout } from "@/lib/push";
 
 const OR = "var(--ac-F4621F, #F4621F)";
 
@@ -198,6 +199,7 @@ export default function Profile() {
   };
 
   const handleLogout = async () => {
+    await limparPushNoLogout();
     await supabase.auth.signOut();
     navigate(createPageUrl("Login"));
   };
@@ -218,6 +220,7 @@ export default function Profile() {
       await supabase.from("users")
         .update({ status: "inactive", updated_at: new Date().toISOString() }).eq("id", user.id);
       toast.success("Conta desativada.");
+      await limparPushNoLogout();
       await supabase.auth.signOut();
       navigate(createPageUrl("Welcome"));
     } catch (e) { toast.error("Erro ao desativar: " + errorMessage(e)); }
@@ -242,6 +245,7 @@ export default function Profile() {
         updated_at: new Date().toISOString(),
       }).eq("id", user.id);
       toast.success("Conta eliminada. Os teus dados pessoais foram anonimizados.");
+      await limparPushNoLogout();
       await supabase.auth.signOut();
       navigate(createPageUrl("Welcome"));
     } catch (e) { toast.error("Erro ao eliminar: " + errorMessage(e)); }

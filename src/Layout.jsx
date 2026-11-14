@@ -79,6 +79,14 @@ export default function Layout({ children }) {
     return () => navigator.serviceWorker.removeEventListener("message", onMessage);
   }, [navigate]);
 
+  // Troca de conta no mesmo browser: volta a ligar o aparelho à conta nova
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") sincronizarPush();
+    });
+    return () => subscription?.unsubscribe();
+  }, []);
+
   // #85 — logout automático após inatividade
   useSessionTimeout(!!user, () => {
     toast.info("Sessão terminada por inatividade. Faz login novamente.");

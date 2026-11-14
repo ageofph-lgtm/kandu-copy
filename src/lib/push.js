@@ -71,6 +71,12 @@ async function swPronto(timeoutMs = 5000) {
   ]);
 }
 
+/** ID do utilizador com sessão ativa (null se não houver). */
+async function idUtilizador() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user?.id ?? null;
+}
+
 async function registarNoServidor(sub) {
   const json = sub.toJSON();
   const { error } = await supabase.rpc("register_push_subscription", {
@@ -105,7 +111,8 @@ export async function ativarPush() {
       }));
     await registarNoServidor(sub);
     localStorage.removeItem(OFF_KEY);
-    sessionStorage.setItem(SYNC_KEY, "1");
+    const uid = await idUtilizador();
+    if (uid) sessionStorage.setItem(SYNC_KEY, uid);
     return "ativo";
   } catch (e) {
     console.error("Push subscribe error:", e);
@@ -113,18 +120,18 @@ export async function ativarPush() {
   }
 }
 
-let tentouSync = false;
-
 /**
  * Sem perguntar nada: se a permissão já está dada, garante a subscrição e
- * volta a ligar o aparelho à conta em uso (uma vez por sessão).
+ * volta a ligar o aparelho à conta em uso (marca guarda o id do utilizador,
+ * para a troca de conta no mesmo browser voltar a registar o aparelho).
  */
 export async function sincronizarPush() {
-  if (tentouSync) return;
-  tentouSync = true;
   if (!suportaPush() || pushDesligado()) return;
   if (Notification.permission !== "granted") return;
-  if (sessionStorage.getItem(SYNC_KEY) === "1") return;
+
+  const uid = await idUtilizador();
+  if (!uid) return;
+  if (sessionStorage.getItem(SYNC_KEY) === uid) return;
 
   try {
     const reg = await swPronto();
@@ -136,9 +143,27 @@ export async function sincronizarPush() {
       });
     }
     await registarNoServidor(sub);
-    sessionStorage.setItem(SYNC_KEY, "1");
+    sessionStorage.setItem(SYNC_KEY, uid);
   } catch (e) {
     console.error("Push sync error:", e);
+  }
+}
+
+/**
+ * Antes do signOut: tira o endpoint do servidor do utilizador que sai, mas
+ * mantém a subscrição no browser e não marca o push como desligado.
+ * Nunca lança — o logout não pode falhar por causa disto.
+ */
+export async function limparPushNoLogout() {
+  try {
+    if (!suportaPush()) return;
+    const reg = await swPronto(2000);
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) await supabase.rpc("unregister_push_subscription", { p_endpoint: sub.endpoint });
+  } catch (e) {
+    console.error("Push logout unregister error:", e);
+  } finally {
+    sessionStorage.removeItem(SYNC_KEY);
   }
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/api/supabaseClient";
+import { limparPushNoLogout } from "@/lib/push";
 
 /**
  * Session timeout por inatividade (#85).
@@ -26,6 +27,7 @@ export function useSessionTimeout(enabled, onTimeout, timeoutMs = SESSION_TIMEOU
       const last = Number(localStorage.getItem(STORAGE_KEY) || Date.now());
       if (Date.now() - last < timeoutMs) return;
       localStorage.removeItem(STORAGE_KEY);
+      try { await limparPushNoLogout(); } catch { /* sem push */ }
       try { await supabase.auth.signOut(); } catch { /* sessão já expirada */ }
       onTimeoutRef.current?.();
     };
